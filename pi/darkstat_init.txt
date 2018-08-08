@@ -1,0 +1,9 @@
+START_DARKSTAT=yes
+INTERFACE="-i eth0"
+PORT="-p 8888"
+
+# File will be relative to $DIR:
+#DAYLOG="--daylog darkstat.log"
+
+#FILTER="not (src net 192.168.0 and dst net 192.168.0)"
+#OPTIONS="--syslog --no-macs"
