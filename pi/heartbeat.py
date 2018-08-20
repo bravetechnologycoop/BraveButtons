@@ -1,5 +1,7 @@
 import http.client
 
+SERVER_URL = 'localhost:1337'
+
 def get_darkstat_html():
     conn = http.client.HTTPConnection('localhost:8888')
     conn.request('GET', r'/hosts/')
@@ -28,7 +30,23 @@ def parse_darkstat_html_lines(lines):
                     value = value * 60
                 last_seen_secs = last_seen_secs + value
                 
-            print('seconds since flic was last seen: ' + str(last_seen_secs))
+            return last_seen_secs
+
+    return 999999
+
+def send_heartbeat(flic_ok):
+    body = '{"flic_ok":false}'
+    if flic_ok:
+        body = '{"flic_ok":true}'
+    headers = {'Content-Type':'application/json'}
+    conn = http.client.HTTPConnection(SERVER_URL)
+    conn.request('POST', r'/heartbeat', body, headers)
+    res = conn.getresponse()
+    print('sent heartbeat, got response: ', res.status, res.reason)
 
 if __name__ == '__main__':
-    parse_darkstat_html_lines(get_darkstat_html().splitlines())
+    num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
+    if num_secs < 70:
+        send_heartbeat(true)
+    else:
+        send_heartbeat(false)

@@ -15,6 +15,9 @@ else
   
   systemctl enable darkstat
 
+  echo "*   *   *   *   *   python3 $BASEDIR/heartbeat.py" > "$BASEDIR/crontab.txt"
+  crontab "$BASEDIR/crontab.txt"
+
   echo "setup almost complete. rebooting..."
   reboot now
 fi
