@@ -11,12 +11,13 @@ else
   apt-get install -y darkstat bridge-utils
 
   cat "$BASEDIR/darkstat_init.txt" > /etc/darkstat/init.cfg
-  cat "$BASEDIR/interfaces.txt" >> /etc/network/interfaces
+  cat "$BASEDIR/interfaces.txt" > /etc/network/interfaces
   
   systemctl enable darkstat
 
-  echo "*   *   *   *   *   python3 $BASEDIR/heartbeat.py" > "$BASEDIR/crontab.txt"
-  crontab "$BASEDIR/crontab.txt"
+  echo "*   *   *   *   *   python3 $(pwd)/$BASEDIR/heartbeat.py" > "$BASEDIR/crontab.tmp"
+  crontab "$BASEDIR/crontab.tmp"
+  rm "$BASEDIR/crontab.tmp"
 
   echo "setup almost complete. rebooting..."
   reboot now

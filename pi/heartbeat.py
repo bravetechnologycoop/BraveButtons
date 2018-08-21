@@ -47,6 +47,6 @@ def send_heartbeat(flic_ok):
 if __name__ == '__main__':
     num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
     if num_secs < 70:
-        send_heartbeat(true)
+        send_heartbeat(True)
     else:
-        send_heartbeat(false)
+        send_heartbeat(False)

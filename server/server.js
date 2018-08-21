@@ -17,7 +17,7 @@ app.post('/heartbeat', jsonBodyParser, (req, res) => {
 function checkHeartbeat() {
     let currentTime = moment()
     let heartbeatDelayMillis = currentTime.diff(lastHeartbeatTime)
-    if(heartbeatDelayMillis > 5000) {
+    if(heartbeatDelayMillis > 70000) {
         console.log('lost connection to flic!')
     }
 }
