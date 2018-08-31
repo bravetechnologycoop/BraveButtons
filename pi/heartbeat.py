@@ -1,6 +1,6 @@
 import http.client
 
-SERVER_URL = 'localhost:1337'
+SERVER_URL = 'brave-test.schwartz.io'
 
 def get_darkstat_html():
     conn = http.client.HTTPConnection('localhost:8888')
@@ -39,7 +39,7 @@ def send_heartbeat(flic_ok):
     if flic_ok:
         body = '{"flic_ok":true}'
     headers = {'Content-Type':'application/json'}
-    conn = http.client.HTTPConnection(SERVER_URL)
+    conn = http.client.HTTPSConnection(SERVER_URL)
     conn.request('POST', r'/heartbeat', body, headers)
     res = conn.getresponse()
     print('sent heartbeat, got response: ', res.status, res.reason)
