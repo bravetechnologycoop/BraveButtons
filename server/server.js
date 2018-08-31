@@ -1,5 +1,6 @@
 let fs = require('fs')
 let express = require('express')
+let https = require('https')
 let moment = require('moment')
 let bodyParser = require('body-parser')
 let app = express()
@@ -39,6 +40,10 @@ function checkHeartbeat() {
 
 setInterval(checkHeartbeat, 1000)
 
-console.log('listening on port 1337')
+let httpsOptions = {
+    key: fs.readFileSync(`/etc/letsencrypt/live/${config.DOMAIN}/privkey.pem`),
+    cert: fs.readFileSync(`/etc/letsencrypt/live/${config.DOMAIN}/fullchain.pem`)
+}
 
-app.listen(1337)
+https.createServer(httpsOptions, app).listen(443)
+console.log('brave server listening on port 443')
