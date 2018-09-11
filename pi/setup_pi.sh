@@ -16,7 +16,7 @@ else
   
   systemctl enable darkstat
 
-  echo "*   *   *   *   *   python3 $(pwd)/$BASEDIR/heartbeat.py" > "$BASEDIR/crontab.tmp"
+  echo "@reboot python3 $(pwd)/$BASEDIR/heartbeat.py" > "$BASEDIR/crontab.tmp"
   crontab "$BASEDIR/crontab.tmp"
   rm "$BASEDIR/crontab.tmp"
 
