@@ -8,8 +8,15 @@ let jsonBodyParser = bodyParser.json()
 let config = JSON.parse(fs.readFileSync(`${__dirname}/brave_config.json`, 'utf8'))
 let twilioClient = require('twilio')(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN)
 let lastHeartbeatTime = moment()
+let sentAlerts = false
 
 function sendAlerts() {
+
+    // only send alerts once per disconnection event
+    if(sentAlerts) {
+        return
+    }
+
     for(let i=0; i<config.TWILIO_TO_NUMBERS.length; i++) {
         twilioClient.messages.create({
             body: 'The Flic connection has been lost.',
@@ -19,12 +26,15 @@ function sendAlerts() {
         .then(message => console.log(message.sid))
         .done()
     }
+
+    sentAlerts = true
 }
 
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
     console.log('got a heartbeat, flic_ok is ' + req.body.flic_ok.toString())
     if(req.body.flic_ok) {
         lastHeartbeatTime = moment()
+        sentAlerts = false
     }
     res.status(200).send()
 })
