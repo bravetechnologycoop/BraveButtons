@@ -1,5 +1,6 @@
 import http.client
 import gpiozero
+import time
 
 SERVER_URL = 'heartbeat.brave.coop'
 GPIO_PIN = 26
@@ -57,3 +58,4 @@ if __name__ == '__main__':
             send_heartbeat(True)
         else:
             send_heartbeat(False)
+        time.sleep(1)
