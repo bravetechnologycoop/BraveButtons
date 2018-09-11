@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 BASEDIR=$(dirname "$0")
 
 if [[ $EUID > 0 ]]; then
@@ -8,7 +9,7 @@ if [[ $EUID > 0 ]]; then
 
 else
   apt-get update
-  apt-get install -y darkstat bridge-utils
+  apt-get install -y darkstat bridge-utils python3-gpiozero
 
   cat "$BASEDIR/darkstat_init.txt" > /etc/darkstat/init.cfg
   cat "$BASEDIR/interfaces.txt" > /etc/network/interfaces
