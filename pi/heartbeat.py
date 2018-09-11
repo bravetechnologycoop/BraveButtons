@@ -1,6 +1,8 @@
 import http.client
+import gpiozero
 
-SERVER_URL = 'brave-test.schwartz.io'
+SERVER_URL = 'heartbeat.brave.coop'
+GPIO_PIN = 26
 
 def get_darkstat_html():
     conn = http.client.HTTPConnection('localhost:8888')
@@ -45,8 +47,13 @@ def send_heartbeat(flic_ok):
     print('sent heartbeat, got response: ', res.status, res.reason)
 
 if __name__ == '__main__':
-    num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
-    if num_secs < 70:
-        send_heartbeat(True)
-    else:
-        send_heartbeat(False)
+
+    relay = gpiozero.OutputDevice(GPIO_PIN)
+    relay.on()
+
+    while True: 
+        num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
+        if num_secs < 70:
+            send_heartbeat(True)
+        else:
+            send_heartbeat(False)
