@@ -59,5 +59,7 @@ if __name__ == '__main__':
                 send_heartbeat(True)
             else:
                 send_heartbeat(False)
+        except ValueError:
+            print "ValueError while parsing darkstat html or sending heartbeat"
         finally:
             time.sleep(1)
