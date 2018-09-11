@@ -53,9 +53,11 @@ if __name__ == '__main__':
     relay.on()
 
     while True: 
-        num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
-        if num_secs < 70:
-            send_heartbeat(True)
-        else:
-            send_heartbeat(False)
-        time.sleep(1)
+        try:
+            num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
+            if num_secs < 70:
+                send_heartbeat(True)
+            else:
+                send_heartbeat(False)
+        finally:
+            time.sleep(1)
