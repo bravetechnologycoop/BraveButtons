@@ -1,6 +1,7 @@
 import http.client
 import gpiozero
 import time
+import datetime
 
 SERVER_URL = 'heartbeat.brave.coop'
 GPIO_PIN = 26
@@ -14,7 +15,7 @@ def get_darkstat_html():
         conn.close()
         return html_string
     except Exception as e:
-        print(e)
+        print(e, flush=True)
         return ""
 
 def parse_darkstat_html_lines(lines):
@@ -50,7 +51,7 @@ def send_heartbeat(flic_ok):
         conn = http.client.HTTPSConnection(SERVER_URL)
         conn.request('POST', r'/heartbeat', body, headers)
         res = conn.getresponse()
-        print('sent heartbeat, got response: ', res.status, res.reason)
+        print('sent heartbeat, got response: ', res.status, res.reason, flush=True)
         if res.status == 200:
             return True
         return False
@@ -61,8 +62,10 @@ if __name__ == '__main__':
     
     # wait for reboot to finish
     time.sleep(10)
-
-    print("starting heartbeat script")
+    
+    print("\nstarting heartbeat script")
+    print(datetime.datetime.now())
+    print("\n", flush=True)
 
     relay = gpiozero.OutputDevice(GPIO_PIN)
     relay.on()
@@ -76,7 +79,7 @@ if __name__ == '__main__':
             else:
                 server_connection_ok = send_heartbeat(False)
         except ValueError as e:
-            print(e)
+            print(e, flush=True)
         finally:
             if server_connection_ok:
                 relay.on()
