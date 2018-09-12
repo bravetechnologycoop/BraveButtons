@@ -6,12 +6,16 @@ SERVER_URL = 'heartbeat.brave.coop'
 GPIO_PIN = 26
 
 def get_darkstat_html():
-    conn = http.client.HTTPConnection('localhost:8888')
-    conn.request('GET', r'/hosts/')
-    res = conn.getresponse()
-    html_string = res.read().decode('utf-8')
-    conn.close()
-    return html_string
+    try:
+        conn = http.client.HTTPConnection('localhost:8888')
+        conn.request('GET', r'/hosts/')
+        res = conn.getresponse()
+        html_string = res.read().decode('utf-8')
+        conn.close()
+        return html_string
+    except Exception as e:
+        print(e)
+        return ""
 
 def parse_darkstat_html_lines(lines):
     last_seen_secs_list = []
