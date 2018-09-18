@@ -10,6 +10,10 @@ let twilioClient = require('twilio')(config.TWILIO_ACCOUNT_SID, config.TWILIO_AU
 let lastHeartbeatTime = moment()
 let sentAlerts = false
 
+function log(logString) {
+    console.log(moment().toString() + " - " + logString)
+}
+
 function sendAlerts() {
 
     // only send alerts once per disconnection event
@@ -17,13 +21,15 @@ function sendAlerts() {
         return
     }
 
+    log('sending alerts')
+
     for(let i=0; i<config.TWILIO_TO_NUMBERS.length; i++) {
         twilioClient.messages.create({
             body: 'The Flic connection has been lost.',
             from: config.TWILIO_FROM_NUMBER,
             to: config.TWILIO_TO_NUMBERS[i]
         })
-        .then(message => console.log(message.sid))
+        .then(message => log(message.sid))
         .done()
     }
 
@@ -31,7 +37,7 @@ function sendAlerts() {
 }
 
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
-    console.log('got a heartbeat, flic_ok is ' + req.body.flic_ok.toString())
+    log('got a heartbeat, flic_ok is ' + req.body.flic_ok.toString())
     if(req.body.flic_ok) {
         lastHeartbeatTime = moment()
         sentAlerts = false
@@ -43,7 +49,6 @@ function checkHeartbeat() {
     let currentTime = moment()
     let heartbeatDelayMillis = currentTime.diff(lastHeartbeatTime)
     if(heartbeatDelayMillis > 70000) {
-        console.log('lost connection to flic!')
         sendAlerts()
     }
 }
@@ -56,4 +61,4 @@ let httpsOptions = {
 }
 
 https.createServer(httpsOptions, app).listen(443)
-console.log('brave server listening on port 443')
+log('brave server listening on port 443')
