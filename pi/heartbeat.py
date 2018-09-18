@@ -15,6 +15,7 @@ def get_darkstat_html():
         conn.close()
         return html_string
     except Exception as e:
+        print(datetime.datetime.now(), " - error connecting to darkstat")
         print(e, flush=True)
         return ""
 
@@ -51,7 +52,7 @@ def send_heartbeat(flic_ok):
         conn = http.client.HTTPSConnection(SERVER_URL)
         conn.request('POST', r'/heartbeat', body, headers)
         res = conn.getresponse()
-        print('sent heartbeat, got response: ', res.status, res.reason, flush=True)
+        print(datetime.datetime.now(), ' - sent heartbeat, got response: ', res.status, res.reason, flush=True)
         if res.status == 200:
             return True
         return False
