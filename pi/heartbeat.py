@@ -71,8 +71,18 @@ if __name__ == '__main__':
     relay = gpiozero.OutputDevice(GPIO_PIN)
     relay.on()
 
+    server_connection_ok = False
+    flic_last_reboot = datetime.datetime.now()
+    
     while True: 
-        server_connection_ok = False
+
+        # reboot the flic hub every 5 mins, unless we're keeping it off because we can't reach the server
+        if server_connection_ok and (datetime.datetime.now() - flic_last_reboot > datetime.timedelta(minutes=5)):
+            relay.off()
+            time.sleep(1)
+            relay.on()
+            flic_last_reboot = datetime.datetime.now()
+
         try:
             num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
             if num_secs < 70:
