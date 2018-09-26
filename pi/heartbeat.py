@@ -91,7 +91,8 @@ if __name__ == '__main__':
                 server_connection_ok = send_heartbeat(True)
             else:
                 server_connection_ok = send_heartbeat(False)
-        except ValueError as e:
+        except Exception as e:
+            print(date.datetime.now(), " - error in main loop")
             print(e, flush=True)
         finally:
             if server_connection_ok:
