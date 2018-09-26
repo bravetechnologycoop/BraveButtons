@@ -41,7 +41,7 @@ def parse_darkstat_html_lines(lines):
                 
             return last_seen_secs
 
-    return 999999
+    raise Exception('darkstat html did not contain flic last seen info')
 
 def send_heartbeat(flic_ok):
     body = '{"flic_ok":false}'
