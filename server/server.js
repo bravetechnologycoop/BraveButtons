@@ -7,7 +7,7 @@ let app = express()
 let jsonBodyParser = bodyParser.json()
 let config = JSON.parse(fs.readFileSync(`${__dirname}/brave_config.json`, 'utf8'))
 let twilioClient = require('twilio')(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN)
-let lastHeartbeatTime = moment()
+let flicLastSeenTime = moment()
 let sentAlerts = false
 
 function log(logString) {
@@ -37,19 +37,19 @@ function sendAlerts() {
 }
 
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
-    log('got a heartbeat, flic_ok is ' + req.body.flic_ok.toString())
-    if(req.body.flic_ok) {
-        lastHeartbeatTime = moment()
-        sentAlerts = false
-    }
+    log('got a heartbeat, flic_last_seen_secs is ' + req.body.flic_last_seen_secs.toString())
+    flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds') 
     res.status(200).send()
 })
 
 function checkHeartbeat() {
     let currentTime = moment()
-    let heartbeatDelayMillis = currentTime.diff(lastHeartbeatTime)
+    let heartbeatDelayMillis = currentTime.diff(flicLastSeenTime)
     if(heartbeatDelayMillis > 70000) {
         sendAlerts()
+    }
+    else {
+        sentAlerts = false
     }
 }
 
