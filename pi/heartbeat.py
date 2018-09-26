@@ -56,7 +56,9 @@ def send_heartbeat(flic_ok):
         if res.status == 200:
             return True
         return False
-    except:
+    except Exception as e:
+        print(date.datetime.now(), " - error sending heartbeat")
+        print(e, flush=True)
         return False
 
 if __name__ == '__main__':
