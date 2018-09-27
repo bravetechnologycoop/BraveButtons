@@ -44,7 +44,7 @@ def parse_darkstat_html_lines(lines):
     raise Exception('darkstat html did not contain flic last seen info')
 
 def send_heartbeat(flic_last_seen_secs):
-    body = '{"flic_last_seen_secs":' + flic_last_seen_secs.toString() + '}'
+    body = '{"flic_last_seen_secs":' + str(flic_last_seen_secs) + '}'
     headers = {'Content-Type':'application/json'}
     try:
         conn = http.client.HTTPSConnection(SERVER_URL, timeout=10)
@@ -55,7 +55,7 @@ def send_heartbeat(flic_last_seen_secs):
             return True
         return False
     except Exception as e:
-        print(date.datetime.now(), " - error sending heartbeat")
+        print(datetime.datetime.now(), " - error sending heartbeat")
         print(e, flush=True)
         return False
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
             num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
             server_connection_ok = send_heartbeat(num_secs)
         except Exception as e:
-            print(date.datetime.now(), " - error in main loop")
+            print(datetime.datetime.now(), " - error in main loop")
             print(e, flush=True)
         finally:
             if server_connection_ok:
