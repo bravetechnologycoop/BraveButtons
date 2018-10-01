@@ -9,7 +9,7 @@ GPIO_PIN = 26
 def get_darkstat_html():
     try:
         conn = http.client.HTTPConnection('localhost:8888',timeout=10)
-        conn.request('GET', r'/hosts/')
+        conn.request('GET', r'/hosts/?sort=lastseen')
         res = conn.getresponse()
         html_string = res.read().decode('utf-8')
         conn.close()
