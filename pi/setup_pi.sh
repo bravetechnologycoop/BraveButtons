@@ -10,15 +10,23 @@ if [[ $EUID > 0 ]]; then
 else
   apt-get update
   apt-get install -y darkstat bridge-utils python3-gpiozero
+  pip3 install python-daemon
 
   cat "$BASEDIR/darkstat_init.txt" > /etc/darkstat/init.cfg
   cat "$BASEDIR/interfaces.txt" > /etc/network/interfaces
   
-  systemctl enable darkstat
+  mkdir -p /var/log/brave
+  touch /var/log/brave/heartbeat-out.log
+  touch /var/log/brave/heartbeat-err.log
+  chown pi:pi /var/log/brave /var/log/brave/heartbeat-out.log /var/log/brave/heartbeat-err.log
 
-  echo "@reboot python3 $(pwd)/$BASEDIR/heartbeat.py >> $(pwd)/$BASEDIR/heartbeat.log 2>&1" > "$BASEDIR/crontab.tmp"
-  crontab "$BASEDIR/crontab.tmp"
-  rm "$BASEDIR/crontab.tmp"
+  systemd_unit_file=$(<$BASEDIR/systemd_unit_file.txt)
+  systemd_unit_file="${systemd_unit_file//HEARTBEAT_SCRIPT_PATH/$(pwd)/$BASEDIR/heartbeat.py}"
+  echo "$systemd_unit_file" > /etc/systemd/system/brave-heartbeat.service
+
+  systemctl daemon-reload
+  systemctl enable brave-heartbeat.service
+  systemctl enable darkstat
 
   echo "setup almost complete. rebooting..."
   reboot now

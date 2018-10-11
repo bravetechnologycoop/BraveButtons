@@ -2,6 +2,7 @@ import http.client
 import gpiozero
 import time
 import datetime
+import daemon
 
 SERVER_URL = 'heartbeat.brave.coop'
 GPIO_PIN = 26
@@ -61,38 +62,45 @@ def send_heartbeat(flic_last_seen_secs):
 
 if __name__ == '__main__':
 
-    # wait for reboot to finish
-    time.sleep(10)
+    logfile_out = open('/var/log/brave/heartbeat-out.log', 'a')
+    logfile_err = open('/var/log/brave/heartbeat-err.log', 'a')
 
-    print("\nstarting heartbeat script")
-    print(datetime.datetime.now())
-    print("\n", flush=True)
+    context = daemon.DaemonContext(
+        stdout=logfile_out,
+        stderr=logfile_err
+    )
 
-    relay = gpiozero.OutputDevice(GPIO_PIN)
-    relay.on()
+    with context:
 
-    system_ok = False
-    flic_last_reboot = datetime.datetime.now()
+        print("\nstarting heartbeat script")
+        print(datetime.datetime.now())
+        print("\n", flush=True)
 
-    while True:
+        relay = gpiozero.OutputDevice(GPIO_PIN)
+        relay.on()
 
-        # reboot the flic hub every 5 mins, unless we're keeping it off because we can't reach the server
-        if system_ok and (datetime.datetime.now() - flic_last_reboot > datetime.timedelta(minutes=30)):
-            relay.off()
-            time.sleep(1)
-            relay.on()
-            flic_last_reboot = datetime.datetime.now()
+        system_ok = False
+        flic_last_reboot = datetime.datetime.now()
 
-        try:
-            num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
-            system_ok = send_heartbeat(num_secs)
-        except Exception as e:
-            system_ok = False
-            print(datetime.datetime.now(), " - error in main loop")
-            print(e, flush=True)
-        finally:
-            if system_ok:
-                relay.on()
-            else:
+        while True:
+
+            # reboot the flic hub every 5 mins, unless we're keeping it off because we can't reach the server
+            if system_ok and (datetime.datetime.now() - flic_last_reboot > datetime.timedelta(minutes=30)):
                 relay.off()
-            time.sleep(5)
+                time.sleep(1)
+                relay.on()
+                flic_last_reboot = datetime.datetime.now()
+
+            try:
+                num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
+                system_ok = send_heartbeat(num_secs)
+            except Exception as e:
+                system_ok = False
+                print(datetime.datetime.now(), " - error in main loop")
+                print(e, flush=True)
+            finally:
+                if system_ok:
+                    relay.on()
+                else:
+                    relay.off()
+                time.sleep(5)
