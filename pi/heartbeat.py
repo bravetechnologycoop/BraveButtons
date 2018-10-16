@@ -3,9 +3,23 @@ import gpiozero
 import time
 import datetime
 import daemon
+import json
+import uuid
 
 SERVER_URL = 'heartbeat.brave.coop'
 GPIO_PIN = 26
+
+def get_system_id():
+    with open('/usr/local/brave/system_id', 'r+') as system_id_file:
+        contents = system_id_file.read()
+        if len(contents) == 36:
+            return contents
+        else:
+            system_id = str(uuid.uuid4())
+            if len(system_id) != 36:
+                raise Exception("couldn't generate a valid system id")
+            system_id_file.write(system_id)
+            return system_id
 
 def get_darkstat_html():
     try:
@@ -44,12 +58,13 @@ def parse_darkstat_html_lines(lines):
 
     raise Exception('darkstat html did not contain flic last seen info')
 
-def send_heartbeat(flic_last_seen_secs):
-    body = '{"flic_last_seen_secs":' + str(flic_last_seen_secs) + '}'
+def send_heartbeat(flic_last_seen_secs, system_id):
+    body = {"flic_last_seen_secs" : str(flic_last_seen_secs),
+            "system_id" : str(system_id)}
     headers = {'Content-Type':'application/json'}
     try:
         conn = http.client.HTTPSConnection(SERVER_URL, timeout=10)
-        conn.request('POST', r'/heartbeat', body, headers)
+        conn.request('POST', r'/heartbeat', json.dumps(body), headers)
         res = conn.getresponse()
         print(datetime.datetime.now(), ' - sent heartbeat, got response: ', res.status, res.reason, flush=True)
         if res.status == 200:
@@ -80,6 +95,7 @@ if __name__ == '__main__':
         relay.on()
 
         system_ok = False
+        system_id = get_system_id()
         flic_last_reboot = datetime.datetime.now()
 
         while True:
@@ -93,7 +109,7 @@ if __name__ == '__main__':
 
             try:
                 num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
-                system_ok = send_heartbeat(num_secs)
+                system_ok = send_heartbeat(num_secs, system_id)
             except Exception as e:
                 system_ok = False
                 print(datetime.datetime.now(), " - error in main loop")

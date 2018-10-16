@@ -20,6 +20,11 @@ else
   touch /var/log/brave/heartbeat-err.log
   chown pi:pi /var/log/brave /var/log/brave/heartbeat-out.log /var/log/brave/heartbeat-err.log
 
+  mkdir -p /usr/local/brave
+  touch /usr/local/brave/system_id
+  chown pi:pi /usr/local/brave /usr/local/brave/system_id
+  chmod 700 /usr/local/brave
+
   systemd_unit_file=$(<$BASEDIR/systemd_unit_file.txt)
   systemd_unit_file="${systemd_unit_file//HEARTBEAT_SCRIPT_PATH/$(pwd)/$BASEDIR/heartbeat.py}"
   echo "$systemd_unit_file" > /etc/systemd/system/brave-heartbeat.service
