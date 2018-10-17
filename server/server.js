@@ -11,7 +11,7 @@ let config = JSON.parse(fs.readFileSync(`${__dirname}/brave_config.json`, 'utf8'
 let twilioClient = require('twilio')(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN)
 let sentAlerts = false
 let db = new Datastore({
-    filename: 'server.db',
+    filename: `${__dirname}/server.db`,
     autoload: true
 })
 
