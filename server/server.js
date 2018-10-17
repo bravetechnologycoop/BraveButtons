@@ -3,12 +3,17 @@ let express = require('express')
 let https = require('https')
 let moment = require('moment')
 let bodyParser = require('body-parser')
+let Datastore = require('nedb')
+
 let app = express()
 let jsonBodyParser = bodyParser.json()
 let config = JSON.parse(fs.readFileSync(`${__dirname}/brave_config.json`, 'utf8'))
 let twilioClient = require('twilio')(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN)
-let flicLastSeenTime = moment()
 let sentAlerts = false
+let db = new Datastore({
+    filename: 'server.db',
+    autoload: true
+})
 
 function log(logString) {
     console.log(moment().toString() + " - " + logString)
@@ -37,20 +42,34 @@ function sendAlerts() {
 }
 
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
-    log('got a heartbeat, flic_last_seen_secs is ' + req.body.flic_last_seen_secs.toString())
-    flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds') 
+    log('got a heartbeat from ' + req.body.system_id + ', flic_last_seen_secs is ' + req.body.flic_last_seen_secs.toString())
+    let flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
+    db.update({ system_id: req.body.system_id }, { $set: { flic_last_seen_time: flicLastSeenTime } }, { upsert: true }, (err, numChanged) => {
+        if(err) {
+            log(err.message)
+        }
+    })
     res.status(200).send()
 })
 
 function checkHeartbeat() {
-    let currentTime = moment()
-    let heartbeatDelayMillis = currentTime.diff(flicLastSeenTime)
-    if(heartbeatDelayMillis > 70000) {
-        sendAlerts()
-    }
-    else {
-        sentAlerts = false
-    }
+    db.find({}, (err, docs) => {
+        if(err) {
+            log(err.message)
+        }
+        docs.forEach((doc) => {
+            let flicLastSeenTime = moment(doc.flic_last_seen_time)
+            let currentTime = moment()
+            let heartbeatDelayMillis = currentTime.diff(flicLastSeenTime)
+            
+            if(heartbeatDelayMillis > 70000) {
+                sendAlerts()
+            }
+            else {
+                sentAlerts = false
+            }
+        })
+    })    
 }
 
 setInterval(checkHeartbeat, 1000)
