@@ -1,0 +1,27 @@
+{
+  "name": "chatbot-server",
+  "version": "1.0.0",
+  "description": "server for Brave Buttons chatbot",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "moment": "^2.22.2",
+    "twilio": "^3.23.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mariocimet/BraveChatbot.git"
+  },
+  "author": "Mario Cimet",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mariocimet/BraveChatbot/issues"
+  },
+  "homepage": "https://github.com/mariocimet/BraveChatbot#readme"
+}
