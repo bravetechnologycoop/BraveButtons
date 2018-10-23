@@ -6,12 +6,14 @@ let bodyParser = require('body-parser')
 let app = express()
 let jsonBodyParser = bodyParser.json()
 
+app.use(bodyParser.urlencoded({extended: true}));
+
 function log(logString) {
     console.log(moment().toString() + " - " + logString)
 }
 
 app.post('/', jsonBodyParser, (req, res) => {
-    log('got a request')
+    log('UUID: ' + req.body.UUID.toString() + ' Unit:' + req.body.Unit.toString())
     res.status(200).send()
 })
 
