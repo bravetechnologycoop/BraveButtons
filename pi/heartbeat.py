@@ -21,6 +21,15 @@ def get_system_id():
             system_id_file.write(system_id)
             return system_id
 
+def write_darkstat_html_to_file(html):
+    try:
+        date_string = str(datetime.datetime.now()).replace(" ", "-")
+        with open('/usr/local/brave/darkstat_html/' + date_string + '.html', 'w') as html_file:
+            html_file.write(html)
+    except Exception as e:
+        print(datetime.datetime.now(), " - error writing darkstat html to file")
+        print(e, flush=True)
+
 def get_darkstat_html():
     try:
         conn = http.client.HTTPConnection('localhost:8888',timeout=10)
@@ -108,7 +117,10 @@ if __name__ == '__main__':
                 flic_last_reboot = datetime.datetime.now()
 
             try:
-                num_secs = parse_darkstat_html_lines(get_darkstat_html().splitlines())
+                html = get_darkstat_html()
+                num_secs = parse_darkstat_html_lines(html.splitlines())
+                if num_secs > 58:
+                    write_darkstat_html_to_file(html)
                 system_ok = send_heartbeat(num_secs, system_id)
             except Exception as e:
                 system_ok = False
