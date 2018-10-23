@@ -4,8 +4,13 @@ let https = require('https')
 let moment = require('moment')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
+require('dotenv').load();
 
 const app = express()
+
+const accountSid = process.env.TWILIO_SID;
+const authToken = process.env.TWILIO_TOKEN;
+const client = require('twilio')(accountSid, authToken);
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -19,7 +24,7 @@ app.post('/', jsonBodyParser, (req, res) => {
 
 	    log('UUID: ' + req.body.UUID.toString() + ' Unit:' + req.body.Unit.toString());
 	    res.status(200).send();
-	    
+
 	} else {
 		log('Bad request: request does not contain button ID or unit');
 		res.status(400).send();
