@@ -11,12 +11,12 @@
     "express": "^4.16.4",
     "mocha": "^5.2.0",
     "moment": "^2.22.2",
-    "nock": "^10.0.1",
+    "node-json-db": "^0.9.1",
     "twilio": "^3.23.1"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "mocha --timeout 15000 \"test/**/*.js\"",
+    "test": "NODE_ENV=test mocha --timeout 15000 \"test/**/*.js\"",
     "start": "node server.js"
   },
   "repository": {
