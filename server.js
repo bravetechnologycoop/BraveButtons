@@ -3,8 +3,9 @@ let express = require('express')
 let https = require('https')
 let moment = require('moment')
 let bodyParser = require('body-parser')
-let app = express()
 let jsonBodyParser = bodyParser.json()
+
+const app = express()
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -13,6 +14,8 @@ function log(logString) {
 }
 
 app.post('/', jsonBodyParser, (req, res) => {
+
+	
     log('UUID: ' + req.body.UUID.toString() + ' Unit:' + req.body.Unit.toString())
     res.status(200).send()
 })
