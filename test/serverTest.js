@@ -30,7 +30,7 @@ describe('Chatbot server', () => {
 
 		let currentState;
 
-		beforeEach(() => {
+		before(() => {
 			fs.writeFileSync('./' + stateFilename + '.json', '{}');
 		});
 
@@ -52,13 +52,10 @@ describe('Chatbot server', () => {
 		it('should update the session state for a valid request', async () => {
 
 			let currentState = null;
-			let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 
-			expect(stateData).to.deep.equal({});
 			let response = await chai.request(app).post('/').send(defaultBody);
-			
 
-			stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
+			let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.completed, stateData.numPresses);
 
 			expect(currentState).to.not.be.null;
@@ -69,26 +66,69 @@ describe('Chatbot server', () => {
 			expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
 			expect(currentState.unit).to.deep.equal(defaultBody.Unit);
 			expect(currentState.completed).to.be.false;
-			expect(currentState.numPresses).to.deep.equal(1);
+			expect(currentState.numPresses).to.deep.equal(2);
 		});
 
-		afterEach(() => {
+		it('should ignore requests from different uuid if session not completed', async () => {
+
+			let currentState = null;
+
+			let response = await chai.request(app).post('/').send(defaultBody);
+			response = await chai.request(app).post('/').send(defaultBody2);
+
+			let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.completed, stateData.numPresses);
+
+			expect(currentState).to.not.be.null;
+			expect(currentState).to.have.property('uuid');
+			expect(currentState).to.have.property('unit');
+			expect(currentState).to.have.property('completed');
+			expect(currentState).to.have.property('numPresses');
+			expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
+			expect(currentState.unit).to.deep.equal(defaultBody.Unit);
+			expect(currentState.completed).to.be.false;
+			expect(currentState.numPresses).to.deep.equal(3);
+		});
+
+		it('should increment button presses when requests from same uuid if session not completed', async () => {
+
+			let currentState = null;
+
+			let response = await chai.request(app).post('/').send(defaultBody);
+		    response = await chai.request(app).post('/').send(defaultBody);
+			response = await chai.request(app).post('/').send(defaultBody);
+
+			let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.completed, stateData.numPresses);
+
+			expect(currentState).to.not.be.null;
+			expect(currentState).to.have.property('uuid');
+			expect(currentState).to.have.property('unit');
+			expect(currentState).to.have.property('completed');
+			expect(currentState).to.have.property('numPresses');
+			expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
+			expect(currentState.unit).to.deep.equal(defaultBody.Unit);
+			expect(currentState.completed).to.be.false;
+			expect(currentState.numPresses).to.deep.equal(6);
+		});
+
+	});
+
+	describe('POST request: twilio message', () => {
+		it('should return ok to a valid request', async () => {
+			let response = await chai.request(app).post('/message').send(twilioMessageBody);
+			expect(response).to.have.status(200);
+		});
+	});
+
+	describe('POST request: twilio message', () => {
+		it('should return ok to a valid request', async () => {
+			let response = await chai.request(app).post('/message').send(twilioMessageBody);
+			expect(response).to.have.status(200);
+		});
+	});
+
+	after(() => {
 			fs.writeFileSync('./' + stateFilename + '.json', '{}');
-		});
-
-	});
-
-	describe('POST request: twilio message', () => {
-		it('should return ok to a valid request', async () => {
-			let response = await chai.request(app).post('/message').send(twilioMessageBody);
-			expect(response).to.have.status(200);
-		});
-	});
-
-	describe('POST request: twilio message', () => {
-		it('should return ok to a valid request', async () => {
-			let response = await chai.request(app).post('/message').send(twilioMessageBody);
-			expect(response).to.have.status(200);
-		});
-	});
+    });
 });

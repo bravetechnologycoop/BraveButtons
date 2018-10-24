@@ -25,6 +25,7 @@ loadState();
 const accountSid = process.env.TWILIO_TEST_SID;
 const authToken = process.env.TWILIO_TEST_TOKEN;
 const client = require('twilio')(accountSid, authToken);
+const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
 app.use(bodyParser.urlencoded({extended: true}));
 
