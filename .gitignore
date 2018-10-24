@@ -1,2 +1,7 @@
 node_modules
 brave_config.json
+.env
+.env.example
+.env.local
+.env.staging
+
