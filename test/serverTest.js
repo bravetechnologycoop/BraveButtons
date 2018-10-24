@@ -1,8 +1,7 @@
 let chai = require('chai');
-let app = require('../server.js');
 let SessionState = require('../SessionState.js');
 const STATES = require('../SessionStateEnum.js'); 
-
+let app = require('../server.js');
 let fs = require('fs');
 let chaiHttp = require('chai-http');
 chai.use(chaiHttp);
@@ -10,6 +9,7 @@ const expect = chai.expect;
 
 
 describe('Chatbot server', () => {
+
 	let baseUrl = "https://chatbot.brave.coop";
 	let stateFilename = "buttonPressesTest"
 
@@ -24,6 +24,7 @@ describe('Chatbot server', () => {
 	};
 
 	let twilioMessageBody = {
+		'From': process.env.RESPONDER_PHONE,
 		'Body': 'Please answer "Ok" to this message when you have responded to the alert.'
 	};
 

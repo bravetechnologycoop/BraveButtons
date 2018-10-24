@@ -13,19 +13,14 @@ const app = express();
 let STATE;
 
 //Set up state storage
-var stateFilename;
-
-if (process.env.NODE_ENV === 'test') {
-	stateFilename = "buttonPressesTest";
-} else {
-	stateFilename = "buttonPresses";
-}
+const stateFilename = getEnvVar('STATE_FILENAME');
 
 loadState();
 
 //Set up Twilio 
-const accountSid = process.env.TWILIO_TEST_SID;
-const authToken = process.env.TWILIO_TEST_TOKEN;
+const accountSid = getEnvVar('TWILIO_SID');
+const authToken = getEnvVar('TWILIO_TOKEN');
+
 const client = require('twilio')(accountSid, authToken);
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
@@ -33,6 +28,10 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 function log(logString) {
     console.log(moment().toString() + " - " + logString)
+}
+
+function getEnvVar(name) {
+	return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
 }
 
 function loadState() {
@@ -61,8 +60,13 @@ function saveState() {
     fs.writeFileSync('./' + stateFilename + '.json', JSON.stringify(STATE));
 }
 
-function isValidRequest(req) {
-	return req.body.hasOwnProperty('UUID') && req.body.hasOwnProperty('Unit');
+/**
+Check if a request is valid based on the presence of required body properties
+**/
+function isValidRequest(req, properties) {
+
+	const hasAllProperties = (hasAllPropertiesSoFar, currentProperty) => hasAllPropertiesSoFar && req.body.hasOwnProperty(currentProperty);
+	return properties.reduce(hasAllProperties, true);
 }
 
 function handleValidRequest(uuid, unit) {
@@ -79,29 +83,45 @@ function handleValidRequest(uuid, unit) {
     
 }
 
-function handleErrorRequest() {
-	log('Bad request: UUID or Unit is missing');
+function handleErrorRequest(error) {
+	log(error);
 }
 
+function handleTwilioRequest(req,res) {
+
+	let phoneNumber = req.body.From;
+
+}
 
 
 app.post('/', jsonBodyParser, (req, res) => {
 
-	if (isValidRequest(req)) {
+	const requiredBodyParams = ['UUID', 'Unit'];
+
+	if (isValidRequest(req, requiredBodyParams)) {
 
 		handleValidRequest(req.body.UUID.toString(), req.body.Unit.toString());
 	    res.status(200).send();
 
 
 	} else {
-		handleErrorRequest();
+		handleErrorRequest('Bad request: UUID or Unit is missing');
 		res.status(400).send();
 	}
 })
 
 app.post('/message', jsonBodyParser, (req, res) => {
 
-	res.status(200).send();
+	const requiredBodyParams = ['Body', 'From'];
+
+	if (isValidRequest(req, requiredBodyParams)) {
+
+		handleTwilioRequest(req,res);
+		res.status(200).send();
+
+	} else {
+		handleErrorRequest('Bad request: Body or From fields are missing');
+	}
 
 });
 
