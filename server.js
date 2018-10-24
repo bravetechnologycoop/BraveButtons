@@ -5,6 +5,8 @@ let moment = require('moment')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
 let SessionState = require('./SessionState.js')
+const STATES = require('./SessionStateEnum.js'); 
+
 require('dotenv').load();
 
 const app = express();
@@ -47,11 +49,11 @@ function loadState() {
 	}
 }
 
-function updateState(uuid, unit, completed) {
+function updateState(uuid, unit, state) {
 	if (STATE == null || Object.keys(STATE).length === 0) {
-		STATE = new SessionState(uuid, unit, completed);
+		STATE = new SessionState(uuid, unit, state);
 	} else {
-		STATE.update(uuid, unit, completed);
+		STATE.update(uuid, unit, state);
 	}
 }
 
@@ -67,7 +69,7 @@ function handleValidRequest(uuid, unit) {
 
 	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString());
 
-	 updateState(uuid, unit, false);
+	 updateState(uuid, unit, STATES.STARTED);
 	 saveState();
 
 	 client.messages

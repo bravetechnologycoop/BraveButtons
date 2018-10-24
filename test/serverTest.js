@@ -1,6 +1,8 @@
 let chai = require('chai');
 let app = require('../server.js');
 let SessionState = require('../SessionState.js');
+const STATES = require('../SessionStateEnum.js'); 
+
 let fs = require('fs');
 let chaiHttp = require('chai-http');
 chai.use(chaiHttp);
@@ -62,6 +64,7 @@ describe('Chatbot server', () => {
 			expect(currentState).to.have.property('uuid');
 			expect(currentState).to.have.property('unit');
 			expect(currentState).to.have.property('completed');
+			expect(currentState).to.have.property('state');
 			expect(currentState).to.have.property('numPresses');
 			expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
 			expect(currentState.unit).to.deep.equal(defaultBody.Unit);
