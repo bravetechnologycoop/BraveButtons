@@ -107,8 +107,10 @@ function sendTwilioMessage(msg) {
 }
 
 function remindToSendMessage() {
-	STATE.state = STATES.WAITING_FOR_REPLY;
-	sendTwilioMessage('Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
+	if (STATE.state === STATES.STARTED) {
+		STATE.state = STATES.WAITING_FOR_REPLY;
+		sendTwilioMessage('Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
+	}
 }
 
 app.post('/', jsonBodyParser, (req, res) => {
