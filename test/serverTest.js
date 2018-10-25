@@ -11,7 +11,7 @@ const expect = chai.expect;
 describe('Chatbot server', () => {
 
 	let baseUrl = "https://chatbot.brave.coop";
-	let stateFilename = "buttonPressesTest"
+	let stateFilename = "buttonPressesTest";
 
 	let defaultBody = {
 		'Unit': '123',
@@ -24,11 +24,10 @@ describe('Chatbot server', () => {
 	};
 
 	let twilioMessageBody = {
-		'From': process.env.RESPONDER_PHONE,
+		'From': process.env.RESPONDER_PHONE_TEST,
 		'Body': 'Please answer "Ok" to this message when you have responded to the alert.'
 	};
 
-    
 	describe('POST request: button press', () => {
 
 		let currentState;
@@ -119,20 +118,24 @@ describe('Chatbot server', () => {
 	});
 
 	describe('POST request: twilio message', () => {
+
 		it('should return ok to a valid request', async () => {
 			let response = await chai.request(app).post('/message').send(twilioMessageBody);
 			expect(response).to.have.status(200);
 		});
-	});
 
-	describe('POST request: twilio message', () => {
-		it('should return ok to a valid request', async () => {
-			let response = await chai.request(app).post('/message').send(twilioMessageBody);
-			expect(response).to.have.status(200);
+		it('should return 400 to a request with an incomplete body', async () => {
+			let response = await chai.request(app).post('/message').send({'Body': 'hi'});
+			expect(response).to.have.status(400);
+		});
+
+		it('should return 400 to a request from an invalid phone number', async () => {
+			let response = await chai.request(app).post('/message').send({'Body': 'hi', 'From': '+16664206969'});
+			expect(response).to.have.status(400);
 		});
 	});
 
 	after(() => {
-			fs.writeFileSync('./' + stateFilename + '.json', '{}');
-    });
+		fs.writeFileSync('./' + stateFilename + '.json', '{}');
+	});
 });

@@ -75,9 +75,8 @@ function handleValidRequest(uuid, unit) {
 
 	 updateState(uuid, unit, STATES.STARTED);
 	 saveState();
-
 	 client.messages
-      .create({from: '+15017122661', body: 'Please answer "Ok" to this message when you have responded to the alert.', to: '+16047798329'})
+      .create({from: ' +15005550006', body: 'Please answer "Ok" to this message when you have responded to the alert.', to: '+16047798329'})
       .then(message => log(message.sid))
       .done();
     
@@ -87,9 +86,16 @@ function handleErrorRequest(error) {
 	log(error);
 }
 
-function handleTwilioRequest(req,res) {
+function handleTwilioRequest(req) {
 
 	let phoneNumber = req.body.From;
+    log(phoneNumber);
+	if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
+		return 200;
+	} else {
+		handleErrorRequest('Invalid Phone Number');
+		return 400;
+	}
 
 }
 
@@ -101,14 +107,13 @@ app.post('/', jsonBodyParser, (req, res) => {
 	if (isValidRequest(req, requiredBodyParams)) {
 
 		handleValidRequest(req.body.UUID.toString(), req.body.Unit.toString());
-	    res.status(200).send();
-
+		res.status(200).send();
 
 	} else {
 		handleErrorRequest('Bad request: UUID or Unit is missing');
 		res.status(400).send();
 	}
-})
+});
 
 app.post('/message', jsonBodyParser, (req, res) => {
 
@@ -116,11 +121,12 @@ app.post('/message', jsonBodyParser, (req, res) => {
 
 	if (isValidRequest(req, requiredBodyParams)) {
 
-		handleTwilioRequest(req,res);
-		res.status(200).send();
+		let status = handleTwilioRequest(req);
+		res.status(status).send();
 
 	} else {
 		handleErrorRequest('Bad request: Body or From fields are missing');
+		res.status(400).send();
 	}
 
 });
