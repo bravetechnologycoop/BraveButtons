@@ -78,6 +78,36 @@ describe('Session state manager', () => {
 			expect(state.numPresses).to.deep.equal(4);
 		});
 
+		it ('advancing the session from started', () => {
+			state.state = STATES.STARTED;
+			state.advanceSession('ok');
+			expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
+		});
+
+		it ('advancing the session from waiting for reply', () => {
+			state.state = STATES.WAITING_FOR_REPLY;
+			state.advanceSession('ok');
+			expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
+		});
+
+		it ('advancing the session from waiting for category - valid category', () => {
+			state.state = STATES.WAITING_FOR_CATEGORY;
+			state.advanceSession('3');
+			expect(state.state).to.deep.equal(STATES.WAITING_FOR_DETAILS);
+		});
+
+		it ('advancing the session from waiting for category - valid category (w whitespace)', () => {
+			state.state = STATES.WAITING_FOR_CATEGORY;
+			state.advanceSession('3  ');
+			expect(state.state).to.deep.equal(STATES.WAITING_FOR_DETAILS);
+		});
+
+		it ('advancing the session from waiting for category - invalid category', () => {
+			state.state = STATES.WAITING_FOR_CATEGORY;
+			state.advanceSession('fff');
+			expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
+		});
+
 
 
 });

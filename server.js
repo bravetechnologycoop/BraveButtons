@@ -39,7 +39,7 @@ function loadState() {
 	if (fs.existsSync(filepath)) {
 	    let stateData = JSON.parse(fs.readFileSync(filepath)); 
 	    if (Object.keys(stateData).length > 0) {
-	    	STATE = new SessionState(stateData.uuid, stateData.unit, stateData.completed, stateData.numPresses);
+	    	STATE = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
 	    } else {
 	    	STATE = null;
 	    }
@@ -75,11 +75,8 @@ function handleValidRequest(uuid, unit) {
 
 	 updateState(uuid, unit, STATES.STARTED);
 	 saveState();
-	 client.messages
-      .create({from: ' +15005550006', body: 'Please answer "Ok" to this message when you have responded to the alert.', to: '+16047798329'})
-      .then(message => log(message.sid))
-      .done();
-    
+	 sendTwilioMessage('Please answer "Ok" to this message when you have responded to the alert.');
+	 setTimeout(remindToSendMessage, 300000);
 }
 
 function handleErrorRequest(error) {
@@ -89,16 +86,30 @@ function handleErrorRequest(error) {
 function handleTwilioRequest(req) {
 
 	let phoneNumber = req.body.From;
-    log(phoneNumber);
+	let message = req.body.Body;
+	log(phoneNumber);
 	if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
+		let returnMessage = STATE.advanceSession(message);
+		sendTwilioMessage(returnMessage);
+		saveState();
 		return 200;
 	} else {
 		handleErrorRequest('Invalid Phone Number');
 		return 400;
 	}
-
 }
 
+function sendTwilioMessage(msg) {
+	client.messages
+      .create({from: getEnvVar('BUTTON_PHONE'), body: msg, to: getEnvVar('RESPONDER_PHONE')})
+      .then(message => log(message.sid))
+      .done();
+}
+
+function remindToSendMessage() {
+	STATE.state = STATES.WAITING_FOR_REPLY;
+	sendTwilioMessage('Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
+}
 
 app.post('/', jsonBodyParser, (req, res) => {
 
@@ -130,7 +141,6 @@ app.post('/message', jsonBodyParser, (req, res) => {
 	}
 
 });
-
 
 let server;
 
