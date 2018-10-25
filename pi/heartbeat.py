@@ -59,8 +59,10 @@ def parse_darkstat_html_lines(lines):
                 parts = component.strip().partition(' ')
                 value = int(parts[0])
                 units = parts[2]
-                if units == 'mins':
+                if units == 'mins' or units == 'min':
                     value = value * 60
+                elif units == 'hrs' or units == 'hr':
+                    value = value * 3600
                 last_seen_secs = last_seen_secs + value
 
             return last_seen_secs
