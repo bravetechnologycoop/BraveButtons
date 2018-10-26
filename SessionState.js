@@ -38,16 +38,19 @@ class SessionState {
 			break;
 		case STATES.WAITING_FOR_DETAILS:
 			this.state = STATES.COMPLETED;
-			returnMessage = 'Thank you.'
+			returnMessage = 'Thank you.';
 			break;
 		case STATES.COMPLETED:
 			break;
 		case STATES.TIMED_OUT:
 			break;
 		default:
-			returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.'
-			break;			
+			returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.';
+			break;	
   	}
+
+  	return returnMessage;		
+
   }
 
   setIncidentType(numType) {   //TODO: how strict do we want to be with this? 
@@ -64,9 +67,8 @@ class SessionState {
 
   	if (!this.isCompleted()) //there is an ongoing request for help 
 		{ if (this.uuid == uuid) {
-				this.incrementButtonPresses();
-			} else { // TODO: add queue
-			}
+			this.incrementButtonPresses();
+		} 
 		} else {
 			this.uuid = uuid;
 			this.unit = unit;

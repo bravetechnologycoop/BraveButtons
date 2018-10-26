@@ -75,8 +75,10 @@ function handleValidRequest(uuid, unit) {
 
 	 updateState(uuid, unit, STATES.STARTED);
 	 saveState();
-	 sendTwilioMessage('Please answer "Ok" to this message when you have responded to the alert.');
-	 setTimeout(remindToSendMessage, 300000);
+	 if (STATE.numPresses === 1) {
+		 sendTwilioMessage('Please answer "Ok" to this message when you have responded to the alert.');
+		 setTimeout(remindToSendMessage, 300000);
+	}
 }
 
 function handleErrorRequest(error) {
