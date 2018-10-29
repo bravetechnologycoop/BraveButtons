@@ -7,7 +7,7 @@ import json
 import uuid
 
 SERVER_URL = 'heartbeat.brave.coop'
-GPIO_PIN = 26
+GPIO_PIN = 2
 
 def get_system_id():
     with open('/usr/local/brave/system_id', 'r+') as system_id_file:
