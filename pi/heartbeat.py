@@ -7,7 +7,8 @@ import json
 import uuid
 
 SERVER_URL = 'heartbeat.brave.coop'
-GPIO_PIN = 2
+RELAY_PIN = 2
+LED_PIN = 3
 
 def get_system_id():
     with open('/usr/local/brave/system_id', 'r+') as system_id_file:
@@ -93,8 +94,11 @@ if __name__ == '__main__':
         print(datetime.datetime.now())
         print("\n", flush=True)
 
-        relay = gpiozero.OutputDevice(GPIO_PIN)
+        relay = gpiozero.OutputDevice(RELAY_PIN)
         relay.on()
+
+        led = gpiozero.OutputDevice(LED_PIN)
+        led.on()
 
         system_ok = False
         system_id = get_system_id()
