@@ -117,7 +117,7 @@ function sendUrgencyMessage(phoneNumber) {
 
 	if (STATE[phoneNumber].numPresses === 1) {
 		sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + STATE[phoneNumber].unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
-		setTimeout(remindToSendMessage, 300000);
+		setTimeout(remindToSendMessage, 300000, phoneNumber);
 	} else if (STATE[phoneNumber].numPresses % 5 === 0) {
 		sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + STATE[phoneNumber].numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
 	}
