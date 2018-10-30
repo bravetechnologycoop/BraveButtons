@@ -34,25 +34,34 @@ function getEnvVar(name) {
 	return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
 }
 
+function createState(stateData) {
+	let newState = {};
+	for (let phoneNumber in stateData) {
+		let buttonSesssion = stateData[phoneNumber];
+		newState[phoneNumber] = new SessionState(buttonSesssion.uuid, buttonSesssion.unit, buttonSesssion.phoneNumber, buttonSesssion.state, buttonSesssion.numPresses);
+	}
+	return newState;
+} 
+
 function loadState() {
 	let filepath = './' + stateFilename + '.json';
 	if (fs.existsSync(filepath)) {
 	    let stateData = JSON.parse(fs.readFileSync(filepath)); 
 	    if (Object.keys(stateData).length > 0) {
-	    	STATE = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+	    	STATE = createState(stateData);
 	    } else {
-	    	STATE = null;
+	    	STATE = {};
 	    }
 	} else {
-		STATE = null;
+		STATE = {};
 	}
 }
 
-function updateState(uuid, unit, state) {
-	if (STATE == null || Object.keys(STATE).length === 0) {
-		STATE = new SessionState(uuid, unit, state);
+function updateState(uuid, unit, phoneNumber, state) {
+	if (STATE == null || Object.keys(STATE).length === 0 || !STATE.hasOwnProperty(phoneNumber)) {
+		STATE[phoneNumber] = new SessionState(uuid, unit, phoneNumber, state);
 	} else {
-		STATE.update(uuid, unit, state);
+		STATE[phoneNumber].update(uuid, unit, phoneNumber, state);
 	}
 }
 
@@ -69,15 +78,14 @@ function isValidRequest(req, properties) {
 	return properties.reduce(hasAllProperties, true);
 }
 
-function handleValidRequest(uuid, unit) {
+function handleValidRequest(uuid, unit, phoneNumber) {
 
 	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString());
 
-	 updateState(uuid, unit, STATES.STARTED);
+	 updateState(uuid, unit, phoneNumber, STATES.STARTED);
 	 saveState();
-	 if (STATE.numPresses === 1) {
-		 sendTwilioMessage('Please answer "Ok" to this message when you have responded to the alert.');
-		 setTimeout(remindToSendMessage, 300000);
+	 if (needToSendMessage(phoneNumber)) {
+		sendUrgencyMessage(phoneNumber);
 	}
 }
 
@@ -88,11 +96,11 @@ function handleErrorRequest(error) {
 function handleTwilioRequest(req) {
 
 	let phoneNumber = req.body.From;
+	let buttonPhone = req.body.To;
 	let message = req.body.Body;
-	log(phoneNumber);
 	if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
-		let returnMessage = STATE.advanceSession(message);
-		sendTwilioMessage(returnMessage);
+		let returnMessage = STATE[buttonPhone].advanceSession(message);
+		sendTwilioMessage(buttonPhone, returnMessage);
 		saveState();
 		return 200;
 	} else {
@@ -101,31 +109,45 @@ function handleTwilioRequest(req) {
 	}
 }
 
-function sendTwilioMessage(msg) {
+function needToSendMessage(buttonPhone) {
+	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses % 5 === 0);
+}
+
+function sendUrgencyMessage(phoneNumber) {
+
+	if (STATE[phoneNumber].numPresses === 1) {
+		sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + STATE[phoneNumber].unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
+		setTimeout(remindToSendMessage, 300000);
+	} else if (STATE[phoneNumber].numPresses % 5 === 0) {
+		sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + STATE[phoneNumber].numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
+	}
+}
+
+function sendTwilioMessage(phone, msg) {
 	client.messages
-      .create({from: getEnvVar('BUTTON_PHONE'), body: msg, to: getEnvVar('RESPONDER_PHONE')})
+      .create({from: phone, body: msg, to: getEnvVar('RESPONDER_PHONE')})
       .then(message => log(message.sid))
       .done();
 }
 
-function remindToSendMessage() {
-	if (STATE.state === STATES.STARTED) {
-		STATE.state = STATES.WAITING_FOR_REPLY;
+function remindToSendMessage(phoneNumber) {
+	if (STATE[phoneNumber].state === STATES.STARTED) {
+		STATE[phoneNumber].state = STATES.WAITING_FOR_REPLY;
 		sendTwilioMessage('Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
 	}
 }
 
 app.post('/', jsonBodyParser, (req, res) => {
 
-	const requiredBodyParams = ['UUID', 'Unit'];
+	const requiredBodyParams = ['UUID', 'Unit', 'PhoneNumber'];
 
 	if (isValidRequest(req, requiredBodyParams)) {
 
-		handleValidRequest(req.body.UUID.toString(), req.body.Unit.toString());
+		handleValidRequest(req.body.UUID.toString(), req.body.Unit.toString(), req.body.PhoneNumber.toString());
 		res.status(200).send();
 
 	} else {
-		handleErrorRequest('Bad request: UUID or Unit is missing');
+		handleErrorRequest('Bad request: UUID, Unit, or PhoneNumber is missing');
 		res.status(400).send();
 	}
 });

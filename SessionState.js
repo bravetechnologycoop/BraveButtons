@@ -9,9 +9,10 @@ const incidentTypes = {
 
 class SessionState {
 
-  constructor(uuid, unit, state=STATES.STARTED, numPresses=1) {
+  constructor(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses=1) {
         this.uuid = uuid;
         this.unit = unit;
+        this.phoneNumber = phoneNumber;
         this.state = state;
         this.completed = this.isCompleted();
         this.incidentType = null;
@@ -63,7 +64,7 @@ class SessionState {
 
   }
 
-  update(uuid, unit, state) {
+  update(uuid, unit, phoneNumber, state) {
 
   	if (!this.isCompleted()) //there is an ongoing request for help 
 		{ if (this.uuid == uuid) {
@@ -72,6 +73,7 @@ class SessionState {
 		} else {
 			this.uuid = uuid;
 			this.unit = unit;
+			this.phoneNumber = phoneNumber;
 			this.state = state;
 			this.completed = this.isCompleted();
 			this.numPresses = 1;

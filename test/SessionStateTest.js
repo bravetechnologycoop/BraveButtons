@@ -9,7 +9,7 @@ describe('Session state manager', () => {
 		let state;
 
 		beforeEach(function() {
-			state = new SessionState('111', '222', STATES.STARTED);
+			state = new SessionState('111', '222', '+14206666969', STATES.STARTED);
 		});
 
 		it('should start off with 1 button press', () => {

@@ -16,12 +16,14 @@ describe('Chatbot server', () => {
 
 	let defaultBody = {
 		'Unit': '123',
-		'UUID': '111'
+		'UUID': '111',
+		'PhoneNumber': '+16664206969'
 	};
 
 	let defaultBody2 = {
 		'Unit': '222',
-		'UUID': '222'
+		'UUID': '222',
+		'PhoneNumber': '+17774106868'
 	};
 
 	let twilioMessageBody = {
@@ -50,7 +52,7 @@ describe('Chatbot server', () => {
 		});
 
 		it('should return 400 to a request with an incomplete body', async () => {
-			let response = await chai.request(app).post('/') .send({'Unit': '400'});
+			let response = await chai.request(app).post('/') .send({'Unit': '400', 'UUID': '666'});
 			expect(response).to.have.status(400);
 		});
 
@@ -66,7 +68,7 @@ describe('Chatbot server', () => {
 			let response = await chai.request(app).post('/').send(defaultBody);
 
 			let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
 
 			expect(currentState).to.not.be.null;
 			expect(currentState).to.have.property('uuid');
@@ -88,7 +90,7 @@ describe('Chatbot server', () => {
 			response = await chai.request(app).post('/').send(defaultBody2);
 
 			let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
 
 			expect(currentState).to.not.be.null;
 			expect(currentState).to.have.property('uuid');
@@ -110,7 +112,7 @@ describe('Chatbot server', () => {
 			response = await chai.request(app).post('/').send(defaultBody);
 
 			let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
 
 			expect(currentState).to.not.be.null;
 			expect(currentState).to.have.property('uuid');
@@ -152,14 +154,14 @@ describe('Chatbot server', () => {
 		it('should return ok to a valid request and advance session appropriately', async () => {
 		    let response = await chai.request(app).post('/').send(defaultBody);
 		    let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
 
 			expect(currentState.state).to.deep.equal(STATES.STARTED);
 			response = await chai.request(app).post('/message').send(twilioMessageBody);
 			expect(response).to.have.status(200);
 
 			stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
 			expect(currentState.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
 
 		});
@@ -167,7 +169,7 @@ describe('Chatbot server', () => {
 		it('should be able to advance a session to completion and accept new requests', async () => {
 		    let response = await chai.request(app).post('/').send(defaultBody);
 		    let stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
 
 			expect(currentState.state).to.deep.equal(STATES.STARTED);
 			response = await chai.request(app).post('/message').send(twilioMessageBody); // => category
@@ -177,7 +179,7 @@ describe('Chatbot server', () => {
 			expect(response).to.have.status(200);
 
 			stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
 			expect(currentState.state).to.deep.equal(STATES.COMPLETED);
 			expect(currentState.completed).to.be.true;
 
@@ -185,7 +187,7 @@ describe('Chatbot server', () => {
 			response = await chai.request(app).post('/').send(defaultBody2);
 
 			stateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.state, stateData.numPresses);
+			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
 			expect(currentState.uuid).to.deep.equal(defaultBody2.UUID);
 			expect(currentState.unit).to.deep.equal(defaultBody2.Unit);
 			expect(currentState.completed).to.be.false;
