@@ -118,6 +118,7 @@ function sendUrgencyMessage(phoneNumber) {
 	if (STATE[phoneNumber].numPresses === 1) {
 		sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + STATE[phoneNumber].unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
 		setTimeout(remindToSendMessage, 300000, phoneNumber);
+		setTimeout(sendStaffAlert, 420000, phoneNumber, STATE[phoneNumber].unit.toString());
 	} else if (STATE[phoneNumber].numPresses % 5 === 0) {
 		sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + STATE[phoneNumber].numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
 	}
@@ -133,8 +134,17 @@ function sendTwilioMessage(phone, msg) {
 function remindToSendMessage(phoneNumber) {
 	if (STATE[phoneNumber].state === STATES.STARTED) {
 		STATE[phoneNumber].state = STATES.WAITING_FOR_REPLY;
-		sendTwilioMessage('Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
+		sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
 	}
+}
+
+function sendStaffAlert(phoneNumber, unit) {
+	if (STATE[phoneNumber].state === STATES.WAITING_FOR_REPLY) {
+	client.messages
+      .create({from: phoneNumber, body: 'There has been an unresponed request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
+      .then(message => log(message.sid))
+      .done();
+  }
 }
 
 app.post('/', jsonBodyParser, (req, res) => {
