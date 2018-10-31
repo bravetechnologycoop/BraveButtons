@@ -17,7 +17,7 @@ let db = new Datastore({
 // compact data file every 5 minutes
 db.persistence.setAutocompactionInterval(5*60000)
 
-const HEARTBEAT_DELAY_THRESHOLD_MILLIS = 70000
+const HEARTBEAT_DELAY_THRESHOLD_MILLIS = 110*1000
 
 function log(logString) {
     console.log(moment().toString() + " - " + logString)
