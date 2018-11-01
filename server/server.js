@@ -15,7 +15,7 @@ let db = new Datastore({
     autoload: true
 })
 
-let dashboardTemplate = fs.readFileSync('./dashboard.mst', 'utf-8')
+let dashboardTemplate = fs.readFileSync(`${__dirname}/dashboard.mst`, 'utf-8')
 
 // compact data file every 5 minutes
 db.persistence.setAutocompactionInterval(5*60000)
