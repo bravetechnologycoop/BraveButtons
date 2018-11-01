@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<style>
+.wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    width: 800px;
+}
+
+.header {
+
+}
+
+.normal {
+    background-color: lightgreen;
+}
+
+.error {
+    background-color: red;
+}
+
+table {
+    table-layout: fixed;
+    max-width: 800px;
+    width: 100%;
+}
+
+th, td {
+    text-align: left;
+    max-width: 400px;
+    height: 40px;
+    width: 100%;
+}
+
+</style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="header">
+            Brave Heartbeat Monitor for {{ domain }}
+            <br><br>
+            This page was last refreshed at {{ dashboard_render_time }}
+        </div>
+        <br><br>
+        <table>
+            <tr>
+                <th>System Name</th>
+                <th>Last Seen (Flic)</th>
+                <th>Last Seen (Heartbeat)</th>
+            </tr>
+            {{#systems}}
+            <tr>
+                <td>{{system_name}}</td>
+                <td>{{flic_last_seen}}</td>
+                <td>{{heartbeat_last_seen}}</td>
+            </tr>
+            {{/systems}}
+        </table>
+    </div>
+    <script>
+    function reloadPage() {
+        location.reload(true)
+    }
+    setInterval(reloadPage, 5000)
+    </script>
+</body>
+</html>

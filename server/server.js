@@ -4,6 +4,7 @@ let https = require('https')
 let moment = require('moment')
 let bodyParser = require('body-parser')
 let Datastore = require('nedb')
+let Mustache = require('mustache')
 
 let app = express()
 let jsonBodyParser = bodyParser.json()
@@ -13,6 +14,8 @@ let db = new Datastore({
     filename: `${__dirname}/server.db`,
     autoload: true
 })
+
+let dashboardTemplate = fs.readFileSync('./dashboard.mst', 'utf-8')
 
 // compact data file every 5 minutes
 db.persistence.setAutocompactionInterval(5*60000)
@@ -58,6 +61,32 @@ app.post('/rename_system', jsonBodyParser, (req, res) => {
     })
     res.status(200).send()
 })
+
+app.get('/dashboard', (req, res) => {
+    db.find({}, (err, docs) => {
+        if(err) {
+            log(err.message)
+        }
+        let viewParams = {
+            domain: config.DOMAIN,
+            dashboard_render_time: moment().toString(),
+            systems: []   
+        }
+        docs.forEach((doc) => {
+            let flicLastSeenTime = moment(doc.flic_last_seen_time)
+            let flicLastSeenSecs = moment().diff(flicLastSeenTime) / 1000.0
+            flicLastSeenSecs = Math.round(flicLastSeenSecs)
+            viewParams.systems.push({
+                system_name: doc.system_name,
+                flic_last_seen: flicLastSeenSecs.toString() + ' seconds ago',
+                heartbeat_last_seen: flicLastSeenSecs.toString() + ' seconds ago' // TODO: update once separate thresholds are implemented
+            })
+        })
+        
+        let htmlString = Mustache.render(dashboardTemplate, viewParams)
+        res.send(htmlString)
+    })
+})  
 
 function updateSentAlerts(systemId, sentAlerts) {
     db.update({ system_id: systemId }, { $set: { sent_alerts: sentAlerts } }, {}, (err, numChanged) => {
