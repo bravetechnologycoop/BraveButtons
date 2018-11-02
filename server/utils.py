@@ -1,14 +1,10 @@
-import http.client
-import json
+import requests
 
-def send_rename_request(name, system_id):
-    body = {"system_id": system_id, "system_name": name}
-    headers = {"Content-Type": "application/json"}
+def send_rename_request(server_url, system_id, name):
+    payload = {"system_id": system_id, "system_name": name}
     try:
-        conn = http.client.HTTPSConnection("heartbeat.brave.coop", timeout=10)
-        conn.request("POST", r"/rename_system", json.dumps(body), headers)
-        res = conn.getresponse()
-        print("response to rename request:", res.status, res.reason)
+        r = requests.post(server_url + r"/rename_system", json=payload)
+        print("response to rename request:", r.status_code, r.reason)
     except Exception as e:
         print("error sending rename request")
         print(e)
