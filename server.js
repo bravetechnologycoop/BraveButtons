@@ -164,7 +164,7 @@ app.post('/', jsonBodyParser, (req, res) => {
 
 app.post('/message', jsonBodyParser, (req, res) => {
 
-	const requiredBodyParams = ['Body', 'From'];
+	const requiredBodyParams = ['Body', 'From', 'To'];
 
 	if (isValidRequest(req, requiredBodyParams)) {
 
