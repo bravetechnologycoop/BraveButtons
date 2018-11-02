@@ -5,4 +5,4 @@ brave_config.json
 .env.example
 .env.local
 .env.staging
-
+server.db

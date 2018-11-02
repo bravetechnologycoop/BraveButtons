@@ -1,6 +1,6 @@
 let chai = require('chai');
 let SessionState = require('../SessionState.js');
-const STATES = require('../SessionStateEnum.js'); 
+const STATES = require('../SessionStateEnum.js');
 
 const expect = chai.expect;
 
@@ -49,7 +49,7 @@ describe('Session state manager', () => {
 			state.update('111', '222', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(3);
 			state.complete();
-			state.update('111', '222', STATES.STARTED); 
+			state.update('111', '222', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(1);
 			expect(state.completed).to.be.false;
 		});
@@ -60,7 +60,7 @@ describe('Session state manager', () => {
 			state.update('111', '222', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(3);
 			state.complete();
-			state.update('222', '333', STATES.STARTED); 
+			state.update('222', '333', STATES.STARTED);
 			expect(state.uuid).to.deep.equal('222');
 			expect(state.unit).to.deep.equal('333');
 			expect(state.numPresses).to.deep.equal(1);
@@ -72,9 +72,9 @@ describe('Session state manager', () => {
 			expect(state.numPresses).to.deep.equal(2);
 			state.update('111', '222', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(3);
-			state.update('222', '222', STATES.STARTED); 
+			state.update('222', '222', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(3);
-			state.update('111', '222', STATES.STARTED); 
+			state.update('111', '222', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(4);
 		});
 

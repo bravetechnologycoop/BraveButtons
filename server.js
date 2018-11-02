@@ -5,6 +5,7 @@ let moment = require('moment')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
 let SessionState = require('./SessionState.js')
+let Datastore = require('nedb')
 const STATES = require('./SessionStateEnum.js');
 let db = new Datastore({
     filename: `${__dirname}/server.db`,
@@ -113,9 +114,9 @@ function handleTwilioRequest(req) {
     //put completed states in the database
     if(STATE[buttonPhone].state == STATES.COMPLETED){
       db.insert(STATE[buttonPhone], (err, docs) => {
-        if(err{
-          log.(err.message)
-        })
+        if(err){
+          log(err.message)
+        }
       })
     }
 
@@ -162,6 +163,13 @@ function sendStaffAlert(phoneNumber, unit) {
       .then(message => log(message.sid))
       .done();
   }
+  //Unresponded alerts are completed and logged in database
+  db.insert(STATE[phoneNumber], (err, docs) => {
+    if(err){
+      log(err.message)
+    }
+  })
+
 
 }
 
