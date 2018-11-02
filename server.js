@@ -5,7 +5,15 @@ let moment = require('moment')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
 let SessionState = require('./SessionState.js')
-const STATES = require('./SessionStateEnum.js'); 
+const STATES = require('./SessionStateEnum.js');
+let db = new Datastore({
+    filename: `${__dirname}/server.db`,
+    autoload: true
+})
+
+// compact data file every 5 minutes
+db.persistence.setAutocompactionInterval(5*60000)
+
 
 require('dotenv').load();
 
@@ -17,7 +25,7 @@ const stateFilename = getEnvVar('STATE_FILENAME');
 
 loadState();
 
-//Set up Twilio 
+//Set up Twilio
 const accountSid = getEnvVar('TWILIO_SID');
 const authToken = getEnvVar('TWILIO_TOKEN');
 
@@ -41,12 +49,12 @@ function createState(stateData) {
 		newState[phoneNumber] = new SessionState(buttonSesssion.uuid, buttonSesssion.unit, buttonSesssion.phoneNumber, buttonSesssion.state, buttonSesssion.numPresses);
 	}
 	return newState;
-} 
+}
 
 function loadState() {
 	let filepath = './' + stateFilename + '.json';
 	if (fs.existsSync(filepath)) {
-	    let stateData = JSON.parse(fs.readFileSync(filepath)); 
+	    let stateData = JSON.parse(fs.readFileSync(filepath));
 	    if (Object.keys(stateData).length > 0) {
 	    	STATE = createState(stateData);
 	    } else {
@@ -102,6 +110,15 @@ function handleTwilioRequest(req) {
 		let returnMessage = STATE[buttonPhone].advanceSession(message);
 		sendTwilioMessage(buttonPhone, returnMessage);
 		saveState();
+    //put completed states in the database
+    if(STATE[buttonPhone].state == STATES.COMPLETED){
+      db.insert(STATE[buttonPhone], (err, docs) => {
+        if(err{
+          log.(err.message)
+        })
+      })
+    }
+
 		return 200;
 	} else {
 		handleErrorRequest('Invalid Phone Number');
@@ -145,6 +162,7 @@ function sendStaffAlert(phoneNumber, unit) {
       .then(message => log(message.sid))
       .done();
   }
+
 }
 
 app.post('/', jsonBodyParser, (req, res) => {
