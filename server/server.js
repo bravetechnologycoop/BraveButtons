@@ -21,16 +21,14 @@ let dashboardTemplate = fs.readFileSync(`${__dirname}/dashboard.mst`, 'utf-8')
 // compact data file every 5 minutes
 db.persistence.setAutocompactionInterval(5*60000)
 
-const HEARTBEAT_DELAY_THRESHOLD_MILLIS = 110*1000
+const FLIC_THRESHOLD_MILLIS = 110*1000
+const HEARTBEAT_THRESHOLD_MILLIS = 20*1000
 
 function log(logString) {
     console.log(moment().toString() + " - " + logString)
 }
 
 function sendAlerts(systemName) {
-
-    log('sending alerts for system named ' + systemName)
-
     for(let i=0; i<config.TWILIO_TO_NUMBERS.length; i++) {
         twilioClient.messages.create({
             body: `The Flic connection for ${systemName} has been lost.`,
@@ -45,7 +43,12 @@ function sendAlerts(systemName) {
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
     log('got a heartbeat from ' + req.body.system_id + ', flic_last_seen_secs is ' + req.body.flic_last_seen_secs.toString())
     let flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
-    db.update({ system_id: req.body.system_id }, { $set: { flic_last_seen_time: flicLastSeenTime } }, { upsert: true }, (err, numChanged) => {
+    let heartbeatLastSeenTime = moment().toISOString()
+    let dbObject = {
+        flic_last_seen_time: flicLastSeenTime,
+        heartbeat_last_seen_time: heartbeatLastSeenTime
+    }
+    db.update({ system_id: req.body.system_id }, { $set: dbObject }, { upsert: true }, (err, numChanged) => {
         if(err) {
             log(err.message)
         }
@@ -77,10 +80,13 @@ app.get('/dashboard', (req, res) => {
             let flicLastSeenTime = moment(doc.flic_last_seen_time)
             let flicLastSeenSecs = moment().diff(flicLastSeenTime) / 1000.0
             flicLastSeenSecs = Math.round(flicLastSeenSecs)
+            let heartbeatLastSeenTime = moment(doc.heartbeat_last_seen_time)
+            let heartbeatLastSeenSecs = moment().diff(heartbeatLastSeenTime) / 1000.0
+            heartbeatLastSeenSecs = Math.round(heartbeatLastSeenSecs)
             viewParams.systems.push({
                 system_name: doc.system_name,
                 flic_last_seen: flicLastSeenSecs.toString() + ' seconds ago',
-                heartbeat_last_seen: flicLastSeenSecs.toString() + ' seconds ago' // TODO: update once separate thresholds are implemented
+                heartbeat_last_seen: heartbeatLastSeenSecs.toString() + ' seconds ago' 
             })
         })
         
@@ -103,15 +109,23 @@ function checkHeartbeat() {
             log(err.message)
         }
         docs.forEach((doc) => {
-            let flicLastSeenTime = moment(doc.flic_last_seen_time)
             let currentTime = moment()
-            let heartbeatDelayMillis = currentTime.diff(flicLastSeenTime)
+            let flicLastSeenTime = moment(doc.flic_last_seen_time)
+            let flicDelayMillis = currentTime.diff(flicLastSeenTime)
+            let heartbeatLastSeenTime = moment(doc.heartbeat_last_seen_time)
+            let heartbeatDelayMillis = currentTime.diff(heartbeatLastSeenTime)
         
-            if(heartbeatDelayMillis > HEARTBEAT_DELAY_THRESHOLD_MILLIS && !doc.sent_alerts) {
+            if(flicDelayMillis > FLIC_THRESHOLD_MILLIS && !doc.sent_alerts) {
+                log(`flic threshold exceeded; sending alerts for ${doc.system_name}`)
                 sendAlerts(doc.system_name)
                 updateSentAlerts(doc.system_id, true)
             }
-            else if(heartbeatDelayMillis < HEARTBEAT_DELAY_THRESHOLD_MILLIS) { 
+            else if(heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !doc.sent_alerts) {
+                log(`heartbeat threshold exceeded; sending alerts for ${doc.system_name}`)
+                sendAlerts(doc.system_name)
+                updateSentAlerts(doc.system_id, true)
+            }
+            else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS)) { 
                 updateSentAlerts(doc.system_id, false)
             }
         })
