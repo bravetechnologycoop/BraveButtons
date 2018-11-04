@@ -4,6 +4,8 @@ let https = require('https')
 let moment = require('moment')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
 let SessionState = require('./SessionState.js')
 let Datastore = require('nedb')
 const STATES = require('./SessionStateEnum.js');
@@ -19,6 +21,7 @@ db.persistence.setAutocompactionInterval(5*60000)
 require('dotenv').load();
 
 const app = express();
+
 let STATE;
 
 //Set up state storage
@@ -34,6 +37,7 @@ const client = require('twilio')(accountSid, authToken);
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.static(__dirname));
 
 function log(logString) {
     console.log(moment().toString() + " - " + logString)
@@ -43,21 +47,12 @@ function getEnvVar(name) {
 	return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
 }
 
-function createState(stateData) {
-	let newState = {};
-	for (let phoneNumber in stateData) {
-		let buttonSesssion = stateData[phoneNumber];
-		newState[phoneNumber] = new SessionState(buttonSesssion.uuid, buttonSesssion.unit, buttonSesssion.phoneNumber, buttonSesssion.state, buttonSesssion.numPresses);
-	}
-	return newState;
-}
-
 function loadState() {
 	let filepath = './' + stateFilename + '.json';
 	if (fs.existsSync(filepath)) {
 	    let stateData = JSON.parse(fs.readFileSync(filepath));
 	    if (Object.keys(stateData).length > 0) {
-	    	STATE = createState(stateData);
+	    	STATE = SessionState.createState(stateData);
 	    } else {
 	    	STATE = {};
 	    }
@@ -93,6 +88,7 @@ function handleValidRequest(uuid, unit, phoneNumber) {
 
 	 updateState(uuid, unit, phoneNumber, STATES.STARTED);
 	 saveState();
+	 io.emit("stateupdate", STATE);
 	 if (needToSendMessage(phoneNumber)) {
 		sendUrgencyMessage(phoneNumber);
 	}
@@ -119,7 +115,7 @@ function handleTwilioRequest(req) {
         }
       })
     }
-
+    	io.emit("stateupdate", STATE);
 		return 200;
 	} else {
 		handleErrorRequest('Invalid Phone Number');
@@ -152,6 +148,7 @@ function sendTwilioMessage(phone, msg) {
 function remindToSendMessage(phoneNumber) {
 	if (STATE[phoneNumber].state === STATES.STARTED) {
 		STATE[phoneNumber].state = STATES.WAITING_FOR_REPLY;
+		io.emit("stateupdate", STATE);
 		sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
 	}
 }
@@ -172,6 +169,78 @@ function sendStaffAlert(phoneNumber, unit) {
 
 
 }
+
+app.use(cookieParser());
+
+// initialize express-session to allow us track the logged-in user across sessions.
+app.use(session({
+    key: 'user_sid',
+    secret: getEnvVar('SECRET'),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        expires: 600000
+    }
+}));
+
+// This middleware will check if user's cookie is still saved in browser and user is not set, then automatically log the user out.
+// This usually happens when you stop your express server after login, your cookie still remains saved in the browser.
+app.use((req, res, next) => {
+    if (req.cookies.user_sid && !req.session.user) {
+        res.clearCookie('user_sid');        
+    }
+    next();
+});
+
+
+// middleware function to check for logged-in users
+var sessionChecker = (req, res, next) => {
+    if (req.session.user && req.cookies.user_sid) {
+        res.redirect('/dashboard');
+    } else {
+        next();
+    }    
+};
+
+
+app.get('/', sessionChecker, (req, res) => {
+    res.redirect('/login');
+});
+
+
+app.route('/login')
+    .get(sessionChecker, (req, res) => {
+        res.sendFile(__dirname + '/login.html');
+    })
+    .post((req, res) => {
+        var username = req.body.username,
+            password = req.body.password;
+
+        if ((username == getEnvVar('USERNAME')) && (password == getEnvVar('PASSWORD'))) {
+        	req.session.user = username;
+        	res.redirect('/dashboard');
+        } else {
+        	res.redirect('/login');
+        }
+ });
+
+
+app.get('/dashboard', (req, res) => {
+    if (req.session.user && req.cookies.user_sid) {
+        res.sendFile(__dirname + '/dashboard.html');
+    } else {
+        res.redirect('/login');
+    }
+});
+
+app.get('/logout', (req, res) => {
+    if (req.session.user && req.cookies.user_sid) {
+        res.clearCookie('user_sid');
+        res.redirect('/');
+    } else {
+        res.redirect('/login');
+    }
+});
 
 app.post('/', jsonBodyParser, (req, res) => {
 
@@ -216,5 +285,7 @@ if (process.env.NODE_ENV === 'test') {   // local http server for testing
 	server = https.createServer(httpsOptions, app).listen(443)
 	log('brave server listening on port 443')
 }
+
+const io = require("socket.io")(server);
 
 module.exports = server;

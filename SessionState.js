@@ -1,4 +1,5 @@
 const STATES = require('./SessionStateEnum.js'); 
+let moment = require('moment');
 
 const incidentTypes = {
 	'0': 'Accidental',
@@ -17,6 +18,7 @@ class SessionState {
         this.completed = this.isCompleted();
         this.incidentType = null;
         this.numPresses = numPresses;
+        this.lastUpdate = moment().toString();
   } 
 
   advanceSession(messageText) {
@@ -50,6 +52,8 @@ class SessionState {
 			break;	
   	}
 
+  	this.lastUpdate = moment().toString();
+
   	return returnMessage;		
 
   }
@@ -78,6 +82,7 @@ class SessionState {
 			this.completed = this.isCompleted();
 			this.numPresses = 1;
 		}
+	this.lastUpdate = moment().toString();
 	}
   
   incrementButtonPresses() {
@@ -92,6 +97,15 @@ class SessionState {
   	this.state = STATES.COMPLETED;
   	this.completed = true;
   }
+}
+
+SessionState.createState = (stateData) => {
+	let newState = {};
+	for (let phoneNumber in stateData) {
+		let buttonSesssion = stateData[phoneNumber];
+		newState[phoneNumber] = new SessionState(buttonSesssion.uuid, buttonSesssion.unit, buttonSesssion.phoneNumber, buttonSesssion.state, buttonSesssion.numPresses);
+	}
+	return newState;
 }
 
 module.exports = SessionState;
