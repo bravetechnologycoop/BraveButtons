@@ -9,16 +9,23 @@ var session = require('express-session');
 let SessionState = require('./SessionState.js')
 let Datastore = require('nedb')
 const STATES = require('./SessionStateEnum.js');
+require('dotenv').load();
+
 let db = new Datastore({
-    filename: `${__dirname}/server.db`,
-    autoload: true
-})
+    filename: `${__dirname}/` + getEnvVar("DB_NAME") + `.db`,
+});
+
+if (process.env.NODE_ENV !== 'test') {
+	db.loadDatabase();
+}
 
 // compact data file every 5 minutes
-db.persistence.setAutocompactionInterval(5*60000)
+if (process.env.NODE_ENV !== 'test') {
+	db.persistence.setAutocompactionInterval(5*60000)
+} else {
+    db.persistence.setAutocompactionInterval(10)
 
-
-require('dotenv').load();
+}
 
 const app = express();
 

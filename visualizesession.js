@@ -1,6 +1,13 @@
-var socket = io.connect('https://8779b162.ngrok.io/', {secure: true});
+var socket = io.connect('https://chatbot.brave.coop/', {secure: true});
 
 socket.on('stateupdate', function (state) {
+
+	function decamelize(str){
+	return str
+        .replace(/([a-z\d])([A-Z])/g, '$1' + ' ' + '$2')
+        .replace(/([A-Z]+)([A-Z][a-z\d]+)/g, '$1' + ' ' + '$2')
+        .replace(/\b\w/g, function(l){ return l.toUpperCase() });
+    }
 
     function setTable(data) {
 
@@ -12,7 +19,7 @@ socket.on('stateupdate', function (state) {
     		newTable += '<thead><tr>';
     		Object.keys(templateSession).forEach((field) => {
     			console.log(field);
-    			newTable += '<th scope="col">' + field + '</th>';
+    			newTable += '<th scope="col">' + decamelize(field) + '</th>';
     		});
     		newTable += '</tr></thead>';
     	}

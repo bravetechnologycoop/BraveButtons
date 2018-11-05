@@ -18,6 +18,7 @@ class SessionState {
         this.completed = this.isCompleted();
         this.incidentType = null;
         this.numPresses = numPresses;
+        this.notes = null;
         this.lastUpdate = moment().toString();
   } 
 
@@ -40,6 +41,7 @@ class SessionState {
 			returnMessage = this.setIncidentType(messageText.trim()) ? 'Thank you. Please add any further details about the incident or comment about this interface.' : 'Sorry, the incident type wasn\'nt recognized. Please try again';
 			break;
 		case STATES.WAITING_FOR_DETAILS:
+			this.notes = messageText.trim();
 			this.state = STATES.COMPLETED;
 			returnMessage = 'Thank you.';
 			break;
@@ -79,6 +81,7 @@ class SessionState {
 			this.unit = unit;
 			this.phoneNumber = phoneNumber;
 			this.state = state;
+			this.notes = null;
 			this.completed = this.isCompleted();
 			this.numPresses = 1;
 		}
