@@ -231,6 +231,14 @@ app.route('/login')
         }
  });
 
+//return the current state as json if user logged in 
+app.get('/data', (req, res) => {
+	if (req.session.user && req.cookies.user_sid) {
+		res.json(STATE);
+	} else {
+		res.redirect('/login');
+	}
+});
 
 app.get('/dashboard', (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
