@@ -1,4 +1,5 @@
 const STATES = require('./SessionStateEnum.js'); 
+let moment = require('moment');
 
 const incidentTypes = {
 	'0': 'Accidental',
@@ -17,6 +18,8 @@ class SessionState {
         this.completed = this.isCompleted();
         this.incidentType = null;
         this.numPresses = numPresses;
+        this.notes = null;
+        this.lastUpdate = moment().toString();
   } 
 
   advanceSession(messageText) {
@@ -38,6 +41,7 @@ class SessionState {
 			returnMessage = this.setIncidentType(messageText.trim()) ? 'Thank you. Please add any further details about the incident or comment about this interface.' : 'Sorry, the incident type wasn\'nt recognized. Please try again';
 			break;
 		case STATES.WAITING_FOR_DETAILS:
+			this.notes = messageText.trim();
 			this.state = STATES.COMPLETED;
 			returnMessage = 'Thank you.';
 			break;
@@ -49,6 +53,8 @@ class SessionState {
 			returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.';
 			break;	
   	}
+
+  	this.lastUpdate = moment().toString();
 
   	return returnMessage;		
 
@@ -75,9 +81,11 @@ class SessionState {
 			this.unit = unit;
 			this.phoneNumber = phoneNumber;
 			this.state = state;
+			this.notes = null;
 			this.completed = this.isCompleted();
 			this.numPresses = 1;
 		}
+	this.lastUpdate = moment().toString();
 	}
   
   incrementButtonPresses() {
@@ -92,6 +100,15 @@ class SessionState {
   	this.state = STATES.COMPLETED;
   	this.completed = true;
   }
+}
+
+SessionState.createState = (stateData) => {
+	let newState = {};
+	for (let phoneNumber in stateData) {
+		let buttonSesssion = stateData[phoneNumber];
+		newState[phoneNumber] = new SessionState(buttonSesssion.uuid, buttonSesssion.unit, buttonSesssion.phoneNumber, buttonSesssion.state, buttonSesssion.numPresses);
+	}
+	return newState;
 }
 
 module.exports = SessionState;
