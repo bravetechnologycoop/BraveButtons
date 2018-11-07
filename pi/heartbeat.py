@@ -35,6 +35,9 @@ def get_darkstat_html():
         print(e, flush=True)
         return ""
 
+class FlicNotFoundError:
+    pass
+
 def parse_darkstat_html_lines(lines):
     last_seen_secs_list = []
     for i in range(0, len(lines)):
@@ -59,7 +62,7 @@ def parse_darkstat_html_lines(lines):
 
             return last_seen_secs
 
-    raise Exception('darkstat html did not contain flic last seen info')
+    raise FlicNotFoundError('darkstat html did not contain flic last seen info')
 
 def send_heartbeat(flic_last_seen_secs, system_id):
     body = {"flic_last_seen_secs" : str(flic_last_seen_secs),
@@ -117,6 +120,11 @@ if __name__ == '__main__':
                 html = get_darkstat_html()
                 num_secs = parse_darkstat_html_lines(html.splitlines())
                 system_ok = send_heartbeat(num_secs, system_id)
+            except FlicNotFoundError as e:
+                # this means that the flic didn't show up in darkstat's list of hosts
+                # typically this happens on startup for a few seconds until the flic becomes active on the network
+                system_ok = True
+                print(datetime.datetime.now(), " - flic not found in darkstat html", flush=True)
             except Exception as e:
                 system_ok = False
                 print(datetime.datetime.now(), " - error in main loop")
