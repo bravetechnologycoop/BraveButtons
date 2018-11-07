@@ -132,6 +132,8 @@ if __name__ == '__main__':
             finally:
                 if system_ok:
                     relay.on()
+                    led.on()
                 else:
                     relay.off()
+                    led.off()
                 time.sleep(5)
