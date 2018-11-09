@@ -279,6 +279,7 @@ app.post('/message', jsonBodyParser, (req, res) => {
 	if (isValidRequest(req, requiredBodyParams)) {
 
 		let status = handleTwilioRequest(req);
+		res.writeHead(200, {'Content-Type': 'text/xml'});
 		res.status(status).send();
 
 	} else {
