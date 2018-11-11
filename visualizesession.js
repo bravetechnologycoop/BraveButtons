@@ -1,4 +1,4 @@
-var socket = io.connect('https://chatbot.brave.coop/', {secure: true});
+var socket = io.connect('https://chatbot.brave.coop', {secure: true});
 
 function decamelize(str){
 return str
@@ -16,7 +16,6 @@ function setTable(data) {
 		let templateSession = data[Object.keys(data)[0]];
 		newTable += '<thead><tr>';
 		Object.keys(templateSession).forEach((field) => {
-			console.log(field);
 			newTable += '<th scope="col">' + decamelize(field) + '</th>';
 		});
 		newTable += '</tr></thead>';
@@ -29,34 +28,37 @@ function setTable(data) {
 		newTable += '<tr>';
 		for (let field in session) {
 			const val = session[field];
-			console.log(field);
 			newTable += '<td>' + val + '</td>';
 		}
 		newTable += '</tr>';
 	}
 	newTable += '</tbody>';
-	console.log(newTable);
 	table.innerHTML = newTable;
 }
 
-socket.on('stateupdate', function (state) {
+socket.on('connect', function () {
+
+	console.log("done connect");
+		get().then(function (data) {
+  	var parsed = JSON.parse(data);
+  	setTable(parsed);
+  });
+	socket.on('stateupdate', function (state) {
 
 	setTable(state);
 
+	});
+
 });
 
+
 function get() {
+
   return new Promise(function(resolve, reject) {
     var req = new XMLHttpRequest();
     req.open('GET', '/data');
-    req.onload = function() {resolve(req.response)};
-  });
+    req.send();
+    req.onload = function() { resolve(req.response)};
+   });
 }           
-
-window.onload = function() {
-	get().then(function (data) {
-  	var parsed = JSON.parse(data);
-  	setTable(data);
-});
-}
 

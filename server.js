@@ -235,6 +235,7 @@ app.route('/login')
 app.get('/data', (req, res) => {
 	if (req.session.user && req.cookies.user_sid) {
 		res.json(STATE);
+		res.status(200).send();
 	} else {
 		res.redirect('/login');
 	}
