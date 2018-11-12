@@ -165,7 +165,7 @@ describe('Chatbot server', () => {
 		});
 
 		it('should return ok to a valid request and advance session appropriately', async () => {
-		    let response = await chai.request(app).post('/').send(defaultBody);
+		    let response = await chai.request(app).post('/').send(defaultRequest);
 		    let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 let stateData = allStateData[defaultBody.PhoneNumber];
 			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
@@ -182,7 +182,7 @@ stateData = allStateData[defaultBody.PhoneNumber];
 		});
 
 		it('should be able to advance a session to completion and accept new requests', async () => {
-		    let response = await chai.request(app).post('/').send(defaultBody);
+		    let response = await chai.request(app).post('/').send(defaultRequest);
 		    let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 let stateData = allStateData[defaultBody.PhoneNumber];
 			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
@@ -201,7 +201,7 @@ let stateData = allStateData[defaultBody.PhoneNumber];
 			expect(currentState.completed).to.be.true;
 
 			// now send a different request
-			response = await chai.request(app).post('/').send(defaultBody2);
+			response = await chai.request(app).post('/').send(defaultRequest2);
 
 			allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
             stateData = allStateData[defaultBody2.PhoneNumber];
