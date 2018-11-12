@@ -15,11 +15,11 @@ describe('Chatbot server', () => {
 	let stateFilename = "buttonPressesTest";
 
 	let defaultRequest = {
-		'UUID': '111'
+		'UUID':'111'
 	};
 
 	let defaultRequest2 = {
-		'UUID': '222'
+		'UUID':'222'
 	};
 
 
@@ -44,7 +44,6 @@ describe('Chatbot server', () => {
 	describe('POST request: button press', () => {
 
 		let currentState;
-
 
 		beforeEach(() => {
   			delete require.cache[require.resolve('../server.js')];

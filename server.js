@@ -11,18 +11,17 @@ let Datastore = require('nedb')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 
-
+let registry = new Datastore({
+    filename: `./` + getEnvVar("REGISTRY_DB") + `.db`,
+    autoload:true
+});
 
 let db = new Datastore({
     filename: `./` + getEnvVar("DB_NAME") + `.db`,
 });
 
-let registry = new Datastore({
-    filename: `./` + getEnvVar("REGISTRY_DB") + `.db`,
-});
 
 
-registry.loadDatabase()
 
 if (process.env.NODE_ENV !== 'test') {
 	db.loadDatabase();
@@ -273,13 +272,12 @@ app.post('/', jsonBodyParser, (req, res) => {
 
 	if (isValidRequest(req, requiredBodyParams)) {
 
-    registry.findOne({uuid:req.body.UUID.toString}), function(err,button){
+    registry.findOne({'uuid':req.body.UUID}), function(err,button){
       if(err){
         handleErrorRequest('Bad request: UUID is not registered');
-        handleErrorRequest(err);
         res.status(400).send();
-      }else {
-        handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phoneNumber.toString())
+      }else{
+        handleValidRequest(button.uuid, button.unit, button.phone)
         res.status(200).send();
       }
     }
