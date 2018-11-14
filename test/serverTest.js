@@ -1,6 +1,6 @@
 let chai = require('chai');
 let SessionState = require('../SessionState.js');
-const STATES = require('../SessionStateEnum.js'); 
+const STATES = require('../SessionStateEnum.js');
 let app;
 let fs = require('fs');
 let chaiHttp = require('chai-http');
@@ -14,15 +14,24 @@ describe('Chatbot server', () => {
 	let baseUrl = "https://chatbot.brave.coop";
 	let stateFilename = "buttonPressesTest";
 
+	let defaultRequest = {
+		'UUID': '111'
+	};
+
+	let defaultRequest2 = {
+		'UUID': '222'
+	};
+
+
 	let defaultBody = {
-		'Unit': '123',
 		'UUID': '111',
+		'Unit': '123',
 		'PhoneNumber': '+16664206969'
 	};
 
 	let defaultBody2 = {
-		'Unit': '222',
 		'UUID': '222',
+		'Unit': '222',
 		'PhoneNumber': '+17774106868'
 	};
 
@@ -52,13 +61,13 @@ describe('Chatbot server', () => {
 			expect(response).to.have.status(400);
 		});
 
-		it('should return 400 to a request with an incomplete body', async () => {
-			let response = await chai.request(app).post('/') .send({'Unit': '400', 'UUID': '666'});
+		it('should return 400 to a request with an unregistered button', async () => {
+			let response = await chai.request(app).post('/') .send({'UUID': '666'});
 			expect(response).to.have.status(400);
 		});
 
 		it('should return ok to a valid request', async () => {
-			let response = await chai.request(app).post('/') .send(defaultBody);
+			let response = await chai.request(app).post('/') .send(defaultRequest);
 			expect(response).to.have.status(200);
 		});
 
@@ -66,7 +75,7 @@ describe('Chatbot server', () => {
 
 			let currentState = null;
 
-			let response = await chai.request(app).post('/').send(defaultBody);
+			let response = await chai.request(app).post('/').send(defaultRequest);
 
 			let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 			let stateData = allStateData[defaultBody.PhoneNumber];
@@ -88,8 +97,8 @@ describe('Chatbot server', () => {
 
 			let currentState = null;
 
-			let response = await chai.request(app).post('/').send(defaultBody);
-			response = await chai.request(app).post('/').send(defaultBody2);
+			let response = await chai.request(app).post('/').send(defaultRequest);
+			response = await chai.request(app).post('/').send(defaultRequest2);
 
 			let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 			let stateData = allStateData[defaultBody.PhoneNumber];
@@ -110,9 +119,9 @@ describe('Chatbot server', () => {
 
 			let currentState = null;
 
-			let response = await chai.request(app).post('/').send(defaultBody);
-		    response = await chai.request(app).post('/').send(defaultBody);
-			response = await chai.request(app).post('/').send(defaultBody);
+			let response = await chai.request(app).post('/').send(defaultRequest);
+		    response = await chai.request(app).post('/').send(defaultRequest);
+			response = await chai.request(app).post('/').send(defaultRequest);
 
 			let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 			let stateData = allStateData[defaultBody.PhoneNumber];
@@ -191,7 +200,7 @@ let stateData = allStateData[defaultBody.PhoneNumber];
 			expect(currentState.state).to.deep.equal(STATES.COMPLETED);
 			expect(currentState.completed).to.be.true;
 
-			// now send a different request 
+			// now send a different request
 			response = await chai.request(app).post('/').send(defaultBody2);
 
 			allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));

@@ -11,9 +11,18 @@ let Datastore = require('nedb')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 
+
+
 let db = new Datastore({
-    filename: `${__dirname}/` + getEnvVar("DB_NAME") + `.db`,
+    filename: `./` + getEnvVar("DB_NAME") + `.db`,
 });
+
+let registry = new Datastore({
+    filename: `./` + getEnvVar("REGISTRY_DB") + `.db`,
+});
+
+
+registry.loadDatabase()
 
 if (process.env.NODE_ENV !== 'test') {
 	db.loadDatabase();
@@ -194,7 +203,7 @@ app.use(session({
 // This usually happens when you stop your express server after login, your cookie still remains saved in the browser.
 app.use((req, res, next) => {
     if (req.cookies.user_sid && !req.session.user) {
-        res.clearCookie('user_sid');        
+        res.clearCookie('user_sid');
     }
     next();
 });
@@ -206,7 +215,7 @@ var sessionChecker = (req, res, next) => {
         res.redirect('/dashboard');
     } else {
         next();
-    }    
+    }
 };
 
 
@@ -231,7 +240,7 @@ app.route('/login')
         }
  });
 
-//return the current state as json if user logged in 
+//return the current state as json if user logged in
 app.get('/data', (req, res) => {
 	if (req.session.user && req.cookies.user_sid) {
 		res.json(STATE);
@@ -260,15 +269,23 @@ app.get('/logout', (req, res) => {
 
 app.post('/', jsonBodyParser, (req, res) => {
 
-	const requiredBodyParams = ['UUID', 'Unit', 'PhoneNumber'];
+	const requiredBodyParams = ['UUID'];
 
 	if (isValidRequest(req, requiredBodyParams)) {
 
-		handleValidRequest(req.body.UUID.toString(), req.body.Unit.toString(), req.body.PhoneNumber.toString());
-		res.status(200).send();
+    registry.findOne({'uuid':req.body.UUID}, function(err,button){
+      if(button===null){
+        handleErrorRequest('Bad request: UUID is not registered');
+        handleErrorRequest(err);
+        res.status(400).send();
+      }else {
+        handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString())
+        res.status(200).send();
+      }
+    })
 
-	} else {
-		handleErrorRequest('Bad request: UUID, Unit, or PhoneNumber is missing');
+	}else {
+		handleErrorRequest('Bad request: UUID is missing');
 		res.status(400).send();
 	}
 });
