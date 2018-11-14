@@ -40,6 +40,18 @@ function sendAlerts(systemName) {
     }
 }
 
+function sendReconnectionMessage(systemName) {
+    for(let i=0; i<config.TWILIO_TO_NUMBERS.length; i++) {
+        twilioClient.messages.create({
+            body: `${systemName} has reconnected.`,
+            from: config.TWILIO_FROM_NUMBER,
+            to: config.TWILIO_TO_NUMBERS[i]
+        })
+        .then(message => log(message.sid))
+        .done()
+    }
+}
+
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
     log('got a heartbeat from ' + req.body.system_id + ', flic_last_seen_secs is ' + req.body.flic_last_seen_secs.toString())
     let flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
@@ -125,8 +137,9 @@ function checkHeartbeat() {
                 sendAlerts(doc.system_name)
                 updateSentAlerts(doc.system_id, true)
             }
-            else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS)) { 
+            else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && doc.sent_alerts) { 
                 updateSentAlerts(doc.system_id, false)
+                sendReconnectionMessage(doc.system_name)
             }
         })
     })    
