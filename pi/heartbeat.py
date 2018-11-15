@@ -35,7 +35,7 @@ def get_darkstat_html():
         print(e, flush=True)
         return ""
 
-class FlicNotFoundError:
+class FlicNotFoundError(Exception):
     pass
 
 def parse_darkstat_html_lines(lines):
