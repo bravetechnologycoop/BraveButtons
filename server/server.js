@@ -25,7 +25,7 @@ const FLIC_THRESHOLD_MILLIS = 110*1000
 const HEARTBEAT_THRESHOLD_MILLIS = 20*1000
 
 function log(logString) {
-    console.log(moment().toString() + " - " + logString)
+    console.log(moment().toISOString() + " - " + logString)
 }
 
 function sendAlerts(systemName) {

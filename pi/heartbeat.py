@@ -31,7 +31,7 @@ def get_darkstat_html():
         conn.close()
         return html_string
     except Exception as e:
-        print(datetime.datetime.now(), " - error connecting to darkstat")
+        print(datetime.datetime.now().isoformat(), " - error connecting to darkstat")
         print(e, flush=True)
         return ""
 
@@ -72,12 +72,12 @@ def send_heartbeat(flic_last_seen_secs, system_id):
         conn = http.client.HTTPSConnection(SERVER_URL, timeout=10)
         conn.request('POST', r'/heartbeat', json.dumps(body), headers)
         res = conn.getresponse()
-        print(datetime.datetime.now(), ' - sent heartbeat, got response: ', res.status, res.reason, flush=True)
+        print(datetime.datetime.now().isoformat(), ' - sent heartbeat, got response: ', res.status, res.reason, flush=True)
         if res.status == 200:
             return True
         return False
     except Exception as e:
-        print(datetime.datetime.now(), " - error sending heartbeat")
+        print(datetime.datetime.now().isoformat(), " - error sending heartbeat")
         print(e, flush=True)
         return False
 
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     with context:
 
         print("\nstarting heartbeat script")
-        print(datetime.datetime.now())
+        print(datetime.datetime.now().isoformat())
         print("\n", flush=True)
 
         relay = gpiozero.OutputDevice(RELAY_PIN)
@@ -124,10 +124,10 @@ if __name__ == '__main__':
                 # this means that the flic didn't show up in darkstat's list of hosts
                 # typically this happens on startup for a few seconds until the flic becomes active on the network
                 system_ok = True
-                print(datetime.datetime.now(), " - flic not found in darkstat html", flush=True)
+                print(datetime.datetime.now().isoformat(), " - flic not found in darkstat html", flush=True)
             except Exception as e:
                 system_ok = False
-                print(datetime.datetime.now(), " - error in main loop")
+                print(datetime.datetime.now().isoformat(), " - error in main loop")
                 print(e, flush=True)
             finally:
                 if system_ok:
