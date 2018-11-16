@@ -221,4 +221,28 @@ let stateData = allStateData[defaultBody.PhoneNumber];
 	after(() => {
 		fs.writeFileSync('./' + stateFilename + '.json', '{}');
 	});
+
+	describe('POST request: button replacement', () => {
+
+		beforeEach(() => {
+  			delete require.cache[require.resolve('../server.js')];
+  			app = require('../server.js');
+			fs.writeFileSync('./' + stateFilename + '.json', '{}');
+		});
+
+		it('should return ok to a valid request', async () => {
+			let response = await chai.request(app).post('/replace').send(twilioMessageBody);
+			expect(response).to.have.status(200);
+		});
+
+
+		afterEach(function () {
+		    app.close();
+		});
+
+	});
+
+	after(() => {
+		fs.writeFileSync('./' + stateFilename + '.json', '{}');
+	});
 });
