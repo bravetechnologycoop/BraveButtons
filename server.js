@@ -232,7 +232,7 @@ app.route('/login')
         var username = req.body.username,
             password = req.body.password;
 
-        if ((username == getEnvVar('USERNAME')) && (password == getEnvVar('PASSWORD'))) {
+        if ((username === getEnvVar('WEB_USERNAME')) && (password === getEnvVar('PASSWORD'))) {
         	req.session.user = username;
         	res.redirect('/dashboard');
         } else {
