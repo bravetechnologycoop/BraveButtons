@@ -1,4 +1,9 @@
 import requests
+import numpy
+import datetime
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use('Agg')
 
 def send_rename_request(server_url, system_id, name):
     payload = {"system_id": system_id, "system_name": name}
@@ -18,3 +23,61 @@ def send_heartbeat(server_url, system_id, flic_last_seen_secs):
         print("error sending heartbeat")
         print(e)
 
+def compute_deltas_from_server_log(log_file_url):
+    data = numpy.loadtxt(log_file_url, dtype=str, delimiter=",", encoding="utf8")
+    heartbeat_times = {}
+    flic_last_seen_values = {}
+    fmt = "%b %d %Y %H:%M:%S"
+    for i in range(0, len(data)):
+        system_id = data[i,1][21:57]
+        date_string = data[i,0][4:24]
+        flic_last_seen_secs = data[i,1][81:]
+        try:
+            heartbeat_times[system_id].append(datetime.datetime.strptime(date_string, fmt))
+        except KeyError:
+            heartbeat_times[system_id] = [datetime.datetime.strptime(date_string, fmt)]
+        try:
+            flic_last_seen_values[system_id].append(int(flic_last_seen_secs))
+        except KeyError:
+            flic_last_seen_values[system_id] = [int(flic_last_seen_secs)]
+
+    heartbeat_deltas = {}
+    flic_last_seen_deltas = {}
+    for system_id in heartbeat_times:
+        heartbeat_times_list = heartbeat_times[system_id]
+        last_seen_values = flic_last_seen_values[system_id]
+        heartbeat_deltas[system_id] = []
+        flic_last_seen_deltas[system_id] = []
+        for i in range(1, len(heartbeat_times_list)):
+            time_delta = heartbeat_times_list[i] - heartbeat_times_list[i-1]
+            heartbeat_delta = time_delta.seconds + time_delta.microseconds/1000000
+            heartbeat_deltas[system_id].append(heartbeat_delta)
+            flic_last_seen_deltas[system_id].append(heartbeat_delta + last_seen_values[i-1] - last_seen_values[i])
+
+    return (heartbeat_deltas, flic_last_seen_deltas)
+
+def plot_deltas_from_server_log(log_file_url):
+    (heartbeat_deltas, flic_last_seen_deltas) = compute_deltas_from_server_log(log_file_url)
+    plt.gcf().set_size_inches(11, 8)
+    plt.gcf().set_dpi(160)
+    heartbeat_bins = [0, 10, 20, 30, 40, 50, 60, 70]
+    flic_bins = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+
+    plt.clf()
+
+    plt.subplot(2, 1, 1)
+    plt.xscale("log")
+    plt.title("heartbeat deltas")
+    plt.xlabel("time [s]")
+    plt.ylabel("count")
+    plt.hist(heartbeat_deltas.values(), bins=1000, histtype="step", log=True)
+
+    plt.subplot(2, 1, 2)
+    plt.xscale("log")
+    plt.title("flic deltas")
+    plt.xlabel("time [s]")
+    plt.ylabel("count")
+    plt.hist(flic_last_seen_deltas.values(), bins=1000, histtype="step", log=True)
+
+    plt.subplots_adjust(hspace=0.5)
+    plt.savefig("deltas")
