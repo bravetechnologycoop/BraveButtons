@@ -72,9 +72,13 @@ def send_heartbeat(flic_last_seen_secs, system_id):
     headers = {'Content-Type':'application/json'}
     try:
         conn = http.client.HTTPSConnection(SERVER_URL, timeout=10)
+        time_0 = datetime.datetime.now()
         conn.request('POST', r'/heartbeat', json.dumps(body), headers)
         res = conn.getresponse()
-        print(datetime.datetime.now().isoformat(), ' - sent heartbeat, got response: ', res.status, res.reason, flush=True)
+        time_1 = datetime.datetime.now()
+        latency = (time_1 - time_0).total_seconds()
+        print(datetime.datetime.now().isoformat(), '- sent heartbeat, got response:', res.status, res.reason, flush=True)
+        print(datetime.datetime.now().isoformat(), '- heartbeat latency was', latency)
         if res.status == 200:
             return True
         return False
