@@ -21,8 +21,8 @@ let dashboardTemplate = fs.readFileSync(`${__dirname}/dashboard.mst`, 'utf-8')
 // compact data file every 5 minutes
 db.persistence.setAutocompactionInterval(5*60000)
 
-const FLIC_THRESHOLD_MILLIS = 120*1000
-const HEARTBEAT_THRESHOLD_MILLIS = 25*1000
+const FLIC_THRESHOLD_MILLIS = 150*1000
+const HEARTBEAT_THRESHOLD_MILLIS = 30*1000
 
 function log(logString) {
     console.log(moment().toISOString() + " - " + logString)
