@@ -23,7 +23,7 @@ def send_heartbeat(server_url, system_id, flic_last_seen_secs):
         print("error sending heartbeat")
         print(e)
 
-def compute_deltas_from_server_log(log_file_url):
+def parse_data_from_server_log(log_file_url):
     data = numpy.loadtxt(log_file_url, dtype=str, delimiter=",", encoding="utf8")
     heartbeat_times = {}
     flic_last_seen_values = {}
@@ -42,6 +42,10 @@ def compute_deltas_from_server_log(log_file_url):
         except KeyError:
             flic_last_seen_values[system_id] = [int(flic_last_seen_secs)]
 
+    return (heartbeat_times, flic_last_seen_values)
+
+def compute_deltas_from_server_log(log_file_url):
+    (heartbeat_times, flic_last_seen_values) = parse_data_from_server_log(log_file_url)
     heartbeat_deltas = {}
     flic_last_seen_deltas = {}
     for system_id in heartbeat_times:
@@ -82,3 +86,25 @@ def plot_deltas_from_server_log(log_file_url):
 
     plt.subplots_adjust(hspace=0.5)
     plt.savefig("deltas")
+
+def plot_flic_time_series_from_server_log(log_file_url):
+    (heartbeat_times, flic_last_seen_values) = parse_data_from_server_log(log_file_url)
+    plt.gcf().set_size_inches(11, 8)
+    plt.gcf().set_dpi(160)
+
+    plt.clf()
+    index = 1
+    nrows = len(heartbeat_times)
+
+    for system_id in heartbeat_times:
+        plt.subplot(nrows, 1, index)
+        if index == 1:
+            plt.title("flic last seen (time series)")
+        plt.yscale("log")
+        plt.ylabel("last seen value [s]")
+        index = index + 1
+        dates = matplotlib.dates.date2num(heartbeat_times[system_id])
+        plt.plot_date(dates, flic_last_seen_values[system_id], '.')
+
+    plt.subplots_adjust(hspace=0.4)
+    plt.savefig("timeseries")
