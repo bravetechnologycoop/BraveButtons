@@ -27,10 +27,11 @@ def compute_deltas_from_server_log(log_file_url):
     data = numpy.loadtxt(log_file_url, dtype=str, delimiter=",", encoding="utf8")
     heartbeat_times = {}
     flic_last_seen_values = {}
-    fmt = "%b %d %Y %H:%M:%S"
+    #fmt = "%b %d %Y %H:%M:%S"
+    fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
     for i in range(0, len(data)):
         system_id = data[i,1][21:57]
-        date_string = data[i,0][4:24]
+        date_string = data[i,0][:24]
         flic_last_seen_secs = data[i,1][81:]
         try:
             heartbeat_times[system_id].append(datetime.datetime.strptime(date_string, fmt))
