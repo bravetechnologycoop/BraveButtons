@@ -69,23 +69,38 @@ def plot_deltas_from_server_log(log_file_url):
     flic_bins = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
 
     plt.clf()
-
-    plt.subplot(2, 1, 1)
-    plt.xscale("log")
-    plt.title("heartbeat deltas")
-    plt.xlabel("time [s]")
-    plt.ylabel("count")
-    plt.hist(heartbeat_deltas.values(), bins=1000, histtype="step", log=True)
-
-    plt.subplot(2, 1, 2)
-    plt.xscale("log")
-    plt.title("flic deltas")
-    plt.xlabel("time [s]")
-    plt.ylabel("count")
-    plt.hist(flic_last_seen_deltas.values(), bins=1000, histtype="step", log=True)
+    
+    number_of_systems = len(heartbeat_deltas.items())
+    index = 1
+    for system_id, deltas in heartbeat_deltas.items():
+        plt.subplot(number_of_systems, 1, index)
+        index = index + 1
+        plt.xscale("log")
+        plt.xlim(1, 2*10**4)
+        plt.title("heartbeat deltas for system " + system_id[:10])
+        plt.xlabel("time [s]")
+        plt.ylabel("count")
+        plt.hist(deltas, bins=1000, histtype="step", log=True)
 
     plt.subplots_adjust(hspace=0.5)
-    plt.savefig("deltas")
+    plt.savefig("heartbeat_deltas")
+    plt.clf()
+
+    number_of_systems = len(flic_last_seen_deltas.items())
+    index = 1
+    for system_id, deltas in flic_last_seen_deltas.items():
+        plt.subplot(number_of_systems, 1, index)
+        index = index + 1
+        plt.xscale("log")
+        plt.xlim(1, 2*10**4)
+        plt.title("flic deltas for system " + system_id[:10])
+        plt.xlabel("time [s]")
+        plt.ylabel("count")
+        plt.hist(deltas, bins=1000, histtype="step", log=True)
+
+    plt.subplots_adjust(hspace=0.5)
+    plt.savefig("flic_deltas")
+
 
 def plot_flic_time_series_from_server_log(log_file_url):
     (heartbeat_times, flic_last_seen_values) = parse_data_from_server_log(log_file_url)
