@@ -5,3 +5,5 @@ to set up the network monitor on a raspberry pi, follow these steps:
 - create a file named `ssh` in the boot partition of the SD card
 - install the SD card into the raspberry pi, connect it to power and ethernet
 - ssh into the raspberry pi, clone this repository, and run `sudo pi/setup_pi.sh`
+
+System Overview at https://docs.google.com/document/d/1DO__ZLYM44_8M6uKUR330mqqvwhhyw8_-WYOdjJLE4I/edit?usp=sharing
