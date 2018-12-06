@@ -1,8 +1,6 @@
 import http.client
-import gpiozero
 import time
 import datetime
-import daemon
 import json
 import uuid
 
@@ -88,6 +86,11 @@ def send_heartbeat(flic_last_seen_secs, system_id):
         return False
 
 if __name__ == '__main__':
+
+    # only import pi-specific libraries when running as a script
+    # this allows us to run tests on a dev machine without these libs installed
+    import daemon
+    import gpiozero
 
     logfile_out = open('/var/log/brave/heartbeat-out.log', 'a')
     logfile_err = open('/var/log/brave/heartbeat-err.log', 'a')

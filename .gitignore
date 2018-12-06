@@ -3,3 +3,4 @@ brave_config.json
 heartbeat.log
 server.db
 __pycache__
+.coverage
