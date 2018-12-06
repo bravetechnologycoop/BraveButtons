@@ -8,8 +8,8 @@ SERVER_URL = 'heartbeat.brave.coop'
 RELAY_PIN = 10
 LED_PIN = 9
 
-def get_system_id():
-    with open('/usr/local/brave/system_id', 'r+') as system_id_file:
+def get_system_id_from_path(path):
+    with open(path, 'r+') as system_id_file:
         contents = system_id_file.read()
         if len(contents) == 36:
             return contents
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         led.on()
 
         system_ok = False
-        system_id = get_system_id()
+        system_id = get_system_id_from_path('/usr/local/brave/system_id')
         flic_last_reboot = datetime.datetime.now()
 
         while True:
