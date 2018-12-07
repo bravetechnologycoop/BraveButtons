@@ -1,5 +1,7 @@
 import heartbeat
 import pytest
+import unittest.mock
+import socket
 
 class Test__parse_darkstat_html_lines(object):
 
@@ -33,3 +35,48 @@ class Test__get_system_id_from_path(object):
         p.write_text(system_id)
         assert heartbeat.get_system_id_from_path(str(p)) == system_id
         assert p.read_text() == system_id
+
+class Test__send_heartbeat(object):
+
+    def test_when_heartbeat_server_is_working(self):
+        with unittest.mock.patch('http.client.HTTPSConnection') as MockHTTPSConnection:
+                mock_connection = MockHTTPSConnection.return_value
+                mock_response = unittest.mock.MagicMock()
+                mock_response.status = 200
+                mock_connection.getresponse.return_value = mock_response
+                mock_connection.request = unittest.mock.MagicMock()
+
+                system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
+                flic_last_seen_secs = 5
+                success = heartbeat.send_heartbeat(flic_last_seen_secs, system_id)
+
+                assert success == True
+                assert mock_connection.request.called
+
+    def test_when_heartbeat_server_is_not_working(self):
+        with unittest.mock.patch('http.client.HTTPSConnection') as MockHTTPSConnection:
+                mock_connection = MockHTTPSConnection.return_value
+                mock_response = unittest.mock.MagicMock()
+                mock_response.status = 500
+                mock_connection.getresponse.return_value = mock_response
+                mock_connection.request = unittest.mock.MagicMock()
+
+                system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
+                flic_last_seen_secs = 5
+                success = heartbeat.send_heartbeat(flic_last_seen_secs, system_id)
+
+                assert success == False
+                assert mock_connection.request.called
+
+    def test_when_request_times_out(self):
+        with unittest.mock.patch('http.client.HTTPSConnection') as MockHTTPSConnection:
+                mock_connection = MockHTTPSConnection.return_value
+                mock_connection.request = unittest.mock.MagicMock(side_effect=socket.timeout())
+
+                system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
+                flic_last_seen_secs = 5
+                success = heartbeat.send_heartbeat(flic_last_seen_secs, system_id)
+
+                assert success == False
+                assert mock_connection.request.called
+
