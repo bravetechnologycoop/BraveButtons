@@ -80,3 +80,22 @@ class Test__send_heartbeat(object):
                 assert success == False
                 assert mock_connection.request.called
 
+class Test__get_darkstat_html(object):
+
+    def test_return_value(self):
+        with unittest.mock.patch('http.client.HTTPConnection') as MockHTTPConnection:
+            mock_connection = MockHTTPConnection.return_value
+            mock_response = unittest.mock.MagicMock()
+            mock_connection.getresponse.return_value = mock_response
+            test_html = '<html></html>'
+            mock_response.read.return_value = test_html.encode('utf-8')
+
+            assert test_html == heartbeat.get_darkstat_html()
+
+    def test_when_request_times_out(self):
+        with unittest.mock.patch('http.client.HTTPConnection') as MockHTTPConnection:
+            mock_connection = MockHTTPConnection.return_value
+            mock_connection.request = unittest.mock.MagicMock(side_effect=socket.timeout())
+
+            assert '' == heartbeat.get_darkstat_html()
+
