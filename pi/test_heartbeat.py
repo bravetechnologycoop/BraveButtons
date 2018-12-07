@@ -10,10 +10,15 @@ class Test__parse_darkstat_html_lines(object):
             html = html_file.read()
             assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 59
 
-    def test_minutes(self):
+    def test_seconds_minutes(self):
         with open('./sample_darkstat_html/316_secs.html', 'r') as html_file:
             html = html_file.read()
             assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 316
+
+    def test_seconds_minutes_hours(self):
+        with open('./sample_darkstat_html/3806_secs.html', 'r') as html_file:
+            html = html_file.read()
+            assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 3806
 
     def test_empty_html(self):
         with pytest.raises(heartbeat.FlicNotFoundError):
