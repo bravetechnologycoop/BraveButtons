@@ -169,6 +169,10 @@ function remindToSendMessage(phoneNumber) {
 	}
 }
 
+function registryInsert(array) {
+  registry.insert(array)
+}
+
 function sendStaffAlert(phoneNumber, unit) {
 	if (STATE[phoneNumber].state === STATES.WAITING_FOR_REPLY) {
 	client.messages
@@ -307,10 +311,18 @@ app.post('/message', jsonBodyParser, (req, res) => {
 
 });
 
+app.post('/registryUpdate', jsonBodyParser, (req,res) =>{
+  constRequiredBodyParams = ["entry"];
+  registry.insert({'uuid':req.body.uuid, 'unit':req.body.unit, 'phoneNumber':req.body.phoneNumber, '_id':req.body._id});
+  res.status(200).send();
+});
+
 let server;
 
 if (process.env.NODE_ENV === 'test') {   // local http server for testing
 	server = app.listen(443);
+  registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
+  {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
 } else {
 	let httpsOptions = {
 	    key: fs.readFileSync(`/etc/letsencrypt/live/chatbot.brave.coop/privkey.pem`),
@@ -319,6 +331,8 @@ if (process.env.NODE_ENV === 'test') {   // local http server for testing
 	server = https.createServer(httpsOptions, app).listen(443)
 	log('brave server listening on port 443')
 }
+
+
 
 const io = require("socket.io")(server);
 

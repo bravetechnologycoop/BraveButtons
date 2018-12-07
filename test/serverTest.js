@@ -13,6 +13,21 @@ describe('Chatbot server', () => {
 
 	let baseUrl = "https://chatbot.brave.coop";
 	let stateFilename = "buttonPressesTest";
+	let registryName = "buttonsTest"
+
+	let registryEntry1 = {
+		"uuid":"111",
+		"unit":"123",
+		"phone":"+16664206969",
+		"_id":"CGBadbmt3EhfDeYd"
+	};
+
+	let registryEntry2 = {
+		"uuid":"222",
+		"unit":"222",
+		"phone":"+17774106868",
+		"_id":"JUdabgmtlwp0pgjW"
+	}
 
 	let defaultRequest = {
 		'UUID': '111'
@@ -46,9 +61,11 @@ describe('Chatbot server', () => {
 		let currentState;
 
 		beforeEach(() => {
+			fs.unlinkSync('buttonsTest.db');
   			delete require.cache[require.resolve('../server.js')];
   			app = require('../server.js');
 			fs.writeFileSync('./' + stateFilename + '.json', '{}');
+
 		});
 
 		 afterEach(function () {
@@ -145,6 +162,7 @@ describe('Chatbot server', () => {
 
 		beforeEach(() => {
   			delete require.cache[require.resolve('../server.js')];
+				fs.unlinkSync('buttonsTest.db');
   			app = require('../server.js');
 			fs.writeFileSync('./' + stateFilename + '.json', '{}');
 		});
@@ -222,25 +240,25 @@ let stateData = allStateData[defaultBody.PhoneNumber];
 		fs.writeFileSync('./' + stateFilename + '.json', '{}');
 	});
 
-	describe('POST request: button replacement', () => {
-
-		beforeEach(() => {
-  			delete require.cache[require.resolve('../server.js')];
-  			app = require('../server.js');
-			fs.writeFileSync('./' + stateFilename + '.json', '{}');
-		});
-
-		it('should return ok to a valid request', async () => {
-			let response = await chai.request(app).post('/replace').send(twilioMessageBody);
-			expect(response).to.have.status(200);
-		});
-
-
-		afterEach(function () {
-		    app.close();
-		});
-
-	});
+	// describe('POST request: button replacement', () => {
+	//
+	// 	beforeEach(() => {
+  // 			delete require.cache[require.resolve('../server.js')];
+  // 			app = require('../server.js');
+	// 		fs.writeFileSync('./' + stateFilename + '.json', '{}');
+	// 	});
+	//
+	// 	it('should return ok to a valid request', async () => {
+	// 		let response = await chai.request(app).post('/replace').send(twilioMessageBody);
+	// 		expect(response).to.have.status(200);
+	// 	});
+	//
+	//
+	// 	afterEach(function () {
+	// 	    app.close();
+	// 	});
+	//
+	// });
 
 	after(() => {
 		fs.writeFileSync('./' + stateFilename + '.json', '{}');
