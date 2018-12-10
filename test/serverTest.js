@@ -30,24 +30,76 @@ describe('Chatbot server', () => {
 	}
 
 	let defaultRequest = {
-		'UUID': '111'
+		'UUID': '111',
+		'Type': 'click'
+	};
+
+	let defaultRequestDouble = {
+		'UUID': '111',
+		'Type': 'double_click'
+	};
+
+	let defaultRequestHold = {
+		'UUID': '111',
+		'Type': 'hold'
 	};
 
 	let defaultRequest2 = {
-		'UUID': '222'
+		'UUID': '222',
+		'Type': 'click'
+	};
+
+	let defaultRequest2Double = {
+		'UUID': '222',
+		'Type': 'click'
+	};
+
+	let defaultRequest2Hold = {
+		'UUID': '222',
+		'Type': 'click'
 	};
 
 
 	let defaultBody = {
 		'UUID': '111',
 		'Unit': '123',
-		'PhoneNumber': '+16664206969'
+		'PhoneNumber': '+16664206969',
+		'Type': 'click'
 	};
 
 	let defaultBody2 = {
 		'UUID': '222',
 		'Unit': '222',
-		'PhoneNumber': '+17774106868'
+		'PhoneNumber': '+17774106868',
+		'Type': 'click'
+	};
+
+	let defaultBodyDouble = {
+		'UUID': '111',
+		'Unit': '123',
+		'PhoneNumber': '+16664206969',
+		'Type': 'double_click'
+	};
+
+	let defaultBody2Double = {
+		'UUID': '222',
+		'Unit': '222',
+		'PhoneNumber': '+17774106868',
+		'Type': 'double_click'
+	};
+
+	let defaultBodyHold = {
+		'UUID': '111',
+		'Unit': '123',
+		'PhoneNumber': '+16664206969',
+		'Type': 'hold'
+	};
+
+	let defaultBody2Hold = {
+		'UUID': '222',
+		'Unit': '222',
+		'PhoneNumber': '+17774106868',
+		'Type': 'hold'
 	};
 
 	let twilioMessageBody = {
@@ -61,7 +113,9 @@ describe('Chatbot server', () => {
 		let currentState;
 
 		beforeEach(() => {
-			fs.unlinkSync('buttonsTest.db');
+			if(fs.existsSync('buttonsTest.db')){
+				fs.unlinkSync('buttonsTest.db');
+			}
   			delete require.cache[require.resolve('../server.js')];
   			app = require('../server.js');
 			fs.writeFileSync('./' + stateFilename + '.json', '{}');
@@ -161,8 +215,10 @@ describe('Chatbot server', () => {
 	describe('POST request: twilio message', () => {
 
 		beforeEach(() => {
-  			delete require.cache[require.resolve('../server.js')];
+			if(fs.existsSync('buttonsTest.db')){
 				fs.unlinkSync('buttonsTest.db');
+			}
+				delete require.cache[require.resolve('../server.js')];
   			app = require('../server.js');
 			fs.writeFileSync('./' + stateFilename + '.json', '{}');
 		});
