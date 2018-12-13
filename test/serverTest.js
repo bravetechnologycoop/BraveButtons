@@ -133,7 +133,7 @@ describe('Chatbot server', () => {
 		});
 
 		it('should return 400 to a request with an unregistered button', async () => {
-			let response = await chai.request(app).post('/') .send({'UUID': '666'});
+			let response = await chai.request(app).post('/') .send({'UUID': '666','Type': 'click'});
 			expect(response).to.have.status(400);
 		});
 
@@ -191,8 +191,8 @@ describe('Chatbot server', () => {
 			let currentState = null;
 
 			let response = await chai.request(app).post('/').send(defaultRequest);
-		    response = await chai.request(app).post('/').send(defaultRequest);
-			response = await chai.request(app).post('/').send(defaultRequest);
+		    response = await chai.request(app).post('/').send(defaultRequestDouble);
+			response = await chai.request(app).post('/').send(defaultRequestHold);
 
 			let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 			let stateData = allStateData[defaultBody.PhoneNumber];
@@ -207,7 +207,7 @@ describe('Chatbot server', () => {
 			expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
 			expect(currentState.unit).to.deep.equal(defaultBody.Unit);
 			expect(currentState.completed).to.be.false;
-			expect(currentState.numPresses).to.deep.equal(6);
+			expect(currentState.numPresses).to.deep.equal(7);
 		});
 
 	});
