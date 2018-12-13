@@ -317,16 +317,11 @@ app.post('/message', jsonBodyParser, (req, res) => {
 
 });
 
-app.post('/registryUpdate', jsonBodyParser, (req,res) =>{
-  constRequiredBodyParams = ["entry"];
-  registry.insert({'uuid':req.body.uuid, 'unit':req.body.unit, 'phoneNumber':req.body.phoneNumber, '_id':req.body._id});
-  res.status(200).send();
-});
-
 let server;
 
 if (process.env.NODE_ENV === 'test') {   // local http server for testing
 	server = app.listen(443);
+  //TODO: put into serverTest
   registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
   {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
 } else {
