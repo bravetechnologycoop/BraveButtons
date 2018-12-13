@@ -46,8 +46,10 @@ class SessionState {
 			returnMessage = 'Thank you.';
 			break;
 		case STATES.COMPLETED:
+		returnMessage = 'There is no active session for this button.';
 			break;
 		case STATES.TIMED_OUT:
+		returnMessage = 'There is no active session for this button.';
 			break;
 		default:
 			returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.';

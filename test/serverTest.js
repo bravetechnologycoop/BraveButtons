@@ -13,21 +13,6 @@ describe('Chatbot server', () => {
 
 	let baseUrl = "https://chatbot.brave.coop";
 	let stateFilename = "buttonPressesTest";
-	let registryName = "buttonsTest"
-
-	let registryEntry1 = {
-		"uuid":"111",
-		"unit":"123",
-		"phone":"+16664206969",
-		"_id":"CGBadbmt3EhfDeYd"
-	};
-
-	let registryEntry2 = {
-		"uuid":"222",
-		"unit":"222",
-		"phone":"+17774106868",
-		"_id":"JUdabgmtlwp0pgjW"
-	}
 
 	let defaultRequest = {
 		'UUID': '111',
@@ -49,16 +34,6 @@ describe('Chatbot server', () => {
 		'Type': 'click'
 	};
 
-	let defaultRequest2Double = {
-		'UUID': '222',
-		'Type': 'click'
-	};
-
-	let defaultRequest2Hold = {
-		'UUID': '222',
-		'Type': 'click'
-	};
-
 
 	let defaultBody = {
 		'UUID': '111',
@@ -72,34 +47,6 @@ describe('Chatbot server', () => {
 		'Unit': '222',
 		'PhoneNumber': '+17774106868',
 		'Type': 'click'
-	};
-
-	let defaultBodyDouble = {
-		'UUID': '111',
-		'Unit': '123',
-		'PhoneNumber': '+16664206969',
-		'Type': 'double_click'
-	};
-
-	let defaultBody2Double = {
-		'UUID': '222',
-		'Unit': '222',
-		'PhoneNumber': '+17774106868',
-		'Type': 'double_click'
-	};
-
-	let defaultBodyHold = {
-		'UUID': '111',
-		'Unit': '123',
-		'PhoneNumber': '+16664206969',
-		'Type': 'hold'
-	};
-
-	let defaultBody2Hold = {
-		'UUID': '222',
-		'Unit': '222',
-		'PhoneNumber': '+17774106868',
-		'Type': 'hold'
 	};
 
 	let twilioMessageBody = {
@@ -295,26 +242,6 @@ let stateData = allStateData[defaultBody.PhoneNumber];
 	after(() => {
 		fs.writeFileSync('./' + stateFilename + '.json', '{}');
 	});
-
-	// describe('POST request: button replacement', () => {
-	//
-	// 	beforeEach(() => {
-  // 			delete require.cache[require.resolve('../server.js')];
-  // 			app = require('../server.js');
-	// 		fs.writeFileSync('./' + stateFilename + '.json', '{}');
-	// 	});
-	//
-	// 	it('should return ok to a valid request', async () => {
-	// 		let response = await chai.request(app).post('/replace').send(twilioMessageBody);
-	// 		expect(response).to.have.status(200);
-	// 	});
-	//
-	//
-	// 	afterEach(function () {
-	// 	    app.close();
-	// 	});
-	//
-	// });
 
 	after(() => {
 		fs.writeFileSync('./' + stateFilename + '.json', '{}');
