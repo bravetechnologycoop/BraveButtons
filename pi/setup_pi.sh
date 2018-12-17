@@ -35,6 +35,7 @@ else
 
   mkdir /home/pi/.ssh
   ssh-keygen -t rsa -N "" -f /home/pi/.ssh/id_rsa
+  chown -R pi:pi /home/pi/.ssh
   echo "SSH public key:"
   cat /home/pi/.ssh/id_rsa.pub
   read -p "please copy the SSH public key to the remote access server. press [Enter] when you are finished."
