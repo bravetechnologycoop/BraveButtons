@@ -280,7 +280,7 @@ app.post('/', jsonBodyParser, (req, res) => {
 	if (isValidRequest(req, requiredBodyParams)) {
         registry.findOne({'uuid':req.body.UUID}, function(err, button) {
             if(button === null) {
-                handleErrorRequest('Bad request: UUID is not registered');
+                handleErrorRequest(`Bad request: UUID is not registered. UUID is ${req.body.UUID}`);
                 handleErrorRequest(err);
                 res.status(400).send();
             }
