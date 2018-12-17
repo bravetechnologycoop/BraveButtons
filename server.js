@@ -11,8 +11,6 @@ let Datastore = require('nedb')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 
-
-
 let db = new Datastore({
     filename: `./` + getEnvVar("DB_NAME") + `.db`,
 });
@@ -20,7 +18,6 @@ let db = new Datastore({
 let registry = new Datastore({
     filename: `./` + getEnvVar("REGISTRY_DB") + `.db`,
 });
-
 
 registry.loadDatabase()
 
@@ -33,7 +30,6 @@ if (process.env.NODE_ENV !== 'test') {
 	db.persistence.setAutocompactionInterval(5*60000)
 } else {
     db.persistence.setAutocompactionInterval(10)
-
 }
 
 const app = express();
@@ -78,15 +74,17 @@ function loadState() {
 }
 
 function updateState(uuid, unit, phoneNumber, type, state) {
-  if(type === "double_click"){
-    numPresses = 2;
-  }else {
-    numPresses = 1;
-  }
+    if(type === "double_click") {
+        numPresses = 2;
+    }
+    else {
+        numPresses = 1;
+    }
 
 	if (STATE == null || Object.keys(STATE).length === 0 || !STATE.hasOwnProperty(phoneNumber)) {
 		STATE[phoneNumber] = new SessionState(uuid, unit, phoneNumber, state, numPresses);
-	} else {
+	} 
+    else {
 		STATE[phoneNumber].update(uuid, unit, phoneNumber, type, state);
 	}
 }
@@ -129,14 +127,14 @@ function handleTwilioRequest(req) {
 		let returnMessage = STATE[buttonPhone].advanceSession(message);
 		sendTwilioMessage(buttonPhone, returnMessage);
 		saveState();
-    //put completed states in the database
-    if(STATE[buttonPhone].state == STATES.COMPLETED){
-      db.insert(STATE[buttonPhone], (err, docs) => {
-        if(err){
-          log(err.message)
+        //put completed states in the database
+        if(STATE[buttonPhone].state == STATES.COMPLETED) {
+            db.insert(STATE[buttonPhone], (err, docs) => {
+                if(err) {
+                    log(err.message)
+                }
+            })
         }
-      })
-    }
     	io.emit("stateupdate", STATE);
 		return 200;
 	} else {
@@ -181,19 +179,17 @@ function registryInsert(array) {
 
 function sendStaffAlert(phoneNumber, unit) {
 	if (STATE[phoneNumber].state === STATES.WAITING_FOR_REPLY) {
-	client.messages
-      .create({from: phoneNumber, body: 'There has been an unresponed request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
-      .then(message => log(message.sid))
-      .done();
-  }
-  //Unresponded alerts are completed and logged in database
-  db.insert(STATE[phoneNumber], (err, docs) => {
-    if(err){
-      log(err.message)
+        client.messages
+          .create({from: phoneNumber, body: 'There has been an unresponed request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
+          .then(message => log(message.sid))
+          .done();
     }
-  })
-
-
+    //Unresponded alerts are completed and logged in database
+    db.insert(STATE[phoneNumber], (err, docs) => {
+        if(err) {
+            log(err.message)
+        }
+    })
 }
 
 app.use(cookieParser());
@@ -282,19 +278,19 @@ app.post('/', jsonBodyParser, (req, res) => {
 	const requiredBodyParams = ['UUID','Type'];
 
 	if (isValidRequest(req, requiredBodyParams)) {
-
-    registry.findOne({'uuid':req.body.UUID}, function(err,button){
-      if(button===null){
-        handleErrorRequest('Bad request: UUID is not registered');
-        handleErrorRequest(err);
-        res.status(400).send();
-      }else {
-        handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), req.body.Type.toString())
-        res.status(200).send();
-      }
-    })
-
-	}else {
+        registry.findOne({'uuid':req.body.UUID}, function(err, button) {
+            if(button === null) {
+                handleErrorRequest('Bad request: UUID is not registered');
+                handleErrorRequest(err);
+                res.status(400).send();
+            }
+            else {
+                handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), req.body.Type.toString())
+                res.status(200).send();
+            }
+        })
+	}
+    else {
 		handleErrorRequest('Bad request: UUID is missing');
 		res.status(400).send();
 	}
@@ -319,12 +315,13 @@ app.post('/message', jsonBodyParser, (req, res) => {
 
 let server;
 
-if (process.env.NODE_ENV === 'test') {   // local http server for testing
+if (process.env.NODE_ENV === 'test') { // local http server for testing
 	server = app.listen(443);
-  //TODO: put into serverTest
-  registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
-  {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
-} else {
+    //TODO: put into serverTest
+    registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
+                     {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
+} 
+else {
 	let httpsOptions = {
 	    key: fs.readFileSync(`/etc/letsencrypt/live/chatbot.brave.coop/privkey.pem`),
 	    cert: fs.readFileSync(`/etc/letsencrypt/live/chatbot.brave.coop/fullchain.pem`)
@@ -332,8 +329,6 @@ if (process.env.NODE_ENV === 'test') {   // local http server for testing
 	server = https.createServer(httpsOptions, app).listen(443)
 	log('brave server listening on port 443')
 }
-
-
 
 const io = require("socket.io")(server);
 
