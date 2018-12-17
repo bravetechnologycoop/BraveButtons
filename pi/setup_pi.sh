@@ -25,6 +25,14 @@ else
   chown pi:pi /usr/local/brave /usr/local/brave/system_id
   chmod 700 /usr/local/brave
 
+  echo "please enter the hostname to use for this device:"
+  read hostname
+  
+  hosts_file=$(</etc/hosts)
+  hosts_file="${hosts_file//raspberrypi/$hostname}"
+  echo "$hosts_file" > /etc/hosts
+  echo "$hostname" > /etc/hostname
+
   mkdir /home/pi/.ssh
   ssh-keygen -t rsa -N "" -f /home/pi/.ssh/id_rsa
   echo "SSH public key:\n"
