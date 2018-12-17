@@ -35,9 +35,9 @@ else
 
   mkdir /home/pi/.ssh
   ssh-keygen -t rsa -N "" -f /home/pi/.ssh/id_rsa
-  echo "SSH public key:\n"
+  echo "SSH public key:"
   cat /home/pi/.ssh/id_rsa.pub
-  read -p "\nplease copy the SSH public key to the remote access server. press [Enter] when you are finished.\n"
+  read -p "please copy the SSH public key to the remote access server. press [Enter] when you are finished."
   echo "please enter the port number to use for remote SSH access to this device:"
   read remoteAccessPort
 
