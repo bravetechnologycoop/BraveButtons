@@ -24,6 +24,12 @@ class Test__parse_darkstat_html_lines(object):
         with pytest.raises(heartbeat.FlicNotFoundError):
             heartbeat.parse_darkstat_html_lines(['', '', ''])
 
+    def test_never(self):
+        with pytest.raises(heartbeat.FlicNotFoundError):
+            with open('./sample_darkstat_html/never.html', 'r') as html_file:
+                html = html_file.read()
+                heartbeat.parse_darkstat_html_lines(html.splitlines())
+
 class Test__get_system_id_from_path(object):
 
     def test_when_system_id_has_not_been_generated(self, tmp_path):

@@ -41,7 +41,7 @@ def parse_darkstat_html_lines(lines):
     for i in range(0, len(lines)):
         # match lines that contain an actual value for flic last seen
         # sometimes darkstat gives '(never)' in place of a value
-        if (lines[i].count('flic') > 0) and (lines[i].count('(never)') == 0):
+        if (lines[i].count('flic') > 0) and (lines[i+5].count('(never)') == 0):
             last_seen_string = lines[i+5]
 
             last_seen_string = last_seen_string.replace(r'<td class="num">',  '')
