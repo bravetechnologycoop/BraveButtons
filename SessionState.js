@@ -1,4 +1,4 @@
-const STATES = require('./SessionStateEnum.js'); 
+const STATES = require('./SessionStateEnum.js');
 let moment = require('moment');
 
 const incidentTypes = {
@@ -10,7 +10,7 @@ const incidentTypes = {
 
 class SessionState {
 
-  constructor(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses=1) {
+  constructor(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses) {
         this.uuid = uuid;
         this.unit = unit;
         this.phoneNumber = phoneNumber;
@@ -20,14 +20,14 @@ class SessionState {
         this.numPresses = numPresses;
         this.notes = null;
         this.lastUpdate = moment().toString();
-  } 
+  }
 
   advanceSession(messageText) {
 
   	let returnMessage;
 
   	switch (this.state) {
-  		case STATES.STARTED: 
+  		case STATES.STARTED:
   			this.state = STATES.WAITING_FOR_CATEGORY;
   			returnMessage = 'Thank you for responding.\n Please reply with the number that best describes the nature of the incident\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose';
   			break;
@@ -46,21 +46,23 @@ class SessionState {
 			returnMessage = 'Thank you.';
 			break;
 		case STATES.COMPLETED:
+		returnMessage = 'There is no active session for this button.';
 			break;
 		case STATES.TIMED_OUT:
+		returnMessage = 'There is no active session for this button.';
 			break;
 		default:
 			returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.';
-			break;	
+			break;
   	}
 
   	this.lastUpdate = moment().toString();
 
-  	return returnMessage;		
+  	return returnMessage;
 
   }
 
-  setIncidentType(numType) {   //TODO: how strict do we want to be with this? 
+  setIncidentType(numType) {   //TODO: how strict do we want to be with this?
 
   	if (numType in incidentTypes) {
   		this.incidentType = incidentTypes[numType];
@@ -70,12 +72,12 @@ class SessionState {
 
   }
 
-  update(uuid, unit, phoneNumber, state) {
+  update(uuid, unit, phoneNumber,type, state) {
 
-  	if (!this.isCompleted()) //there is an ongoing request for help 
+  	if (!this.isCompleted()) //there is an ongoing request for help
 		{ if (this.uuid == uuid) {
-			this.incrementButtonPresses();
-		} 
+			this.incrementButtonPresses(type);
+		}
 		} else {
 			this.uuid = uuid;
 			this.unit = unit;
@@ -84,12 +86,18 @@ class SessionState {
 			this.notes = null;
 			this.completed = this.isCompleted();
 			this.numPresses = 1;
-		}
+
 	this.lastUpdate = moment().toString();
 	}
-  
-  incrementButtonPresses() {
-  	this.numPresses += 1;
+}
+
+  incrementButtonPresses(type) {
+		if(type =='double_click'){
+			this.numPresses += 2;
+		}else {
+			this.numPresses += 1;
+
+		}
   }
 
   isCompleted() { // a request can move down the queue once the incident is dealt with

@@ -77,11 +77,17 @@ function loadState() {
 	}
 }
 
-function updateState(uuid, unit, phoneNumber, state) {
+function updateState(uuid, unit, phoneNumber, type, state) {
+  if(type === "double_click"){
+    numPresses = 2;
+  }else {
+    numPresses = 1;
+  }
+
 	if (STATE == null || Object.keys(STATE).length === 0 || !STATE.hasOwnProperty(phoneNumber)) {
-		STATE[phoneNumber] = new SessionState(uuid, unit, phoneNumber, state);
+		STATE[phoneNumber] = new SessionState(uuid, unit, phoneNumber, state, numPresses);
 	} else {
-		STATE[phoneNumber].update(uuid, unit, phoneNumber, state);
+		STATE[phoneNumber].update(uuid, unit, phoneNumber, type, state);
 	}
 }
 
@@ -98,11 +104,11 @@ function isValidRequest(req, properties) {
 	return properties.reduce(hasAllProperties, true);
 }
 
-function handleValidRequest(uuid, unit, phoneNumber) {
+function handleValidRequest(uuid, unit, phoneNumber, type) {
 
-	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString());
+	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString() + ' Type:' + type.toString());
 
-	 updateState(uuid, unit, phoneNumber, STATES.STARTED);
+	 updateState(uuid, unit, phoneNumber,type, STATES.STARTED);
 	 saveState();
 	 io.emit("stateupdate", STATE);
 	 if (needToSendMessage(phoneNumber)) {
@@ -140,7 +146,7 @@ function handleTwilioRequest(req) {
 }
 
 function needToSendMessage(buttonPhone) {
-	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses % 5 === 0);
+	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses === 2 || STATE[buttonPhone].numPresses % 5 === 0);
 }
 
 function sendUrgencyMessage(phoneNumber) {
@@ -149,7 +155,7 @@ function sendUrgencyMessage(phoneNumber) {
 		sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + STATE[phoneNumber].unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
 		setTimeout(remindToSendMessage, 300000, phoneNumber);
 		setTimeout(sendStaffAlert, 420000, phoneNumber, STATE[phoneNumber].unit.toString());
-	} else if (STATE[phoneNumber].numPresses % 5 === 0) {
+	} else if (STATE[phoneNumber].numPresses % 5 === 0 || STATE[phoneNumber].numPresses === 2) {
 		sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + STATE[phoneNumber].numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
 	}
 }
@@ -273,7 +279,7 @@ app.get('/logout', (req, res) => {
 
 app.post('/', jsonBodyParser, (req, res) => {
 
-	const requiredBodyParams = ['UUID'];
+	const requiredBodyParams = ['UUID','Type'];
 
 	if (isValidRequest(req, requiredBodyParams)) {
 
@@ -283,7 +289,7 @@ app.post('/', jsonBodyParser, (req, res) => {
         handleErrorRequest(err);
         res.status(400).send();
       }else {
-        handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString())
+        handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), req.body.Type.toString())
         res.status(200).send();
       }
     })
@@ -311,16 +317,11 @@ app.post('/message', jsonBodyParser, (req, res) => {
 
 });
 
-app.post('/registryUpdate', jsonBodyParser, (req,res) =>{
-  constRequiredBodyParams = ["entry"];
-  registry.insert({'uuid':req.body.uuid, 'unit':req.body.unit, 'phoneNumber':req.body.phoneNumber, '_id':req.body._id});
-  res.status(200).send();
-});
-
 let server;
 
 if (process.env.NODE_ENV === 'test') {   // local http server for testing
 	server = app.listen(443);
+  //TODO: put into serverTest
   registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
   {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
 } else {
