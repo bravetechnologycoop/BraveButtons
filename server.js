@@ -144,7 +144,7 @@ function handleTwilioRequest(req) {
 }
 
 function needToSendMessage(buttonPhone) {
-	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses === 2 || STATE[buttonPhone].numPresses % 5 === 0);
+	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses === 3 || STATE[buttonPhone].numPresses % 5 === 0);
 }
 
 function sendUrgencyMessage(phoneNumber) {
@@ -153,7 +153,7 @@ function sendUrgencyMessage(phoneNumber) {
 		sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + STATE[phoneNumber].unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
 		setTimeout(remindToSendMessage, 300000, phoneNumber);
 		setTimeout(sendStaffAlert, 420000, phoneNumber, STATE[phoneNumber].unit.toString());
-	} else if (STATE[phoneNumber].numPresses % 5 === 0 || STATE[phoneNumber].numPresses === 2) {
+	} else if (STATE[phoneNumber].numPresses % 5 === 0 || STATE[phoneNumber].numPresses === 3) {
 		sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + STATE[phoneNumber].numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
 	}
 }
