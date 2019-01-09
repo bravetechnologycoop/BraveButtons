@@ -4,3 +4,4 @@ heartbeat.log
 server.db
 __pycache__
 .coverage
+*.pyc
