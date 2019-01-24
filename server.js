@@ -58,7 +58,7 @@ function log(logString) {
 function getEnvVar(name) {
 	return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
 }
-
+//TODO replace with database loading
 function loadState() {
 	let filepath = './' + stateFilename + '.json';
 	if (fs.existsSync(filepath)) {
@@ -83,7 +83,7 @@ function updateState(uuid, unit, phoneNumber, type, state) {
 
 	if (STATE == null || Object.keys(STATE).length === 0 || !STATE.hasOwnProperty(phoneNumber)) {
 		STATE[phoneNumber] = new SessionState(uuid, unit, phoneNumber, state, numPresses);
-	} 
+	}
     else {
 		STATE[phoneNumber].update(uuid, unit, phoneNumber, type, state);
 	}
@@ -106,6 +106,14 @@ function handleValidRequest(uuid, unit, phoneNumber, type) {
 
 	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString() + ' Type:' + type.toString());
 
+   registry.findOne({'phoneNumber':phoneNumber, 'RespondedTo':false}, function(err, session) {
+       if(session === null) {
+         session = new SessionState(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses)
+
+       }
+       else {
+       }
+   })
 	 updateState(uuid, unit, phoneNumber,type, STATES.STARTED);
 	 saveState();
 	 io.emit("stateupdate", STATE);
@@ -284,7 +292,12 @@ app.post('/', jsonBodyParser, (req, res) => {
                 res.status(400).send();
             }
             else {
-                handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), req.body.Type.toString())
+                if(button.type.toString()== 'double_click'){
+                  let numPresses = 2;
+                }else {
+                  numPresses = 1
+                }
+                handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), numPresses)
                 res.status(200).send();
             }
         })
@@ -319,7 +332,7 @@ if (process.env.NODE_ENV === 'test') { // local http server for testing
     //TODO: put into serverTest
     registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
                      {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
-} 
+}
 else {
 	let httpsOptions = {
 	    key: fs.readFileSync(`/etc/letsencrypt/live/chatbot.brave.coop/privkey.pem`),
