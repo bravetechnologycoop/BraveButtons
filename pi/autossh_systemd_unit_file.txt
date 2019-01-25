@@ -10,7 +10,7 @@ ExecStart=/usr/bin/autossh -M 0 \
 -o "PubkeyAuthentication=yes" -o "PasswordAuthentication=no" -o "StrictHostKeyChecking=no" \
 -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -o "ExitOnForwardFailure=yes" \
 -i /home/pi/.ssh/id_rsa \
--NR REMOTE_ACCESS_PORT:localhost:22 brave@178.128.226.241
+-NR REMOTE_ACCESS_PORT:localhost:22 brave@REMOTE_ACCESS_SERVER_FQDN
 Restart=always
 RestartSec=60
 
