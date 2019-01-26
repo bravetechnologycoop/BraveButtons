@@ -11,7 +11,7 @@ let Datastore = require('nedb')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 
-let db = new Datastore({
+let sessions = new Datastore({
     filename: `./` + getEnvVar("DB_NAME") + `.db`,
 });
 
@@ -22,7 +22,7 @@ let registry = new Datastore({
 registry.loadDatabase()
 
 if (process.env.NODE_ENV !== 'test') {
-	db.loadDatabase();
+	sessions.loadDatabase();
 }
 
 // compact data file every 5 minutes
@@ -102,21 +102,31 @@ function isValidRequest(req, properties) {
 	return properties.reduce(hasAllProperties, true);
 }
 
-function handleValidRequest(uuid, unit, phoneNumber, type) {
+function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
 
-	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString() + ' Type:' + type.toString());
+	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString() + ' Presses:' + numPresses.toString());
 
-   registry.findOne({'phoneNumber':phoneNumber, 'RespondedTo':false}, function(err, session) {
+   //Check if there's a session for this phone number that has not yet been responded to
+   db.findOne({'phoneNumber':phoneNumber, 'respondedTo':false}, function(err, session) {
+      //If there is no such session, create an entry in the database corresponding to a new seession
        if(session === null) {
-         session = new SessionState(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses)
+         session = new SessionState(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses);
+         db.insert(session, (err, docs) => {
+             if(err) {
+                 log(err.message)
+             }
+         })
 
        }
+       //If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
        else {
+         db.update({_id: session._id}, { $set: {'lastUpdate': moment()}, {'numPresses': session.numPresses += numPresses} }, (err,numReplaced) => {
+           if(err){
+             log(err.message)
+           }
+         }
        }
    })
-	 updateState(uuid, unit, phoneNumber,type, STATES.STARTED);
-	 saveState();
-	 io.emit("stateupdate", STATE);
 	 if (needToSendMessage(phoneNumber)) {
 		sendUrgencyMessage(phoneNumber);
 	}
@@ -152,6 +162,11 @@ function handleTwilioRequest(req) {
 }
 
 function needToSendMessage(buttonPhone) {
+
+  db.findOne({'phoneNumber':phoneNumber, 'respondedTo':false}, function(err, session) {
+
+
+
 	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses === 3 || STATE[buttonPhone].numPresses % 5 === 0);
 }
 
