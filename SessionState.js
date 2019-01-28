@@ -15,12 +15,24 @@ class SessionState {
         this.unit = unit;
         this.phoneNumber = phoneNumber;
         this.state = state;
-        this.completed = this.isCompleted();
+        this.completed = this.isRespondedTo();
         this.incidentType = null;
         this.numPresses = numPresses;
         this.notes = null;
         this.lastUpdate = moment().toString();
   }
+
+	constructor(doc){
+		this.uuid = doc.uuid;
+		this.unit = doc.unit;
+		this.phoneNumber = doc.phoneNumber;
+		this.state = doc.state;
+		this.completed = this.isRespondedTo();
+		this.incidentType = null;
+		this.numPresses = doc.numPresses;
+		this.notes = null;
+		this.lastUpdate = moment().toString();
+	}
 
   advanceSession(messageText) {
 
@@ -74,7 +86,7 @@ class SessionState {
 
   update(uuid, unit, phoneNumber,type, state) {
 
-  	if (!this.isCompleted()) //there is an ongoing request for help
+  	if (!this.isRespondedTo()) //there is an ongoing request for help
 		{ if (this.uuid == uuid) {
 			this.incrementButtonPresses(type);
 		}
@@ -84,10 +96,9 @@ class SessionState {
 			this.phoneNumber = phoneNumber;
 			this.state = state;
 			this.notes = null;
-			this.completed = this.isCompleted();
+			this.RespondedTo = this.isRespondedTo();
 			this.numPresses = 1;
-
-	this.lastUpdate = moment().toString();
+			this.lastUpdate = moment().toString();
 	}
 }
 
@@ -100,7 +111,7 @@ class SessionState {
 		}
   }
 
-  isCompleted() { // a request can move down the queue once the incident is dealt with
+  isRespondedTo() { // a request can move down the queue once the incident is dealt with
   	return (this.state == STATES.WAITING_FOR_CATEGORY || this.state == STATES.WAITING_FOR_DETAILS || this.state == STATES.COMPLETED || this.state == STATES.TIMED_OUT);
   }
 

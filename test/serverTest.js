@@ -12,6 +12,8 @@ require('dotenv').load();
 describe('Chatbot server', () => {
 
 	let baseUrl = "https://chatbot.brave.coop";
+
+	//TODO: replace with database file
 	let stateFilename = "buttonPressesTest";
 
 	let defaultRequest = {
@@ -65,6 +67,8 @@ describe('Chatbot server', () => {
 			}
   			delete require.cache[require.resolve('../server.js')];
   			app = require('../server.js');
+
+				//Create database on teardown
 			fs.writeFileSync('./' + stateFilename + '.json', '{}');
 
 		});
@@ -95,6 +99,7 @@ describe('Chatbot server', () => {
 
 			let response = await chai.request(app).post('/').send(defaultRequest);
 
+			//TODO: Replace with database table
 			let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 			let stateData = allStateData[defaultBody.PhoneNumber];
 			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
@@ -117,7 +122,7 @@ describe('Chatbot server', () => {
 
 			let response = await chai.request(app).post('/').send(defaultRequest);
 			response = await chai.request(app).post('/').send(defaultRequest2);
-
+			//TODO: REPLACE WITH DATABASE
 			let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 			let stateData = allStateData[defaultBody.PhoneNumber];
 			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
@@ -140,7 +145,7 @@ describe('Chatbot server', () => {
 			let response = await chai.request(app).post('/').send(defaultRequest);
 		    response = await chai.request(app).post('/').send(defaultRequestDouble);
 			response = await chai.request(app).post('/').send(defaultRequestHold);
-
+			//TODO: REPLACE WITH DATABASE
 			let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
 			let stateData = allStateData[defaultBody.PhoneNumber];
 			currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
@@ -165,6 +170,8 @@ describe('Chatbot server', () => {
 			if(fs.existsSync('buttonsTest.db')){
 				fs.unlinkSync('buttonsTest.db');
 			}
+
+			//TODO: REPLACE WITH DATABASE IN TEARDOWNS
 				delete require.cache[require.resolve('../server.js')];
   			app = require('../server.js');
 			fs.writeFileSync('./' + stateFilename + '.json', '{}');
