@@ -125,7 +125,6 @@ function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
              log(err.message)
            }
          }
-       }
    })
 	 if (needToSendMessage(phoneNumber)) {
 		sendUrgencyMessage(phoneNumber);
@@ -141,18 +140,21 @@ function handleTwilioRequest(req) {
 	let phoneNumber = req.body.From;
 	let buttonPhone = req.body.To;
 	let message = req.body.Body;
+
+  db.findOne({'phoneNumber':buttonPhone, 'latest':true}, function(err, session) {
+
+    let stateObject = new SessionState(session);
+
+
+
 	if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
-		let returnMessage = STATE[buttonPhone].advanceSession(message);
+		let returnMessage = stateObject.advanceSession(message);
 		sendTwilioMessage(buttonPhone, returnMessage);
-		saveState();
-        //put completed states in the database
-        if(STATE[buttonPhone].state == STATES.COMPLETED) {
-            db.insert(STATE[buttonPhone], (err, docs) => {
-                if(err) {
-                    log(err.message)
-                }
-            })
-        }
+    db.update({_id: session._id}, { $set: {'state': stateObject.state} }, (err,numReplaced) => {
+      if(err){
+        handleErrorRequest('database error' + err)
+      }
+    )
     	io.emit("stateupdate", STATE);
 		return 200;
 	} else {
@@ -163,22 +165,41 @@ function handleTwilioRequest(req) {
 
 function needToSendMessage(buttonPhone) {
 
-  db.findOne({'phoneNumber':phoneNumber, 'respondedTo':false}, function(err, session) {
+  db.findOne({'phoneNumber':buttonPhone, 'respondedTo':false}, function(err, session) {
+     //If there is no such session, create an entry in the database corresponding to a new seession
+      if(session === null) {
+        handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
+        return false
 
-
-
-	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses === 3 || STATE[buttonPhone].numPresses % 5 === 0);
+      }
+      //If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
+      else {
+        return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0).
+      }
+  })
 }
 
 function sendUrgencyMessage(phoneNumber) {
 
-	if (STATE[phoneNumber].numPresses === 1) {
-		sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + STATE[phoneNumber].unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
-		setTimeout(remindToSendMessage, 300000, phoneNumber);
-		setTimeout(sendStaffAlert, 420000, phoneNumber, STATE[phoneNumber].unit.toString());
-	} else if (STATE[phoneNumber].numPresses % 5 === 0 || STATE[phoneNumber].numPresses === 3) {
-		sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + STATE[phoneNumber].numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
-	}
+  db.findOne({'phoneNumber':buttonPhone, 'respondedTo':false}, function(err, session) {
+     //If there is no such session, create an entry in the database corresponding to a new seession
+      if(session === null) {
+        handleErrorRequest('No Open Session to Send Urgency Message to')
+
+      }
+      //If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
+      else {
+        if (session.numPresses === 1) {
+      		sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
+      		setTimeout(remindToSendMessage, 300000, phoneNumber);
+      		setTimeout(sendStaffAlert, 420000, phoneNumber, session.unit.toString());
+      	} else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
+      		sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
+      	}
+      }
+  })
+
+
 }
 
 function sendTwilioMessage(phone, msg) {
@@ -189,11 +210,28 @@ function sendTwilioMessage(phone, msg) {
 }
 
 function remindToSendMessage(phoneNumber) {
-	if (STATE[phoneNumber].state === STATES.STARTED) {
-		STATE[phoneNumber].state = STATES.WAITING_FOR_REPLY;
-		io.emit("stateupdate", STATE);
-		sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
-	}
+
+  db.findOne({'phoneNumber':buttonPhone, 'respondedTo':false}, function(err, session) {
+     //If there is no such session, create an entry in the database corresponding to a new seession
+      if(session === null) {
+        handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
+      }
+      //If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
+      else {
+        if (session.state === STATES.STARTED) {
+          db.update({_id: session._id}, { $set: {'state': STATES.WAITING_FOR_REPLY} }, (err,numReplaced) => {
+            if(err){
+              log(err.message)
+            }
+          }
+          })
+      		io.emit("stateupdate", STATE);
+      		sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
+      	}
+      }
+  })
+
+
 }
 
 function registryInsert(array) {
@@ -201,18 +239,15 @@ function registryInsert(array) {
 }
 
 function sendStaffAlert(phoneNumber, unit) {
-	if (STATE[phoneNumber].state === STATES.WAITING_FOR_REPLY) {
-        client.messages
-          .create({from: phoneNumber, body: 'There has been an unresponed request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
-          .then(message => log(message.sid))
-          .done();
-    }
-    //Unresponded alerts are completed and logged in database
-    db.insert(STATE[phoneNumber], (err, docs) => {
-        if(err) {
-            log(err.message)
-        }
-    })
+
+  db.findOne({'phoneNumber':buttonPhone, 'respondedTo':false}, function(err, session) {
+    if (session.state === STATES.WAITING_FOR_REPLY) {
+          client.messages
+            .create({from: phoneNumber, body: 'There has been an unresponed request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
+            .then(message => log(message.sid))
+            .done();
+      }
+  })
 }
 
 app.use(cookieParser());
