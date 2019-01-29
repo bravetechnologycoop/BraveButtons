@@ -21,15 +21,13 @@ let registry = new Datastore({
 
 registry.loadDatabase()
 
-if (process.env.NODE_ENV !== 'test') {
-	sessions.loadDatabase();
-}
+sessions.loadDatabase();
 
 // compact data file every 5 minutes
 if (process.env.NODE_ENV !== 'test') {
-	db.persistence.setAutocompactionInterval(5*60000)
+	sessions.persistence.setAutocompactionInterval(5*60000)
 } else {
-    db.persistence.setAutocompactionInterval(10)
+    sessions.persistence.setAutocompactionInterval(10)
 }
 
 const app = express();
@@ -73,21 +71,6 @@ function loadState() {
 	}
 }
 
-function updateState(uuid, unit, phoneNumber, type, state) {
-    if(type === "double_click") {
-        numPresses = 2;
-    }
-    else {
-        numPresses = 1;
-    }
-
-	if (STATE == null || Object.keys(STATE).length === 0 || !STATE.hasOwnProperty(phoneNumber)) {
-		STATE[phoneNumber] = new SessionState(uuid, unit, phoneNumber, state, numPresses);
-	}
-    else {
-		STATE[phoneNumber].update(uuid, unit, phoneNumber, type, state);
-	}
-}
 
 function saveState() {
     fs.writeFileSync('./' + stateFilename + '.json', JSON.stringify(STATE));
@@ -124,8 +107,9 @@ function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
            if(err){
              log(err.message)
            }
-         }
-   })
+         })
+      }
+    })
 	 if (needToSendMessage(phoneNumber)) {
 		sendUrgencyMessage(phoneNumber);
 	}
@@ -143,9 +127,7 @@ function handleTwilioRequest(req) {
 
   sessions.findOne({'phoneNumber':buttonPhone, 'latest':true}, function(err, session) {
 
-    let stateObject = new SessionState(session);
-
-
+let stateObject = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
 
 	if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
 		let returnMessage = stateObject.advanceSession(message);
@@ -153,15 +135,15 @@ function handleTwilioRequest(req) {
     sessions.update({_id: session._id}, { $set: {'state': stateObject.state} }, (err,numReplaced) => {
       if(err){
         handleErrorRequest('database error' + err)
-      }
-    )
+      }})
+
     	io.emit("stateupdate", STATE);
 		return 200;
 	} else {
 		handleErrorRequest('Invalid Phone Number');
 		return 400;
 	}
-}
+})}
 
 function needToSendMessage(buttonPhone) {
 
@@ -174,7 +156,7 @@ function needToSendMessage(buttonPhone) {
       }
       //If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
       else {
-        return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0).
+        return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0)
       }
   })
 }
@@ -222,9 +204,7 @@ function remindToSendMessage(phoneNumber) {
           sessions.update({_id: session._id}, { $set: {'state': STATES.WAITING_FOR_REPLY} }, (err,numReplaced) => {
             if(err){
               log(err.message)
-            }
-          }
-          })
+            }})
       		io.emit("stateupdate", STATE);
       		sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
       	}
@@ -342,10 +322,10 @@ app.post('/', jsonBodyParser, (req, res) => {
                 res.status(400).send();
             }
             else {
-                if(button.type.toString()== 'double_click'){
-                  let numPresses = 2;
-                }else {
-                  numPresses = 1
+                if(req.body.Type == 'double_click'){
+                  numPresses = 2;
+                }else{
+                 numPresses = 1
                 }
                 handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), numPresses)
                 res.status(200).send();
@@ -382,6 +362,9 @@ if (process.env.NODE_ENV === 'test') { // local http server for testing
     //TODO: put into serverTest
     registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
                      {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
+
+    //TODO: put into serverTest
+
 }
 else {
 	let httpsOptions = {

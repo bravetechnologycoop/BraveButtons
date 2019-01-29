@@ -22,18 +22,6 @@ class SessionState {
         this.lastUpdate = moment().toString();
   }
 
-	constructor(doc){
-		this.uuid = doc.uuid;
-		this.unit = doc.unit;
-		this.phoneNumber = doc.phoneNumber;
-		this.state = doc.state;
-		this.completed = this.isRespondedTo();
-		this.incidentType = null;
-		this.numPresses = doc.numPresses;
-		this.notes = null;
-		this.lastUpdate = moment().toString();
-	}
-
   advanceSession(messageText) {
 
   	let returnMessage;
@@ -96,7 +84,7 @@ class SessionState {
 			this.phoneNumber = phoneNumber;
 			this.state = state;
 			this.notes = null;
-			this.RespondedTo = this.isRespondedTo();
+			this.respondedTo = this.isRespondedTo();
 			this.numPresses = 1;
 			this.lastUpdate = moment().toString();
 	}
