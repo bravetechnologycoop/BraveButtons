@@ -6,7 +6,7 @@ BASEDIR=$(dirname "$0")
 if [[ $EUID > 0 ]]; then
   echo "this script needs sudo privelages to run correctly."
   exit 1
-elif [[ ! -e "$BASEDIR/$1" ]]; then
+elif [[ ! -n "$1" ]]; then
   echo "please supply the path to the config file as the first argument when running this script."
   exit 1
 else
@@ -48,9 +48,11 @@ else
   echo "$hosts_file" > /etc/hosts
   echo "$hostname" > /etc/hostname
 
-  mkdir /home/pi/.ssh
-  ssh-keygen -t rsa -N "" -f /home/pi/.ssh/id_rsa
-  chown -R pi:pi /home/pi/.ssh
+  if [[ ! -e /home/pi/.ssh/id_rsa ]]; then
+    mkdir /home/pi/.ssh
+    ssh-keygen -t rsa -N "" -f /home/pi/.ssh/id_rsa
+    chown -R pi:pi /home/pi/.ssh
+  fi
   echo "SSH public key:"
   cat /home/pi/.ssh/id_rsa.pub
   read -p "please copy the SSH public key to the remote access server. press [Enter] when you are finished."
