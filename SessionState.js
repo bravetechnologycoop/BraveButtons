@@ -15,7 +15,8 @@ class SessionState {
         this.unit = unit;
         this.phoneNumber = phoneNumber;
         this.state = state;
-        this.completed = this.isRespondedTo();
+        this.completed = this.isCompleted();
+				this.respondedTo = this.isRespondedTo();
         this.incidentType = null;
         this.numPresses = numPresses;
         this.notes = null;
@@ -99,9 +100,13 @@ class SessionState {
 		}
   }
 
-  isRespondedTo() { // a request can move down the queue once the incident is dealt with
+  isCompleted() { // a request can move down the queue once the incident is dealt with
   	return (this.state == STATES.WAITING_FOR_CATEGORY || this.state == STATES.WAITING_FOR_DETAILS || this.state == STATES.COMPLETED || this.state == STATES.TIMED_OUT);
   }
+
+	isRespondedTo(){
+		return (this.state == STATES.WAITING_FOR_CATEGORY || this.state == STATES.WAITING_FOR_DETAILS || this.state == STATES.COMPLETED);
+	}
 
   complete() {
   	this.state = STATES.COMPLETED;

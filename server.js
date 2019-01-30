@@ -87,7 +87,7 @@ function isValidRequest(req, properties) {
 
 function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
 
-	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString() + ' Presses:' + numPresses.toString());
+	 log('UUID: ' + uuid.toString() + ' Unit: ' + unit.toString() + ' Presses: ' + numPresses.toString());
 
    //Check if there's a session for this phone number that has not yet been responded to
    sessions.findOne({'phoneNumber':phoneNumber, 'respondedTo':false}, function(err, session) {
@@ -98,21 +98,25 @@ function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
              if(err) {
                  log(err.message)
              }
-         })
+             if (needToSendMessage(phoneNumber)) {
+              sendUrgencyMessage(phoneNumber);
+            }
 
+         })
        }
        //If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
        else {
          sessions.update({_id: session._id}, { $set: {'lastUpdate': moment(), 'numPresses': session.numPresses += numPresses} }, (err,numReplaced) => {
            if(err){
+             handleErrorRequest('Error in database operation')
              log(err.message)
            }
+           if (needToSendMessage(phoneNumber)) {
+            sendUrgencyMessage(phoneNumber);
+          }
          })
       }
     })
-	 if (needToSendMessage(phoneNumber)) {
-		sendUrgencyMessage(phoneNumber);
-	}
 }
 
 function handleErrorRequest(error) {
@@ -125,9 +129,9 @@ function handleTwilioRequest(req) {
 	let buttonPhone = req.body.To;
 	let message = req.body.Body;
 
-  sessions.findOne({'phoneNumber':buttonPhone, 'latest':true}, function(err, session) {
+  sessions.findOne({'phoneNumber':buttonPhone, 'completed':false}, function(err, session) {
 
-let stateObject = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+  let stateObject = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
 
 	if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
 		let returnMessage = stateObject.advanceSession(message);
@@ -148,13 +152,10 @@ let stateObject = new SessionState(session.uuid, session.unit, session.phoneNumb
 function needToSendMessage(buttonPhone) {
 
   sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false}, function(err, session) {
-     //If there is no such session, create an entry in the database corresponding to a new seession
       if(session === null) {
         handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
         return false
-
       }
-      //If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
       else {
         return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0)
       }
