@@ -62,8 +62,10 @@ else
   autossh_systemd_unit_file="${autossh_systemd_unit_file//REMOTE_ACCESS_SERVER_FQDN/$remoteAccessServerFQDN}"
   echo "$autossh_systemd_unit_file" > /etc/systemd/system/brave-autossh.service
 
+  heartbeatScriptDir="$(pwd)/$BASEDIR"
+  heartbeatScriptDir=${heartbeatScriptDir%"/."}
   heartbeat_systemd_unit_file=$(<$BASEDIR/heartbeat_systemd_unit_file.txt)
-  heartbeat_systemd_unit_file="${heartbeat_systemd_unit_file//HEARTBEAT_SCRIPT_PATH/$(pwd)/$BASEDIR/heartbeat.py}"
+  heartbeat_systemd_unit_file="${heartbeat_systemd_unit_file//HEARTBEAT_SCRIPT_DIR/$heartbeatScriptDir}"
   echo "$heartbeat_systemd_unit_file" > /etc/systemd/system/brave-heartbeat.service
 
   systemctl daemon-reload

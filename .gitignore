@@ -5,3 +5,4 @@ server.db
 __pycache__
 .coverage
 *.pyc
+pi_config.ini

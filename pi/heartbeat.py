@@ -3,8 +3,12 @@ import time
 import datetime
 import json
 import uuid
+import configparser
 
-SERVER_URL = 'heartbeat.brave.coop'
+config = configparser.ConfigParser()
+config.read('pi_config.ini')
+
+SERVER_URL = config['Heartbeat']['heartbeatServerFQDN']
 RELAY_PIN = 10
 LED_PIN = 9
 
