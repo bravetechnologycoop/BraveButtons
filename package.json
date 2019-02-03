@@ -15,6 +15,7 @@
     "mocha": "^5.2.0",
     "moment": "^2.22.2",
     "nedb": "^1.8.0",
+    "nedb-promise": "^2.0.1",
     "nedb-repl": "^1.2.2",
     "ngrok": "^3.1.0",
     "node-json-db": "^0.9.1",
@@ -23,7 +24,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "NODE_ENV=test mocha --timeout 40000 \"test/**/*.js\"",
+    "test": "NODE_ENV=test mocha --timeout 5000 \"test/**/*.js\"",
     "start": "node server.js"
   },
   "repository": {

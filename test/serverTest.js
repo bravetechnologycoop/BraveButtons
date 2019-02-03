@@ -7,7 +7,7 @@ let chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
 require('dotenv').load();
-let Datastore = require('nedb')
+let Datastore = require('nedb-promise')
 
 describe('Chatbot server', () => {
 
@@ -56,22 +56,15 @@ describe('Chatbot server', () => {
 
 	describe('POST request: button press', () => {
 
-		let currentState;
-
 		beforeEach(() => {
-			if(fs.existsSync('buttonsTest.db')){
-				fs.unlinkSync('buttonsTest.db');
-			}
-
-			// if(fs.existsSync('serverTest.db')){
-			// 	fs.unlinkSync('serverTest.db');
-			// }
-
+			if(fs.existsSync('../serverTest.db')) {
+				fs.unlinkSync('../serverTest.db');
+			}	
 			delete require.cache[require.resolve('../server.js')];
   			app = require('../server.js');
 		});
 
-		afterEach(function () {
+		afterEach(function() {
 		    app.close();
 	    });
 
@@ -92,84 +85,71 @@ describe('Chatbot server', () => {
 
 		it('should update the session state for a valid request', async () => {
 			
-            let currentState = null;
-
 			let response = await chai.request(app).post('/').send(defaultRequest);
 
-			//TODO: Replace with database table
-			let sessions = new Datastore({filename: `./serverTest.db`, });
-			sessions.loadDatabase();
-
-			sessions.findOne({'phoneNumber':defaultBody.PhoneNumber}, (err,session) => {
-                currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-			    expect(currentState).to.not.be.null;
-                expect(currentState).to.have.property('uuid');
-                expect(currentState).to.have.property('unit');
-                expect(currentState).to.have.property('completed');
-                expect(currentState).to.have.property('state');
-                expect(currentState).to.have.property('numPresses');
-                expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
-                expect(currentState.unit).to.deep.equal(defaultBody.Unit);
-                expect(currentState.completed).to.be.false;
-                expect(currentState.numPresses).to.deep.equal(2);
-                log(currentState.numPresses.toString())
-			})
+			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
+			let session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
+            expect(session).to.not.be.null
+            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+            
+            expect(currentState).to.not.be.null;
+            expect(currentState).to.have.property('uuid');
+            expect(currentState).to.have.property('unit');
+            expect(currentState).to.have.property('completed');
+            expect(currentState).to.have.property('state');
+            expect(currentState).to.have.property('numPresses');
+            expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
+            expect(currentState.unit).to.deep.equal(defaultBody.Unit);
+            expect(currentState.completed).to.be.false;
+            expect(currentState.numPresses).to.deep.equal(2);
+            log(currentState.numPresses.toString())
 		});
 
 		it('should ignore requests from different uuid if session not completed', async () => {
 
-			let currentState = null;
-
 			let response = await chai.request(app).post('/').send(defaultRequest);
 			response = await chai.request(app).post('/').send(defaultRequest2);
 
-			let sessions = new Datastore({filename: `./serverTest.db`, });
-			sessions.loadDatabase();
-
-			sessions.findOne({'phoneNumber':defaultBody.PhoneNumber}, (err,session) => {
-                currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-                expect(currentState).to.not.be.null;
-                expect(currentState).to.have.property('uuid');
-                expect(currentState).to.have.property('unit');
-                expect(currentState).to.have.property('completed');
-                expect(currentState).to.have.property('numPresses');
-                expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
-                expect(currentState.unit).to.deep.equal(defaultBody.Unit);
-                expect(currentState.completed).to.be.false;
-                expect(currentState.numPresses).to.deep.equal(3);
-            })
+			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
+			let session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
+            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+            
+            expect(currentState).to.not.be.null;
+            expect(currentState).to.have.property('uuid');
+            expect(currentState).to.have.property('unit');
+            expect(currentState).to.have.property('completed');
+            expect(currentState).to.have.property('numPresses');
+            expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
+            expect(currentState.unit).to.deep.equal(defaultBody.Unit);
+            expect(currentState.completed).to.be.false;
+            expect(currentState.numPresses).to.deep.equal(3);
 		});
 
 		it('should increment button presses when requests from same uuid if session not completed', async () => {
 
-			let currentState = null;
-
 			let response = await chai.request(app).post('/').send(defaultRequest);
 		    response = await chai.request(app).post('/').send(defaultRequestDouble);
 			response = await chai.request(app).post('/').send(defaultRequestHold);
-			//TODO: REPLACE WITH DATABASE
-			let sessions = new Datastore({filename: `./serverTest.db`, });
-			sessions.loadDatabase();
+			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
 
-			sessions.findOne({'phoneNumber':defaultBody.PhoneNumber}, (err,session) => {
-                currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+			let session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
+            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
 
-                expect(currentState).to.not.be.null;
-                expect(currentState).to.have.property('uuid');
-                expect(currentState).to.have.property('unit');
-                expect(currentState).to.have.property('completed');
-                expect(currentState).to.have.property('state');
-                expect(currentState).to.have.property('numPresses');
-                expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
-                expect(currentState.unit).to.deep.equal(defaultBody.Unit);
-                expect(currentState.completed).to.be.false;
-                expect(currentState.numPresses).to.deep.equal(7);
-		    })
+            expect(currentState).to.not.be.null;
+            expect(currentState).to.have.property('uuid');
+            expect(currentState).to.have.property('unit');
+            expect(currentState).to.have.property('completed');
+            expect(currentState).to.have.property('state');
+            expect(currentState).to.have.property('numPresses');
+            expect(currentState.uuid).to.deep.equal(defaultBody.UUID);
+            expect(currentState.unit).to.deep.equal(defaultBody.Unit);
+            expect(currentState.completed).to.be.false;
+            expect(currentState.numPresses).to.deep.equal(7);
 		});
 
 		after(() => {
-			if(fs.existsSync('serverTest.db')){
-				fs.unlinkSync('serverTest.db');
+			if(fs.existsSync('../serverTest.db')) {
+				fs.unlinkSync('../serverTest.db');
 			}	
         });
 	});
@@ -177,16 +157,9 @@ describe('Chatbot server', () => {
 	describe('POST request: twilio message', () => {
 
 		beforeEach(() => {
-			if(fs.existsSync('buttonsTest.db')){
-				fs.unlinkSync('buttonsTest.db');
-			}
-
-			// if(fs.existsSync('serverTest.db')){
-			// 	fs.unlinkSync('serverTest.db');
-			// }
-
-
-			//TODO: REPLACE WITH DATABASE IN TEARDOWNS
+			if(fs.existsSync('../serverTest.db')) {
+				fs.unlinkSync('../serverTest.db');
+			}	
 		    delete require.cache[require.resolve('../server.js')];
   			app = require('../server.js');
 		});
@@ -209,39 +182,28 @@ describe('Chatbot server', () => {
 		it('should return ok to a valid request and advance session appropriately', async () => {
 
 		    let response = await chai.request(app).post('/').send(defaultBody);
-			let sessions = new Datastore({filename: `./serverTest.db`, });
-			sessions.loadDatabase();
+			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
 
-			sessions.findOne({'phoneNumber':defaultBody.PhoneNumber}, (err,session) => {
-			    currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-
-				//TODO: REPLACE WITH DATABASE REFERENCE
-		        //let allStateData = JSON.parse(fs.readFileSync('./' + stateFilename + '.json'));
-                //let stateData = allStateData[defaultBody.PhoneNumber];
-		        //currentState = new SessionState(stateData.uuid, stateData.unit, stateData.phoneNumber, stateData.state, stateData.numPresses);
-
-			    expect(currentState.state).to.deep.equal(STATES.STARTED);
-            })
+			let session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
+            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+            expect(currentState.state).to.deep.equal(STATES.STARTED);
 
 			response = await chai.request(app).post('/message').send(twilioMessageBody);
 			expect(response).to.have.status(200);
 
-            sessions.findOne({'phoneNumber':defaultBody.PhoneNumber}, (err,session) => {
-		        currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-		        expect(currentState.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
-	        })
+            session = sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
+            currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+            expect(currentState.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
 		});
 
 		it('should be able to advance a session to completion and accept new requests', async () => {
 
-			let sessions = new Datastore({filename: `./serverTest.db`, });
-			sessions.loadDatabase();
+			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
 
 			let response = await chai.request(app).post('/').send(defaultBody);
-			sessions.findOne({'phoneNumber':defaultBody.PhoneNumber}, (err,session) => {
-			    currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-			    expect(currentState.state).to.deep.equal(STATES.STARTED);
-		    })
+			let session = await sessions.findOne({'phoneNumber': defaultBody.PhoneNumber})
+            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+            expect(currentState.state).to.deep.equal(STATES.STARTED);
 
 			response = await chai.request(app).post('/message').send(twilioMessageBody); // => category
 			response = await chai.request(app).post('/message').send({'From': process.env.RESPONDER_PHONE_TEST, 'Body': '0', 'To': defaultBody.PhoneNumber}); // => details
@@ -249,23 +211,21 @@ describe('Chatbot server', () => {
 
 			expect(response).to.have.status(200);
 
-			sessions.findOne({'phoneNumber':defaultBody.PhoneNumber}, (err,session) => {
+			session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
 
-			    currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-			    expect(currentState.state).to.deep.equal(STATES.COMPLETED);
-  		        expect(currentState.completed).to.be.true;
-            })
+            currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+            expect(currentState.state).to.deep.equal(STATES.COMPLETED);
+            expect(currentState.completed).to.be.true;
 
 			// now send a different request
 			response = await chai.request(app).post('/').send(defaultBody2);
 
-    	    sessions.findOne({'phoneNumber':defaultBody2.PhoneNumber}, (err,session) => {
-			    currentState = new SessionState(sessions.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-			    expect(currentState.uuid).to.deep.equal(defaultBody2.UUID);
-			    expect(currentState.unit).to.deep.equal(defaultBody2.Unit);
-			    expect(currentState.completed).to.be.false;
-			    expect(currentState.numPresses).to.deep.equal(1);
-            })
+    	    session = sessions.findOne({'phoneNumber':defaultBody2.PhoneNumber})
+            currentState = new SessionState(sessions.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+            expect(currentState.uuid).to.deep.equal(defaultBody2.UUID);
+            expect(currentState.unit).to.deep.equal(defaultBody2.Unit);
+            expect(currentState.completed).to.be.false;
+            expect(currentState.numPresses).to.deep.equal(1);
 		});
 
 		afterEach(function () {
@@ -273,8 +233,8 @@ describe('Chatbot server', () => {
 		});
 
 		after(() => {
-			if(fs.existsSync('serverTest.db')) {
-				fs.unlinkSync('serverTest.db');
+			if(fs.existsSync('../serverTest.db')) {
+				fs.unlinkSync('../serverTest.db');
 			}	
         });
 	});
