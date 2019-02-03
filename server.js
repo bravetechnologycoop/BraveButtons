@@ -362,8 +362,6 @@ if (process.env.NODE_ENV === 'test') { // local http server for testing
     registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
                      {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
 
-    //TODO: put into serverTest
-
 }
 else {
 	let httpsOptions = {
