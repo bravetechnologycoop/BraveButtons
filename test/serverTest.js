@@ -1,7 +1,10 @@
 let chai = require('chai');
 let SessionState = require('../SessionState.js');
 const STATES = require('../SessionStateEnum.js');
-let app;
+let imports = require('../server.js')
+let server = imports.server
+let registry = imports.registry
+let sessions = imports.sessions
 let fs = require('fs');
 let chaiHttp = require('chai-http');
 chai.use(chaiHttp);
@@ -10,9 +13,6 @@ require('dotenv').load();
 let Datastore = require('nedb-promise')
 
 describe('Chatbot server', () => {
-
-	//TODO: replace with database file
-	let stateFilename = "buttonPressesTest";
 
 	let defaultRequest = {
 		'UUID': '111',
@@ -56,38 +56,38 @@ describe('Chatbot server', () => {
 
 	describe('POST request: button press', () => {
 
-		beforeEach(() => {
-			if(fs.existsSync('../serverTest.db')) {
-				fs.unlinkSync('../serverTest.db');
-			}	
-			delete require.cache[require.resolve('../server.js')];
-  			app = require('../server.js');
+		beforeEach(async function() {
+            await sessions.remove({}, {multi: true})
+            await registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
+                                   {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}])
 		});
 
-		afterEach(function() {
-		    app.close();
+		afterEach(async function() {
+            await sessions.remove({}, {multi: true})
+            await registry.remove({}, {multi: true})
+            sessions.nedb.persistence.compactDatafile()
+            registry.nedb.persistence.compactDatafile()
 	    });
 
 		it('should return 400 to a request with an empty body', async () => {
-			let response = await chai.request(app).post('/') .send({});
+			let response = await chai.request(server).post('/').send({});
 			expect(response).to.have.status(400);
 		});
 
 		it('should return 400 to a request with an unregistered button', async () => {
-			let response = await chai.request(app).post('/') .send({'UUID': '666','Type': 'click'});
+			let response = await chai.request(server).post('/').send({'UUID': '666','Type': 'click'});
 			expect(response).to.have.status(400);
 		});
 
 		it('should return ok to a valid request', async () => {
-			let response = await chai.request(app).post('/') .send(defaultRequest);
+			let response = await chai.request(server).post('/').send(defaultRequest);
 			expect(response).to.have.status(200);
 		});
 
 		it('should update the session state for a valid request', async () => {
 			
-			let response = await chai.request(app).post('/').send(defaultRequest);
+			let response = await chai.request(server).post('/').send(defaultRequest);
 
-			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
 			let session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
             expect(session).to.not.be.null
             let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
@@ -107,10 +107,9 @@ describe('Chatbot server', () => {
 
 		it('should ignore requests from different uuid if session not completed', async () => {
 
-			let response = await chai.request(app).post('/').send(defaultRequest);
-			response = await chai.request(app).post('/').send(defaultRequest2);
+			let response = await chai.request(server).post('/').send(defaultRequest);
+			response = await chai.request(server).post('/').send(defaultRequest2);
 
-			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
 			let session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
             let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
             
@@ -127,10 +126,9 @@ describe('Chatbot server', () => {
 
 		it('should increment button presses when requests from same uuid if session not completed', async () => {
 
-			let response = await chai.request(app).post('/').send(defaultRequest);
-		    response = await chai.request(app).post('/').send(defaultRequestDouble);
-			response = await chai.request(app).post('/').send(defaultRequestHold);
-			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
+			let response = await chai.request(server).post('/').send(defaultRequest);
+		    response = await chai.request(server).post('/').send(defaultRequestDouble);
+			response = await chai.request(server).post('/').send(defaultRequestHold);
 
 			let session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
             let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
@@ -146,49 +144,47 @@ describe('Chatbot server', () => {
             expect(currentState.completed).to.be.false;
             expect(currentState.numPresses).to.deep.equal(7);
 		});
-
-		after(() => {
-			if(fs.existsSync('../serverTest.db')) {
-				fs.unlinkSync('../serverTest.db');
-			}	
-        });
 	});
 
 	describe('POST request: twilio message', () => {
 
-		beforeEach(() => {
-			if(fs.existsSync('../serverTest.db')) {
-				fs.unlinkSync('../serverTest.db');
-			}	
-		    delete require.cache[require.resolve('../server.js')];
-  			app = require('../server.js');
+		beforeEach(async function() {
+            await sessions.remove({}, {multi: true})
+            await registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
+                                   {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}])
 		});
 
+		afterEach(async function() {
+            await sessions.remove({}, {multi: true})
+            await registry.remove({}, {multi: true})
+            sessions.nedb.persistence.compactDatafile()
+            registry.nedb.persistence.compactDatafile()
+	    });
+
 		it('should return ok to a valid request', async () => {
-			let response = await chai.request(app).post('/message').send(twilioMessageBody);
+			let response = await chai.request(server).post('/message').send(twilioMessageBody);
 			expect(response).to.have.status(200);
 		});
 
 		it('should return 400 to a request with an incomplete body', async () => {
-			let response = await chai.request(app).post('/message').send({'Body': 'hi'});
+			let response = await chai.request(server).post('/message').send({'Body': 'hi'});
 			expect(response).to.have.status(400);
 		});
 
 		it('should return 400 to a request from an invalid phone number', async () => {
-			let response = await chai.request(app).post('/message').send({'Body': 'hi', 'From': '+16664206969'});
+			let response = await chai.request(server).post('/message').send({'Body': 'hi', 'From': '+16664206969'});
 			expect(response).to.have.status(400);
 		});
 
 		it('should return ok to a valid request and advance session appropriately', async () => {
 
-		    let response = await chai.request(app).post('/').send(defaultBody);
-			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
+		    let response = await chai.request(server).post('/').send(defaultBody);
 
 			let session = await sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
             let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
             expect(currentState.state).to.deep.equal(STATES.STARTED);
 
-			response = await chai.request(app).post('/message').send(twilioMessageBody);
+			response = await chai.request(server).post('/message').send(twilioMessageBody);
 			expect(response).to.have.status(200);
 
             session = sessions.findOne({'phoneNumber':defaultBody.PhoneNumber})
@@ -198,16 +194,14 @@ describe('Chatbot server', () => {
 
 		it('should be able to advance a session to completion and accept new requests', async () => {
 
-			let sessions = Datastore({filename: '../serverTest.db', autoload: true});
-
-			let response = await chai.request(app).post('/').send(defaultBody);
+			let response = await chai.request(server).post('/').send(defaultBody);
 			let session = await sessions.findOne({'phoneNumber': defaultBody.PhoneNumber})
             let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
             expect(currentState.state).to.deep.equal(STATES.STARTED);
 
-			response = await chai.request(app).post('/message').send(twilioMessageBody); // => category
-			response = await chai.request(app).post('/message').send({'From': process.env.RESPONDER_PHONE_TEST, 'Body': '0', 'To': defaultBody.PhoneNumber}); // => details
-			response = await chai.request(app).post('/message').send(twilioMessageBody);  // complete
+			response = await chai.request(server).post('/message').send(twilioMessageBody); // => category
+			response = await chai.request(server).post('/message').send({'From': process.env.RESPONDER_PHONE_TEST, 'Body': '0', 'To': defaultBody.PhoneNumber}); // => details
+			response = await chai.request(server).post('/message').send(twilioMessageBody);  // complete
 
 			expect(response).to.have.status(200);
 
@@ -218,7 +212,7 @@ describe('Chatbot server', () => {
             expect(currentState.completed).to.be.true;
 
 			// now send a different request
-			response = await chai.request(app).post('/').send(defaultBody2);
+			response = await chai.request(server).post('/').send(defaultBody2);
 
     	    session = sessions.findOne({'phoneNumber':defaultBody2.PhoneNumber})
             currentState = new SessionState(sessions.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
@@ -227,15 +221,5 @@ describe('Chatbot server', () => {
             expect(currentState.completed).to.be.false;
             expect(currentState.numPresses).to.deep.equal(1);
 		});
-
-		afterEach(function () {
-		    app.close();
-		});
-
-		after(() => {
-			if(fs.existsSync('../serverTest.db')) {
-				fs.unlinkSync('../serverTest.db');
-			}	
-        });
 	});
 });
