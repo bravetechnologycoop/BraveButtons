@@ -12,12 +12,12 @@ const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 
 let sessions = Datastore({
-    filename: './' + getEnvVar("DB_NAME") + '.db',
+    filename: './db/' + getEnvVar("SESSIONS_DB") + '.db',
     autoload: true
 });
 
 let registry = Datastore({
-    filename: './' + getEnvVar("REGISTRY_DB") + '.db',
+    filename: './db/' + getEnvVar("REGISTRY_DB") + '.db',
     autoload: true
 });
 
