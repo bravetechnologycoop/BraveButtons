@@ -4,4 +4,7 @@ brave_config.json
 .env.test
 .env.local
 .env.staging
-server.db
+registry.db
+registryTest.db
+sessions.db
+sessionsTest.db
