@@ -7,28 +7,22 @@ let jsonBodyParser = bodyParser.json()
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 let SessionState = require('./SessionState.js')
-let Datastore = require('nedb')
+let Datastore = require('nedb-promise')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 
-let sessions = new Datastore({
-    filename: `./` + getEnvVar("DB_NAME") + `.db`,
+let sessions = Datastore({
+    filename: './' + getEnvVar("DB_NAME") + '.db',
+    autoload: true
 });
 
-let registry = new Datastore({
-    filename: `./` + getEnvVar("REGISTRY_DB") + `.db`,
+let registry = Datastore({
+    filename: './' + getEnvVar("REGISTRY_DB") + '.db',
+    autoload: true
 });
-
-registry.loadDatabase()
-sessions.loadDatabase();
 
 // compact data file every 5 minutes
-if (process.env.NODE_ENV !== 'test') {
-	sessions.persistence.setAutocompactionInterval(5*60000)
-} 
-else {
-    sessions.persistence.setAutocompactionInterval(10)
-}
+sessions.nedb.persistence.setAutocompactionInterval(5*60000)
 
 const app = express();
 
@@ -85,101 +79,86 @@ function isValidRequest(req, properties) {
 	return properties.reduce(hasAllProperties, true);
 }
 
-function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
+async function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
 
     log('UUID: ' + uuid.toString() + ' Unit: ' + unit.toString() + ' Presses: ' + numPresses.toString());
 
-    //Check if there's a session for this phone number that has not yet been responded to
-    sessions.findOne({'phoneNumber':phoneNumber, 'respondedTo':false}, function(err, session) {
-        //If there is no such session, create an entry in the database corresponding to a new seession
-        if(session === null) {
-            session = new SessionState(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses);
-            sessions.insert(session, (err, docs) => {
-                if(err) {
-                    log(err.message)
-                }
-                if (needToSendMessage(phoneNumber)) {
-                    sendUrgencyMessage(phoneNumber);
-                }
-            })
+    // Check if there's a session for this phone number that has not yet been responded to
+    let session = await sessions.findOne({'phoneNumber':phoneNumber, 'respondedTo':false})
+    
+    // If there is no such session, create an entry in the database corresponding to a new seession
+    if(session === null) {
+        session = new SessionState(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses);
+        await sessions.insert(session)
+        if (needToSendMessage(phoneNumber)) {
+            sendUrgencyMessage(phoneNumber);
         }
-        //If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
-        else {
-            sessions.update({_id: session._id}, { $set: {'lastUpdate': moment(), 'numPresses': session.numPresses += numPresses} }, (err,numReplaced) => {
-                if(err) {
-                    handleErrorRequest('Error in database operation')
-                    log(err.message)
-                }
-                if (needToSendMessage(phoneNumber)) {
-                    sendUrgencyMessage(phoneNumber);
-                }
-            })
+    }
+    
+    // If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
+    else {
+        await sessions.update({_id: session._id}, { $set: {'lastUpdate': moment(), 'numPresses': session.numPresses += numPresses} })
+        if (needToSendMessage(phoneNumber)) {
+            sendUrgencyMessage(phoneNumber);
         }
-    })
+    }
 }
 
 function handleErrorRequest(error) {
 	log(error);
 }
 
-function handleTwilioRequest(req) {
+async function handleTwilioRequest(req) {
 
 	let phoneNumber = req.body.From;
 	let buttonPhone = req.body.To;
 	let message = req.body.Body;
 
-    sessions.findOne({'phoneNumber':buttonPhone, 'completed':false}, function(err, session) {
+    let session = await sessions.findOne({'phoneNumber':buttonPhone, 'completed':false})
+    let stateObject = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
 
-        let stateObject = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+    if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
+        let returnMessage = stateObject.advanceSession(message);
+        sendTwilioMessage(buttonPhone, returnMessage);
+        await sessions.update({_id: session._id}, { $set: {'state': stateObject.state} })
+        io.emit("stateupdate", STATE);
+        return 200;
+    } 
+    else {
+        handleErrorRequest('Invalid Phone Number');
+        return 400;
+    }
+}
 
-        if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
-            let returnMessage = stateObject.advanceSession(message);
-            sendTwilioMessage(buttonPhone, returnMessage);
-            sessions.update({_id: session._id}, { $set: {'state': stateObject.state} }, (err, numReplaced) => {
-                if(err) {
-                    handleErrorRequest('database error' + err)
-                }
-            })
-            io.emit("stateupdate", STATE);
-            return 200;
+async function needToSendMessage(buttonPhone) {
+
+    let session = await sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false})
+    if(session === null) {
+        handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
+        return false
+    }
+    else {
+        return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0)
+    }
+}
+
+async function sendUrgencyMessage(phoneNumber) {
+
+    let session = await sessions.findOne({'phoneNumber':phoneNumber, 'respondedTo':false})
+    
+    if(session === null) {
+        handleErrorRequest('No Open Session to Send Urgency Message to')
+    }
+    else {
+        if (session.numPresses === 1) {
+            sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
+            setTimeout(remindToSendMessage, 300000, phoneNumber);
+            setTimeout(sendStaffAlert, 420000, phoneNumber, session.unit.toString());
         } 
-        else {
-            handleErrorRequest('Invalid Phone Number');
-            return 400;
+        else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
+            sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
         }
-    })
-}
-
-function needToSendMessage(buttonPhone) {
-
-    sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false}, function(err, session) {
-        if(session === null) {
-            handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
-            return false
-        }
-        else {
-            return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0)
-        }
-    })
-}
-
-function sendUrgencyMessage(phoneNumber) {
-
-    sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false}, function(err, session) {
-        if(session === null) {
-            handleErrorRequest('No Open Session to Send Urgency Message to')
-        }
-        else {
-            if (session.numPresses === 1) {
-                sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
-                setTimeout(remindToSendMessage, 300000, phoneNumber);
-                setTimeout(sendStaffAlert, 420000, phoneNumber, session.unit.toString());
-            } 
-            else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
-                sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
-            }
-        }
-    })
+    }
 }
 
 function sendTwilioMessage(phone, msg) {
@@ -189,24 +168,19 @@ function sendTwilioMessage(phone, msg) {
       .done();
 }
 
-function remindToSendMessage(phoneNumber) {
+async function remindToSendMessage(phoneNumber) {
 
-    sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false}, function(err, session) {
-        if(session === null) {
-            handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
+    let session = await sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false})
+    if(session === null) {
+        handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
+    }
+    else {
+        if (session.state === STATES.STARTED) {
+            await sessions.update({_id: session._id}, { $set: {'state': STATES.WAITING_FOR_REPLY} })
+            io.emit("stateupdate", STATE);
+            sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
         }
-        else {
-            if (session.state === STATES.STARTED) {
-                sessions.update({_id: session._id}, { $set: {'state': STATES.WAITING_FOR_REPLY} }, (err,numReplaced) => {
-                    if(err) {
-                        log(err.message)
-                    }
-                })
-      		    io.emit("stateupdate", STATE);
-      		    sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
-      	    }
-        }
-    })
+    }
 }
 
 function registryInsert(array) {
@@ -309,15 +283,15 @@ app.get('/logout', (req, res) => {
     }
 });
 
-app.post('/', jsonBodyParser, (req, res) => {
+app.post('/', jsonBodyParser, async (req, res) => {
 
-	const requiredBodyParams = ['UUID','Type'];
+    try {
+        const requiredBodyParams = ['UUID','Type'];
 
-	if (isValidRequest(req, requiredBodyParams)) {
-        registry.findOne({'uuid':req.body.UUID}, function(err, button) {
+        if (isValidRequest(req, requiredBodyParams)) {
+            let button = await registry.findOne({'uuid':req.body.UUID})
             if(button === null) {
                 handleErrorRequest(`Bad request: UUID is not registered. UUID is ${req.body.UUID}`);
-                handleErrorRequest(err);
                 res.status(400).send();
             }
             else {
@@ -327,41 +301,47 @@ app.post('/', jsonBodyParser, (req, res) => {
                 else {
                     numPresses = 1
                 }
-                handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), numPresses)
+                await handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), numPresses)
                 res.status(200).send();
             }
-        })
-	}
-    else {
-		handleErrorRequest('Bad request: UUID is missing');
-		res.status(400).send();
-	}
+        }
+        else {
+            handleErrorRequest('Bad request: UUID is missing');
+            res.status(400).send();
+        }
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
 });
 
-app.post('/message', jsonBodyParser, (req, res) => {
+app.post('/message', jsonBodyParser, async (req, res) => {
 
-	const requiredBodyParams = ['Body', 'From', 'To'];
+    try {
+        const requiredBodyParams = ['Body', 'From', 'To'];
 
-	if (isValidRequest(req, requiredBodyParams)) {
-		let status = handleTwilioRequest(req);
-		res.writeHead(200, {'Content-Type': 'text/xml'});
-		res.status(status).send();
+        if (isValidRequest(req, requiredBodyParams)) {
+            let status = await handleTwilioRequest(req);
+            res.writeHead(200, {'Content-Type': 'text/xml'});
+            res.status(status).send();
 
-	} else {
-		handleErrorRequest('Bad request: Body or From fields are missing');
-		res.status(400).send();
-	}
-
+        } 
+        else {
+            handleErrorRequest('Bad request: Body or From fields are missing');
+            res.status(400).send();
+        }
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
 });
 
 let server;
 
 if (process.env.NODE_ENV === 'test') { // local http server for testing
 	server = app.listen(443);
-    //TODO: put into serverTest
-    registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
-                     {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
-
 }
 else {
 	let httpsOptions = {
@@ -374,4 +354,6 @@ else {
 
 const io = require("socket.io")(server);
 
-module.exports = server;
+module.exports.server = server
+module.exports.registry = registry
+module.exports.sessions = sessions
