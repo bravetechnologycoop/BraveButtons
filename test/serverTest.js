@@ -15,10 +15,10 @@ let Datastore = require('nedb-promise')
 describe('Chatbot server', () => {
 
     const unit1UUID = '111'
-    const unit1PhoneNumber = '+16664206969'
+    const unit1PhoneNumber = '+17787847855'
 
     const unit2UUID = '222'
-    const unit2PhoneNumber = '+17774106868'
+    const unit2PhoneNumber = '+17787844764'
 
     const unit1FlicRequest_SingleClick = {
 		'UUID': unit1UUID,
