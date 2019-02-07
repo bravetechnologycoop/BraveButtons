@@ -44,7 +44,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname));
 
 function log(logString) {
-    console.log(moment().toString() + " - " + logString)
+    if(process.env.NODE_ENV === 'test') {
+        console.log('\t' + logString)
+    }
+    else {
+        console.log(moment().toString() + " - " + logString)
+    }
 }
 
 function getEnvVar(name) {
