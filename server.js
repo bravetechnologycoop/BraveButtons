@@ -124,7 +124,7 @@ async function handleTwilioRequest(req) {
 
     if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
         let returnMessage = stateObject.advanceSession(message);
-        sendTwilioMessage(buttonPhone, returnMessage);
+        await sendTwilioMessage(buttonPhone, returnMessage);
         await sessions.update({_id: session._id}, { $set: {'state': stateObject.state} })
         io.emit("stateupdate", STATE);
         return 200;
@@ -156,21 +156,24 @@ async function sendUrgencyMessage(phoneNumber) {
     }
     else {
         if (session.numPresses === 1) {
-            sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
+            await sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
             setTimeout(remindToSendMessage, 300000, phoneNumber);
             setTimeout(sendStaffAlert, 420000, phoneNumber, session.unit.toString());
         } 
         else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
-            sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
+            await sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
         }
     }
 }
 
-function sendTwilioMessage(phone, msg) {
-	client.messages
-      .create({from: phone, body: msg, to: getEnvVar('RESPONDER_PHONE')})
-      .then(message => log(message.sid))
-      .done();
+async function sendTwilioMessage(phone, msg) {
+    try {
+        await client.messages.create({from: phone, body: msg, to: getEnvVar('RESPONDER_PHONE')})
+                             .then(message => log(message.sid))
+    }
+    catch(err) {
+        log(err)
+    }
 }
 
 async function remindToSendMessage(phoneNumber) {
@@ -183,7 +186,7 @@ async function remindToSendMessage(phoneNumber) {
         if (session.state === STATES.STARTED) {
             await sessions.update({_id: session._id}, { $set: {'state': STATES.WAITING_FOR_REPLY} })
             io.emit("stateupdate", STATE);
-            sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
+            await sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
         }
     }
 }
