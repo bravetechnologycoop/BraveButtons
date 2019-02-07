@@ -6,17 +6,17 @@ import socket
 class Test__parse_darkstat_html_lines(object):
 
     def test_seconds(self):
-        with open('./sample_darkstat_html/59_secs.html', 'r') as html_file:
+        with open('./pi/sample_darkstat_html/59_secs.html', 'r') as html_file:
             html = html_file.read()
             assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 59
 
     def test_seconds_minutes(self):
-        with open('./sample_darkstat_html/316_secs.html', 'r') as html_file:
+        with open('./pi/sample_darkstat_html/316_secs.html', 'r') as html_file:
             html = html_file.read()
             assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 316
 
     def test_seconds_minutes_hours(self):
-        with open('./sample_darkstat_html/3806_secs.html', 'r') as html_file:
+        with open('./pi/sample_darkstat_html/3806_secs.html', 'r') as html_file:
             html = html_file.read()
             assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 3806
 
@@ -26,7 +26,7 @@ class Test__parse_darkstat_html_lines(object):
 
     def test_never(self):
         with pytest.raises(heartbeat.FlicNotFoundError):
-            with open('./sample_darkstat_html/never.html', 'r') as html_file:
+            with open('./pi/sample_darkstat_html/never.html', 'r') as html_file:
                 html = html_file.read()
                 heartbeat.parse_darkstat_html_lines(html.splitlines())
 
