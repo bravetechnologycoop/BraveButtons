@@ -1,6 +1,9 @@
 language: python
 python: "3.7"
 
+# Travis only support v 3.7 on this distribution
+dist: xenial
+
 # install dependencies
 install:
   - pip install -r requirements-test.txt
