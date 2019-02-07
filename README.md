@@ -1,3 +1,7 @@
+trisapeace/BraveButtons master: [![Build Status](https://travis-ci.com/trisapeace/BraveButtons.svg?branch=master)](https://travis-ci.com/trisapeace/BraveButtons)
+
+trisapeace/BraveButtons Travis: [![Build Status](https://travis-ci.com/trisapeace/BraveButtons.svg?branch=travis)](https://travis-ci.com/trisapeace/BraveButtons)
+
 to set up the network monitor on a raspberry pi, follow these steps:
 
 - format the SD card
