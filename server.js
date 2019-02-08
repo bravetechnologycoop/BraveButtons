@@ -178,9 +178,9 @@ async function sendTwilioMessage(phone, msg) {
 
 async function remindToSendMessage(phoneNumber) {
 
-    let session = await sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false})
+    let session = await sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false})
     if(session === null) {
-        handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
+        handleErrorRequest('No open Session with phone number' + phoneNumber.toString())
     }
     else {
         if (session.state === STATES.STARTED) {
