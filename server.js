@@ -82,7 +82,9 @@ async function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
     
     // If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
     else {
-        await sessions.update({_id: session._id}, { $set: {'lastUpdate': moment(), 'numPresses': session.numPresses += numPresses} })
+        let newSession = SessionState.createSessionStateFromJSON(session)
+        newSession.incrementButtonPresses(numPresses)
+        await sessions.update({_id: session._id}, newSession.toJSON())
         if (needToSendMessage(phoneNumber)) {
             sendUrgencyMessage(phoneNumber);
         }
@@ -99,13 +101,13 @@ async function handleTwilioRequest(req) {
 	let buttonPhone = req.body.To;
 	let message = req.body.Body;
 
-    let session = await sessions.findOne({'phoneNumber':buttonPhone, 'completed':false})
-    let stateObject = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+    let session = await sessions.findOne({'phoneNumber': buttonPhone, $not: {'state':STATES.COMPLETED} })
+    let stateObject = SessionState.createSessionStateFromJSON(session)
 
     if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
         let returnMessage = stateObject.advanceSession(message);
         await sendTwilioMessage(buttonPhone, returnMessage);
-        await sessions.update({_id: session._id}, { $set: {'state': stateObject.state} })
+        await sessions.update({_id: session._id}, stateObject.toJSON())
         return 200;
     } 
     else {

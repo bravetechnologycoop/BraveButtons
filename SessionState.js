@@ -10,117 +10,116 @@ const incidentTypes = {
 
 class SessionState {
 
-  constructor(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses) {
-        this.uuid = uuid;
-        this.unit = unit;
-        this.phoneNumber = phoneNumber;
-        this.state = state;
-        this.completed = this.isCompleted();
-				this.respondedTo = this.isRespondedTo();
-        this.incidentType = null;
-        this.numPresses = numPresses;
-        this.notes = null;
-        this.lastUpdate = moment().toString();
-  }
+    constructor(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses) {
+        this.uuid = uuid
+        this.unit = unit
+        this.phoneNumber = phoneNumber
+        this.state = state
+        this.numPresses = numPresses
+        
+        this.incidentType = null
+        this.notes = null
+        
+        this.respondedTo = this.isRespondedTo()        
+        this.createdAt = moment().toISOString()
+        this.updatedAt = moment().toISOString()
+    }
 
-  advanceSession(messageText) {
+    static createSessionStateFromJSON(json) {
 
-  	let returnMessage;
+        let sessionState = new SessionState(json.uuid, json.unit, json.phoneNumber, json.state, json.numPresses)
 
-  	switch (this.state) {
-  		case STATES.STARTED:
-  			this.state = STATES.WAITING_FOR_CATEGORY;
-  			returnMessage = 'Thank you for responding.\n Please reply with the number that best describes the nature of the incident\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose';
-  			break;
-		case STATES.WAITING_FOR_REPLY:
-			this.state = STATES.WAITING_FOR_CATEGORY;
-  			returnMessage = 'Thank you for responding.\n Please reply with the number that best describes the nature of the incident\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose';
-  			break;
-		case STATES.WAITING_FOR_CATEGORY:
-			let isValid = this.setIncidentType(messageText.trim());
-			this.state = isValid ? STATES.WAITING_FOR_DETAILS : STATES.WAITING_FOR_CATEGORY;
-			returnMessage = this.setIncidentType(messageText.trim()) ? 'Thank you. Please add any further details about the incident or comment about this interface.' : 'Sorry, the incident type wasn\'nt recognized. Please try again';
-			break;
-		case STATES.WAITING_FOR_DETAILS:
-			this.notes = messageText.trim();
-			this.state = STATES.COMPLETED;
-			returnMessage = 'Thank you.';
-			break;
-		case STATES.COMPLETED:
-		returnMessage = 'There is no active session for this button.';
-			break;
-		case STATES.TIMED_OUT:
-		returnMessage = 'There is no active session for this button.';
-			break;
-		default:
-			returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.';
-			break;
-  	}
+        sessionState.createdAt = json.createdAt
+        sessionState.updatedAt = json.updatedAt
 
-  	this.lastUpdate = moment().toString();
+        if(json.hasOwnProperty('incidentType')) {
+            sessionState.incidentType = json.incidentType
+        }
+        if(json.hasOwnProperty('notes')) {
+            sessionState.notes = json.notes
+        }
 
-  	return returnMessage;
+        return sessionState        
+    }
 
-  }
+    toJSON() {
+        let json = {
+            'uuid': this.uuid,
+            'unit': this.unit,
+            'phoneNumber': this.phoneNumber,
+            'state': this.state,
+            'numPresses': this.numPresses,
+            'createdAt': this.createdAt,
+            'updatedAt': this.updatedAt,
+            'respondedTo': this.respondedTo
+        }
+        
+        if(this.hasOwnProperty('incidentType')) {
+            json['incidentType'] = this.incidentType
+        }
+        if(this.hasOwnProperty('notes')) {
+            json['notes'] = this.notes
+        }
 
-  setIncidentType(numType) {   //TODO: how strict do we want to be with this?
+        return json
+    }
 
-  	if (numType in incidentTypes) {
-  		this.incidentType = incidentTypes[numType];
-  		return true;
-  	}
-  	return false;
+    advanceSession(messageText) {
 
-  }
+  	    let returnMessage;
 
-  update(uuid, unit, phoneNumber,type, state) {
+        switch (this.state) {
+            case STATES.STARTED:
+                this.state = STATES.WAITING_FOR_CATEGORY;
+                returnMessage = 'Thank you for responding.\n Please reply with the number that best describes the nature of the incident\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose';
+                break;
+            case STATES.WAITING_FOR_REPLY:
+                this.state = STATES.WAITING_FOR_CATEGORY;
+                returnMessage = 'Thank you for responding.\n Please reply with the number that best describes the nature of the incident\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose';
+                break;
+            case STATES.WAITING_FOR_CATEGORY:
+                let isValid = this.setIncidentType(messageText.trim());
+                this.state = isValid ? STATES.WAITING_FOR_DETAILS : STATES.WAITING_FOR_CATEGORY;
+                returnMessage = this.setIncidentType(messageText.trim()) ? 'Thank you. Please add any further details about the incident or comment about this interface.' : 'Sorry, the incident type wasn\'nt recognized. Please try again';
+                break;
+            case STATES.WAITING_FOR_DETAILS:
+                this.notes = messageText.trim();
+                this.state = STATES.COMPLETED;
+                returnMessage = 'Thank you.';
+                break;
+            case STATES.COMPLETED:
+                returnMessage = 'There is no active session for this button.';
+                break;
+            case STATES.TIMED_OUT:
+                returnMessage = 'There is no active session for this button.';
+                break;
+            default:
+                returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.';
+                break;
+        }
 
-  	if (!this.isRespondedTo()) //there is an ongoing request for help
-		{ if (this.uuid == uuid) {
-			this.incrementButtonPresses(type);
-		}
-		} else {
-			this.uuid = uuid;
-			this.unit = unit;
-			this.phoneNumber = phoneNumber;
-			this.state = state;
-			this.notes = null;
-			this.respondedTo = this.isRespondedTo();
-			this.numPresses = 1;
-			this.lastUpdate = moment().toString();
-	}
-}
+        this.updatedAt = moment().toISOString();
 
-  incrementButtonPresses(type) {
-		if(type =='double_click'){
-			this.numPresses += 2;
-		}else {
-			this.numPresses += 1;
+        return returnMessage;
+    }
 
-		}
-  }
+    setIncidentType(numType) {
 
-  isCompleted() { // a request can move down the queue once the incident is dealt with
-  	return (this.state == STATES.WAITING_FOR_CATEGORY || this.state == STATES.WAITING_FOR_DETAILS || this.state == STATES.COMPLETED || this.state == STATES.TIMED_OUT);
-  }
+        if (numType in incidentTypes) {
+            this.incidentType = incidentTypes[numType];
+            return true;
+        }
+        return false;
+    }
 
-	isRespondedTo(){
+    incrementButtonPresses(numPresses) {
+        this.numPresses += numPresses
+        this.updatedAt = moment().toISOString();
+    }
+
+	isRespondedTo() {
 		return (this.state == STATES.WAITING_FOR_CATEGORY || this.state == STATES.WAITING_FOR_DETAILS || this.state == STATES.COMPLETED);
 	}
-
-  complete() {
-  	this.state = STATES.COMPLETED;
-  	this.completed = true;
-  }
-}
-
-SessionState.createState = (stateData) => {
-	let newState = {};
-	for (let phoneNumber in stateData) {
-		let buttonSesssion = stateData[phoneNumber];
-		newState[phoneNumber] = new SessionState(buttonSesssion.uuid, buttonSesssion.unit, buttonSesssion.phoneNumber, buttonSesssion.state, buttonSesssion.numPresses);
-	}
-	return newState;
 }
 
 module.exports = SessionState;

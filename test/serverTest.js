@@ -99,12 +99,10 @@ describe('Chatbot server', () => {
             expect(currentState).to.not.be.null;
             expect(currentState).to.have.property('uuid');
             expect(currentState).to.have.property('unit');
-            expect(currentState).to.have.property('completed');
             expect(currentState).to.have.property('state');
             expect(currentState).to.have.property('numPresses');
             expect(currentState.uuid).to.deep.equal(unit1UUID);
             expect(currentState.unit).to.deep.equal('1');
-            expect(currentState.completed).to.be.false;
             expect(currentState.numPresses).to.deep.equal(1);
 		});
 
@@ -119,11 +117,9 @@ describe('Chatbot server', () => {
             expect(currentState).to.not.be.null;
             expect(currentState).to.have.property('uuid');
             expect(currentState).to.have.property('unit');
-            expect(currentState).to.have.property('completed');
             expect(currentState).to.have.property('numPresses');
             expect(currentState.uuid).to.deep.equal(unit1UUID);
             expect(currentState.unit).to.deep.equal('1');
-            expect(currentState.completed).to.be.false;
             expect(currentState.numPresses).to.deep.equal(1);
 		});
 
@@ -139,12 +135,10 @@ describe('Chatbot server', () => {
             expect(currentState).to.not.be.null;
             expect(currentState).to.have.property('uuid');
             expect(currentState).to.have.property('unit');
-            expect(currentState).to.have.property('completed');
             expect(currentState).to.have.property('state');
             expect(currentState).to.have.property('numPresses');
             expect(currentState.uuid).to.deep.equal(unit1UUID);
             expect(currentState.unit).to.deep.equal('1');
-            expect(currentState.completed).to.be.false;
             expect(currentState.numPresses).to.deep.equal(4);
 		});
 	});
@@ -212,16 +206,15 @@ describe('Chatbot server', () => {
             session = await sessions.findOne({'phoneNumber': unit1PhoneNumber})
             currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses)
             expect(currentState.state, 'state after staff have provided incident notes').to.deep.equal(STATES.COMPLETED) 
-            expect(currentState.completed).to.be.true;
 
 			// now start a new session for a different unit
 			response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick);
 
     	    session = await sessions.findOne({'phoneNumber': unit2PhoneNumber})
             currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses)
+            expect(currentState.state, 'state after new button press from a different unit').to.deep.equal(STATES.STARTED)
             expect(currentState.uuid).to.deep.equal(unit2UUID)
             expect(currentState.unit).to.deep.equal('2')
-            expect(currentState.completed).to.be.false
             expect(currentState.numPresses).to.deep.equal(1)
 		});
 	});
