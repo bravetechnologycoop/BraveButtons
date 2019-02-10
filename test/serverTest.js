@@ -164,6 +164,10 @@ describe('Chatbot server', () => {
             registry.nedb.persistence.compactDatafile()
 	    });
 
+        after(function() {
+            server.close()
+        })
+
 		it('should return ok to a valid request', async () => {
 		    let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 			response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
