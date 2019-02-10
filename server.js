@@ -6,6 +6,8 @@ let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
+const chalk = require('chalk')
+
 let SessionState = require('./SessionState.js')
 let Datastore = require('nedb-promise')
 const STATES = require('./SessionStateEnum.js');
@@ -44,7 +46,7 @@ app.use(express.static(__dirname));
 
 function log(logString) {
     if(process.env.NODE_ENV === 'test') {
-        console.log('\t' + logString)
+        console.log(chalk.dim.cyan('\t' + logString))
     }
     else {
         console.log(moment().toString() + " - " + logString)

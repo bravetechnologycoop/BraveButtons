@@ -71,6 +71,7 @@ describe('Chatbot server', () => {
             await registry.remove({}, {multi: true})
             sessions.nedb.persistence.compactDatafile()
             registry.nedb.persistence.compactDatafile()
+            console.log('\n')
 	    });
 
 		it('should return 400 to a request with an empty body', async () => {
@@ -156,6 +157,7 @@ describe('Chatbot server', () => {
             await registry.remove({}, {multi: true})
             sessions.nedb.persistence.compactDatafile()
             registry.nedb.persistence.compactDatafile()
+            console.log('\n')
 	    });
 
         after(function() {
