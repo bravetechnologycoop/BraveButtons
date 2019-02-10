@@ -32,13 +32,6 @@ const app = express();
 const unrespondedSessionReminderTimeoutMillis = process.env.NODE_ENV === 'test' ? 1000 : 300000;
 const unrespondedSessionAlertTimeoutMillis = process.env.NODE_ENV === 'test' ? 2000 : 420000;
 
-let STATE;
-
-//Set up state storage
-const stateFilename = getEnvVar('STATE_FILENAME');
-
-loadState();
-
 //Set up Twilio
 const accountSid = getEnvVar('TWILIO_SID');
 const authToken = getEnvVar('TWILIO_TOKEN');
@@ -60,25 +53,6 @@ function log(logString) {
 
 function getEnvVar(name) {
 	return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
-}
-
-//TODO replace with database loading
-function loadState() {
-	let filepath = './' + stateFilename + '.json';
-	if (fs.existsSync(filepath)) {
-	    let stateData = JSON.parse(fs.readFileSync(filepath));
-	    if (Object.keys(stateData).length > 0) {
-	    	STATE = SessionState.createState(stateData);
-	    } else {
-	    	STATE = {};
-	    }
-	} else {
-		STATE = {};
-	}
-}
-
-function saveState() {
-    fs.writeFileSync('./' + stateFilename + '.json', JSON.stringify(STATE));
 }
 
 /**
@@ -132,7 +106,6 @@ async function handleTwilioRequest(req) {
         let returnMessage = stateObject.advanceSession(message);
         await sendTwilioMessage(buttonPhone, returnMessage);
         await sessions.update({_id: session._id}, { $set: {'state': stateObject.state} })
-        io.emit("stateupdate", STATE);
         return 200;
     } 
     else {
@@ -191,7 +164,6 @@ async function remindToSendMessage(phoneNumber) {
     else {
         if (session.state === STATES.STARTED) {
             await sessions.update({_id: session._id}, { $set: {'state': STATES.WAITING_FOR_REPLY} })
-            io.emit("stateupdate", STATE);
             await sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
         }
     }
@@ -267,16 +239,6 @@ app.route('/login')
         	res.redirect('/login');
         }
     });
-
-//return the current state as json if user logged in
-app.get('/data', (req, res) => {
-	if (req.session.user && req.cookies.user_sid) {
-		res.status(200).json(STATE);
-	} 
-    else {
-		res.redirect('/login');
-	}
-});
 
 app.get('/dashboard', (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
@@ -365,8 +327,6 @@ else {
 	server = https.createServer(httpsOptions, app).listen(443)
 	log('brave server listening on port 443')
 }
-
-const io = require("socket.io")(server);
 
 module.exports.server = server
 module.exports.registry = registry
