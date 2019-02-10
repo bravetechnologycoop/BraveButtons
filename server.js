@@ -22,9 +22,15 @@ let registry = Datastore({
 });
 
 // compact data file every 5 minutes
-sessions.nedb.persistence.setAutocompactionInterval(5*60000)
+// this seems to prevent tests from completing due to a timer created by nedb
+if(process.env.NODE_ENV != 'test') {
+    sessions.nedb.persistence.setAutocompactionInterval(5*60000)
+}
 
 const app = express();
+
+const unrespondedSessionReminderTimeoutMillis = process.env.NODE_ENV === 'test' ? 1000 : 300000;
+const unrespondedSessionAlertTimeoutMillis = process.env.NODE_ENV === 'test' ? 2000 : 420000;
 
 let STATE;
 
@@ -157,8 +163,8 @@ async function sendUrgencyMessage(phoneNumber) {
     else {
         if (session.numPresses === 1) {
             await sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
-            setTimeout(remindToSendMessage, 300000, phoneNumber);
-            setTimeout(sendStaffAlert, 420000, phoneNumber, session.unit.toString());
+            setTimeout(remindToSendMessage, unrespondedSessionReminderTimeoutMillis, phoneNumber);
+            setTimeout(sendStaffAlert, unrespondedSessionAlertTimeoutMillis, phoneNumber, session.unit.toString());
         } 
         else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
             await sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
