@@ -6,10 +6,14 @@ const expect = chai.expect;
 
 describe('Session state manager', () => {
 
+        const uuid = '12345'
+        const unit = '1'
+        const phoneNumber = '+14206666969'
+
 		let state;
 
 		beforeEach(function() {
-			state = new SessionState('111', '222', '+14206666969', STATES.STARTED, 1);
+			state = new SessionState(uuid, unit, phoneNumber, STATES.STARTED, 1);
 		});
 
 		it('should start off with 1 button press', () => {
@@ -18,98 +22,49 @@ describe('Session state manager', () => {
 		});
 
 		it('should increment properly', () => {
-			state.incrementButtonPresses("click");
+			state.incrementButtonPresses(1);
 			expect(state.numPresses).to.deep.equal(2);
-			state.incrementButtonPresses("hold");
-			expect(state.numPresses).to.deep.equal(3);
-			state.incrementButtonPresses("double_click");
-			expect(state.numPresses).to.deep.equal(5);
-		});
-
-		it('completes properly', () => {
-			expect(state.completed).to.be.false;
-			state.complete();
-			expect(state.state).to.deep.equal(STATES.COMPLETED);
-			expect(state.completed).to.be.true;
-		})
-
-		it('should update numPresses when updated with same uuid and current session not complete', () => {
-			state.update('111', '222', '+14206666969', "click",   STATES.STARTED);
-			expect(state.uuid).to.deep.equal('111');
-			expect(state.numPresses).to.deep.equal(2);
-		});
-
-		it('should ignore updates with different uuid when current session not complete', () => {
-			state.update('222', '222', STATES.STARTED);
-			expect(state.uuid).to.deep.equal('111');
-			expect(state.numPresses).to.deep.equal(1);
-		});
-
-		it('should reset numPresses when updated with same uuid and current session is complete', () => {
-			state.update('111', '222','+14206666969', "hold", STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(2);
-			state.update('111', '222', '+14206666969', "double_click", STATES.STARTED);
+			state.incrementButtonPresses(2);
 			expect(state.numPresses).to.deep.equal(4);
-			state.complete();
-			state.update('111', '222', "click", STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(1);
-			expect(state.completed).to.be.false;
 		});
 
-		it('should update uuid when updated with different uuid and current session is complete', () => {
-			state.update('111', '222', '+14206666969', "click", STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(2);
-			state.update('111', '222', '+14206666969', "hold", STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(3);
-			state.complete();
-			state.update('222', '333', STATES.STARTED);
-			expect(state.uuid).to.deep.equal('222');
-			expect(state.unit).to.deep.equal('333');
-			expect(state.numPresses).to.deep.equal(1);
-			expect(state.completed).to.be.false;
-		});
+        it('should save and restore from json properly', () => {
+            let json = state.toJSON()
+            let newState = SessionState.createSessionStateFromJSON(json)
+            expect(newState.uuid).to.deep.equal(uuid)
+            expect(newState.unit).to.deep.equal(unit)
+            expect(newState.phoneNumber).to.deep.equal(phoneNumber)
+            expect(newState.state).to.deep.equal(STATES.STARTED)
+            expect(newState.numPresses).to.deep.equal(1)
+        })
 
-		it('should update numPresses even after having ignored updates', () => {
-			state.update('111', '222', '+14206666969', 'click', STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(2);
-			state.update('111', '222', '+14206666969', 'hold', STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(3);
-			state.update('222', '222', '+14206666968','click', STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(3);
-			state.update('111', '222', '+14206666969', 'double_click', STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(5);
-		});
-
-		it ('advancing the session from started', () => {
-			state.state = STATES.STARTED;
+		it('should advance the session when receiving an initial message', () => {
+            expect(state.state).to.deep.equal(STATES.STARTED)
 			state.advanceSession('ok');
 			expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
 		});
 
-		it ('advancing the session from waiting for reply', () => {
+		it('should advance the session when receiving an initial message (after a reminder has been sent)', () => {
 			state.state = STATES.WAITING_FOR_REPLY;
 			state.advanceSession('ok');
 			expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
 		});
 
-		it ('advancing the session from waiting for category - valid category', () => {
+		it('should advance the session when receiving a message categorizing the incident', () => {
 			state.state = STATES.WAITING_FOR_CATEGORY;
 			state.advanceSession('3');
 			expect(state.state).to.deep.equal(STATES.WAITING_FOR_DETAILS);
 		});
 
-		it ('advancing the session from waiting for category - valid category (w whitespace)', () => {
+		it('should advance the session when receiving a message categorizing the incident that contains whitespace', () => {
 			state.state = STATES.WAITING_FOR_CATEGORY;
 			state.advanceSession('3  ');
 			expect(state.state).to.deep.equal(STATES.WAITING_FOR_DETAILS);
 		});
 
-		it ('advancing the session from waiting for category - invalid category', () => {
+		it('should not advance the session when receiving an invalid incident category', () => {
 			state.state = STATES.WAITING_FOR_CATEGORY;
 			state.advanceSession('fff');
 			expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
 		});
-
-
-
 });
