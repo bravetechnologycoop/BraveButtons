@@ -93,10 +93,6 @@ async function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
     }
 }
 
-function handleErrorRequest(error) {
-	log(error);
-}
-
 async function handleTwilioRequest(req) {
 
 	let phoneNumber = req.body.From;
@@ -113,7 +109,7 @@ async function handleTwilioRequest(req) {
         return 200;
     } 
     else {
-        handleErrorRequest('Invalid Phone Number');
+        log('Invalid Phone Number');
         return 400;
     }
 }
@@ -122,7 +118,7 @@ async function needToSendMessage(buttonPhone) {
 
     let session = await sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false})
     if(session === null) {
-        handleErrorRequest('No open Session with phone number' + buttonPhone.toString())
+        log('No open Session with phone number' + buttonPhone.toString())
         return false
     }
     else {
@@ -135,7 +131,7 @@ async function sendUrgencyMessage(phoneNumber) {
     let session = await sessions.findOne({'phoneNumber':phoneNumber, 'respondedTo':false})
     
     if(session === null) {
-        handleErrorRequest('No Open Session to Send Urgency Message to')
+        log('No Open Session to Send Urgency Message to')
     }
     else {
         if (session.numPresses === 1) {
@@ -163,7 +159,7 @@ async function remindToSendMessage(phoneNumber) {
 
     let session = await sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false})
     if(session === null) {
-        handleErrorRequest('No open Session with phone number' + phoneNumber.toString())
+        log('No open Session with phone number' + phoneNumber.toString())
     }
     else {
         if (session.state === STATES.STARTED) {
@@ -271,7 +267,7 @@ app.post('/', jsonBodyParser, async (req, res) => {
         if (isValidRequest(req, requiredBodyParams)) {
             let button = await registry.findOne({'uuid':req.body.UUID})
             if(button === null) {
-                handleErrorRequest(`Bad request: UUID is not registered. UUID is ${req.body.UUID}`);
+                log(`Bad request: UUID is not registered. UUID is ${req.body.UUID}`);
                 res.status(400).send();
             }
             else {
@@ -286,7 +282,7 @@ app.post('/', jsonBodyParser, async (req, res) => {
             }
         }
         else {
-            handleErrorRequest('Bad request: UUID is missing');
+            log('Bad request: UUID is missing');
             res.status(400).send();
         }
     }
@@ -305,10 +301,9 @@ app.post('/message', jsonBodyParser, async (req, res) => {
             let status = await handleTwilioRequest(req);
             res.writeHead(200, {'Content-Type': 'text/xml'});
             res.status(status).send();
-
         } 
         else {
-            handleErrorRequest('Bad request: Body or From fields are missing');
+            log('Bad request: Body or From fields are missing');
             res.status(400).send();
         }
     }
