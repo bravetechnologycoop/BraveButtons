@@ -169,10 +169,6 @@ async function remindToSendMessage(phoneNumber) {
     }
 }
 
-function registryInsert(array) {
-    registry.insert(array)
-}
-
 function sendStaffAlert(phoneNumber, unit) {
 
     sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false}, function(err, session) {
