@@ -177,7 +177,7 @@ function sendStaffAlert(phoneNumber, unit) {
     sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false}, function(err, session) {
         if (session.state === STATES.WAITING_FOR_REPLY) {
             client.messages
-                .create({from: phoneNumber, body: 'There has been an unresponed request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
+                .create({from: phoneNumber, body: 'There has been an unresponded request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
                 .then(message => log(message.sid))
                 .done();
         }

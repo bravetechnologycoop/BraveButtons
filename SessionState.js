@@ -80,7 +80,7 @@ class SessionState {
             case STATES.WAITING_FOR_CATEGORY:
                 let isValid = this.setIncidentType(messageText.trim());
                 this.state = isValid ? STATES.WAITING_FOR_DETAILS : STATES.WAITING_FOR_CATEGORY;
-                returnMessage = this.setIncidentType(messageText.trim()) ? 'Thank you. Please add any further details about the incident or comment about this interface.' : 'Sorry, the incident type wasn\'nt recognized. Please try again';
+                returnMessage = this.setIncidentType(messageText.trim()) ? 'Thank you. Please add any further details about the incident or comment about this interface.' : 'Sorry, the incident type wasn\'t recognized. Please try again';
                 break;
             case STATES.WAITING_FOR_DETAILS:
                 this.notes = messageText.trim();
