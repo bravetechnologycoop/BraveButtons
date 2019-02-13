@@ -24,6 +24,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "NODE_ENV=test mocha --timeout 40000 \"test/**/*.js\"",
+    "unittest": "NODE_ENV=test mocha --timeout 40000 \"test/SessionStateTest.js\"",
     "start": "node server.js"
   },
   "repository": {

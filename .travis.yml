@@ -1,0 +1,10 @@
+language: node_js
+node_js: "node"
+
+# install dependencies
+install:
+  - npm install
+
+# run unit tests
+script:
+  - npm run unittest
