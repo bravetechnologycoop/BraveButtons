@@ -7,6 +7,7 @@ let jsonBodyParser = bodyParser.json()
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 const chalk = require('chalk')
+const Mustache = require('mustache')
 
 let SessionState = require('./SessionState.js')
 let Datastore = require('nedb-promise')
@@ -40,6 +41,8 @@ const authToken = getEnvVar('TWILIO_TOKEN');
 
 const client = require('twilio')(accountSid, authToken);
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
+
+const dashboardTemplate = fs.readFileSync(`${__dirname}/dashboard.mst`, 'utf-8')
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname));
@@ -236,9 +239,51 @@ app.route('/login')
         }
     });
 
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard', async (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
-        res.sendFile(__dirname + '/dashboard.html');
+        try {
+            let docs = await sessions.find({})
+            let recentSessions = new Map() 
+            
+            // TODO: consider optimizing this
+            docs.forEach((doc) => {
+                let sessionState = SessionState.createSessionStateFromJSON(doc)
+                if(recentSessions.has(sessionState.unit)) {
+                    let moment1 = moment(recentSessions.get(sessionState.unit).createdAt, moment.ISO_8601)
+                    let moment2 = moment(sessionState.createdAt, moment.ISO_8601)
+                    if(moment2.isAfter(moment1)) {
+                        recentSessions.set(sessionState.unit, sessionState)
+                    }
+                }
+                else {
+                    recentSessions.set(sessionState.unit, sessionState)
+                }
+            })
+            
+            let viewParams = {
+                recentSessions: []
+            }
+
+            for(const [key, recentSession] of recentSessions) {
+                let createdAt = moment(recentSession.createdAt, moment.ISO_8601)
+                let updatedAt = moment(recentSession.updatedAt, moment.ISO_8601)
+                viewParams.recentSessions.push({
+                    unit: recentSession.unit,
+                    createdAt: createdAt.format('DD MMM Y   hh:mm:ss A'),
+                    updatedAt: updatedAt.format('DD MMM Y   hh:mm:ss A'),
+                    state: recentSession.state,
+                    numPresses: recentSession.numPresses.toString(),
+                    incidentType: recentSession.incidentType,
+                    notes: recentSession.notes
+                })
+            }
+            
+            res.send(Mustache.render(dashboardTemplate, viewParams))
+        }
+        catch(err) {
+            log(err)
+            res.status(500).send()
+        }
     } 
     else {
         res.redirect('/login');
