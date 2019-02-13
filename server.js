@@ -52,7 +52,7 @@ function log(logString) {
         console.log(chalk.dim.cyan('\t' + logString))
     }
     else {
-        console.log(moment().toString() + " - " + logString)
+        console.log(moment().toISOString() + " - " + logString)
     }
 }
 
