@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<style>
+.wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    width: 1500px;
+}
+
+table {
+    table-layout: fixed;
+    max-width: 1500px;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 5px 5px;
+}
+
+th, td {
+    text-align: left;
+    max-width: 400px;
+    height: 40px;
+    width: 100%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+</style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div>
+            Brave Chatbot Dashboard
+        </div>
+        <br><br>
+        <table>
+            <tr>
+                <th>Unit</th>
+                <th>Session Started At</th>
+                <th>Session Last Updated At</th>
+                <th>State</th>
+                <th># Of Presses</th>
+                <th>Category</th>
+                <th>Notes</th>
+            </tr>
+            {{#recentSessions}}
+            <tr>
+                <td>{{unit}}</td>
+                <td>{{createdAt}}</td>
+                <td>{{updatedAt}}</td>
+                <td>{{state}}</td>
+                <td>{{numPresses}}</td>
+                <td>{{incidentType}}</td>
+                <td>{{notes}}</td>
+            </tr>
+            {{/recentSessions}}
+        </table>
+    </div>
+</body>
+</html>
