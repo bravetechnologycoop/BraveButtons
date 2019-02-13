@@ -1,4 +1,4 @@
-trisapeace/BraveButtons master: [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=master)](https://travis-ci.com/trisapeace/BraveButtons)
+[![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=master)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
 
 to set up the network monitor on a raspberry pi, follow these steps:
 
