@@ -361,8 +361,8 @@ if (process.env.NODE_ENV === 'test') { // local http server for testing
 }
 else {
 	let httpsOptions = {
-	    key: fs.readFileSync(`/etc/letsencrypt/live/chatbot.brave.coop/privkey.pem`),
-	    cert: fs.readFileSync(`/etc/letsencrypt/live/chatbot.brave.coop/fullchain.pem`)
+	    key: fs.readFileSync(`/etc/letsencrypt/live/${getEnvVar('DOMAIN')}/privkey.pem`),
+	    cert: fs.readFileSync(`/etc/letsencrypt/live/${getEnvVar('DOMAIN')}/fullchain.pem`)
 	}
 	server = https.createServer(httpsOptions, app).listen(443)
 	log('brave server listening on port 443')
