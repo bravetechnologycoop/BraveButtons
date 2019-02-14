@@ -1,7 +1,11 @@
+# disable sudo to speed up the build
+sudo: false
+
+# set the build language
 language: python
 python: "3.7"
 
-# Travis only support v 3.7 on this distribution
+# Travis only supports Python v 3.7 on this distribution
 dist: xenial
 
 # install dependencies
@@ -10,4 +14,8 @@ install:
 
 # run unit tests
 script:
-  - pytest --cov=heartbeat
+  - pytest --cov=heartbeat --cov-report=xml
+
+# push results to codecov
+after_success:
+  - codecov
