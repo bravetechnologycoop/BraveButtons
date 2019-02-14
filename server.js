@@ -172,16 +172,15 @@ async function remindToSendMessage(phoneNumber) {
     }
 }
 
-function sendStaffAlert(phoneNumber, unit) {
+async function sendStaffAlert(phoneNumber, unit) {
 
-    sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false}, function(err, session) {
-        if (session.state === STATES.WAITING_FOR_REPLY) {
-            client.messages
-                .create({from: phoneNumber, body: 'There has been an unresponded request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
-                .then(message => log(message.sid))
-                .done();
-        }
-    })
+    let session = await sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false})
+
+    if (session.state === STATES.WAITING_FOR_REPLY) {
+        await client.messages
+            .create({from: phoneNumber, body: 'There has been an unresponded request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
+            .then(message => log(message.sid))
+    }
 }
 
 app.use(cookieParser());
