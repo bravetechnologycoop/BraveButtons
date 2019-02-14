@@ -9,11 +9,6 @@ if [[ $EUID > 0 ]]; then
     cd $original_dir
     exit 1
 
-elif [[ ! -e brave_config.json ]]; then
-    echo "please upload the brave_config.json file before running this setup script."
-    cd $original_dir
-    exit 1
-
 else
     echo "please enter two IP addresses to whitelist for SSH (separated by a space):"
     read firstIP secondIP
