@@ -10,4 +10,4 @@ install:
 
 # run unit tests
 script:
-  - pytest
+  - pytest --cov=heartbeat
