@@ -176,6 +176,10 @@ async function sendStaffAlert(phoneNumber, unit) {
 
     let session = await sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false})
 
+    if(session === null) {
+        return
+    }
+
     if (session.state === STATES.WAITING_FOR_REPLY) {
         await client.messages
             .create({from: phoneNumber, body: 'There has been an unresponded request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
