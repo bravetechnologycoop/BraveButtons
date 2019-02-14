@@ -26,9 +26,9 @@ else
     add-apt-repository -y ppa:certbot/certbot
     apt-get update
     apt-get install -y nodejs npm certbot
-    npm install
     npm install -g pm2 n
     n stable
+    npm install
 
     certbot certonly --standalone 
 
