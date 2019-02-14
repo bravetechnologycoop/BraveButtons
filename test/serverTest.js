@@ -124,6 +124,18 @@ describe('Chatbot server', () => {
             expect(currentState.numPresses).to.deep.equal(1);
 		});
 
+        it('should only create one new session when receiving multiple presses from the same button', async () => {
+
+			await Promise.all([
+                chai.request(server).post('/').send(unit1FlicRequest_SingleClick),
+		        chai.request(server).post('/').send(unit1FlicRequest_DoubleClick),
+			    chai.request(server).post('/').send(unit1FlicRequest_Hold)
+            ])
+
+            let numSessions = await sessions.count({'phoneNumber': unit1PhoneNumber})
+            expect(numSessions).to.equal(1)
+        })
+
 		it('should count button presses accurately during an active session', async () => {
 
 			let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
