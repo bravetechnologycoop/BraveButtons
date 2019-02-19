@@ -1,7 +1,6 @@
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 CREATE TABLE IF NOT EXISTS sessions (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    button_id text NOT NULL,
     unit int NOT NULL,
     phone_number text NOT NULL,
     state text NOT NULL,
