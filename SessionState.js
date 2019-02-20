@@ -10,58 +10,17 @@ const incidentTypes = {
 
 class SessionState {
 
-    constructor(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses) {
-        this.uuid = uuid
+    constructor(id, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes) {
+        this.id = id
+        this.buttonId = buttonId
         this.unit = unit
         this.phoneNumber = phoneNumber
         this.state = state
-        this.numPresses = numPresses
-        
-        this.incidentType = null
-        this.notes = null
-        
-        this.respondedTo = this.isRespondedTo()        
-        this.createdAt = moment().toISOString()
-        this.updatedAt = moment().toISOString()
-    }
-
-    static createSessionStateFromJSON(json) {
-
-        let sessionState = new SessionState(json.uuid, json.unit, json.phoneNumber, json.state, json.numPresses)
-
-        sessionState.createdAt = json.createdAt
-        sessionState.updatedAt = json.updatedAt
-
-        if(json.hasOwnProperty('incidentType')) {
-            sessionState.incidentType = json.incidentType
-        }
-        if(json.hasOwnProperty('notes')) {
-            sessionState.notes = json.notes
-        }
-
-        return sessionState        
-    }
-
-    toJSON() {
-        let json = {
-            'uuid': this.uuid,
-            'unit': this.unit,
-            'phoneNumber': this.phoneNumber,
-            'state': this.state,
-            'numPresses': this.numPresses,
-            'createdAt': this.createdAt,
-            'updatedAt': this.updatedAt,
-            'respondedTo': this.respondedTo
-        }
-        
-        if(this.hasOwnProperty('incidentType')) {
-            json['incidentType'] = this.incidentType
-        }
-        if(this.hasOwnProperty('notes')) {
-            json['notes'] = this.notes
-        }
-
-        return json
+        this.numPresses = numPresses 
+        this.createdAt = createdAt
+        this.updatedAt = updatedAt
+        this.incidentType = incidentType
+        this.notes = notes
     }
 
     advanceSession(messageText) {
@@ -98,8 +57,6 @@ class SessionState {
                 break;
         }
 
-        this.updatedAt = moment().toISOString();
-
         return returnMessage;
     }
 
@@ -114,12 +71,8 @@ class SessionState {
 
     incrementButtonPresses(numPresses) {
         this.numPresses += numPresses
-        this.updatedAt = moment().toISOString();
     }
 
-	isRespondedTo() {
-		return (this.state == STATES.WAITING_FOR_CATEGORY || this.state == STATES.WAITING_FOR_DETAILS || this.state == STATES.COMPLETED);
-	}
 }
 
 module.exports = SessionState;

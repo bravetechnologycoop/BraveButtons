@@ -1,11 +1,10 @@
 CREATE TABLE IF NOT EXISTS sessions (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     button_id text NOT NULL,
-    unit int NOT NULL,
+    unit text NOT NULL,
     phone_number text NOT NULL,
     state text NOT NULL,
     num_presses int NOT NULL,
-    responded_to boolean NOT NULL DEFAULT FALSE,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW(), 
     incident_type text,
@@ -31,9 +30,9 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER set_sessions_timestamp
 BEFORE UPDATE ON sessions
-FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp;
+FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
 
 CREATE TRIGGER set_registry_timestamp
 BEFORE UPDATE ON registry
-FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp;
+FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
 

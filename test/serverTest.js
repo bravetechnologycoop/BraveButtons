@@ -3,14 +3,12 @@ let SessionState = require('../SessionState.js');
 const STATES = require('../SessionStateEnum.js');
 let imports = require('../server.js')
 let server = imports.server
-let registry = imports.registry
-let sessions = imports.sessions
+let db =imports.db
 let fs = require('fs');
 let chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
 require('dotenv').load();
-let Datastore = require('nedb-promise')
 
 describe('Chatbot server', () => {
 
@@ -61,16 +59,14 @@ describe('Chatbot server', () => {
 	describe('POST request: button press', () => {
 
 		beforeEach(async function() {
-            await sessions.remove({}, {multi: true})
-            await registry.insert([{"uuid":unit1UUID,"unit":"1","phone":unit1PhoneNumber},
-                                   {"uuid":unit2UUID,"unit":"2","phone":unit2PhoneNumber}])
+            await db.clearSessions()
+            await db.createButton(unit1UUID, "1", unit1PhoneNumber)
+            await db.createButton(unit2UUID, "2", unit2PhoneNumber)
 		});
 
 		afterEach(async function() {
-            await sessions.remove({}, {multi: true})
-            await registry.remove({}, {multi: true})
-            sessions.nedb.persistence.compactDatafile()
-            registry.nedb.persistence.compactDatafile()
+            await db.clearSessions()
+            await db.clearButtons()
             console.log('\n')
 	    });
 
@@ -93,18 +89,18 @@ describe('Chatbot server', () => {
 			
 			let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 
-			let session = await sessions.findOne({'phoneNumber': unit1PhoneNumber})
-            expect(session).to.not.be.null
-
-            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);            
-            expect(currentState).to.not.be.null;
-            expect(currentState).to.have.property('uuid');
-            expect(currentState).to.have.property('unit');
-            expect(currentState).to.have.property('state');
-            expect(currentState).to.have.property('numPresses');
-            expect(currentState.uuid).to.deep.equal(unit1UUID);
-            expect(currentState.unit).to.deep.equal('1');
-            expect(currentState.numPresses).to.deep.equal(1);
+            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            expect(sessions.length).to.equal(1)
+            
+            let session = sessions[0]
+            expect(session).to.not.be.null;
+            expect(session).to.have.property('buttonId');
+            expect(session).to.have.property('unit');
+            expect(session).to.have.property('state');
+            expect(session).to.have.property('numPresses');
+            expect(session.buttonId).to.deep.equal(unit1UUID);
+            expect(session.unit).to.deep.equal('1');
+            expect(session.numPresses).to.deep.equal(1);
 		});
 
 		it('should not confuse button presses from different rooms', async () => {
@@ -112,16 +108,17 @@ describe('Chatbot server', () => {
 			let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 			response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick);
 
-			let session = await sessions.findOne({'phoneNumber': unit1PhoneNumber})
-            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-            
-            expect(currentState).to.not.be.null;
-            expect(currentState).to.have.property('uuid');
-            expect(currentState).to.have.property('unit');
-            expect(currentState).to.have.property('numPresses');
-            expect(currentState.uuid).to.deep.equal(unit1UUID);
-            expect(currentState.unit).to.deep.equal('1');
-            expect(currentState.numPresses).to.deep.equal(1);
+            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            expect(sessions.length).to.equal(1)
+
+            let session = sessions[0]
+            expect(session).to.not.be.null;
+            expect(session).to.have.property('buttonId');
+            expect(session).to.have.property('unit');
+            expect(session).to.have.property('numPresses');
+            expect(session.buttonId).to.deep.equal(unit1UUID);
+            expect(session.unit).to.deep.equal('1');
+            expect(session.numPresses).to.deep.equal(1);
 		});
 
         it('should only create one new session when receiving multiple presses from the same button', async () => {
@@ -132,8 +129,8 @@ describe('Chatbot server', () => {
 			    chai.request(server).post('/').send(unit1FlicRequest_Hold)
             ])
 
-            let numSessions = await sessions.count({'phoneNumber': unit1PhoneNumber})
-            expect(numSessions).to.equal(1)
+            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            expect(sessions.length).to.equal(1)
         })
 
 		it('should count button presses accurately during an active session', async () => {
@@ -142,33 +139,32 @@ describe('Chatbot server', () => {
 		    response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick);
 			response = await chai.request(server).post('/').send(unit1FlicRequest_Hold);
 
-			let session = await sessions.findOne({'phoneNumber': unit1PhoneNumber})
-            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
+            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            expect(sessions.length).to.equal(1)
 
-            expect(currentState).to.not.be.null;
-            expect(currentState).to.have.property('uuid');
-            expect(currentState).to.have.property('unit');
-            expect(currentState).to.have.property('state');
-            expect(currentState).to.have.property('numPresses');
-            expect(currentState.uuid).to.deep.equal(unit1UUID);
-            expect(currentState.unit).to.deep.equal('1');
-            expect(currentState.numPresses).to.deep.equal(4);
+            let session = sessions[0]
+            expect(session).to.not.be.null;
+            expect(session).to.have.property('buttonId');
+            expect(session).to.have.property('unit');
+            expect(session).to.have.property('state');
+            expect(session).to.have.property('numPresses');
+            expect(session.buttonId).to.deep.equal(unit1UUID);
+            expect(session.unit).to.deep.equal('1');
+            expect(session.numPresses).to.deep.equal(4);
 		});
 	});
 
 	describe('POST request: twilio message', () => {
 
 		beforeEach(async function() {
-            await sessions.remove({}, {multi: true})
-            await registry.insert([{"uuid":unit1UUID,"unit":"1","phone":unit1PhoneNumber},
-                                   {"uuid":unit2UUID,"unit":"2","phone":unit2PhoneNumber}])
+            await db.clearSessions()
+            await db.createButton(unit1UUID, "1", unit1PhoneNumber)
+            await db.createButton(unit2UUID, "2", unit2PhoneNumber)
 		});
 
 		afterEach(async function() {
-            await sessions.remove({}, {multi: true})
-            await registry.remove({}, {multi: true})
-            sessions.nedb.persistence.compactDatafile()
-            registry.nedb.persistence.compactDatafile()
+            await db.clearSessions()
+            await db.clearButtons()
             console.log('\n')
 	    });
 
@@ -196,40 +192,40 @@ describe('Chatbot server', () => {
             
 		    let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 
-			let session = await sessions.findOne({'phoneNumber': unit1PhoneNumber})
-            let currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-            expect(currentState.state, 'state after initial button press').to.deep.equal(STATES.STARTED);
+            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            expect(sessions.length).to.equal(1)
+            expect(sessions[0].state, 'state after initial button press').to.deep.equal(STATES.STARTED);
 
 			response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
 			expect(response).to.have.status(200);
 
-            session = await sessions.findOne({'phoneNumber': unit1PhoneNumber})
-            currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses);
-            expect(currentState.state, 'state after initial staff response').to.deep.equal(STATES.WAITING_FOR_CATEGORY);
+            sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            expect(sessions.length).to.equal(1)
+            expect(sessions[0].state, 'state after initial staff response').to.deep.equal(STATES.WAITING_FOR_CATEGORY);
 
             response = await chai.request(server).post('/message').send(twilioMessageUnit1_IncidentCategoryResponse)
             expect(response).to.have.status(200)
  
-            session = await sessions.findOne({'phoneNumber': unit1PhoneNumber})
-            currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses)
-            expect(currentState.state, 'state after staff have categorized the incident').to.deep.equal(STATES.WAITING_FOR_DETAILS)
+            sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            expect(sessions.length).to.equal(1)
+            expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(STATES.WAITING_FOR_DETAILS)
 
             response = await chai.request(server).post('/message').send(twilioMessageUnit1_IncidentNotesResponse)
             expect(response).to.have.status(200)
  
-            session = await sessions.findOne({'phoneNumber': unit1PhoneNumber})
-            currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses)
-            expect(currentState.state, 'state after staff have provided incident notes').to.deep.equal(STATES.COMPLETED) 
+            sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            expect(sessions.length).to.equal(1)
+            expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(STATES.COMPLETED) 
 
 			// now start a new session for a different unit
 			response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick);
 
-    	    session = await sessions.findOne({'phoneNumber': unit2PhoneNumber})
-            currentState = new SessionState(session.uuid, session.unit, session.phoneNumber, session.state, session.numPresses)
-            expect(currentState.state, 'state after new button press from a different unit').to.deep.equal(STATES.STARTED)
-            expect(currentState.uuid).to.deep.equal(unit2UUID)
-            expect(currentState.unit).to.deep.equal('2')
-            expect(currentState.numPresses).to.deep.equal(1)
+            sessions = await db.getAllSessionsWithPhoneNumber(unit2PhoneNumber)
+            expect(sessions.length).to.equal(1)
+            expect(sessions[0].state, 'state after new button press from a different unit').to.deep.equal(STATES.STARTED)
+            expect(sessions[0].buttonId).to.deep.equal(unit2UUID)
+            expect(sessions[0].unit).to.deep.equal('2')
+            expect(sessions[0].numPresses).to.deep.equal(1)
 		});
 	});
 });
