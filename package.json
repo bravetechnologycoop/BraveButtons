@@ -16,11 +16,9 @@
     "mocha": "^5.2.0",
     "moment": "^2.22.2",
     "mustache": "^3.0.1",
-    "nedb": "^1.8.0",
-    "nedb-promise": "^2.0.1",
-    "nedb-repl": "^1.2.2",
     "ngrok": "^3.1.0",
     "node-json-db": "^0.9.1",
+    "pg": "^7.8.0",
     "socket.io": "^2.1.1",
     "twilio": "^3.23.1"
   },

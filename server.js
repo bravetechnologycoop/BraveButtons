@@ -10,25 +10,9 @@ const chalk = require('chalk')
 const Mustache = require('mustache')
 
 let SessionState = require('./SessionState.js')
-let Datastore = require('nedb-promise')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
-
-let sessions = Datastore({
-    filename: './db/' + getEnvVar("SESSIONS_DB") + '.db',
-    autoload: true
-});
-
-let registry = Datastore({
-    filename: './db/' + getEnvVar("REGISTRY_DB") + '.db',
-    autoload: true
-});
-
-// compact data file every 5 minutes
-// this seems to prevent tests from completing due to a timer created by nedb
-if(process.env.NODE_ENV != 'test') {
-    sessions.nedb.persistence.setAutocompactionInterval(5*60000)
-}
+const db = require('./db/db.js')
 
 const app = express();
 
@@ -69,27 +53,21 @@ function isValidRequest(req, properties) {
 	return properties.reduce(hasAllProperties, true);
 }
 
-async function handleValidRequest(uuid, unit, phoneNumber, numPresses) {
+async function handleValidRequest(buttonId, unit, phoneNumber, numPresses) {
 
-    log('UUID: ' + uuid.toString() + ' Unit: ' + unit.toString() + ' Presses: ' + numPresses.toString());
+    log('UUID: ' + buttonId.toString() + ' Unit: ' + unit.toString() + ' Presses: ' + numPresses.toString());
 
-    // Check if there's a session for this phone number that has not yet been responded to
-    let session = await sessions.findOne({'phoneNumber':phoneNumber, 'respondedTo':false})
+    let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber)
     
-    // If there is no such session, create an entry in the database corresponding to a new seession
     if(session === null) {
-        session = new SessionState(uuid, unit, phoneNumber, state=STATES.STARTED, numPresses);
-        await sessions.insert(session)
+        await db.createSession(buttonId, unit, phoneNumber, numPresses)
         if (needToSendMessage(phoneNumber)) {
             sendUrgencyMessage(phoneNumber);
         }
     }
-    
-    // If there is an ongoing session, increment it's button presses and update the time of the last button press, and replace that object in the db
     else {
-        let newSession = SessionState.createSessionStateFromJSON(session)
-        newSession.incrementButtonPresses(numPresses)
-        await sessions.update({_id: session._id}, newSession.toJSON())
+        session.incrementButtonPresses(numPresses)
+        await db.saveSession(session)
         if (needToSendMessage(phoneNumber)) {
             sendUrgencyMessage(phoneNumber);
         }
@@ -102,13 +80,12 @@ async function handleTwilioRequest(req) {
 	let buttonPhone = req.body.To;
 	let message = req.body.Body;
 
-    let session = await sessions.findOne({'phoneNumber': buttonPhone, $not: {'state':STATES.COMPLETED} })
-    let stateObject = SessionState.createSessionStateFromJSON(session)
+    let session = await db.getMostRecentIncompleteSessionWithPhoneNumber(buttonPhone)
 
     if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
-        let returnMessage = stateObject.advanceSession(message);
+        let returnMessage = session.advanceSession(message);
         await sendTwilioMessage(buttonPhone, returnMessage);
-        await sessions.update({_id: session._id}, stateObject.toJSON())
+        await db.saveSession(session)
         return 200;
     } 
     else {
@@ -119,7 +96,7 @@ async function handleTwilioRequest(req) {
 
 async function needToSendMessage(buttonPhone) {
 
-    let session = await sessions.findOne({'phoneNumber':buttonPhone, 'respondedTo':false})
+    let session = await db.getUnrespondedSessionWithPhoneNumber(buttonPhone)
     if(session === null) {
         log('No open Session with phone number' + buttonPhone.toString())
         return false
@@ -131,7 +108,7 @@ async function needToSendMessage(buttonPhone) {
 
 async function sendUrgencyMessage(phoneNumber) {
 
-    let session = await sessions.findOne({'phoneNumber':phoneNumber, 'respondedTo':false})
+    let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber)
     
     if(session === null) {
         log('No Open Session to Send Urgency Message to')
@@ -160,13 +137,15 @@ async function sendTwilioMessage(phone, msg) {
 
 async function remindToSendMessage(phoneNumber) {
 
-    let session = await sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false})
+    let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber)
+    
     if(session === null) {
         log('No open Session with phone number' + phoneNumber.toString())
     }
     else {
         if (session.state === STATES.STARTED) {
-            await sessions.update({_id: session._id}, { $set: {'state': STATES.WAITING_FOR_REPLY} })
+            session.state = STATES.WAITING_FOR_REPLY
+            await db.saveSession(session)
             await sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
         }
     }
@@ -174,7 +153,7 @@ async function remindToSendMessage(phoneNumber) {
 
 async function sendStaffAlert(phoneNumber, unit) {
 
-    let session = await sessions.findOne({'phoneNumber': phoneNumber, 'respondedTo':false})
+    let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber)
 
     if(session === null) {
         return
@@ -245,12 +224,11 @@ app.route('/login')
 app.get('/dashboard', async (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
         try {
-            let docs = await sessions.find({})
+            let allSessions = await db.getAllSessions()
             let recentSessions = new Map() 
             
             // TODO: consider optimizing this
-            docs.forEach((doc) => {
-                let sessionState = SessionState.createSessionStateFromJSON(doc)
+            allSessions.forEach((sessionState) => {
                 if(recentSessions.has(sessionState.unit)) {
                     let moment1 = moment(recentSessions.get(sessionState.unit).createdAt, moment.ISO_8601)
                     let moment2 = moment(sessionState.createdAt, moment.ISO_8601)
@@ -309,7 +287,7 @@ app.post('/', jsonBodyParser, async (req, res) => {
         const requiredBodyParams = ['UUID','Type'];
 
         if (isValidRequest(req, requiredBodyParams)) {
-            let button = await registry.findOne({'uuid':req.body.UUID})
+            let button = await db.getButtonWithButtonId(req.body.UUID)
             if(button === null) {
                 log(`Bad request: UUID is not registered. UUID is ${req.body.UUID}`);
                 res.status(400).send();
@@ -321,7 +299,7 @@ app.post('/', jsonBodyParser, async (req, res) => {
                 else {
                     numPresses = 1
                 }
-                await handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), numPresses)
+                await handleValidRequest(button.button_id.toString(), button.unit.toString(), button.phone_number.toString(), numPresses)
                 res.status(200).send();
             }
         }
@@ -372,5 +350,4 @@ else {
 }
 
 module.exports.server = server
-module.exports.registry = registry
-module.exports.sessions = sessions
+module.exports.db = db

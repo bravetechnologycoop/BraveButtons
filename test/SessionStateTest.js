@@ -6,14 +6,17 @@ const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 
 describe('Session state manager', () => {
 
-        const uuid = '12345'
+        const sessionId = '12345'
+        const buttonId = '12345'
         const unit = '1'
         const phoneNumber = '+14206666969'
+        const createdAt = Date()
+        const updatedAt = Date()
 
 		let state;
 
 		beforeEach(function() {
-			state = new SessionState(uuid, unit, phoneNumber, STATES.STARTED, 1);
+			state = new SessionState(sessionId, buttonId, unit, phoneNumber, STATES.STARTED, 1, createdAt, updatedAt, null, null);
 		});
 
 		it('should start off with 1 button press', () => {
@@ -27,39 +30,6 @@ describe('Session state manager', () => {
 			state.incrementButtonPresses(2);
 			expect(state.numPresses).to.deep.equal(4);
 		});
-
-        it('should save and restore from json properly', () => {
-            let json = state.toJSON()
-            let newState = SessionState.createSessionStateFromJSON(json)
-            expect(newState.uuid).to.deep.equal(uuid)
-            expect(newState.unit).to.deep.equal(unit)
-            expect(newState.phoneNumber).to.deep.equal(phoneNumber)
-            expect(newState.state).to.deep.equal(STATES.STARTED)
-            expect(newState.numPresses).to.deep.equal(1)
-            expect(newState.createdAt).to.deep.equal(state.createdAt)
-            expect(newState.updatedAt).to.deep.equal(state.updatedAt)
-        })
-
-        it('should initialize the createdAt timestamp, and should not change it thereafter', async function() {
-            expect(state).to.have.property('createdAt')
-            let createdAt = state.createdAt
-            await sleep(10)
-            state.incrementButtonPresses(1)
-            state.advanceSession('ok')
-            expect(state.createdAt).to.deep.equal(createdAt)
-        })
-
-        it('should initialize and update the updatedAt timestamp', async function() {
-            expect(state).to.have.property('updatedAt')
-            let updatedAt = state.updatedAt
-            await sleep(10)
-            state.incrementButtonPresses(1)
-            expect(state.updatedAt, 'calling incrementButtonPresses() should change updatedAt').to.not.deep.equal(updatedAt)
-            updatedAt = state.updatedAt
-            await sleep(10)
-            state.advanceSession('ok')
-            expect(state.updatedAt, 'calling advanceSession() should change updatedAt').to.not.deep.equal(updatedAt)
-        })
 
 		it('should advance the session when receiving an initial message', () => {
             expect(state.state).to.deep.equal(STATES.STARTED)
