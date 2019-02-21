@@ -2,7 +2,6 @@ let chai = require('chai');
 let SessionState = require('../SessionState.js');
 const STATES = require('../SessionStateEnum.js');
 const expect = chai.expect;
-const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 
 describe('Session state manager', () => {
 

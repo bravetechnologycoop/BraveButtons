@@ -9,6 +9,7 @@ let chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
 require('dotenv').load();
+const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 
 describe('Chatbot server', () => {
 
@@ -168,7 +169,12 @@ describe('Chatbot server', () => {
             console.log('\n')
 	    });
 
-        after(function() {
+        after(async function() {
+
+            // wait for the staff reminder timers to finish
+            await sleep(3000)
+
+            await db.close()
             server.close()
         })
 
