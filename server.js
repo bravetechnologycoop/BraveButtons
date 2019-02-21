@@ -84,6 +84,11 @@ async function handleTwilioRequest(req) {
 
     let session = await db.getMostRecentIncompleteSessionWithPhoneNumber(buttonPhone)
 
+    if (session === null) {
+        log(`received twilio message with no corresponding open session: ${message}`)
+        return 200
+    }
+
     if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
         let returnMessage = session.advanceSession(message);
         await sendTwilioMessage(buttonPhone, returnMessage);
