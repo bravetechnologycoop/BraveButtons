@@ -1,10 +1,13 @@
 language: node_js
 node_js: "node"
 
+# OS
+dist: xenial
+
 # install dependencies
 install:
   - npm install
 
 # run unit tests
 script:
-  - npm run unittest
+- sudo env "PATH=$PATH" npm run test
