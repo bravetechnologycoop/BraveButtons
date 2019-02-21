@@ -57,21 +57,23 @@ async function handleValidRequest(buttonId, unit, phoneNumber, numPresses) {
 
     log('UUID: ' + buttonId.toString() + ' Unit: ' + unit.toString() + ' Presses: ' + numPresses.toString());
 
-    let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber)
-    
-    if(session === null) {
-        await db.createSession(buttonId, unit, phoneNumber, numPresses)
-        if (needToSendMessage(phoneNumber)) {
-            sendUrgencyMessage(phoneNumber);
+    let client = await db.beginTransaction()
+
+        let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber, client)
+        
+        if(session === null) {
+            session = await db.createSession(buttonId, unit, phoneNumber, numPresses, client)
         }
-    }
-    else {
-        session.incrementButtonPresses(numPresses)
-        await db.saveSession(session)
-        if (needToSendMessage(phoneNumber)) {
-            sendUrgencyMessage(phoneNumber);
+        else {
+            session.incrementButtonPresses(numPresses)
+            await db.saveSession(session, client)
         }
-    }
+
+        if(needToSendButtonPressMessageForSession(session)) {
+            sendButtonPressMessageForSession(session)
+        }
+
+    await db.commitTransaction(client)
 }
 
 async function handleTwilioRequest(req) {
@@ -94,34 +96,18 @@ async function handleTwilioRequest(req) {
     }
 }
 
-async function needToSendMessage(buttonPhone) {
-
-    let session = await db.getUnrespondedSessionWithPhoneNumber(buttonPhone)
-    if(session === null) {
-        log('No open Session with phone number' + buttonPhone.toString())
-        return false
-    }
-    else {
-        return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0)
-    }
+async function needToSendButtonPressMessageForSession(session) {
+    return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0)
 }
 
-async function sendUrgencyMessage(phoneNumber) {
-
-    let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber)
-    
-    if(session === null) {
-        log('No Open Session to Send Urgency Message to')
-    }
-    else {
-        if (session.numPresses === 1) {
-            await sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
-            setTimeout(remindToSendMessage, unrespondedSessionReminderTimeoutMillis, phoneNumber);
-            setTimeout(sendStaffAlert, unrespondedSessionAlertTimeoutMillis, phoneNumber, session.unit.toString());
-        } 
-        else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
-            await sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
-        }
+async function sendButtonPressMessageForSession(session) {
+    if (session.numPresses === 1) {
+        await sendTwilioMessage(session.phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
+        setTimeout(remindToSendMessage, unrespondedSessionReminderTimeoutMillis, session.phoneNumber);
+        setTimeout(sendStaffAlert, unrespondedSessionAlertTimeoutMillis, session.phoneNumber, session.unit.toString());
+    } 
+    else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
+        await sendTwilioMessage(session.phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
     }
 }
 
