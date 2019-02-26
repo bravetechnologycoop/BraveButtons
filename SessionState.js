@@ -5,7 +5,8 @@ const incidentTypes = {
 	'0': 'Accidental',
 	'1': 'Safer Use',
 	'2': 'Unsafe Guest',
-	'3': 'Overdose'
+	'3': 'Overdose',
+    '4': 'Other'
 };
 
 class SessionState {
@@ -30,11 +31,11 @@ class SessionState {
         switch (this.state) {
             case STATES.STARTED:
                 this.state = STATES.WAITING_FOR_CATEGORY;
-                returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose';
+                returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose\n4 - other';
                 break;
             case STATES.WAITING_FOR_REPLY:
                 this.state = STATES.WAITING_FOR_CATEGORY;
-                returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose';
+                returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose\n4 - other';
                 break;
             case STATES.WAITING_FOR_CATEGORY:
                 let isValid = this.setIncidentType(messageText.trim());
