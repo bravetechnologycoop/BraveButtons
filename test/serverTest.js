@@ -61,6 +61,7 @@ describe('Chatbot server', () => {
 
 		beforeEach(async function() {
             await db.clearSessions()
+            await db.clearButtons()
             await db.createButton(unit1UUID, "1", unit1PhoneNumber)
             await db.createButton(unit2UUID, "2", unit2PhoneNumber)
 		});
