@@ -1,7 +1,7 @@
 let fs = require('fs')
 let express = require('express')
 let https = require('https')
-let moment = require('moment')
+let moment = require('moment-timezone')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
 var cookieParser = require('cookie-parser');
@@ -241,8 +241,8 @@ app.get('/dashboard', async (req, res) => {
                 let updatedAt = moment(recentSession.updatedAt, moment.ISO_8601)
                 viewParams.recentSessions.push({
                     unit: recentSession.unit,
-                    createdAt: createdAt.format('DD MMM Y   hh:mm:ss A'),
-                    updatedAt: updatedAt.format('DD MMM Y   hh:mm:ss A'),
+                    createdAt: createdAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
+                    updatedAt: updatedAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
                     state: recentSession.state,
                     numPresses: recentSession.numPresses.toString(),
                     incidentType: recentSession.incidentType,
@@ -250,6 +250,23 @@ app.get('/dashboard', async (req, res) => {
                 })
             }
             
+            viewParams.recentSessions.sort((sessionA, sessionB) => {
+                try {
+                    let unitA = Number(sessionA.unit)
+                    let unitB = Number(sessionB.unit)
+                    return unitA - unitB
+                }
+                catch(err) {
+                    log('error parsing unit number while rendering dashboard')
+                    log(err)
+                    return 0
+                }
+            })
+
+            for(let i=0; i<viewParams.recentSessions.length; i++) {
+                viewParams.recentSessions[i].class = i % 2 === 0 ? "even-row" : "odd-row"
+            }
+
             res.send(Mustache.render(dashboardTemplate, viewParams))
         }
         catch(err) {

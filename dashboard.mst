@@ -3,19 +3,59 @@
 
 <head>
 <meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <style>
-.wrapper {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 100px;
-    width: 1500px;
+
+body {
+    background-color: rgb(247, 249, 250);
+    margin: 0px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.navbar {
+    background-color: rgb(0, 184, 184);
+    color: rgb(247, 249, 250);
+    width: 100%;
+    height: 60px;
+    line-height: 60px;
+}
+
+.navbar span {
+    margin-left: 60px;
+    font-size: 24px;
+}
+
+.content-area {
+    background-color: rgb(247, 249, 250);
+}
+
+.content-wrapper {
+    margin-left: 60px;
+    margin-right: 60px;
+    margin-top: 20px;
+}
+
+.even-row {
+    background-color: rgb(247, 249, 250);
+}
+
+.odd-row {
+    background-color: rgb(233, 235, 236);
+}
+
+.table-header {
+    font-weight: 600;
+}
+
+.table-data {
+    font-weight: 400;
 }
 
 table {
+    color: rgb(88, 88, 91);
     table-layout: fixed;
-    max-width: 1500px;
     width: 100%;
-    border-collapse: separate;
+    border-collapse: collapse;
     border-spacing: 5px 5px;
 }
 
@@ -32,33 +72,35 @@ th, td {
 </head>
 
 <body>
-    <div class="wrapper">
-        <div>
-            Brave Chatbot Dashboard
+    <div class="navbar">
+        <span>Brave Chatbot Dashboard</span>
+    </div>
+    <div class="content-area">
+        <div class="content-wrapper">
+            <br><br>
+            <table>
+                <tr class="table-header">
+                    <th>Unit</th>
+                    <th>Presses</th>
+                    <th>State</th>
+                    <th>Category</th>
+                    <th>Notes</th>
+                    <th>Started At</th>
+                    <th>Updated At</th>
+                </tr>
+                {{#recentSessions}}
+                <tr class="table-data {{class}}">
+                    <td>{{unit}}</td>
+                    <td>{{numPresses}}</td>
+                    <td>{{state}}</td>
+                    <td>{{incidentType}}</td>
+                    <td>{{notes}}</td>
+                    <td>{{createdAt}}</td>
+                    <td>{{updatedAt}}</td>
+                </tr>
+                {{/recentSessions}}
+            </table>
         </div>
-        <br><br>
-        <table>
-            <tr>
-                <th>Unit</th>
-                <th>Session Started At</th>
-                <th>Session Last Updated At</th>
-                <th>State</th>
-                <th># Of Presses</th>
-                <th>Category</th>
-                <th>Notes</th>
-            </tr>
-            {{#recentSessions}}
-            <tr>
-                <td>{{unit}}</td>
-                <td>{{createdAt}}</td>
-                <td>{{updatedAt}}</td>
-                <td>{{state}}</td>
-                <td>{{numPresses}}</td>
-                <td>{{incidentType}}</td>
-                <td>{{notes}}</td>
-            </tr>
-            {{/recentSessions}}
-        </table>
     </div>
 </body>
 </html>
