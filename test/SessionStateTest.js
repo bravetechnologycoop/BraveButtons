@@ -9,7 +9,7 @@ describe('Session state manager', () => {
 		let state;
 
 		beforeEach(function() {
-			state = new SessionState('111', '222', '+14206666969', STATES.STARTED);
+			state = new SessionState('111', '222', '+14206666969', STATES.STARTED, 1);
 		});
 
 		it('should start off with 1 button press', () => {
@@ -18,10 +18,12 @@ describe('Session state manager', () => {
 		});
 
 		it('should increment properly', () => {
-			state.incrementButtonPresses();
+			state.incrementButtonPresses("click");
 			expect(state.numPresses).to.deep.equal(2);
-			state.incrementButtonPresses();
+			state.incrementButtonPresses("hold");
 			expect(state.numPresses).to.deep.equal(3);
+			state.incrementButtonPresses("double_click");
+			expect(state.numPresses).to.deep.equal(5);
 		});
 
 		it('completes properly', () => {
@@ -32,7 +34,7 @@ describe('Session state manager', () => {
 		})
 
 		it('should update numPresses when updated with same uuid and current session not complete', () => {
-			state.update('111', '222', STATES.STARTED);
+			state.update('111', '222', '+14206666969', "click",   STATES.STARTED);
 			expect(state.uuid).to.deep.equal('111');
 			expect(state.numPresses).to.deep.equal(2);
 		});
@@ -44,20 +46,20 @@ describe('Session state manager', () => {
 		});
 
 		it('should reset numPresses when updated with same uuid and current session is complete', () => {
-			state.update('111', '222', STATES.STARTED);
+			state.update('111', '222','+14206666969', "hold", STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(2);
-			state.update('111', '222', STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(3);
+			state.update('111', '222', '+14206666969', "double_click", STATES.STARTED);
+			expect(state.numPresses).to.deep.equal(4);
 			state.complete();
-			state.update('111', '222', STATES.STARTED);
+			state.update('111', '222', "click", STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(1);
 			expect(state.completed).to.be.false;
 		});
 
 		it('should update uuid when updated with different uuid and current session is complete', () => {
-			state.update('111', '222', STATES.STARTED);
+			state.update('111', '222', '+14206666969', "click", STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(2);
-			state.update('111', '222', STATES.STARTED);
+			state.update('111', '222', '+14206666969', "hold", STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(3);
 			state.complete();
 			state.update('222', '333', STATES.STARTED);
@@ -68,14 +70,14 @@ describe('Session state manager', () => {
 		});
 
 		it('should update numPresses even after having ignored updates', () => {
-			state.update('111', '222', STATES.STARTED);
+			state.update('111', '222', '+14206666969', 'click', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(2);
-			state.update('111', '222', STATES.STARTED);
+			state.update('111', '222', '+14206666969', 'hold', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(3);
-			state.update('222', '222', STATES.STARTED);
+			state.update('222', '222', '+14206666968','click', STATES.STARTED);
 			expect(state.numPresses).to.deep.equal(3);
-			state.update('111', '222', STATES.STARTED);
-			expect(state.numPresses).to.deep.equal(4);
+			state.update('111', '222', '+14206666969', 'double_click', STATES.STARTED);
+			expect(state.numPresses).to.deep.equal(5);
 		});
 
 		it ('advancing the session from started', () => {

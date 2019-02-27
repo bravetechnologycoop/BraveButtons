@@ -11,8 +11,6 @@ let Datastore = require('nedb')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 
-
-
 let db = new Datastore({
     filename: `./` + getEnvVar("DB_NAME") + `.db`,
 });
@@ -20,7 +18,6 @@ let db = new Datastore({
 let registry = new Datastore({
     filename: `./` + getEnvVar("REGISTRY_DB") + `.db`,
 });
-
 
 registry.loadDatabase()
 
@@ -33,7 +30,6 @@ if (process.env.NODE_ENV !== 'test') {
 	db.persistence.setAutocompactionInterval(5*60000)
 } else {
     db.persistence.setAutocompactionInterval(10)
-
 }
 
 const app = express();
@@ -77,11 +73,19 @@ function loadState() {
 	}
 }
 
-function updateState(uuid, unit, phoneNumber, state) {
+function updateState(uuid, unit, phoneNumber, type, state) {
+    if(type === "double_click") {
+        numPresses = 2;
+    }
+    else {
+        numPresses = 1;
+    }
+
 	if (STATE == null || Object.keys(STATE).length === 0 || !STATE.hasOwnProperty(phoneNumber)) {
-		STATE[phoneNumber] = new SessionState(uuid, unit, phoneNumber, state);
-	} else {
-		STATE[phoneNumber].update(uuid, unit, phoneNumber, state);
+		STATE[phoneNumber] = new SessionState(uuid, unit, phoneNumber, state, numPresses);
+	} 
+    else {
+		STATE[phoneNumber].update(uuid, unit, phoneNumber, type, state);
 	}
 }
 
@@ -98,11 +102,11 @@ function isValidRequest(req, properties) {
 	return properties.reduce(hasAllProperties, true);
 }
 
-function handleValidRequest(uuid, unit, phoneNumber) {
+function handleValidRequest(uuid, unit, phoneNumber, type) {
 
-	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString());
+	 log('UUID: ' + uuid.toString() + ' Unit:' + unit.toString() + ' Type:' + type.toString());
 
-	 updateState(uuid, unit, phoneNumber, STATES.STARTED);
+	 updateState(uuid, unit, phoneNumber,type, STATES.STARTED);
 	 saveState();
 	 io.emit("stateupdate", STATE);
 	 if (needToSendMessage(phoneNumber)) {
@@ -123,14 +127,14 @@ function handleTwilioRequest(req) {
 		let returnMessage = STATE[buttonPhone].advanceSession(message);
 		sendTwilioMessage(buttonPhone, returnMessage);
 		saveState();
-    //put completed states in the database
-    if(STATE[buttonPhone].state == STATES.COMPLETED){
-      db.insert(STATE[buttonPhone], (err, docs) => {
-        if(err){
-          log(err.message)
+        //put completed states in the database
+        if(STATE[buttonPhone].state == STATES.COMPLETED) {
+            db.insert(STATE[buttonPhone], (err, docs) => {
+                if(err) {
+                    log(err.message)
+                }
+            })
         }
-      })
-    }
     	io.emit("stateupdate", STATE);
 		return 200;
 	} else {
@@ -140,7 +144,7 @@ function handleTwilioRequest(req) {
 }
 
 function needToSendMessage(buttonPhone) {
-	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses % 5 === 0);
+	return (STATE[buttonPhone].numPresses === 1 || STATE[buttonPhone].numPresses === 3 || STATE[buttonPhone].numPresses % 5 === 0);
 }
 
 function sendUrgencyMessage(phoneNumber) {
@@ -149,7 +153,7 @@ function sendUrgencyMessage(phoneNumber) {
 		sendTwilioMessage(phoneNumber, 'There has been a request for help from Unit ' + STATE[phoneNumber].unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
 		setTimeout(remindToSendMessage, 300000, phoneNumber);
 		setTimeout(sendStaffAlert, 420000, phoneNumber, STATE[phoneNumber].unit.toString());
-	} else if (STATE[phoneNumber].numPresses % 5 === 0) {
+	} else if (STATE[phoneNumber].numPresses % 5 === 0 || STATE[phoneNumber].numPresses === 3) {
 		sendTwilioMessage(phoneNumber, 'This in an urgent request. The button has been pressed ' + STATE[phoneNumber].numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
 	}
 }
@@ -175,19 +179,17 @@ function registryInsert(array) {
 
 function sendStaffAlert(phoneNumber, unit) {
 	if (STATE[phoneNumber].state === STATES.WAITING_FOR_REPLY) {
-	client.messages
-      .create({from: phoneNumber, body: 'There has been an unresponed request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
-      .then(message => log(message.sid))
-      .done();
-  }
-  //Unresponded alerts are completed and logged in database
-  db.insert(STATE[phoneNumber], (err, docs) => {
-    if(err){
-      log(err.message)
+        client.messages
+          .create({from: phoneNumber, body: 'There has been an unresponed request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
+          .then(message => log(message.sid))
+          .done();
     }
-  })
-
-
+    //Unresponded alerts are completed and logged in database
+    db.insert(STATE[phoneNumber], (err, docs) => {
+        if(err) {
+            log(err.message)
+        }
+    })
 }
 
 app.use(cookieParser());
@@ -247,8 +249,7 @@ app.route('/login')
 //return the current state as json if user logged in
 app.get('/data', (req, res) => {
 	if (req.session.user && req.cookies.user_sid) {
-		res.json(STATE);
-		res.status(200).send();
+		res.status(200).json(STATE);
 	} else {
 		res.redirect('/login');
 	}
@@ -273,22 +274,22 @@ app.get('/logout', (req, res) => {
 
 app.post('/', jsonBodyParser, (req, res) => {
 
-	const requiredBodyParams = ['UUID'];
+	const requiredBodyParams = ['UUID','Type'];
 
 	if (isValidRequest(req, requiredBodyParams)) {
-
-    registry.findOne({'uuid':req.body.UUID}, function(err,button){
-      if(button===null){
-        handleErrorRequest('Bad request: UUID is not registered');
-        handleErrorRequest(err);
-        res.status(400).send();
-      }else {
-        handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString())
-        res.status(200).send();
-      }
-    })
-
-	}else {
+        registry.findOne({'uuid':req.body.UUID}, function(err, button) {
+            if(button === null) {
+                handleErrorRequest(`Bad request: UUID is not registered. UUID is ${req.body.UUID}`);
+                handleErrorRequest(err);
+                res.status(400).send();
+            }
+            else {
+                handleValidRequest(button.uuid.toString(), button.unit.toString(), button.phone.toString(), req.body.Type.toString())
+                res.status(200).send();
+            }
+        })
+	}
+    else {
 		handleErrorRequest('Bad request: UUID is missing');
 		res.status(400).send();
 	}
@@ -311,19 +312,15 @@ app.post('/message', jsonBodyParser, (req, res) => {
 
 });
 
-app.post('/registryUpdate', jsonBodyParser, (req,res) =>{
-  constRequiredBodyParams = ["entry"];
-  registry.insert({'uuid':req.body.uuid, 'unit':req.body.unit, 'phoneNumber':req.body.phoneNumber, '_id':req.body._id});
-  res.status(200).send();
-});
-
 let server;
 
-if (process.env.NODE_ENV === 'test') {   // local http server for testing
+if (process.env.NODE_ENV === 'test') { // local http server for testing
 	server = app.listen(443);
-  registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
-  {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
-} else {
+    //TODO: put into serverTest
+    registry.insert([{"uuid":"111","unit":"123","phone":"+16664206969","_id":"CGBadbmt3EhfDeYd"},
+                     {"uuid":"222","unit":"222","phone":"+17774106868","_id":"JUdabgmtlwp0pgjW"}]);
+} 
+else {
 	let httpsOptions = {
 	    key: fs.readFileSync(`/etc/letsencrypt/live/chatbot.brave.coop/privkey.pem`),
 	    cert: fs.readFileSync(`/etc/letsencrypt/live/chatbot.brave.coop/fullchain.pem`)
@@ -331,8 +328,6 @@ if (process.env.NODE_ENV === 'test') {   // local http server for testing
 	server = https.createServer(httpsOptions, app).listen(443)
 	log('brave server listening on port 443')
 }
-
-
 
 const io = require("socket.io")(server);
 
