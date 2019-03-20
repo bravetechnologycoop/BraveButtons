@@ -1,4 +1,4 @@
-DO $$
+DO $migration$
     DECLARE migrationId INT;
     DECLARE lastSuccessfulMigrationId INT;
 BEGIN
@@ -6,17 +6,17 @@ BEGIN
     migrationId := 1;
 
     -- Table to store the current migration state of the DB
-    CREATE TABLE IF NOT EXISTS last_migration (
-        last_migration_id INT NOT NULL,
+    CREATE TABLE IF NOT EXISTS migrations (
+        id INT PRIMARY KEY,
         created_at timestamptz NOT NULL DEFAULT NOW()
     );
 
     -- Get the migration ID of the last file to be successfully run
-    SELECT MAX(last_migration_id) INTO lastSuccessfulMigrationId
-    FROM last_migration;
+    SELECT MAX(id) INTO lastSuccessfulMigrationId
+    FROM migrations;
 
     -- Only execute this script if its migration ID is next after the last successful migration ID
-    IF migrationId - lastSuccessfulMigrationId = 1 OR lastSuccessfulMigrationId IS NULL THEN
+    IF lastSuccessfulMigrationId IS NULL THEN
         CREATE TABLE IF NOT EXISTS sessions (
             id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
             button_id text NOT NULL,
@@ -40,12 +40,12 @@ BEGIN
         );
 
         CREATE OR REPLACE FUNCTION trigger_set_timestamp()
-        RETURNS TRIGGER AS $$
+        RETURNS TRIGGER AS $t$
         BEGIN
             NEW.updated_at = NOW();
             RETURN NEW;
         END;
-        $$ LANGUAGE plpgsql;
+        $t$ LANGUAGE plpgsql;
 
         CREATE TRIGGER set_sessions_timestamp
         BEFORE UPDATE ON sessions
@@ -56,7 +56,7 @@ BEGIN
         FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
 
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
-        INSERT INTO last_migration (last_migration_id)
+        INSERT INTO migrations (id)
         VALUES (migrationId);
     END IF;
-END $$;
+END $migration$;

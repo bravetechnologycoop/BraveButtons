@@ -1,4 +1,4 @@
-DO $$
+DO $migration$
     DECLARE migrationId INT;
     DECLARE lastSuccessfulMigrationId INT;
 BEGIN
@@ -6,15 +6,15 @@ BEGIN
     migrationId := ADD MIGRATION ID HERE;
 
     -- Get the migration ID of the last file to be successfully run
-    SELECT MAX(last_migration_id) INTO lastSuccessfulMigrationId
-    FROM last_migration;
+    SELECT MAX(id) INTO lastSuccessfulMigrationId
+    FROM migrations;
 
     -- Only execute this script if its migration ID is next after the last successful migration ID
     IF migrationId - lastSuccessfulMigrationId = 1 THEN
         -- ADD SCRIPT HERE
 
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
-        INSERT INTO last_migration (last_migration_id)
+        INSERT INTO migrations (id)
         VALUES (migrationId);
     END IF;
-END $$;
+END $migration$;

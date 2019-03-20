@@ -29,6 +29,6 @@ Otherwise, the scripts will not run.
 
 ```
 SELECT *
-FROM last_migration
-ORDER BY migration_id;
+FROM migrations
+ORDER BY id;
 ```
