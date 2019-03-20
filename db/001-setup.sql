@@ -47,9 +47,13 @@ BEGIN
         END;
         $t$ LANGUAGE plpgsql;
 
+        DROP TRIGGER IF EXISTS set_sessions_timestamp ON sessions;
+
         CREATE TRIGGER set_sessions_timestamp
         BEFORE UPDATE ON sessions
         FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
+
+        DROP TRIGGER IF EXISTS set_registry_timestamp ON registry;
 
         CREATE TRIGGER set_registry_timestamp
         BEFORE UPDATE ON registry
