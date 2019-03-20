@@ -4,9 +4,10 @@ import datetime
 import json
 import uuid
 import configparser
+import os
 
 config = configparser.ConfigParser()
-config.read('pi_config.ini')
+config.read(os.path.dirname(__file__) + '/pi_config.ini')
 
 SERVER_URL = config['Heartbeat']['heartbeatServerFQDN']
 RELAY_PIN = 10
