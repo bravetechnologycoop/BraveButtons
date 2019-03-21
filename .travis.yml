@@ -10,4 +10,5 @@ install:
 
 # run unit tests
 script:
+  - cp pi/template.pi_config.ini pi/pi_config.ini
   - pytest --cov=heartbeat
