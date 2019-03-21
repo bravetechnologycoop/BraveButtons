@@ -4,32 +4,32 @@ import unittest.mock
 import socket
 import os
 
-class Test__parse_darkstat_html_lines(object):
+class Test__parse_flic_last_seen_from_darkstat_html(object):
 
     def test_seconds(self):
         with open(os.path.dirname(__file__) + '/sample_darkstat_html/59_secs.html', 'r') as html_file:
             html = html_file.read()
-            assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 59
+            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html) == 59
 
     def test_seconds_minutes(self):
         with open(os.path.dirname(__file__) + '/sample_darkstat_html/316_secs.html', 'r') as html_file:
             html = html_file.read()
-            assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 316
+            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html) == 316
 
     def test_seconds_minutes_hours(self):
         with open(os.path.dirname(__file__) + '/sample_darkstat_html/3806_secs.html', 'r') as html_file:
             html = html_file.read()
-            assert heartbeat.parse_darkstat_html_lines(html.splitlines()) == 3806
+            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html) == 3806
 
     def test_empty_html(self):
         with pytest.raises(heartbeat.FlicNotFoundError):
-            heartbeat.parse_darkstat_html_lines(['', '', ''])
+            heartbeat.parse_flic_last_seen_from_darkstat_html('')
 
     def test_never(self):
         with pytest.raises(heartbeat.FlicNotFoundError):
             with open(os.path.dirname(__file__) + '/sample_darkstat_html/never.html', 'r') as html_file:
                 html = html_file.read()
-                heartbeat.parse_darkstat_html_lines(html.splitlines())
+                heartbeat.parse_flic_last_seen_from_darkstat_html(html)
 
 class Test__get_system_id_from_path(object):
 
