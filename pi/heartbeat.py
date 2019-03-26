@@ -5,6 +5,9 @@ import json
 import uuid
 import configparser
 import os
+import re
+import platform
+import subprocess
 
 config = configparser.ConfigParser()
 config.read(os.path.dirname(__file__) + '/pi_config.ini')
@@ -70,8 +73,22 @@ def parse_flic_last_seen_from_darkstat_html(html):
 
     raise FlicNotFoundError('darkstat html did not contain flic last seen info')
 
-def send_heartbeat(flic_last_seen_secs, system_id):
+def parse_flic_ip_from_darkstat_html(html):
+    lines = html.splitlines()
+    for i in range(0, len(lines)):
+        if (lines[i].count('flic') > 0):
+            flic_ip_strings = re.findall( r'[0-9]+(?:\.[0-9]+){3}', lines[i-1])
+            return flic_ip_strings[0]
+    raise FlicNotFoundError('darkstat html did not contain flic ip address')
+
+def ping(host):
+    param = '-n' if platform.system().lower()=='windows' else '-c'
+    command = ['ping', param, '1', host]
+    return subprocess.run(command).returncode == 0
+
+def send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id):
     body = {"flic_last_seen_secs" : str(flic_last_seen_secs),
+            "flic_last_ping_secs" : str(flic_last_ping_secs),
             "system_id" : str(system_id)}
     headers = {'Content-Type':'application/json'}
     try:
@@ -118,6 +135,8 @@ if __name__ == '__main__':
         led = gpiozero.OutputDevice(LED_PIN)
         led.on()
 
+        last_ping = datetime.datetime.now()
+
         system_ok = False
         system_id = get_system_id_from_path('/usr/local/brave/system_id')
         flic_last_reboot = datetime.datetime.now()
@@ -133,8 +152,12 @@ if __name__ == '__main__':
 
             try:
                 html = get_darkstat_html()
-                num_secs = parse_flic_last_seen_from_darkstat_html(html)
-                system_ok = send_heartbeat(num_secs, system_id)
+                ip = parse_flic_ip_from_darkstat_html(html)
+                if ping(ip):
+                    last_ping = datetime.datetime.now()
+                num_secs_darkstat = parse_flic_last_seen_from_darkstat_html(html)
+                num_secs_ping = (datetime.datetime.now() - last_ping).total_seconds()
+                system_ok = send_heartbeat(num_secs_darkstat, num_secs_ping, system_id)
             except FlicNotFoundError as e:
                 # this means that the flic didn't show up in darkstat's list of hosts
                 # typically this happens on startup for a few seconds until the flic becomes active on the network

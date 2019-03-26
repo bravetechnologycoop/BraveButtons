@@ -51,12 +51,14 @@ th, td {
             <tr>
                 <th>System Name</th>
                 <th>Last Seen (Flic)</th>
+                <th>Last Seen (Ping)</th>
                 <th>Last Seen (Heartbeat)</th>
             </tr>
             {{#systems}}
             <tr>
                 <td>{{system_name}}</td>
                 <td>{{flic_last_seen}}</td>
+                <td>{{flic_last_ping}}</td>
                 <td>{{heartbeat_last_seen}}</td>
             </tr>
             {{/systems}}

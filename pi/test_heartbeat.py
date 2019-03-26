@@ -31,6 +31,18 @@ class Test__parse_flic_last_seen_from_darkstat_html(object):
                 html = html_file.read()
                 heartbeat.parse_flic_last_seen_from_darkstat_html(html)
 
+class Test__parse_flic_ip_from_darkstat_html(object):
+
+    def test_valid_input(self):
+        with open(os.path.dirname(__file__) + '/sample_darkstat_html/59_secs.html', 'r') as html_file:
+            html = html_file.read()
+            assert heartbeat.parse_flic_ip_from_darkstat_html(html) == '192.168.8.114'
+
+class Test__ping(object):
+
+    def test_localhost(self):
+        assert heartbeat.ping('localhost')
+
 class Test__get_system_id_from_path(object):
 
     def test_when_system_id_has_not_been_generated(self, tmp_path):
@@ -60,7 +72,8 @@ class Test__send_heartbeat(object):
 
                 system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
                 flic_last_seen_secs = 5
-                success = heartbeat.send_heartbeat(flic_last_seen_secs, system_id)
+                flic_last_ping_secs = 3
+                success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
 
                 assert success == True
                 assert mock_connection.request.called
@@ -75,7 +88,8 @@ class Test__send_heartbeat(object):
 
                 system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
                 flic_last_seen_secs = 5
-                success = heartbeat.send_heartbeat(flic_last_seen_secs, system_id)
+                flic_last_ping_secs = 3
+                success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
 
                 assert success == False
                 assert mock_connection.request.called
@@ -87,7 +101,8 @@ class Test__send_heartbeat(object):
 
                 system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
                 flic_last_seen_secs = 5
-                success = heartbeat.send_heartbeat(flic_last_seen_secs, system_id)
+                flic_last_ping_secs = 3
+                success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
 
                 assert success == False
                 assert mock_connection.request.called

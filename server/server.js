@@ -55,9 +55,11 @@ function sendReconnectionMessage(systemName) {
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
     log('got a heartbeat from ' + req.body.system_id + ', flic_last_seen_secs is ' + req.body.flic_last_seen_secs.toString())
     let flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
+    let pingLastSeenTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
     let heartbeatLastSeenTime = moment().toISOString()
     let dbObject = {
         flic_last_seen_time: flicLastSeenTime,
+        flic_last_ping_time: flicLastPingTime,
         heartbeat_last_seen_time: heartbeatLastSeenTime
     }
     db.update({ system_id: req.body.system_id }, { $set: dbObject }, { upsert: true }, (err, numChanged) => {
@@ -92,12 +94,19 @@ app.get('/dashboard', (req, res) => {
             let flicLastSeenTime = moment(doc.flic_last_seen_time)
             let flicLastSeenSecs = moment().diff(flicLastSeenTime) / 1000.0
             flicLastSeenSecs = Math.round(flicLastSeenSecs)
+
             let heartbeatLastSeenTime = moment(doc.heartbeat_last_seen_time)
             let heartbeatLastSeenSecs = moment().diff(heartbeatLastSeenTime) / 1000.0
             heartbeatLastSeenSecs = Math.round(heartbeatLastSeenSecs)
+
+            let flicLastPingTime = moment(doc.flic_last_ping_time)
+            let flicLastPingSecs = moment().diff(flicLastPingTime) / 1000.0
+            flicLastPingSecs = Math.round(flicLastPingSecs)
+
             viewParams.systems.push({
                 system_name: doc.system_name,
                 flic_last_seen: flicLastSeenSecs.toString() + ' seconds ago',
+                flic_last_ping: flicLastPingSecs.toString() + ' seconds ago',
                 heartbeat_last_seen: heartbeatLastSeenSecs.toString() + ' seconds ago' 
             })
         })
