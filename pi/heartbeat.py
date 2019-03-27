@@ -8,9 +8,11 @@ import os
 import re
 import platform
 import subprocess
+import pathlib
 
 config = configparser.ConfigParser()
-config.read(os.path.dirname(__file__) + '/pi_config.ini')
+configPath = pathlib.Path(os.path.dirname(__file__)) / 'pi_config.ini'
+config.read(str(configPath))
 
 SERVER_URL = config['Heartbeat']['heartbeatServerFQDN']
 RELAY_PIN = 10
