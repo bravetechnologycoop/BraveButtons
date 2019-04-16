@@ -6,6 +6,7 @@ const expect = chai.expect;
 describe('Session state manager', () => {
 
         const sessionId = '12345'
+        const installationId = '67890'
         const buttonId = '12345'
         const unit = '1'
         const phoneNumber = '+14206666969'
@@ -15,7 +16,7 @@ describe('Session state manager', () => {
 		let state;
 
 		beforeEach(function() {
-			state = new SessionState(sessionId, buttonId, unit, phoneNumber, STATES.STARTED, 1, createdAt, updatedAt, null, null);
+			state = new SessionState(sessionId, installationId, buttonId, unit, phoneNumber, STATES.STARTED, 1, createdAt, updatedAt, null, null);
 		});
 
 		it('should start off with 1 button press', () => {

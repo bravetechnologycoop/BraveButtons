@@ -62,13 +62,18 @@ describe('Chatbot server', () => {
 		beforeEach(async function() {
             await db.clearSessions()
             await db.clearButtons()
-            await db.createButton(unit1UUID, "1", unit1PhoneNumber)
-            await db.createButton(unit2UUID, "2", unit2PhoneNumber)
+            await db.clearInstallations()
+            // TODO: insert test numbers here once using Twilio magic numbers
+            await db.createInstallation("TestInstallation", "", "")
+            let installations = await db.getInstallations()
+            await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber)
+            await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber)
 		});
 
 		afterEach(async function() {
             await db.clearSessions()
             await db.clearButtons()
+            await db.clearInstallations()
             console.log('\n')
 	    });
 
@@ -160,13 +165,19 @@ describe('Chatbot server', () => {
 
 		beforeEach(async function() {
             await db.clearSessions()
-            await db.createButton(unit1UUID, "1", unit1PhoneNumber)
-            await db.createButton(unit2UUID, "2", unit2PhoneNumber)
+            await db.clearButtons()
+            await db.clearInstallations()
+            // TODO: insert test numbers here once using Twilio magic numbers
+            await db.createInstallation("TestInstallation", "", "")
+            let installations = await db.getInstallations()
+            await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber)
+            await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber)
 		});
 
 		afterEach(async function() {
             await db.clearSessions()
             await db.clearButtons()
+            await db.clearInstallations()
             console.log('\n')
 	    });
 

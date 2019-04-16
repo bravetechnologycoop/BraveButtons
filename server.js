@@ -53,16 +53,16 @@ function isValidRequest(req, properties) {
 	return properties.reduce(hasAllProperties, true);
 }
 
-async function handleValidRequest(buttonId, unit, phoneNumber, numPresses) {
+async function handleValidRequest(button, numPresses) {
 
-    log('UUID: ' + buttonId.toString() + ' Unit: ' + unit.toString() + ' Presses: ' + numPresses.toString());
+    log('UUID: ' + button.button_id.toString() + ' Unit: ' + button.unit.toString() + ' Presses: ' + numPresses.toString());
 
     let client = await db.beginTransaction()
 
-        let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber, client)
+        let session = await db.getUnrespondedSessionWithPhoneNumber(button.phone_number, client)
         
         if(session === null) {
-            session = await db.createSession(buttonId, unit, phoneNumber, numPresses, client)
+            session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, client)
         }
         else {
             session.incrementButtonPresses(numPresses)
@@ -307,7 +307,7 @@ app.post('/', jsonBodyParser, async (req, res) => {
                 else {
                     numPresses = 1
                 }
-                await handleValidRequest(button.button_id.toString(), button.unit.toString(), button.phone_number.toString(), numPresses)
+                await handleValidRequest(button, numPresses)
                 res.status(200).send();
             }
         }

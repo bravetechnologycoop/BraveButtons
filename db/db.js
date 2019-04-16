@@ -12,7 +12,7 @@ pool.on('error', (err, client) => {
 })
 
 function createSessionFromRow(r) {
-    return new SessionState(r.id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes)
+    return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes)
 }
 
 module.exports.beginTransaction = async function() {
@@ -99,14 +99,14 @@ module.exports.getAllSessions = async function(client) {
     return rows.map(createSessionFromRow)
 }
 
-module.exports.createSession = async function(buttonId, unit, phoneNumber, numPresses, client) {
+module.exports.createSession = async function(installationId, buttonId, unit, phoneNumber, numPresses, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    const values = [buttonId, unit, phoneNumber, STATES.STARTED, numPresses]
-    const { rows } = await client.query('INSERT INTO sessions (button_id, unit, phone_number, state, num_presses) VALUES ($1, $2, $3, $4, $5) RETURNING *', values)
+    const values = [installationId, buttonId, unit, phoneNumber, STATES.STARTED, numPresses]
+    const { rows } = await client.query('INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', values)
    
     if(!transactionMode) {
         client.release()
@@ -131,8 +131,8 @@ module.exports.saveSession = async function(session, client) {
         }
         throw new Error("Tried to save a session that doesn't exist yet. Use createSession() instead.")
     }
-    const query = "UPDATE sessions SET button_id = $1, unit = $2, phone_number = $3, state = $4, num_presses = $5, incident_type = $6, notes = $7 WHERE id = $8"
-    const values = [session.buttonId, session.unit, session.phoneNumber, session.state, session.numPresses, session.incidentType, session.notes, session.id]
+    const query = "UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8 WHERE id = $9"
+    const values = [session.installationId, session.buttonId, session.unit, session.phoneNumber, session.state, session.numPresses, session.incidentType, session.notes, session.id]
     await client.query(query, values) 
     
     if(!transactionMode) {
@@ -175,13 +175,13 @@ module.exports.getButtonWithButtonId = async function(buttonId, client) {
     return null
 }
 
-module.exports.createButton = async function(buttonId, unit, phoneNumber, client) {
+module.exports.createButton = async function(buttonId, installationId, unit, phoneNumber, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    await client.query("INSERT INTO registry (button_id, unit, phone_number) VALUES ($1, $2, $3)", [buttonId, unit, phoneNumber])
+    await client.query("INSERT INTO registry (button_id, installation_id, unit, phone_number) VALUES ($1, $2, $3, $4)", [buttonId, installationId, unit, phoneNumber])
     
     if(!transactionMode) {
         client.release()
@@ -203,6 +203,55 @@ module.exports.clearButtons = async function(client) {
     if(!transactionMode) {
         client.release()
     }
+}
+
+module.exports.createInstallation = async function(name, responderPhoneNumber, fallbackPhoneNumber) {
+    
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number) VALUES ($1, $2, $3)", [name, responderPhoneNumber, fallbackPhoneNumber])
+    
+    if(!transactionMode) {
+        client.release()
+    }
+}
+
+module.exports.clearInstallations = async function(client) {
+    if(process.env.NODE_ENV !== "test") {
+        console.log("warning - tried to clear installations table outside of a test environment!")
+        return
+    }
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    await client.query("DELETE FROM installations")
+    
+    if(!transactionMode) {
+        client.release()
+    }
+}
+
+module.exports.getInstallations = async function(client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    const { rows } = await client.query("SELECT * FROM installations")
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {        
+        return rows
+    }
+    return []
 }
 
 module.exports.close = async function() {

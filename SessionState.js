@@ -11,8 +11,9 @@ const incidentTypes = {
 
 class SessionState {
 
-    constructor(id, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes) {
+    constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes) {
         this.id = id
+        this.installationId = installationId
         this.buttonId = buttonId
         this.unit = unit
         this.phoneNumber = phoneNumber
