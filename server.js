@@ -24,7 +24,6 @@ const accountSid = getEnvVar('TWILIO_SID');
 const authToken = getEnvVar('TWILIO_TOKEN');
 
 const client = require('twilio')(accountSid, authToken);
-const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
 const dashboardTemplate = fs.readFileSync(`${__dirname}/dashboard.mst`, 'utf-8')
 
