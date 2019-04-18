@@ -26,14 +26,14 @@ module.exports.commitTransaction = async function(client) {
     client.release()
 }
 
-module.exports.getUnrespondedSessionWithPhoneNumber = async function(phoneNumber, client) {
+module.exports.getUnrespondedSessionWithButtonId = async function(buttonId, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
 
-    const query = "SELECT * FROM sessions WHERE phone_number = $1 AND state != $2 AND state != $3 AND state != $4"
-    const values = [phoneNumber, STATES.WAITING_FOR_CATEGORY, STATES.WAITING_FOR_DETAILS, STATES.COMPLETED]
+    const query = "SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4"
+    const values = [buttonId, STATES.WAITING_FOR_CATEGORY, STATES.WAITING_FOR_DETAILS, STATES.COMPLETED]
     const { rows } = await client.query(query, values)
    
     if(!transactionMode) {
@@ -66,13 +66,13 @@ module.exports.getMostRecentIncompleteSessionWithPhoneNumber = async function(ph
     return null
 }
 
-module.exports.getAllSessionsWithPhoneNumber = async function(phoneNumber, client) {
+module.exports.getAllSessionsWithButtonId = async function(buttonId, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    let { rows } = await client.query("SELECT * FROM sessions WHERE phone_number = $1", [phoneNumber])
+    let { rows } = await client.query("SELECT * FROM sessions WHERE button_id = $1", [buttonId])
     
     if(!transactionMode) {
         client.release()

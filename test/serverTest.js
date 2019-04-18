@@ -14,10 +14,10 @@ const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 describe('Chatbot server', () => {
 
     const unit1UUID = '111'
-    const unit1PhoneNumber = '+17787847855'
+    const unit1PhoneNumber = '+15005550006'
 
     const unit2UUID = '222'
-    const unit2PhoneNumber = '+17787844764'
+    const unit2PhoneNumber = '+15005550006'
 
     const unit1FlicRequest_SingleClick = {
 		'UUID': unit1UUID,
@@ -63,8 +63,7 @@ describe('Chatbot server', () => {
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
-            // TODO: insert test numbers here once using Twilio magic numbers
-            await db.createInstallation("TestInstallation", "", "")
+            await db.createInstallation("TestInstallation", "+15005550006", "+15005550006")
             let installations = await db.getInstallations()
             await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber)
             await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber)
@@ -96,7 +95,7 @@ describe('Chatbot server', () => {
 			
 			let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 
-            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
             
             let session = sessions[0]
@@ -115,7 +114,7 @@ describe('Chatbot server', () => {
 			let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 			response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick);
 
-            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
 
             let session = sessions[0]
@@ -136,7 +135,7 @@ describe('Chatbot server', () => {
 			    chai.request(server).post('/').send(unit1FlicRequest_Hold)
             ])
 
-            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
         })
 
@@ -146,7 +145,7 @@ describe('Chatbot server', () => {
 		    response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick);
 			response = await chai.request(server).post('/').send(unit1FlicRequest_Hold);
 
-            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
 
             let session = sessions[0]
@@ -167,8 +166,7 @@ describe('Chatbot server', () => {
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
-            // TODO: insert test numbers here once using Twilio magic numbers
-            await db.createInstallation("TestInstallation", "", "")
+            await db.createInstallation("TestInstallation", "+15005550006", "+15005550006")
             let installations = await db.getInstallations()
             await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber)
             await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber)
@@ -210,35 +208,35 @@ describe('Chatbot server', () => {
             
 		    let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 
-            let sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
             expect(sessions[0].state, 'state after initial button press').to.deep.equal(STATES.STARTED);
 
 			response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
 			expect(response).to.have.status(200);
 
-            sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
             expect(sessions[0].state, 'state after initial staff response').to.deep.equal(STATES.WAITING_FOR_CATEGORY);
 
             response = await chai.request(server).post('/message').send(twilioMessageUnit1_IncidentCategoryResponse)
             expect(response).to.have.status(200)
  
-            sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
             expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(STATES.WAITING_FOR_DETAILS)
 
             response = await chai.request(server).post('/message').send(twilioMessageUnit1_IncidentNotesResponse)
             expect(response).to.have.status(200)
  
-            sessions = await db.getAllSessionsWithPhoneNumber(unit1PhoneNumber)
+            sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
             expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(STATES.COMPLETED) 
 
 			// now start a new session for a different unit
 			response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick);
 
-            sessions = await db.getAllSessionsWithPhoneNumber(unit2PhoneNumber)
+            sessions = await db.getAllSessionsWithButtonId(unit2UUID)
             expect(sessions.length).to.equal(1)
             expect(sessions[0].state, 'state after new button press from a different unit').to.deep.equal(STATES.STARTED)
             expect(sessions[0].buttonId).to.deep.equal(unit2UUID)

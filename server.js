@@ -58,7 +58,7 @@ async function handleValidRequest(button, numPresses) {
 
     let client = await db.beginTransaction()
 
-        let session = await db.getUnrespondedSessionWithPhoneNumber(button.phone_number, client)
+        let session = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
         
         if(session === null) {
             session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, client)
@@ -107,8 +107,8 @@ async function needToSendButtonPressMessageForSession(session) {
 async function sendButtonPressMessageForSession(session) {
     if (session.numPresses === 1) {
         await sendTwilioMessage(session.phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
-        setTimeout(remindToSendMessage, unrespondedSessionReminderTimeoutMillis, session.phoneNumber);
-        setTimeout(sendStaffAlert, unrespondedSessionAlertTimeoutMillis, session.phoneNumber, session.unit.toString());
+        setTimeout(remindToSendMessage, unrespondedSessionReminderTimeoutMillis, session.phoneNumber, session.buttonId);
+        setTimeout(sendStaffAlert, unrespondedSessionAlertTimeoutMillis, session.phoneNumber, session.unit.toString(), session.buttonId);
     } 
     else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
         await sendTwilioMessage(session.phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
@@ -125,12 +125,12 @@ async function sendTwilioMessage(phone, msg) {
     }
 }
 
-async function remindToSendMessage(phoneNumber) {
+async function remindToSendMessage(phoneNumber, buttonId) {
 
-    let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber)
+    let session = await db.getUnrespondedSessionWithButtonId(buttonId)
     
     if(session === null) {
-        log('No open Session with phone number' + phoneNumber.toString())
+        log('No open Session with buttonId' + buttonId.toString())
     }
     else {
         if (session.state === STATES.STARTED) {
@@ -141,9 +141,9 @@ async function remindToSendMessage(phoneNumber) {
     }
 }
 
-async function sendStaffAlert(phoneNumber, unit) {
+async function sendStaffAlert(phoneNumber, unit, buttonId) {
 
-    let session = await db.getUnrespondedSessionWithPhoneNumber(phoneNumber)
+    let session = await db.getUnrespondedSessionWithButtonId(buttonId)
 
     if(session === null) {
         return
