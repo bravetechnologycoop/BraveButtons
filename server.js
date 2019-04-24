@@ -88,9 +88,11 @@ async function handleTwilioRequest(req) {
         return 200
     }
 
-    if (phoneNumber === getEnvVar('RESPONDER_PHONE')) {
+    let installation = await db.getInstallationWithInstallationId(session.installationId)
+
+    if (phoneNumber === installation.responder_phone_number) {
         let returnMessage = session.advanceSession(message);
-        await sendTwilioMessage(buttonPhone, returnMessage);
+        await sendTwilioMessage(installation.responder_phone_number, session.phoneNumber, returnMessage);
         await db.saveSession(session)
         return 200;
     } 
@@ -105,19 +107,22 @@ async function needToSendButtonPressMessageForSession(session) {
 }
 
 async function sendButtonPressMessageForSession(session) {
+
+    let installation = await db.getInstallationWithInstallationId(session.installationId)
+
     if (session.numPresses === 1) {
-        await sendTwilioMessage(session.phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.');
-        setTimeout(remindToSendMessage, unrespondedSessionReminderTimeoutMillis, session.phoneNumber, session.buttonId);
-        setTimeout(sendStaffAlert, unrespondedSessionAlertTimeoutMillis, session.phoneNumber, session.unit.toString(), session.buttonId);
+        await sendTwilioMessage(installation.responder_phone_number, session.phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.')
+        setTimeout(sendReminderMessageForSession, unrespondedSessionReminderTimeoutMillis, session.id)
+        setTimeout(sendStaffAlertForSession, unrespondedSessionAlertTimeoutMillis, session.id)
     } 
     else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
-        await sendTwilioMessage(session.phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.');
+        await sendTwilioMessage(installation.responder_phone_number, session.phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.')
     }
 }
 
-async function sendTwilioMessage(phone, msg) {
+async function sendTwilioMessage(toPhoneNumber, fromPhoneNumber, message) {
     try {
-        await client.messages.create({from: phone, body: msg, to: getEnvVar('RESPONDER_PHONE')})
+        await client.messages.create({from: fromPhoneNumber, body: message, to: toPhoneNumber})
                              .then(message => log(message.sid))
     }
     catch(err) {
@@ -125,33 +130,41 @@ async function sendTwilioMessage(phone, msg) {
     }
 }
 
-async function remindToSendMessage(phoneNumber, buttonId) {
+async function sendReminderMessageForSession(sessionId) {
 
-    let session = await db.getUnrespondedSessionWithButtonId(buttonId)
-    
-    if(session === null) {
-        log('No open Session with buttonId' + buttonId.toString())
+    let session = await db.getSessionWithSessionId(sessionId)
+
+
+    if (session === null) {
+        log("couldn't find session when sending reminder message")
+        return
     }
-    else {
-        if (session.state === STATES.STARTED) {
-            session.state = STATES.WAITING_FOR_REPLY
-            await db.saveSession(session)
-            await sendTwilioMessage(phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
-        }
+    
+    if (session.state === STATES.STARTED) {
+
+        let installation = await db.getInstallationWithInstallationId(session.installationId)
+
+        session.state = STATES.WAITING_FOR_REPLY
+        await db.saveSession(session)
+        await sendTwilioMessage(installation.responder_phone_number, session.phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
     }
 }
 
-async function sendStaffAlert(phoneNumber, unit, buttonId) {
+async function sendStaffAlertForSession(sessionId) {
 
-    let session = await db.getUnrespondedSessionWithButtonId(buttonId)
+    let session = await db.getSessionWithSessionId(sessionId)
 
-    if(session === null) {
+    if (session === null) {
+        log("couldn't find session when sending staff alert")
         return
     }
 
     if (session.state === STATES.WAITING_FOR_REPLY) {
+
+        let installation = await db.getInstallationWithInstallationId(session.installationId)
+
         await client.messages
-            .create({from: phoneNumber, body: 'There has been an unresponded request at unit ' + unit.toString(), to: getEnvVar('STAFF_PHONE')})
+            .create({from: session.phoneNumber, body: 'There has been an unresponded request at unit ' + unit.toString(), to: installation.fallback_phone_number})
             .then(message => log(message.sid))
     }
 }

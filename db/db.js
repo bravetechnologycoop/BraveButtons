@@ -84,6 +84,24 @@ module.exports.getAllSessionsWithButtonId = async function(buttonId, client) {
     return []
 }
 
+module.exports.getSessionWithSessionId = async function(sessionId, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM sessions WHERE id = $1", [sessionId])
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {
+        return rows[0]
+    }
+    return null
+}
+
 module.exports.getAllSessions = async function(client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
@@ -252,6 +270,24 @@ module.exports.getInstallations = async function(client) {
         return rows
     }
     return []
+}
+
+module.exports.getInstallationWithInstallationId = async function(installationId, client) { 
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM installations WHERE id = $1", [installationId])
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {
+        return rows[0]
+    }
+    return null
 }
 
 module.exports.close = async function() {
