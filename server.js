@@ -358,7 +358,7 @@ app.post('/message', jsonBodyParser, async (req, res) => {
 let server;
 
 if (process.env.NODE_ENV === 'test') { // local http server for testing
-	server = app.listen(443);
+	server = app.listen(8000);
 }
 else {
 	let httpsOptions = {
