@@ -18,6 +18,12 @@ function createSessionFromRow(r) {
 module.exports.beginTransaction = async function() {
     let client = await pool.connect()
     await client.query("BEGIN")
+    
+    // this fixes a race condition when two button press messages are received in quick succession
+    // this means that only one transaction executes at a time, which is not good for performance
+    // we should revisit this when / if db performance becomes a concern
+    await client.query("LOCK TABLE sessions, registry, installations, migrations")
+    
     return client
 }
 
