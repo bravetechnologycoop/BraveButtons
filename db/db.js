@@ -229,7 +229,7 @@ module.exports.clearButtons = async function(client) {
     }
 }
 
-module.exports.createInstallation = async function(name, responderPhoneNumber, fallbackPhoneNumber) {
+module.exports.createInstallation = async function(name, responderPhoneNumber, fallbackPhoneNumber, client) {
     
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
