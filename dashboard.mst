@@ -115,5 +115,11 @@ th, td {
             </table>
         </div>
     </div>
+    <script>
+    function reloadPage() {
+        location.reload(true)
+    }
+    setInterval(reloadPage, 30000)
+    </script>
 </body>
 </html>
