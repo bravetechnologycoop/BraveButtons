@@ -90,6 +90,24 @@ module.exports.getAllSessionsWithButtonId = async function(buttonId, client) {
     return []
 }
 
+module.exports.getAllSessionsWithInstallationId = async function(installationId, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM sessions WHERE installation_id = $1", [installationId])
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {
+        return rows.map(createSessionFromRow)
+    }
+    return []
+}
+
 module.exports.getSessionWithSessionId = async function(sessionId, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
