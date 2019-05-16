@@ -25,8 +25,17 @@ body {
     font-size: 24px;
 }
 
+.navbar a {
+    float: right;
+    margin-right: 60px;
+    font-size: 20px;
+    text-decoration: none;
+    color: white;
+}
+
 .content-area {
     background-color: rgb(247, 249, 250);
+    color: rgb(88, 88, 91);
 }
 
 .content-wrapper {
@@ -52,7 +61,6 @@ body {
 }
 
 table {
-    color: rgb(88, 88, 91);
     table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
@@ -74,9 +82,14 @@ th, td {
 <body>
     <div class="navbar">
         <span>Brave Chatbot Dashboard</span>
+        {{#installations}}
+            <a href="/dashboard/{{id}}">{{name}}</a>
+        {{/installations}}
     </div>
     <div class="content-area">
         <div class="content-wrapper">
+            <br><br>
+            <h3>{{currentInstallationName}}</h3>
             <br><br>
             <table>
                 <tr class="table-header">

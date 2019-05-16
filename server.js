@@ -224,70 +224,80 @@ app.route('/login')
         }
     });
 
-app.get('/dashboard', async (req, res) => {
-    if (req.session.user && req.cookies.user_sid) {
-        try {
-            let allSessions = await db.getAllSessions()
-            let recentSessions = new Map() 
-            
-            // TODO: consider optimizing this
-            allSessions.forEach((sessionState) => {
-                if(recentSessions.has(sessionState.unit)) {
-                    let moment1 = moment(recentSessions.get(sessionState.unit).createdAt, moment.ISO_8601)
-                    let moment2 = moment(sessionState.createdAt, moment.ISO_8601)
-                    if(moment2.isAfter(moment1)) {
-                        recentSessions.set(sessionState.unit, sessionState)
-                    }
-                }
-                else {
+app.get('/dashboard/:installationId?', async (req, res) => {
+
+    if (!req.session.user || !req.cookies.user_sid) {
+        res.redirect('/login')
+        return
+    }
+    else if(typeof req.params.installationId !== "string") {
+        let installations = await db.getInstallations()
+        res.redirect('/dashboard/' + installations[0].id)
+        return
+    }
+
+    try {
+        let allSessions = await db.getAllSessionsWithInstallationId(req.params.installationId)
+        let currentInstallation = await db.getInstallationWithInstallationId(req.params.installationId)
+        let allInstallations = await db.getInstallations()
+        let recentSessions = new Map() 
+        
+        // TODO: consider optimizing this
+        allSessions.forEach((sessionState) => {
+            if(recentSessions.has(sessionState.unit)) {
+                let moment1 = moment(recentSessions.get(sessionState.unit).createdAt, moment.ISO_8601)
+                let moment2 = moment(sessionState.createdAt, moment.ISO_8601)
+                if(moment2.isAfter(moment1)) {
                     recentSessions.set(sessionState.unit, sessionState)
                 }
-            })
-            
-            let viewParams = {
-                recentSessions: []
             }
-
-            for(const [key, recentSession] of recentSessions) {
-                let createdAt = moment(recentSession.createdAt, moment.ISO_8601)
-                let updatedAt = moment(recentSession.updatedAt, moment.ISO_8601)
-                viewParams.recentSessions.push({
-                    unit: recentSession.unit,
-                    createdAt: createdAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
-                    updatedAt: updatedAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
-                    state: recentSession.state,
-                    numPresses: recentSession.numPresses.toString(),
-                    incidentType: recentSession.incidentType,
-                    notes: recentSession.notes
-                })
+            else {
+                recentSessions.set(sessionState.unit, sessionState)
             }
-            
-            viewParams.recentSessions.sort((sessionA, sessionB) => {
-                try {
-                    let unitA = Number(sessionA.unit)
-                    let unitB = Number(sessionB.unit)
-                    return unitA - unitB
-                }
-                catch(err) {
-                    log('error parsing unit number while rendering dashboard')
-                    log(err)
-                    return 0
-                }
-            })
-
-            for(let i=0; i<viewParams.recentSessions.length; i++) {
-                viewParams.recentSessions[i].class = i % 2 === 0 ? "even-row" : "odd-row"
-            }
-
-            res.send(Mustache.render(dashboardTemplate, viewParams))
+        })
+        
+        let viewParams = {
+            recentSessions: [],
+            currentInstallationName: currentInstallation.name,
+            installations: allInstallations.map(installation => { return { name: installation.name, id: installation.id }})
         }
-        catch(err) {
-            log(err)
-            res.status(500).send()
+
+        for(const [key, recentSession] of recentSessions) {
+            let createdAt = moment(recentSession.createdAt, moment.ISO_8601)
+            let updatedAt = moment(recentSession.updatedAt, moment.ISO_8601)
+            viewParams.recentSessions.push({
+                unit: recentSession.unit,
+                createdAt: createdAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
+                updatedAt: updatedAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
+                state: recentSession.state,
+                numPresses: recentSession.numPresses.toString(),
+                incidentType: recentSession.incidentType,
+                notes: recentSession.notes
+            })
         }
-    } 
-    else {
-        res.redirect('/login');
+        
+        viewParams.recentSessions.sort((sessionA, sessionB) => {
+            try {
+                let unitA = Number(sessionA.unit)
+                let unitB = Number(sessionB.unit)
+                return unitA - unitB
+            }
+            catch(err) {
+                log('error parsing unit number while rendering dashboard')
+                log(err)
+                return 0
+            }
+        })
+
+        for(let i=0; i<viewParams.recentSessions.length; i++) {
+            viewParams.recentSessions[i].class = i % 2 === 0 ? "even-row" : "odd-row"
+        }
+
+        res.send(Mustache.render(dashboardTemplate, viewParams))
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
     }
 });
 
