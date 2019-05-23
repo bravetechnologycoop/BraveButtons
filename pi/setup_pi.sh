@@ -18,6 +18,10 @@ else
       remoteAccessPort="$value"
     elif [[ "$name" == "remoteAccessServerFQDN" ]]; then
       remoteAccessServerFQDN="$value"
+    elif [[ "$name" == "ssid" ]]; then
+      ssid="$value"
+    elif [[ "$name" == "psk" ]]; then
+      psk="$value"
     fi
   done < $1
 
@@ -27,11 +31,15 @@ else
   fi
 
   apt-get update
-  apt-get install -y darkstat bridge-utils python3-gpiozero autossh ssh
+  apt-get install -y darkstat python3-gpiozero autossh ssh parprouted dhcp-helper avahi-daemon
   pip3 install python-daemon
 
   cat "$BASEDIR/darkstat_init.txt" > /etc/darkstat/init.cfg
   cat "$BASEDIR/interfaces.txt" > /etc/network/interfaces
+  cat "$BASEDIR/avahi-daemon.txt" > /etc/avahi/avahi-daemon.conf
+
+  echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/local.conf
+  echo 'DHCPHELPER_OPTS="-b wlan0"' > /etc/default/dhcp-helper
   
   mkdir -p /var/log/brave
   touch /var/log/brave/heartbeat-out.log
@@ -62,6 +70,11 @@ else
   autossh_systemd_unit_file="${autossh_systemd_unit_file//REMOTE_ACCESS_SERVER_FQDN/$remoteAccessServerFQDN}"
   echo "$autossh_systemd_unit_file" > /etc/systemd/system/brave-autossh.service
 
+  wpa_supplicant_config_file=$(<$BASEDIR/wpa_supplicant.txt)
+  wpa_supplicant_config_file="${wpa_supplicant_config_file//SSID/$ssid}"
+  wpa_supplicant_config_file="${wpa_supplicant_config_file//PSK/$psk}"
+  echo "$wpa_supplicant_config_file" > /etc/wpa_supplicant/wpa_supplicant.conf
+
   heartbeatScriptDir="$(pwd)/$BASEDIR"
   heartbeatScriptDir=${heartbeatScriptDir%"/."}
   heartbeat_systemd_unit_file=$(<$BASEDIR/heartbeat_systemd_unit_file.txt)
@@ -72,6 +85,7 @@ else
   systemctl enable brave-heartbeat.service
   systemctl enable brave-autossh.service
   systemctl enable darkstat
+  systemctl enable dhcp-helper
 
   echo "setup almost complete. rebooting..."
   reboot now

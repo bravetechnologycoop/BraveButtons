@@ -1,11 +1,21 @@
+# refer to https://wiki.debian.org/BridgeNetworkConnectionsProxyArp
 
 auto lo
 iface lo inet loopback
 
-auto br0
-iface br0 inet dhcp
-	bridge_ports eth0 eth1
-	bridge_stp off
-	bridge_fd 0
-    bridge_maxwait 0
-    hwaddress random
+# don't use allow-hotplug here
+# it seems to interfere with the RPi reconnecting to WiFi
+
+auto eth0
+iface eth0 inet manual
+
+auto wlan0
+iface wlan0 inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+  post-up /sbin/ip link set wlan0 promisc on
+  post-up /usr/sbin/parprouted eth0 wlan0
+  post-down /usr/bin/killall /usr/sbin/parprouted
+  # clone the dhcp-allocated IP to eth0 so dhcp-helper will relay for the correct subnet
+  post-up /sbin/ip addr add $(/sbin/ip addr show wlan0 | perl -wne 'm|^\s+inet (.*)/| && print $1')/32 dev eth0
+  post-down /sbin/ifdown eth0
+
