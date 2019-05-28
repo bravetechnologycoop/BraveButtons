@@ -9,34 +9,34 @@ class Test__parse_flic_last_seen_from_darkstat_html(object):
     def test_seconds(self):
         with open(os.path.dirname(__file__) + '/sample_darkstat_html/59_secs.html', 'r') as html_file:
             html = html_file.read()
-            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html) == 59
+            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 59
 
     def test_seconds_minutes(self):
         with open(os.path.dirname(__file__) + '/sample_darkstat_html/316_secs.html', 'r') as html_file:
             html = html_file.read()
-            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html) == 316
+            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 316
 
     def test_seconds_minutes_hours(self):
         with open(os.path.dirname(__file__) + '/sample_darkstat_html/3806_secs.html', 'r') as html_file:
             html = html_file.read()
-            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html) == 3806
+            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 3806
 
     def test_empty_html(self):
         with pytest.raises(heartbeat.FlicNotFoundError):
-            heartbeat.parse_flic_last_seen_from_darkstat_html('')
+            heartbeat.parse_flic_last_seen_from_darkstat_html('', '00:00:00:00:00:02')
 
     def test_never(self):
         with pytest.raises(heartbeat.FlicNotFoundError):
             with open(os.path.dirname(__file__) + '/sample_darkstat_html/never.html', 'r') as html_file:
                 html = html_file.read()
-                heartbeat.parse_flic_last_seen_from_darkstat_html(html)
+                heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02')
 
 class Test__parse_flic_ip_from_darkstat_html(object):
 
     def test_valid_input(self):
         with open(os.path.dirname(__file__) + '/sample_darkstat_html/59_secs.html', 'r') as html_file:
             html = html_file.read()
-            assert heartbeat.parse_flic_ip_from_darkstat_html(html) == '192.168.8.114'
+            assert heartbeat.parse_flic_ip_from_darkstat_html(html, '00:00:00:00:00:02') == '192.168.8.114'
 
 class Test__ping(object):
 

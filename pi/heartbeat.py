@@ -15,6 +15,7 @@ configPath = pathlib.Path(os.path.dirname(__file__)) / 'pi_config.ini'
 config.read(str(configPath))
 
 SERVER_URL = config['Heartbeat']['heartbeatServerFQDN']
+FLIC_MAC_ADDRESS = config['Heartbeat']['flicMACAddress']
 RELAY_PIN = 10
 LED_PIN = 9
 
@@ -46,14 +47,14 @@ def get_darkstat_html():
 class FlicNotFoundError(Exception):
     pass
 
-def parse_flic_last_seen_from_darkstat_html(html):
+def parse_flic_last_seen_from_darkstat_html(html, flic_mac_address):
     lines = html.splitlines()
     last_seen_secs_list = []
     for i in range(0, len(lines)):
         # match lines that contain an actual value for flic last seen
         # sometimes darkstat gives '(never)' in place of a value
-        if (lines[i].count('flic') > 0) and (lines[i+5].count('(never)') == 0):
-            last_seen_string = lines[i+5]
+        if (lines[i].count(flic_mac_address) > 0) and (lines[i+4].count('(never)') == 0):
+            last_seen_string = lines[i+4]
 
             last_seen_string = last_seen_string.replace(r'<td class="num">',  '')
             last_seen_string = last_seen_string.replace(r'</td></tr>', '')
@@ -75,18 +76,18 @@ def parse_flic_last_seen_from_darkstat_html(html):
 
     raise FlicNotFoundError('darkstat html did not contain flic last seen info')
 
-def parse_flic_ip_from_darkstat_html(html):
+def parse_flic_ip_from_darkstat_html(html, mac_address):
     lines = html.splitlines()
     for i in range(0, len(lines)):
-        if (lines[i].count('flic') > 0):
-            flic_ip_strings = re.findall( r'[0-9]+(?:\.[0-9]+){3}', lines[i-1])
+        if (lines[i].count(mac_address) > 0):
+            flic_ip_strings = re.findall( r'[0-9]+(?:\.[0-9]+){3}', lines[i-2])
             return flic_ip_strings[0]
-    raise FlicNotFoundError('darkstat html did not contain flic ip address')
+    raise FlicNotFoundError('darkstat html did not contain an ip address for the mac address ' + mac_address)
 
 def ping(host):
     param = '-n' if platform.system().lower()=='windows' else '-c'
     command = ['ping', param, '1', host]
-    return subprocess.run(command).returncode == 0
+    return subprocess.run(command, stdout=subprocess.DEVNULL).returncode == 0
 
 def send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id):
     body = {"flic_last_seen_secs" : str(flic_last_seen_secs),
@@ -144,20 +145,12 @@ if __name__ == '__main__':
         flic_last_reboot = datetime.datetime.now()
 
         while True:
-
-            # reboot the flic hub every 5 mins, unless we're keeping it off because we can't reach the server
-            if system_ok and (datetime.datetime.now() - flic_last_reboot > datetime.timedelta(minutes=30)):
-                relay.off()
-                time.sleep(1)
-                relay.on()
-                flic_last_reboot = datetime.datetime.now()
-
             try:
                 html = get_darkstat_html()
-                ip = parse_flic_ip_from_darkstat_html(html)
+                ip = parse_flic_ip_from_darkstat_html(html, FLIC_MAC_ADDRESS)
                 if ping(ip):
                     last_ping = datetime.datetime.now()
-                num_secs_darkstat = parse_flic_last_seen_from_darkstat_html(html)
+                num_secs_darkstat = parse_flic_last_seen_from_darkstat_html(html, FLIC_MAC_ADDRESS)
                 num_secs_ping = (datetime.datetime.now() - last_ping).total_seconds()
                 system_ok = send_heartbeat(num_secs_darkstat, num_secs_ping, system_id)
             except FlicNotFoundError as e:
