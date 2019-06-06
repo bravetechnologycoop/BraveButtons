@@ -237,24 +237,9 @@ app.get('/dashboard/:installationId?', async (req, res) => {
     }
 
     try {
-        let allSessions = await db.getAllSessionsWithInstallationId(req.params.installationId)
+        let recentSessions = await db.getRecentSessionsWithInstallationId(req.params.installationId)
         let currentInstallation = await db.getInstallationWithInstallationId(req.params.installationId)
         let allInstallations = await db.getInstallations()
-        let recentSessions = new Map() 
-        
-        // TODO: consider optimizing this
-        allSessions.forEach((sessionState) => {
-            if(recentSessions.has(sessionState.unit)) {
-                let moment1 = moment(recentSessions.get(sessionState.unit).createdAt, moment.ISO_8601)
-                let moment2 = moment(sessionState.createdAt, moment.ISO_8601)
-                if(moment2.isAfter(moment1)) {
-                    recentSessions.set(sessionState.unit, sessionState)
-                }
-            }
-            else {
-                recentSessions.set(sessionState.unit, sessionState)
-            }
-        })
         
         let viewParams = {
             recentSessions: [],
@@ -262,7 +247,7 @@ app.get('/dashboard/:installationId?', async (req, res) => {
             installations: allInstallations.map(installation => { return { name: installation.name, id: installation.id }})
         }
 
-        for(const [key, recentSession] of recentSessions) {
+        for(const recentSession of recentSessions) {
             let createdAt = moment(recentSession.createdAt, moment.ISO_8601)
             let updatedAt = moment(recentSession.updatedAt, moment.ISO_8601)
             viewParams.recentSessions.push({
@@ -276,19 +261,6 @@ app.get('/dashboard/:installationId?', async (req, res) => {
             })
         }
         
-        viewParams.recentSessions.sort((sessionA, sessionB) => {
-            try {
-                let unitA = Number(sessionA.unit)
-                let unitB = Number(sessionB.unit)
-                return unitA - unitB
-            }
-            catch(err) {
-                log('error parsing unit number while rendering dashboard')
-                log(err)
-                return 0
-            }
-        })
-
         for(let i=0; i<viewParams.recentSessions.length; i++) {
             viewParams.recentSessions[i].class = i % 2 === 0 ? "even-row" : "odd-row"
         }
