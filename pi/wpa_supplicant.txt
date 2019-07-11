@@ -6,5 +6,13 @@ network={
 	ssid="SSID"
     scan_ssid=1
 	psk="PSK"
+    priority=2
+}
+
+network={
+    ssid="FALLBACK_SSID"
+    scan_ssid=1
+    psk="FALLBACK_PSK"
+    priority=1
 }
 

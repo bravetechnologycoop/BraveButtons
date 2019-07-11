@@ -22,6 +22,10 @@ else
       ssid="$value"
     elif [[ "$name" == "psk" ]]; then
       psk="$value"
+    elif [[ "$name" == "fallback_ssid" ]]; then
+      fallback_ssid="$value"
+    elif [[ "$name" == "fallback_psk" ]]; then
+      fallback_psk="$value"
     fi
   done < $1
 
@@ -71,6 +75,8 @@ else
   echo "$autossh_systemd_unit_file" > /etc/systemd/system/brave-autossh.service
 
   wpa_supplicant_config_file=$(<$BASEDIR/wpa_supplicant.txt)
+  wpa_supplicant_config_file="${wpa_supplicant_config_file//FALLBACK_SSID/$fallback_ssid}"
+  wpa_supplicant_config_file="${wpa_supplicant_config_file//FALLBACK_PSK/$fallback_psk}"
   wpa_supplicant_config_file="${wpa_supplicant_config_file//SSID/$ssid}"
   wpa_supplicant_config_file="${wpa_supplicant_config_file//PSK/$psk}"
   echo "$wpa_supplicant_config_file" > /etc/wpa_supplicant/wpa_supplicant.conf
