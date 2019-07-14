@@ -15,9 +15,9 @@ elif [[ ! -n "$1" ]]; then
 else
     while IFS="=" read -r name value; do
         if [[ "$name" == "PG_USER" ]]; then
-            PG_USER="$value"
+            export PG_USER="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
-            PG_PASSWORD="$value"
+            export PG_PASSWORD="$value"
         fi
     done < $1
 
