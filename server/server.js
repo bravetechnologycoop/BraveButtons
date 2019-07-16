@@ -55,7 +55,7 @@ function sendReconnectionMessage(systemName) {
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
     log('got a heartbeat from ' + req.body.system_id + ', flic_last_seen_secs is ' + req.body.flic_last_seen_secs.toString())
     let flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
-    let pingLastSeenTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
+    let flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
     let heartbeatLastSeenTime = moment().toISOString()
     let dbObject = {
         flic_last_seen_time: flicLastSeenTime,
