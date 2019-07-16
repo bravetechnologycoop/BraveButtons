@@ -121,7 +121,7 @@ module.exports.getSessionWithSessionId = async function(sessionId, client) {
     }
     
     if(rows.length > 0) {
-        return rows[0]
+        return createSessionFromRow(rows[0])
     }
     return null
 }
