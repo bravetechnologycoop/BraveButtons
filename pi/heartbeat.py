@@ -169,4 +169,4 @@ if __name__ == '__main__':
                 else:
                     relay.off()
                     led.off()
-                time.sleep(1)
+                time.sleep(10)
