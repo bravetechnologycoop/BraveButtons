@@ -164,7 +164,7 @@ async function sendStaffAlertForSession(sessionId) {
         let installation = await db.getInstallationWithInstallationId(session.installationId)
 
         await client.messages
-            .create({from: session.phoneNumber, body: 'There has been an unresponded request at unit ' + unit.toString(), to: installation.fallback_phone_number})
+            .create({from: session.phoneNumber, body: 'There has been an unresponded request at unit ' + session.unit.toString(), to: installation.fallback_phone_number})
             .then(message => log(message.sid))
     }
 }
