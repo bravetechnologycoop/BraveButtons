@@ -20,6 +20,9 @@ let dashboardTemplate = fs.readFileSync(`${__dirname}/dashboard.mst`, 'utf-8')
 
 // compact data file every 5 minutes
 db.persistence.setAutocompactionInterval(5*60000)
+db.on('compaction.done', () => {
+    log('nedb data file compaction finished')
+})
 
 const FLIC_THRESHOLD_MILLIS = 180*1000
 const HEARTBEAT_THRESHOLD_MILLIS = 60*1000
@@ -53,7 +56,7 @@ function sendReconnectionMessage(systemName) {
 }
 
 app.post('/heartbeat', jsonBodyParser, (req, res) => {
-    log('got a heartbeat from ' + req.body.system_id + ', flic_last_seen_secs is ' + req.body.flic_last_seen_secs.toString())
+    log(`got a heartbeat from ${req.body.system_id}, flic_last_seen_secs is ${req.body.flic_last_seen_secs}, flic_last_ping_secs is ${req.body.flic_last_ping_secs}`)
     let flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
     let flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
     let heartbeatLastSeenTime = moment().toISOString()
@@ -137,16 +140,17 @@ function checkHeartbeat() {
             let heartbeatDelayMillis = currentTime.diff(heartbeatLastSeenTime)
         
             if(flicDelayMillis > FLIC_THRESHOLD_MILLIS && !doc.sent_alerts) {
-                log(`flic threshold exceeded; sending alerts for ${doc.system_name}`)
+                log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${doc.system_name}`)
                 sendAlerts(doc.system_name)
                 updateSentAlerts(doc.system_id, true)
             }
             else if(heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !doc.sent_alerts) {
-                log(`heartbeat threshold exceeded; sending alerts for ${doc.system_name}`)
+                log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${doc.system_name}`)
                 sendAlerts(doc.system_name)
                 updateSentAlerts(doc.system_id, true)
             }
             else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && doc.sent_alerts) { 
+                log(`${doc.system_name} has reconnected.`)
                 updateSentAlerts(doc.system_id, false)
                 sendReconnectionMessage(doc.system_name)
             }
