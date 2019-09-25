@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS addInstallations(TEXT);
+DROP FUNCTION IF EXISTS addInstallations(TEXT, TEXT, TEXT);
 
-CREATE OR REPLACE FUNCTION addInstallations(_installationName TEXT)
+CREATE OR REPLACE FUNCTION addInstallations(_installationName TEXT, _responderPhone TEXT, _fallbackPhone TEXT)
 RETURNS void AS $migration$
     DECLARE migrationId INT;
     DECLARE lastSuccessfulMigrationId INT;
@@ -30,7 +30,7 @@ BEGIN
         ALTER TABLE registry DISABLE TRIGGER set_registry_timestamp;
 
         -- update the existing data to the new schema
-        INSERT INTO installations VALUES (DEFAULT, _installationName, 'responderPhone', 'fallbackPhone');
+        INSERT INTO installations VALUES (DEFAULT, _installationName, _responderPhone, _fallbackPhone);
         UPDATE sessions SET installation_id = (SELECT id FROM installations LIMIT 1);
         UPDATE registry SET installation_id = (SELECT id FROM installations LIMIT 1);
 
@@ -44,6 +44,6 @@ BEGIN
     END IF;
 END $migration$ language plpgsql;
 
-SELECT addInstallations(:installationName);
+SELECT addInstallations(:installationName, :responderPhone, :fallbackPhone);
 
-DROP FUNCTION addInstallations(TEXT);
+DROP FUNCTION addInstallations(TEXT, TEXT, TEXT);

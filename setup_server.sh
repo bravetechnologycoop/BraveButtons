@@ -41,7 +41,11 @@ else
     n stable
     npm install
 
-    ./setup_postgresql.sh
+    echo "Please enter in order the name and responder phone number and fallback phone number for the first installation (separated by a space):" 
+    echo "NOTE that this will have no effect if this script has already been run"
+    read installationName responderNumber fallbackNumber
+
+    ./setup_postgresql.sh $installationName $responderNumber $fallbackNumber
 
     certbot certonly --standalone 
 
