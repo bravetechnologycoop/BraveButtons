@@ -14,7 +14,7 @@ services:
 
 # setup database
 before_script:
-  - bash setup_postgresql.sh TestInstall $RESPONDER_PHONE_TEST $STAFF_PHONE_TEST
+  - bash setup_postgresql.sh TestInstall +234534533 +098908098
 
 # run unit tests
 script:
