@@ -8,3 +8,5 @@ registry.db
 registryTest.db
 sessions.db
 sessionsTest.db
+.nyc_output
+coverage
