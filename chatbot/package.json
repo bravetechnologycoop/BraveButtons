@@ -1,0 +1,43 @@
+{
+  "name": "chatbot-server",
+  "version": "1.0.0",
+  "description": "server for Brave Buttons chatbot",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "chai": "^4.2.0",
+    "chai-http": "^4.2.0",
+    "chalk": "^2.4.2",
+    "connect-nedb-session": "0.0.3",
+    "cookie-parser": "^1.4.3",
+    "dotenv": "^6.1.0",
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "mocha": "^5.2.0",
+    "moment": "^2.22.2",
+    "moment-timezone": "^0.5.23",
+    "mustache": "^3.0.1",
+    "node-json-db": "^0.9.1",
+    "pg": "^7.8.0",
+    "twilio": "^3.33.2"
+  },
+  "devDependencies": {
+    "nyc": "^14.1.1"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test mocha --timeout 10000 \"test/**/*.js\"",
+    "test-coverage": "nyc --reporter=html --reporter=text npm test",
+    "unittest": "NODE_ENV=test mocha --timeout 40000 \"test/SessionStateTest.js\"",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mariocimet/BraveChatbot.git"
+  },
+  "author": "Mario Cimet",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mariocimet/BraveChatbot/issues"
+  },
+  "homepage": "https://github.com/mariocimet/BraveChatbot#readme"
+}

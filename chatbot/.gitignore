@@ -1,0 +1,12 @@
+node_modules
+brave_config.json
+.env
+.env.test
+.env.local
+.env.staging
+registry.db
+registryTest.db
+sessions.db
+sessionsTest.db
+.nyc_output
+coverage

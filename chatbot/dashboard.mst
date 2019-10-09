@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+<style>
+
+body {
+    background-color: rgb(247, 249, 250);
+    margin: 0px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.navbar {
+    background-color: rgb(0, 184, 184);
+    color: rgb(247, 249, 250);
+    width: 100%;
+    height: 60px;
+    line-height: 60px;
+}
+
+.navbar span {
+    margin-left: 60px;
+    font-size: 24px;
+}
+
+.navbar a {
+    float: right;
+    margin-right: 60px;
+    font-size: 20px;
+    text-decoration: none;
+    color: white;
+}
+
+.content-area {
+    background-color: rgb(247, 249, 250);
+    color: rgb(88, 88, 91);
+}
+
+.content-wrapper {
+    margin-left: 60px;
+    margin-right: 60px;
+    margin-top: 20px;
+}
+
+.even-row {
+    background-color: rgb(247, 249, 250);
+}
+
+.odd-row {
+    background-color: rgb(233, 235, 236);
+}
+
+.table-header {
+    font-weight: 600;
+}
+
+.table-data {
+    font-weight: 400;
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 5px 5px;
+}
+
+th, td {
+    text-align: left;
+    max-width: 400px;
+    height: 40px;
+    width: 100%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+</style>
+</head>
+
+<body>
+    <div class="navbar">
+        <span>Brave Chatbot Dashboard</span>
+        {{#installations}}
+            <a href="/dashboard/{{id}}">{{name}}</a>
+        {{/installations}}
+    </div>
+    <div class="content-area">
+        <div class="content-wrapper">
+            <br><br>
+            <h3>{{currentInstallationName}}</h3>
+            <br><br>
+            <table>
+                <tr class="table-header">
+                    <th>Unit</th>
+                    <th>Presses</th>
+                    <th>State</th>
+                    <th>Category</th>
+                    <th>Notes</th>
+                    <th>Started At</th>
+                    <th>Updated At</th>
+                </tr>
+                {{#recentSessions}}
+                <tr class="table-data {{class}}">
+                    <td>{{unit}}</td>
+                    <td>{{numPresses}}</td>
+                    <td>{{state}}</td>
+                    <td>{{incidentType}}</td>
+                    <td>{{notes}}</td>
+                    <td>{{createdAt}}</td>
+                    <td>{{updatedAt}}</td>
+                </tr>
+                {{/recentSessions}}
+            </table>
+        </div>
+    </div>
+    <script>
+    function reloadPage() {
+        location.reload(true)
+    }
+    setInterval(reloadPage, 30000)
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+language: node_js
+node_js: "node"
+
+# OS
+dist: xenial
+
+# install dependencies
+install:
+  - npm install
+
+# install database
+services:
+  - postgresql
+
+# setup database
+before_script:
+  - bash setup_postgresql.sh TestInstall $RESPONDER_PHONE_TEST $STAFF_PHONE_TEST
+
+# run unit tests
+script:
+- sudo env "PATH=$PATH" npm run test
