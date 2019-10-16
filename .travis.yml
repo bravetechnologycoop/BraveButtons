@@ -1,16 +1,38 @@
 # Travis only support v 3.7 on this distribution
 dist: xenial
 
-# install dependencies
-install:
-  - pip install -r requirements-test.txt
-
 matrix:
   include:
+    # BraveButtons
     - language: python
       python: "3.7"
+
+      # install dependencies
+      install:
+        - pip install -r requirements-test.txt
 
       # run unit tests
       script:
         - cp pi/template.pi_config.ini pi/pi_config.ini
         - pytest --cov=heartbeat
+
+    # BraveChatbot
+    - language: node_js
+      node_js: "node"
+
+      # install dependencies
+      install:
+        - cd chatbot
+        - npm install
+
+      # install database
+      services:
+        - postgresql
+
+      # setup database
+      before_script:
+        - bash setup_postgresql.sh TestInstall $RESPONDER_PHONE_TEST $STAFF_PHONE_TEST
+
+      # run unit tests
+      script:
+        - sudo env "PATH=$PATH" npm run test
