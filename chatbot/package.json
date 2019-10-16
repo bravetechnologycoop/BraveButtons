@@ -13,7 +13,6 @@
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
-    "mocha": "^5.2.0",
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.23",
     "mustache": "^3.0.1",
@@ -22,6 +21,7 @@
     "twilio": "^3.33.2"
   },
   "devDependencies": {
+    "mocha": "^5.2.0",
     "nyc": "^14.1.1"
   },
   "scripts": {
@@ -32,12 +32,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mariocimet/BraveChatbot.git"
+    "url": "git+https://github.com/bravetechnologycoop/BraveButtons.git"
   },
   "author": "Mario Cimet",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mariocimet/BraveChatbot/issues"
+    "url": "https://github.com/bravetechnologycoop/BraveButtons/issues"
   },
-  "homepage": "https://github.com/mariocimet/BraveChatbot#readme"
+  "homepage": "https://github.com/bravetechnologycoop/BraveButtons/tree/master/chatbot#readme"
 }
