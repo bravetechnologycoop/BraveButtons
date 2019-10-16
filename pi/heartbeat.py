@@ -9,6 +9,8 @@ import re
 import platform
 import subprocess
 import pathlib
+import logging
+import logging.handlers
 
 config = configparser.ConfigParser()
 configPath = pathlib.Path(os.path.dirname(__file__)) / 'pi_config.ini'
@@ -40,8 +42,7 @@ def get_darkstat_html():
         conn.close()
         return html_string
     except Exception as e:
-        print(datetime.datetime.now().isoformat(), " - error connecting to darkstat")
-        print(e, flush=True)
+        logging.warning("error connecting to darkstat", exc_info=e)
         return ""
 
 class FlicNotFoundError(Exception):
@@ -101,14 +102,13 @@ def send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id):
         res = conn.getresponse()
         time_1 = datetime.datetime.now()
         latency = (time_1 - time_0).total_seconds()
-        print(datetime.datetime.now().isoformat(), '- sent heartbeat, got response:', res.status, res.reason, flush=True)
-        print(datetime.datetime.now().isoformat(), '- heartbeat latency was', latency)
+        logging.info('sent heartbeat, got response: %d %s', res.status, res.reason)
+        logging.info('heartbeat latency was %f', latency)
         if res.status == 200:
             return True
         return False
     except Exception as e:
-        print(datetime.datetime.now().isoformat(), " - error sending heartbeat")
-        print(e, flush=True)
+        logging.warning("error sending heartbeat", exc_info=e)
         return False
 
 if __name__ == '__main__':
@@ -118,19 +118,20 @@ if __name__ == '__main__':
     import daemon
     import gpiozero
 
-    logfile_out = open('/var/log/brave/heartbeat-out.log', 'a')
-    logfile_err = open('/var/log/brave/heartbeat-err.log', 'a')
+    stdout_file = open('/var/log/brave/heartbeat-out.log', 'a')
+    stderr_file = open('/var/log/brave/heartbeat-err.log', 'a')
 
     context = daemon.DaemonContext(
-        stdout=logfile_out,
-        stderr=logfile_err
+        stdout=stdout_file,
+        stderr=stderr_file
     )
 
     with context:
 
-        print("\nstarting heartbeat script")
-        print(datetime.datetime.now().isoformat())
-        print("\n", flush=True)
+        h = logging.handlers.RotatingFileHandler('/var/log/brave/heartbeat.log', maxBytes=100000000, backupCount=10)
+        logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, handlers=[h])
+
+        logging.info('starting heartbeat script')
 
         relay = gpiozero.OutputDevice(RELAY_PIN)
         relay.on()
@@ -157,11 +158,10 @@ if __name__ == '__main__':
                 # this means that the flic didn't show up in darkstat's list of hosts
                 # typically this happens on startup for a few seconds until the flic becomes active on the network
                 system_ok = True
-                print(datetime.datetime.now().isoformat(), " - flic not found in darkstat html", flush=True)
+                logging.info('flic not found in darkstat html')
             except Exception as e:
                 system_ok = False
-                print(datetime.datetime.now().isoformat(), " - error in main loop")
-                print(e, flush=True)
+                logging.warning('error in main loop', exc_info=e)
             finally:
                 if system_ok:
                     relay.on()
