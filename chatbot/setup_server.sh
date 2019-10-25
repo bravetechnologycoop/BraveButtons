@@ -3,6 +3,7 @@
 set -e
 original_dir=$(pwd)
 cd $(dirname "$0")
+export HOME=$(bash <<< "echo ~$SUDO_USER")
 
 if [[ $EUID > 0 ]]; then
     echo "this script needs sudo privelages to run correctly."
@@ -49,7 +50,7 @@ else
 
     certbot certonly --standalone 
 
-    echo "0 0 * * 0 certbot renew --pre-hook 'pm2 stop server' --post-hook 'pm2 start server'" > crontab.tmp
+    echo "0 0 * * 0 certbot renew --pre-hook 'env HOME=$HOME pm2 stop server' --post-hook 'env HOME=$HOME pm2 start server'" > crontab.tmp
     crontab crontab.tmp
     rm crontab.tmp
     
