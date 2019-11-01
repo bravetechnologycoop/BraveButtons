@@ -11,7 +11,7 @@ const incidentTypes = {
 
 class SessionState {
 
-    constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes) {
+    constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus) {
         this.id = id
         this.installationId = installationId
         this.buttonId = buttonId
@@ -23,6 +23,7 @@ class SessionState {
         this.updatedAt = updatedAt
         this.incidentType = incidentType
         this.notes = notes
+        this.fallBackAlertTwilioStatus = fallBackAlertTwilioStatus
     }
 
     advanceSession(messageText) {
