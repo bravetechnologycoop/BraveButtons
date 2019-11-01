@@ -186,7 +186,7 @@ describe('Chatbot server', () => {
 
             // wait for the staff reminder timers to finish
             await sleep(3000)
-
+            
             await db.close()
             server.close()
         })
@@ -245,6 +245,19 @@ describe('Chatbot server', () => {
             expect(sessions[0].buttonId).to.deep.equal(unit2UUID)
             expect(sessions[0].unit).to.deep.equal('2')
             expect(sessions[0].numPresses).to.deep.equal(1)
-		});
-	});
+        });
+
+        it('should send a message to the fallback phone number if enough time has passed without a response', async () => {
+            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            await sleep(3501)
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+            expect(sessions.length).to.equal(1)
+            expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(STATES.WAITING_FOR_REPLY);
+            expect(sessions[0].fallBackAlertTwilioStatus).to.not.be.null
+            expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('failed')
+            expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('undelivered')
+            expect(sessions[0].fallBackAlertTwilioStatus).to.be.oneOf(['queued', 'sent', 'delivered'])
+
+        });
+    });
 });

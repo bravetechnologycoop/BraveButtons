@@ -12,7 +12,7 @@ pool.on('error', (err, client) => {
 })
 
 function createSessionFromRow(r) {
-    return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes)
+    return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status)
 }
 
 module.exports.beginTransaction = async function() {
@@ -173,8 +173,8 @@ module.exports.saveSession = async function(session, client) {
         }
         throw new Error("Tried to save a session that doesn't exist yet. Use createSession() instead.")
     }
-    const query = "UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8 WHERE id = $9"
-    const values = [session.installationId, session.buttonId, session.unit, session.phoneNumber, session.state, session.numPresses, session.incidentType, session.notes, session.id]
+    const query = "UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status =$9 WHERE id = $10"
+    const values = [session.installationId, session.buttonId, session.unit, session.phoneNumber, session.state, session.numPresses, session.incidentType, session.notes, session.fallBackAlertTwilioStatus, session.id]
     await client.query(query, values) 
     
     if(!transactionMode) {

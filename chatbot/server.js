@@ -154,8 +154,7 @@ async function sendStaffAlertForSession(sessionId) {
 
     let session = await db.getSessionWithSessionId(sessionId)
 
-    if (session === null) {
-        log("couldn't find session when sending staff alert")
+    if (session === null) {         
         return
     }
 
@@ -165,7 +164,11 @@ async function sendStaffAlertForSession(sessionId) {
 
         await client.messages
             .create({from: session.phoneNumber, body: 'There has been an unresponded request at unit ' + session.unit.toString(), to: installation.fall_back_phone_number})
-            .then(message => log(message.sid))
+            .then(message => {
+                session.fallBackAlertTwilioStatus = message.status;
+            })
+        await db.saveSession(session)
+
     }
 }
 
