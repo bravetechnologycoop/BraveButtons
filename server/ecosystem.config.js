@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    name: 'Brave Heartbeat Server',
+    name: 'BraveHeartbeatServer',
     script: './server.js',
     autorestart: true,
     max_memory_restart: '200M',
