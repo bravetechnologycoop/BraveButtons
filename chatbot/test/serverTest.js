@@ -1,10 +1,8 @@
 let chai = require('chai');
-let SessionState = require('../SessionState.js');
 const STATES = require('../SessionStateEnum.js');
 let imports = require('../server.js')
 let server = imports.server
 let db =imports.db
-let fs = require('fs');
 let chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
@@ -97,6 +95,7 @@ describe('Chatbot server', () => {
         it('should be able to create a valid session state from valid request', async () => {
 			
             let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            expect(response).to.have.status(200);
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
@@ -116,6 +115,7 @@ describe('Chatbot server', () => {
 
             let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
             response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick);
+            expect(response).to.have.status(200);
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
@@ -147,6 +147,7 @@ describe('Chatbot server', () => {
             let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 		    response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick);
             response = await chai.request(server).post('/').send(unit1FlicRequest_Hold);
+            expect(response).to.have.status(200);
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
@@ -249,6 +250,7 @@ describe('Chatbot server', () => {
 
         it('should send a message to the fallback phone number if enough time has passed without a response', async () => {
             let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            expect(response).to.have.status(200);
             await sleep(3501)
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)

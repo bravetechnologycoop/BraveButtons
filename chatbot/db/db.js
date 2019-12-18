@@ -7,7 +7,7 @@ const pool = new Pool({
     password: process.env.PG_PASSWORD
 })
 
-pool.on('error', (err, client) => {
+pool.on('error', (err) => {
     console.error('unexpected database error:', err)
 })
 
