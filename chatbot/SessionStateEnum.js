@@ -7,7 +7,7 @@ const STATES = {
     WAITING_FOR_DETAILS: "Waiting for incident details",
     COMPLETED: "Completed", 
     TIMED_OUT: "Timed out"
-  };
+};
 
 module.exports =
         Object.freeze(STATES); 
