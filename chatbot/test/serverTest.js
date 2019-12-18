@@ -1,11 +1,17 @@
 let chai = require('chai');
+let chaiHttp = require('chai-http');
+chai.use(chaiHttp);
+const expect = chai.expect;
+var describe = require('mocha').describe
+var it = require('mocha').it
+var beforeEach = require('mocha').beforeEach
+var afterEach = require('mocha').afterEach
+var after = require('mocha').after
+
 const STATES = require('../SessionStateEnum.js');
 let imports = require('../server.js')
 let server = imports.server
 let db =imports.db
-let chaiHttp = require('chai-http');
-chai.use(chaiHttp);
-const expect = chai.expect;
 require('dotenv').load();
 const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 
