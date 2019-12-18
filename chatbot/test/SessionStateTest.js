@@ -1,7 +1,11 @@
 let chai = require('chai');
+const expect = chai.expect;
+var beforeEach = require('mocha').beforeEach
+var describe = require('mocha').describe
+var it = require('mocha').it
+
 let SessionState = require('../SessionState.js');
 const STATES = require('../SessionStateEnum.js');
-const expect = chai.expect;
 
 describe('Session state manager', () => {
 

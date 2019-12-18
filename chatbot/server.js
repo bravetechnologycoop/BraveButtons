@@ -297,12 +297,12 @@ app.post('/', jsonBodyParser, async (req, res) => {
                 res.status(400).send();
             }
             else {
+                let numPresses = 1
+
                 if(req.body.Type == 'double_click') {
                     numPresses = 2;
                 }
-                else {
-                    numPresses = 1
-                }
+
                 await handleValidRequest(button, numPresses)
                 res.status(200).send();
             }
