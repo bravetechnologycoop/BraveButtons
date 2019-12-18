@@ -75,7 +75,7 @@ describe('Chatbot server', () => {
             await db.clearButtons()
             await db.clearInstallations()
             console.log('\n')
-	    });
+        });
 
         it('should return 400 to a request with an empty body', async () => {
             let response = await chai.request(server).post('/').send({});
@@ -134,8 +134,8 @@ describe('Chatbot server', () => {
 
             await Promise.all([
                 chai.request(server).post('/').send(unit1FlicRequest_SingleClick),
-		        chai.request(server).post('/').send(unit1FlicRequest_DoubleClick),
-			    chai.request(server).post('/').send(unit1FlicRequest_Hold)
+                chai.request(server).post('/').send(unit1FlicRequest_DoubleClick),
+                chai.request(server).post('/').send(unit1FlicRequest_Hold)
             ])
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -145,7 +145,7 @@ describe('Chatbot server', () => {
         it('should count button presses accurately during an active session', async () => {
 
             let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
-		    response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick);
+            response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick);
             response = await chai.request(server).post('/').send(unit1FlicRequest_Hold);
             expect(response).to.have.status(200);
 
@@ -181,7 +181,7 @@ describe('Chatbot server', () => {
             await db.clearButtons()
             await db.clearInstallations()
             console.log('\n')
-	    });
+        });
 
         after(async function() {
 
@@ -193,7 +193,7 @@ describe('Chatbot server', () => {
         })
 
         it('should return ok to a valid request', async () => {
-		    let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
             response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
             expect(response).to.have.status(200);
         });
@@ -210,7 +210,7 @@ describe('Chatbot server', () => {
 
         it('should return ok to a valid request and advance the session appropriately', async () => {
             
-		    let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)

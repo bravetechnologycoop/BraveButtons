@@ -27,7 +27,7 @@ class SessionState {
 
     advanceSession(messageText) {
 
-  	    let returnMessage;
+        let returnMessage;
 
         switch (this.state) {
             case STATES.STARTED:
