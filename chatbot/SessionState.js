@@ -38,11 +38,12 @@ class SessionState {
                 this.state = STATES.WAITING_FOR_CATEGORY;
                 returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose\n4 - other';
                 break;
-            case STATES.WAITING_FOR_CATEGORY:
+            case STATES.WAITING_FOR_CATEGORY: {
                 let isValid = this.setIncidentType(messageText.trim());
                 this.state = isValid ? STATES.WAITING_FOR_DETAILS : STATES.WAITING_FOR_CATEGORY;
                 returnMessage = this.setIncidentType(messageText.trim()) ? 'Thank you. If you like, you can reply with any further details about the incident.' : 'Sorry, the incident type wasn\'t recognized. Please try again.';
                 break;
+            }
             case STATES.WAITING_FOR_DETAILS:
                 this.notes = messageText.trim();
                 this.state = STATES.COMPLETED;
