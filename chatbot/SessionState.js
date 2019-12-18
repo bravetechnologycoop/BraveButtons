@@ -2,10 +2,10 @@ const STATES = require('./SessionStateEnum.js');
 let moment = require('moment');
 
 const incidentTypes = {
-	'0': 'Accidental',
-	'1': 'Safer Use',
-	'2': 'Unsafe Guest',
-	'3': 'Overdose',
+    '0': 'Accidental',
+    '1': 'Safer Use',
+    '2': 'Unsafe Guest',
+    '3': 'Overdose',
     '4': 'Other'
 };
 

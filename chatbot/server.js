@@ -40,7 +40,7 @@ function log(logString) {
 }
 
 function getEnvVar(name) {
-	return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
+    return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
 }
 
 /**
@@ -48,8 +48,8 @@ Check if a request is valid based on the presence of required body properties
 **/
 function isValidRequest(req, properties) {
 
-	const hasAllProperties = (hasAllPropertiesSoFar, currentProperty) => hasAllPropertiesSoFar && req.body.hasOwnProperty(currentProperty);
-	return properties.reduce(hasAllProperties, true);
+    const hasAllProperties = (hasAllPropertiesSoFar, currentProperty) => hasAllPropertiesSoFar && req.body.hasOwnProperty(currentProperty);
+    return properties.reduce(hasAllProperties, true);
 }
 
 async function handleValidRequest(button, numPresses) {
@@ -58,28 +58,28 @@ async function handleValidRequest(button, numPresses) {
 
     let client = await db.beginTransaction()
 
-        let session = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
+    let session = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
         
-        if(session === null) {
-            session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, client)
-        }
-        else {
-            session.incrementButtonPresses(numPresses)
-            await db.saveSession(session, client)
-        }
+    if(session === null) {
+        session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, client)
+    }
+    else {
+        session.incrementButtonPresses(numPresses)
+        await db.saveSession(session, client)
+    }
 
-        if(needToSendButtonPressMessageForSession(session)) {
-            sendButtonPressMessageForSession(session)
-        }
+    if(needToSendButtonPressMessageForSession(session)) {
+        sendButtonPressMessageForSession(session)
+    }
 
     await db.commitTransaction(client)
 }
 
 async function handleTwilioRequest(req) {
 
-	let phoneNumber = req.body.From;
-	let buttonPhone = req.body.To;
-	let message = req.body.Body;
+    let phoneNumber = req.body.From;
+    let buttonPhone = req.body.To;
+    let message = req.body.Body;
 
     let session = await db.getMostRecentIncompleteSessionWithPhoneNumber(buttonPhone)
 
@@ -123,7 +123,7 @@ async function sendButtonPressMessageForSession(session) {
 async function sendTwilioMessage(toPhoneNumber, fromPhoneNumber, message) {
     try {
         await client.messages.create({from: fromPhoneNumber, body: message, to: toPhoneNumber})
-                             .then(message => log(message.sid))
+            .then(message => log(message.sid))
     }
     catch(err) {
         log(err)
@@ -343,15 +343,15 @@ app.post('/message', jsonBodyParser, async (req, res) => {
 let server;
 
 if (process.env.NODE_ENV === 'test') { // local http server for testing
-	server = app.listen(8000);
+    server = app.listen(8000);
 }
 else {
-	let httpsOptions = {
+    let httpsOptions = {
 	    key: fs.readFileSync(`/etc/letsencrypt/live/${getEnvVar('DOMAIN')}/privkey.pem`),
 	    cert: fs.readFileSync(`/etc/letsencrypt/live/${getEnvVar('DOMAIN')}/fullchain.pem`)
-	}
-	server = https.createServer(httpsOptions, app).listen(443)
-	log('brave server listening on port 443')
+    }
+    server = https.createServer(httpsOptions, app).listen(443)
+    log('brave server listening on port 443')
 }
 
 module.exports.server = server

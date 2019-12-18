@@ -1,5 +1,13 @@
 # BraveButtons [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=master)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
 
+# How to run the linter
+
+1. cd into the `chatbot` directory
+
+1. run `npm install`
+
+1. run `npx eslint .`
+
 # How to set up the network monitor on a raspberry pi:
 
 - format the SD card
