@@ -47,7 +47,7 @@ Check if a request is valid based on the presence of required body properties
 **/
 function isValidRequest(req, properties) {
 
-    const hasAllProperties = (hasAllPropertiesSoFar, currentProperty) => hasAllPropertiesSoFar && req.body.hasOwnProperty(currentProperty);
+    const hasAllProperties = (hasAllPropertiesSoFar, currentProperty) => hasAllPropertiesSoFar && Object.prototype.hasOwnProperty.call(req.body, currentProperty);
     return properties.reduce(hasAllProperties, true);
 }
 
