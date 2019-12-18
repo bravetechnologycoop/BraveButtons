@@ -9,7 +9,6 @@ var session = require('express-session');
 const chalk = require('chalk')
 const Mustache = require('mustache')
 
-let SessionState = require('./SessionState.js')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 const db = require('./db/db.js')

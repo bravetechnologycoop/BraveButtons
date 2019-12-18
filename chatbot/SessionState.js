@@ -1,5 +1,4 @@
 const STATES = require('./SessionStateEnum.js');
-let moment = require('moment');
 
 const incidentTypes = {
     '0': 'Accidental',
