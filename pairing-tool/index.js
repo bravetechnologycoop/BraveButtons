@@ -46,10 +46,14 @@ async function scanAndPairOneButton() {
                 const response = await prompt([unitQuestion, phoneNumberQuestion, confirmQuestion])
                 
                 if(response.confirmation) {
-                    csvWriter.write([bdAddr, response.unit, response.phoneNumber])
+                    client.getButtonInfo(bdAddr, (bdAddr, uuid, color, serialNumber) => {
+                        csvWriter.write([uuid, response.unit, response.phoneNumber])
+                        resolve()
+                    })
                 }
-
-                resolve()
+                else {
+                    resolve()
+                }
             }
         })
 
