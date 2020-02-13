@@ -7,8 +7,9 @@ let FlicScanWizard = flicLib.FlicScanWizard
 
 let client = new FlicClient('localhost', 5551)
 
+const outputFile = `./pairing-tool-output-${Math.random().toString(36).slice(-5)}.csv`
 let csvWriter = CsvWriter({headers: ['button_id','unit','phone_number']})
-csvWriter.pipe(fs.createWriteStream(`./pairing-tool-output-${Math.random().toString(36).slice(-5)}.csv`))
+csvWriter.pipe(fs.createWriteStream(outputFile))
 
 async function scanAndPairOneButton() {
 
@@ -79,6 +80,15 @@ async function runPairingTool() {
         else {
             console.log('Pairing tool finished. Bye!')
             csvWriter.end()
+
+            // put in a newline since the import script requires it 
+            try {
+                fs.appendFileSync(outputFile, '\n')
+            }
+            catch(e) {
+                console.log(`Error appending a newline to the output file: ${e}`)
+            }
+
             client.close()
             break
         }
