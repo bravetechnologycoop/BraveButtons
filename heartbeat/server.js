@@ -83,6 +83,16 @@ app.post('/rename_system', jsonBodyParser, (req, res) => {
     res.status(200).send()
 })
 
+app.post('/hide_system', jsonBodyParser, (req, res) => {
+    log('got a request to hide system ' + req.body.system_id) 
+    db.update({ system_id: req.body.system_id }, { $set: { hidden: true } }, {}, (err, numChanged) => {
+        if(err) {
+            log(err.message)
+        }
+    })
+    res.status(200).send()
+})
+
 app.get('/dashboard', (req, res) => {
     db.find({}, (err, docs) => {
         if(err) {
@@ -94,6 +104,11 @@ app.get('/dashboard', (req, res) => {
             systems: []   
         }
         docs.forEach((doc) => {
+
+            if(doc.hidden) {
+                return
+            }
+
             let flicLastSeenTime = moment(doc.flic_last_seen_time)
             let flicLastSeenSecs = moment().diff(flicLastSeenTime) / 1000.0
             flicLastSeenSecs = Math.round(flicLastSeenSecs)
