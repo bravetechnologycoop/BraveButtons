@@ -5,6 +5,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('Agg')
 
+def send_hide_request(server_url, system_id):
+    payload = {"system_id": system_id}
+    try:
+        r = requests.post(server_url + r"/hide_system", json=payload)
+        print("response to hide request:", r.status_code, r.reason)
+    except Exception as e:
+        print("error sending hide request")
+        print(e)
+
 def send_rename_request(server_url, system_id, name):
     payload = {"system_id": system_id, "system_name": name}
     try:
