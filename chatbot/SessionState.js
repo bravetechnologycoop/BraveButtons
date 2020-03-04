@@ -1,13 +1,5 @@
 const STATES = require('./SessionStateEnum.js');
 
-const incidentTypes = {
-    '0': 'Accidental',
-    '1': 'Safer Use',
-    '2': 'Unsafe Guest',
-    '3': 'Overdose',
-    '4': 'Other'
-};
-
 class SessionState {
 
     constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus) {
@@ -23,6 +15,14 @@ class SessionState {
         this.incidentType = incidentType
         this.notes = notes
         this.fallBackAlertTwilioStatus = fallBackAlertTwilioStatus
+        this.incidentCategoryMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose\n4 - other'
+        this.allowedIncidentTypes = {
+            '0': 'Accidental',
+            '1': 'Safer Use',
+            '2': 'Unsafe Guest',
+            '3': 'Overdose',
+            '4': 'Other'
+        }
     }
 
     advanceSession(messageText) {
@@ -32,11 +32,11 @@ class SessionState {
         switch (this.state) {
             case STATES.STARTED:
                 this.state = STATES.WAITING_FOR_CATEGORY;
-                returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose\n4 - other';
+                returnMessage = this.incidentCategoryMessage
                 break;
             case STATES.WAITING_FOR_REPLY:
                 this.state = STATES.WAITING_FOR_CATEGORY;
-                returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose\n4 - other';
+                returnMessage = this.incidentCategoryMessage
                 break;
             case STATES.WAITING_FOR_CATEGORY: {
                 let isValid = this.setIncidentType(messageText.trim());
@@ -65,8 +65,8 @@ class SessionState {
 
     setIncidentType(numType) {
 
-        if (numType in incidentTypes) {
-            this.incidentType = incidentTypes[numType];
+        if (numType in this.allowedIncidentTypes) {
+            this.incidentType = this.allowedIncidentTypes[numType];
             return true;
         }
         return false;
@@ -78,4 +78,20 @@ class SessionState {
 
 }
 
-module.exports = SessionState;
+class SessionState_Alvis extends SessionState {
+
+    constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus) { 
+        super(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus)
+        this.incidentCategoryMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - health\n1 - mental health\n2 - overdose\n3 - safety\n4 - error press\n5 - other'
+        this.allowedIncidentTypes = {
+            '0': 'Health',
+            '1': 'Mental Health',
+            '2': 'Overdose',
+            '3': 'Safety',
+            '4': 'Error Press',
+            '5': 'Other'
+        }
+    }
+}
+
+module.exports = { SessionState, SessionState_Alvis }

@@ -6,3 +6,5 @@ sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -f ./db/001-setup.sql
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -f ./db/002-addinstallations.sql -v installationName="'$1'" -v responderPhone="'$2'" -v fallbackPhone="'$3'"
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -f ./db/003-setinstallationconstraints.sql
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -f ./db/004-addalertflag.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -f ./db/005-add-session-state-class-name.sql
+

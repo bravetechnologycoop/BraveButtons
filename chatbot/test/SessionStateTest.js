@@ -4,7 +4,7 @@ var beforeEach = require('mocha').beforeEach
 var describe = require('mocha').describe
 var it = require('mocha').it
 
-let SessionState = require('../SessionState.js');
+let { SessionState } = require('../SessionState.js');
 const STATES = require('../SessionStateEnum.js');
 
 describe('Session state manager', () => {

@@ -1,5 +1,5 @@
 const STATES = require('../SessionStateEnum.js')
-const SessionState = require('../SessionState.js')
+const { SessionState, SessionState_Alvis } = require('../SessionState.js')
 const { Pool } = require('pg')
 const pool = new Pool({
     user: process.env.PG_USER,
@@ -11,7 +11,19 @@ pool.on('error', (err) => {
     console.error('unexpected database error:', err)
 })
 
-function createSessionFromRow(r) {
+async function createSessionFromRow(client, r) {
+
+    if(!r) {
+        return null
+    }
+
+    let { rows } = await client.query("SELECT * FROM installations WHERE id = $1", [r.installation_id])
+    let className = rows[0].session_state_class_name
+
+    if(className === 'Alvis') {
+        return new SessionState_Alvis(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status)
+    }
+
     return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status)
 }
 
@@ -41,14 +53,17 @@ module.exports.getUnrespondedSessionWithButtonId = async function(buttonId, clie
     const query = "SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4"
     const values = [buttonId, STATES.WAITING_FOR_CATEGORY, STATES.WAITING_FOR_DETAILS, STATES.COMPLETED]
     const { rows } = await client.query(query, values)
-   
+
+    let session = await createSessionFromRow(client, rows[0])
+
     if(!transactionMode) {
         client.release()
     }
 
-    if(rows.length > 0) {        
-        return createSessionFromRow(rows[0])
+    if(session) {
+        return session
     }
+
     return null
 }
 
@@ -62,13 +77,16 @@ module.exports.getMostRecentIncompleteSessionWithPhoneNumber = async function(ph
     const values = [phoneNumber, STATES.COMPLETED]
     const { rows } = await client.query(query, values)
     
+    let session = await createSessionFromRow(client, rows[0])
+
     if(!transactionMode) {
         client.release()
     }
     
-    if(rows.length > 0) {        
-        return createSessionFromRow(rows[0])
+    if(session) {
+        return session
     }
+
     return null
 }
 
@@ -80,13 +98,20 @@ module.exports.getAllSessionsWithButtonId = async function(buttonId, client) {
     
     let { rows } = await client.query("SELECT * FROM sessions WHERE button_id = $1", [buttonId])
     
+    let promises = rows.map(async (row) => {
+        return await createSessionFromRow(client, row)
+    })
+
+    let sessions = await Promise.all(promises)
+
     if(!transactionMode) {
         client.release()
     }
     
-    if(rows.length > 0) {
-        return rows.map(createSessionFromRow)
+    if(sessions.length > 0) {
+        return sessions
     }
+
     return []
 }
 
@@ -98,13 +123,20 @@ module.exports.getRecentSessionsWithInstallationId = async function(installation
     
     let { rows } = await client.query("SELECT * FROM sessions WHERE installation_id = $1 ORDER BY created_at DESC LIMIT 40", [installationId])
     
+    let promises = rows.map(async (row) => {
+        return await createSessionFromRow(client, row)
+    })
+
+    let sessions = await Promise.all(promises)
+
     if(!transactionMode) {
         client.release()
     }
     
-    if(rows.length > 0) {
-        return rows.map(createSessionFromRow)
+    if(sessions.length > 0) {
+        return sessions
     }
+
     return []
 }
 
@@ -116,13 +148,16 @@ module.exports.getSessionWithSessionId = async function(sessionId, client) {
     
     let { rows } = await client.query("SELECT * FROM sessions WHERE id = $1", [sessionId])
     
+    let session = await createSessionFromRow(client, rows[0])
+
     if(!transactionMode) {
         client.release()
     }
     
-    if(rows.length > 0) {
-        return createSessionFromRow(rows[0])
+    if(session) {
+        return session
     }
+
     return null
 }
 
@@ -134,11 +169,21 @@ module.exports.getAllSessions = async function(client) {
 
     const { rows } = await client.query("SELECT * FROM sessions")
     
+    let promises = rows.map(async (row) => {
+        return await createSessionFromRow(client, row)
+    })
+
+    let sessions = await Promise.all(promises)
+
     if(!transactionMode) {
         client.release()
     }
     
-    return rows.map(createSessionFromRow)
+    if(sessions.length > 0) {
+        return sessions
+    }
+
+    return []
 }
 
 module.exports.createSession = async function(installationId, buttonId, unit, phoneNumber, numPresses, client) {
@@ -150,13 +195,16 @@ module.exports.createSession = async function(installationId, buttonId, unit, ph
     const values = [installationId, buttonId, unit, phoneNumber, STATES.STARTED, numPresses]
     const { rows } = await client.query('INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', values)
    
+    let session = await createSessionFromRow(client, rows[0])
+
     if(!transactionMode) {
         client.release()
     }
 
-    if(rows.length > 0) {
-        return createSessionFromRow(rows[0])
+    if(session) {
+        return session
     }
+
     return null
 }
 
