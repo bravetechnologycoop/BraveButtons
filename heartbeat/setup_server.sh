@@ -39,7 +39,10 @@ else
     certbot certonly --standalone 
 
     echo "0 0 * * 0 certbot renew --pre-hook 'env HOME=$HOME pm2 stop BraveHeartbeatServer' --post-hook 'env HOME=$HOME pm2 start BraveHeartbeatServer'" > crontab.tmp
+
+    # reboot weekly to ensure that renewed certificates are loaded in memory by the server
     echo "0 0 * * 1 env HOME=$HOME pm2 restart BraveHeartbeatServer" >> crontab.tmp
+
     crontab crontab.tmp
     rm crontab.tmp
     
