@@ -1,5 +1,6 @@
 const STATES = require('../SessionStateEnum.js')
 const SessionState = require('../SessionState.js')
+const Installation = require('../Installation.js')
 const { Pool } = require('pg')
 const pool = new Pool({
     user: process.env.PG_USER,
@@ -13,6 +14,10 @@ pool.on('error', (err) => {
 
 function createSessionFromRow(r) {
     return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status)
+}
+
+function createInstallationFromRow(r) {
+    return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.created_at)
 }
 
 module.exports.beginTransaction = async function() {
@@ -291,7 +296,7 @@ module.exports.getInstallations = async function(client) {
     }
     
     if(rows.length > 0) {        
-        return rows
+        return rows.map(createInstallationFromRow)
     }
     return []
 }
@@ -309,7 +314,7 @@ module.exports.getInstallationWithInstallationId = async function(installationId
     }
     
     if(rows.length > 0) {
-        return rows[0]
+        return createInstallationFromRow(rows[0])
     }
     return null
 }
