@@ -7,7 +7,7 @@ var it = require('mocha').it
 let SessionState = require('../SessionState.js');
 const STATES = require('../SessionStateEnum.js');
 
-describe('Session state manager', () => {
+describe('SessionState class', () => {
 
     const sessionId = '12345'
     const installationId = '67890'
@@ -33,35 +33,5 @@ describe('Session state manager', () => {
         expect(state.numPresses).to.deep.equal(2);
         state.incrementButtonPresses(2);
         expect(state.numPresses).to.deep.equal(4);
-    });
-
-    it('should advance the session when receiving an initial message', () => {
-        expect(state.state).to.deep.equal(STATES.STARTED)
-        state.advanceSession('ok');
-        expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
-    });
-
-    it('should advance the session when receiving an initial message (after a reminder has been sent)', () => {
-        state.state = STATES.WAITING_FOR_REPLY;
-        state.advanceSession('ok');
-        expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
-    });
-
-    it('should advance the session when receiving a message categorizing the incident', () => {
-        state.state = STATES.WAITING_FOR_CATEGORY;
-        state.advanceSession('3');
-        expect(state.state).to.deep.equal(STATES.WAITING_FOR_DETAILS);
-    });
-
-    it('should advance the session when receiving a message categorizing the incident that contains whitespace', () => {
-        state.state = STATES.WAITING_FOR_CATEGORY;
-        state.advanceSession('3  ');
-        expect(state.state).to.deep.equal(STATES.WAITING_FOR_DETAILS);
-    });
-
-    it('should not advance the session when receiving an invalid incident category', () => {
-        state.state = STATES.WAITING_FOR_CATEGORY;
-        state.advanceSession('fff');
-        expect(state.state).to.deep.equal(STATES.WAITING_FOR_CATEGORY);
     });
 });

@@ -12,6 +12,7 @@ const Mustache = require('mustache')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 const db = require('./db/db.js')
+const StateMachine = require('./StateMachine.js')
 
 const app = express();
 
@@ -90,9 +91,11 @@ async function handleTwilioRequest(req) {
     let installation = await db.getInstallationWithInstallationId(session.installationId)
 
     if (phoneNumber === installation.responderPhoneNumber) {
-        let returnMessage = session.advanceSession(message);
+
+        let stateMachine = new StateMachine(installation)
+        let {newSessionState, returnMessage} = stateMachine.processStateTransitionWithMessage(session, message)
         await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, returnMessage);
-        await db.saveSession(session)
+        await db.saveSession(newSessionState)
         return 200;
     } 
     else {
