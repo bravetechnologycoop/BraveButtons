@@ -49,8 +49,9 @@ else
     ./setup_postgresql.sh $installationName $responderNumber $fallbackNumber
 
     certbot certonly --standalone 
-
-    echo "0 0 * * 0 certbot renew --pre-hook 'env HOME=$HOME pm2 stop server' --post-hook 'env HOME=$HOME pm2 start server'" > crontab.tmp
+    
+    echo "PATH=/bin:/usr/bin:/usr/local/bin" > crontab.tmp
+    echo "0 0 * * 0 certbot renew --pre-hook 'env HOME=$HOME pm2 stop server' --post-hook 'env HOME=$HOME pm2 start server'" >> crontab.tmp
     crontab crontab.tmp
     rm crontab.tmp
     
