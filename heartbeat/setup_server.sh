@@ -38,7 +38,8 @@ else
 
     certbot certonly --standalone 
 
-    echo "0 0 * * 0 certbot renew --pre-hook 'env HOME=$HOME pm2 stop BraveHeartbeatServer' --post-hook 'env HOME=$HOME pm2 start BraveHeartbeatServer'" > crontab.tmp
+    echo "PATH=/bin:/usr/bin:/usr/local/bin" > crontab.tmp
+    echo "0 0 * * 0 certbot renew --pre-hook 'env HOME=$HOME pm2 stop BraveHeartbeatServer' --post-hook 'env HOME=$HOME pm2 start BraveHeartbeatServer'" >> crontab.tmp
     crontab crontab.tmp
     rm crontab.tmp
     
