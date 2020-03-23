@@ -93,6 +93,9 @@ else
   systemctl enable darkstat
   systemctl enable dhcp-helper
 
+  # as of Raspbian Buster this is required for wifi to work
+  rfkill unblock wifi
+
   echo "setup almost complete. rebooting..."
   reboot now
 fi
