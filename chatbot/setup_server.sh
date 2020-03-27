@@ -49,12 +49,16 @@ else
     ./setup_postgresql.sh $installationName $responderNumber $fallbackNumber
 
     certbot certonly --standalone 
-    
-    echo "PATH=/bin:/usr/bin:/usr/local/bin" > crontab.tmp
-    echo "0 0 * * 0 certbot renew --pre-hook 'env HOME=$HOME pm2 stop server' --post-hook 'env HOME=$HOME pm2 start server'" >> crontab.tmp
-    crontab crontab.tmp
-    rm crontab.tmp
-    
+
+    mkdir -p /var/log/brave
+    touch /var/log/brave/cron.log
+
+    # set up cron to have certbot renew certificates regularly, then send output to a log file
+    echo "
+    PATH=/bin:/usr/bin:/usr/local/bin
+    @weekly certbot renew --pre-hook 'env HOME=$HOME pm2 stop server' --post-hook 'env HOME=$HOME pm2 start server' >> /var/log/brave/cron.log 2>&1
+    " | crontab -
+
     pm2 install pm2-logrotate
     pm2 set pm2-logrotate:max_size 10M
     pm2 set pm2-logrotate:compress true
