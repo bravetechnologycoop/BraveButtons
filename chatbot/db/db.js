@@ -17,7 +17,7 @@ function createSessionFromRow(r) {
 }
 
 function createInstallationFromRow(r) {
-    return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.created_at)
+    return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.incident_categories, r.created_at)
 }
 
 module.exports.beginTransaction = async function() {
@@ -252,14 +252,14 @@ module.exports.clearButtons = async function(client) {
     }
 }
 
-module.exports.createInstallation = async function(name, responderPhoneNumber, fallbackPhoneNumber, client) {
+module.exports.createInstallation = async function(name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories, client) {
     
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number) VALUES ($1, $2, $3)", [name, responderPhoneNumber, fallbackPhoneNumber])
+    await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number, incident_categories) VALUES ($1, $2, $3, $4)", [name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories])
     
     if(!transactionMode) {
         client.release()

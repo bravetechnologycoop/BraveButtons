@@ -17,6 +17,7 @@ describe('StateMachine class', () => {
     const buttonId = '12345'
     const unit = '1'
     const phoneNumber = '+14206666969'
+    const incidentCategories = ['Accidental', 'Safer Use', 'Overdose', 'Other']
     const createdAt = Date()
     const updatedAt = Date()
 
@@ -26,7 +27,7 @@ describe('StateMachine class', () => {
 
     beforeEach(function() {
         state = new SessionState(sessionId, installationId, buttonId, unit, phoneNumber, STATES.STARTED, 1, createdAt, updatedAt, null, null)
-        installation = new Installation(installationId, installationName, phoneNumber, phoneNumber, createdAt)
+        installation = new Installation(installationId, installationName, phoneNumber, phoneNumber, incidentCategories, createdAt)
         stateMachine = new StateMachine(installation)
     })
 

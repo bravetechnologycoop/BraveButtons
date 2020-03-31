@@ -1,12 +1,16 @@
 const STATES = require('./SessionStateEnum.js')
 const _ = require('lodash')
 
-const incidentTypes = {
-    '0': 'Accidental',
-    '1': 'Safer Use',
-    '2': 'Unsafe Guest',
-    '3': 'Overdose',
-    '4': 'Other'
+function createResponseStringFromIncidentCategories(categories) {
+    const reducer = (accumulator, currentValue, currentIndex) => `${accumulator}${currentIndex} - ${currentValue}\n`
+    return `Now that you have responded, please reply with the number that best describes the incident:\n${categories.reduce(reducer)}`
+}
+
+function stringToNumber(string) {
+    if(string.length === 0) {
+        return NaN
+    }
+    return Number(string)   
 }
 
 class StateMachine {
@@ -23,17 +27,18 @@ class StateMachine {
         switch (sessionState.state) {
             case STATES.STARTED:
                 newSessionState.state = STATES.WAITING_FOR_CATEGORY
-                returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose\n4 - other'
+                returnMessage = createResponseStringFromIncidentCategories(this.installation.incidentCategories)
                 break
             case STATES.WAITING_FOR_REPLY:
                 newSessionState.state = STATES.WAITING_FOR_CATEGORY
-                returnMessage = 'Now that you have responded, please reply with the number that best describes the incident:\n0 - accidental\n1 - safer use\n2 - unsafe guest\n3 - overdose\n4 - other'
+                returnMessage = createResponseStringFromIncidentCategories(this.installation.incidentCategories)
                 break
             case STATES.WAITING_FOR_CATEGORY: {
-                let numType = messageText.trim()
-                if(numType in incidentTypes) {
+                let categoryString = messageText.trim()
+                let categoryNumber = stringToNumber(categoryString)
+                if(categoryNumber >= 0 && categoryNumber < this.installation.incidentCategories.length) {
                     newSessionState.state = STATES.WAITING_FOR_DETAILS
-                    newSessionState.incidentType = numType
+                    newSessionState.incidentType = categoryString
                     returnMessage = 'Thank you. If you like, you can reply with any further details about the incident.'
                 }
                 else {
