@@ -25,6 +25,7 @@ describe('Chatbot server', () => {
 
     const installationResponderPhoneNumber = '+12345678900'
     const installationFallbackPhoneNumber = '+12345678900'
+    const installationIncidentCategories = ['Accidental', 'Safer Use', 'Overdose', 'Other']
 
     const unit1FlicRequest_SingleClick = {
         'UUID': unit1UUID,
@@ -70,7 +71,7 @@ describe('Chatbot server', () => {
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
-            await db.createInstallation("TestInstallation", installationResponderPhoneNumber, installationFallbackPhoneNumber)
+            await db.createInstallation("TestInstallation", installationResponderPhoneNumber, installationFallbackPhoneNumber, installationIncidentCategories)
             let installations = await db.getInstallations()
             await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber)
             await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber)
@@ -176,7 +177,7 @@ describe('Chatbot server', () => {
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
-            await db.createInstallation("TestInstallation", installationResponderPhoneNumber, installationFallbackPhoneNumber)
+            await db.createInstallation("TestInstallation", installationResponderPhoneNumber, installationFallbackPhoneNumber, installationIncidentCategories)
             let installations = await db.getInstallations()
             await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber)
             await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber)
