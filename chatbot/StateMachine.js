@@ -38,7 +38,7 @@ class StateMachine {
                 let categoryNumber = stringToNumber(categoryString)
                 if(categoryNumber >= 0 && categoryNumber < this.installation.incidentCategories.length) {
                     newSessionState.state = STATES.WAITING_FOR_DETAILS
-                    newSessionState.incidentType = categoryString
+                    newSessionState.incidentType = this.installation.incidentCategories[categoryNumber]
                     returnMessage = 'Thank you. If you like, you can reply with any further details about the incident.'
                 }
                 else {
