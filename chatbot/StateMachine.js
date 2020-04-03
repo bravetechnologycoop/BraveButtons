@@ -3,7 +3,7 @@ const _ = require('lodash')
 
 function createResponseStringFromIncidentCategories(categories) {
     const reducer = (accumulator, currentValue, currentIndex) => `${accumulator}${currentIndex} - ${currentValue}\n`
-    return `Now that you have responded, please reply with the number that best describes the incident:\n${categories.reduce(reducer)}`
+    return `Now that you have responded, please reply with the number that best describes the incident:\n${categories.reduce(reducer, '')}`
 }
 
 function stringToNumber(string) {
