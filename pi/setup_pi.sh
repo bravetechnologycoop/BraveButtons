@@ -34,6 +34,9 @@ else
     exit 1
   fi
 
+  # as of Raspbian Buster, this is required for wifi to work
+  rfkill unblock wifi
+
   apt-get update
   apt-get install -y darkstat python3-gpiozero autossh ssh parprouted dhcp-helper avahi-daemon
   pip3 install python-daemon
