@@ -50,13 +50,10 @@ else
 
     certbot certonly --standalone 
 
-    mkdir -p /var/log/brave
-    touch /var/log/brave/cron.log
-
-    # set up cron to have certbot renew certificates regularly, then send output to a log file
+    # restart server weekly to ensure it uses the latest certificates (certbot renews them automatically)
     echo "
     PATH=/bin:/usr/bin:/usr/local/bin
-    @weekly certbot renew --pre-hook 'env HOME=$HOME pm2 stop server' --post-hook 'env HOME=$HOME pm2 start server' >> /var/log/brave/cron.log 2>&1
+    @weekly env HOME=$HOME pm2 restart server
     " | crontab -
 
     pm2 install pm2-logrotate
@@ -64,6 +61,9 @@ else
     pm2 set pm2-logrotate:compress true
     pm2 set pm2-logrotate:rotateInterval '0 0 1 1 *'    
     pm2 startup systemd
+
+    # ensure that a new process is started or that a running process is restarted
+    pm2 stop server.js
     pm2 start server.js
 
     cd $original_dir
