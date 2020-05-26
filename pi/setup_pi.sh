@@ -67,10 +67,10 @@ else
     mkdir -p /home/pi/.ssh
     ssh-keygen -t rsa -N "" -f /home/pi/.ssh/id_rsa
     chown -R pi:pi /home/pi/.ssh
+    echo "SSH public key:"
+    cat /home/pi/.ssh/id_rsa.pub
+    read -p "please copy the SSH public key to the remote access server. press [Enter] when you are finished."
   fi
-  echo "SSH public key:"
-  cat /home/pi/.ssh/id_rsa.pub
-  read -p "please copy the SSH public key to the remote access server. press [Enter] when you are finished."
 
   autossh_systemd_unit_file=$(<$BASEDIR/autossh_systemd_unit_file.txt)
   autossh_systemd_unit_file="${autossh_systemd_unit_file//REMOTE_ACCESS_PORT/$remoteAccessPort}"
