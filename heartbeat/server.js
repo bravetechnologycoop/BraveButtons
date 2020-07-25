@@ -93,6 +93,17 @@ app.post('/hide_system', jsonBodyParser, (req, res) => {
     res.status(200).send()
 })
 
+
+app.post('/mute_system', jsonBodyParser, (req, res) => {
+    log('got a request to mute system ' + req.body.system_id) 
+    db.update({ system_id: req.body.system_id }, { $set: { muted: true } }, {}, (err, numChanged) => {
+        if(err) {
+            log(err.message)
+        }
+    })
+    res.status(200).send()
+})
+
 app.get('/dashboard', (req, res) => {
     db.find({}, (err, docs) => {
         if(err) {
@@ -156,17 +167,26 @@ function checkHeartbeat() {
         
             if(flicDelayMillis > FLIC_THRESHOLD_MILLIS && !doc.sent_alerts) {
                 log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${doc.system_name}`)
-                sendAlerts(doc.system_name)
                 updateSentAlerts(doc.system_id, true)
+                if(doc.muted) {
+                    return
+                }
+                sendAlerts(doc.system_name)
             }
             else if(heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !doc.sent_alerts) {
                 log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${doc.system_name}`)
-                sendAlerts(doc.system_name)
                 updateSentAlerts(doc.system_id, true)
+                if(doc.muted) {
+                    return
+                }
+                sendAlerts(doc.system_name)
             }
             else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && doc.sent_alerts) { 
                 log(`${doc.system_name} has reconnected.`)
                 updateSentAlerts(doc.system_id, false)
+                if (doc.muted) {
+                    return
+                }
                 sendReconnectionMessage(doc.system_name)
             }
         })
