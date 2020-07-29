@@ -18,7 +18,7 @@ matrix:
 
     # BraveChatbot
     - language: node_js
-      node_js: "node"
+      node_js: 12
 
       # install dependencies
       install:
