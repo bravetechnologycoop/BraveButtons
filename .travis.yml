@@ -26,8 +26,8 @@ matrix:
         - npm install
 
       # install database
-      services:
-        - postgresql
+      addons:
+        postgresql: "9.5"
 
       # setup database
       before_script:
