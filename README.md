@@ -1,5 +1,24 @@
 # BraveButtons [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=master)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
 
+
+# How to set up a local chatbot dev environment
+
+1. clone this repository
+
+1. cd into the `chatbot` directory
+
+1. run `sudo apt install postgresql` to install postgres
+
+1. in `/etc/postgresql/<VERSION>/main/pg_hba.conf` change 'local ... all ... all ... peer' to 'local ... all ... all ... md5'
+
+1. copy .env.example to .env and fill out variables appropriately for your local environment
+
+1. run `source .env`
+
+1. run `sudo ./setup_postgresql.sh`
+
+1. to check that everything is working, run `npm test` and check that the tests pass.
+
 # How to run the linter
 
 1. cd into the `chatbot` directory
