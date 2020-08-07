@@ -27,13 +27,29 @@
 
 1. run `npx eslint .`
 
-# How to set up the network monitor on a raspberry pi:
+# How to set up a generic Raspberry Pi environment (for a Brave Hub or the pairing tool):
 
-- format the SD card
-- use Etcher to flash the SD card with Raspbian Stretch
-- create a file named `ssh` in the boot partition of the SD card
-- install the SD card into the raspberry pi, connect it to power and ethernet
-- ssh into the raspberry pi, clone this repository, and run `sudo pi/setup_pi.sh`
+1. use Balena Etcher to flash the SD card with Raspbian Buster
+
+1. create a file named `ssh` in the boot partition of the SD card
+
+1. install the SD card into the raspberry pi, connect it to power and ethernet
+
+1. plug the RPi into a router that you have admin access to and determine its IP address
+
+1. ssh into the raspberry pi and clone this repository.
+
+# How to set up the pairing tool
+
+1. follow the generic RPi setup instructions above
+
+1. cd into the `pairing-tool` directory
+
+1. run `npm install`
+
+1. run `./start_flicd.sh`
+
+1. run `node index.js`
 
 # How to run tests for the raspberry pi code:
 
