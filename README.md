@@ -62,15 +62,13 @@ appropriates for your local environment
 
 1. run `./start_flicd.sh`
 
-1. run 'npm start'
+1. run `npm start`
 
 # How to set up a Brave Hub
 
 1. follow the generic RPi setup instruction above
 
 1. cd into the `pi` directory
-
-1. run `npm install`
 
 1. copy `template.pi_config.ini` to `pi_config.ini` and fill out variables
 appropriates for your local environment
