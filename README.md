@@ -27,6 +27,19 @@
 
 1. run `npx eslint .`
 
+# How to set up a local heartbeat dev environment
+
+1. cd into the `heartbeat` directory
+
+1. copy `template.brave_config.json` to `brave_config.json` and fill out variables
+appropriates for your local environment
+
+1. run 'npm install'
+
+1. run 'node server.js'
+
+1. to see the dashboard, go to http://localhost:8000/dashboard
+
 # How to set up a generic Raspberry Pi environment (for a Brave Hub or the pairing tool):
 
 1. use Balena Etcher to flash the SD card with Raspbian Buster
@@ -49,13 +62,28 @@
 
 1. run `./start_flicd.sh`
 
-1. run `node index.js`
+1. run 'npm start'
+
+# How to set up a Brave Hub
+
+1. follow the generic RPi setup instruction above
+
+1. cd into the `pi` directory
+
+1. run `npm install`
+
+1. copy `template.pi_config.ini` to `pi_config.ini` and fill out variables
+appropriates for your local environment
+
+1. run `sudo ./setup_pi.sh pi_config.ini`
 
 # How to run tests for the raspberry pi code:
 
-- install pytest and pytest-cov (using pip)
-- `cd` into the `pi` directory
-- run `pytest --cov=heartbeat`
+1.  install pytest and pytest-cov (run `pip3 install pytest pytest-cov`)
+
+1. `cd` into the `pi` directory
+
+1.  run `/home/pi/.local/bin/pytest --cov=heartbeat`
 
 # How to install PostgreSQL on a Mac
 
