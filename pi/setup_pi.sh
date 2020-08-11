@@ -37,8 +37,8 @@ else
   # as of Raspbian Buster, this is required for wifi to work
   rfkill unblock wifi
 
-  apt-get update
-  apt-get install -y darkstat python3-gpiozero autossh ssh parprouted dhcp-helper avahi-daemon
+  apt update
+  apt install -y darkstat python3-gpiozero autossh ssh parprouted dhcp-helper avahi-daemon python3-pip
   pip3 install python-daemon
 
   cat "$BASEDIR/darkstat_init.txt" > /etc/darkstat/init.cfg
@@ -64,7 +64,7 @@ else
   echo "$hostname" > /etc/hostname
 
   if [[ ! -e /home/pi/.ssh/id_rsa ]]; then
-    mkdir /home/pi/.ssh
+    mkdir -p /home/pi/.ssh
     ssh-keygen -t rsa -N "" -f /home/pi/.ssh/id_rsa
     chown -R pi:pi /home/pi/.ssh
   fi
