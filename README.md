@@ -56,7 +56,7 @@ appropriates for your local environment
 
 1. follow the generic RPi setup instructions above
 
-1. cd into the `pairing-tool` directory
+1. cd into the `BraveButtons/pairing-tool` directory
 
 1. run `npm install`
 
@@ -68,7 +68,7 @@ appropriates for your local environment
 
 1. follow the generic RPi setup instruction above
 
-1. cd into the `pi` directory
+1. cd into the `BraveButtons/pi` directory
 
 1. copy `template.pi_config.ini` to `pi_config.ini` and fill out variables
 appropriates for your local environment
