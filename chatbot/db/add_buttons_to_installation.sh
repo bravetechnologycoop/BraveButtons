@@ -10,7 +10,7 @@ if [[ $EUID > 0 ]]; then
     exit 1
 elif [[ ! -n "$3" ]]; then
     echo ""
-    echo "Usage: $0 path_to_.env_file new_installation_name path_to_registry_csv"
+    echo "Usage: $0 path_to_.env_file existing_installation_name path_to_registry_csv"
     echo "" 
     echo "Example: $0 ./../.env ExistingInstallation ./add_buttons.csv.example"
     echo ""
