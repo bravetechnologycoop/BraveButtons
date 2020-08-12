@@ -60,9 +60,9 @@ appropriates for your local environment
 
 1. run `npm install`
 
-1. run `./start_flicd.sh`
+1. run `sudo ./start_flicd.sh`
 
-1. run `npm start`
+1. to start the pairing tool, run `npm start`
 
 # How to set up a Brave Hub
 
