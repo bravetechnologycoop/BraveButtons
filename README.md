@@ -9,9 +9,9 @@
 
 1. run `sudo apt install postgresql` to install postgres
 
-1. in `/etc/postgresql/<VERSION>/main/pg_hba.conf` change 'local ... all ... all ... peer' to 'local ... all ... all ... md5'
+1. in `/etc/postgresql/<VERSION>/main/pg_hba.conf` change `local ... all ... all ... peer` to `local ... all ... all ... md5`
 
-1. copy .env.example to .env and fill out variables appropriately for your local environment
+1. copy `.env.example` to `.env` and fill out variables appropriately for your local environment
 
 1. run `source .env`
 
@@ -36,9 +36,9 @@
 1. copy `template.brave_config.json` to `brave_config.json` and fill out variables
 appropriates for your local environment
 
-1. run 'npm install'
+1. run `npm install`
 
-1. run 'node server.js'
+1. run `node server.js`
 
 1. to see the dashboard, go to http://localhost:8000/dashboard
 
@@ -83,11 +83,11 @@ appropriates for your local environment
 
 # How to run tests for the raspberry pi code:
 
-1.  install pytest and pytest-cov (run `pip3 install pytest pytest-cov`)
+1. install pytest and pytest-cov (run `pip3 install pytest pytest-cov`)
 
-1. `cd` into the `pi` directory
+1. cd into the `pi` directory
 
-1.  run `/home/pi/.local/bin/pytest --cov=heartbeat`
+1. run `/home/pi/.local/bin/pytest --cov=heartbeat`
 
 # How to install PostgreSQL on a Mac
 
