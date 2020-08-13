@@ -19,6 +19,8 @@
 
 1. to check that everything is working, run `npm test` and check that the tests pass.
 
+1. to run the server locally and see the dashboard, run `NODE_ENV=test node server.js` and browse to `localhost:8000`
+
 # How to run the linter
 
 1. cd into the `chatbot` directory
