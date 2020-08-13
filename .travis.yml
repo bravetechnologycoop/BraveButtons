@@ -17,8 +17,7 @@ matrix:
         - pytest --cov=heartbeat
 
     # BraveChatbot
-    - language: node_js
-      node_js: 12
+    - language: node_js         # node version specified in .nvmrc
 
       # install dependencies
       install:
