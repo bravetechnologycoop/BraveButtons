@@ -6,9 +6,6 @@ if [[ $EUID > 0 ]]; then
   echo "this script needs sudo privelages to run correctly."
   exit 1
 else
-  # as of Raspbian Buster, this is required for wifi to work
-  rfkill unblock wifi
-
   apt update
   apt install -y vim nodejs npm
 
