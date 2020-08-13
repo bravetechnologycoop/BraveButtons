@@ -50,7 +50,11 @@ appropriates for your local environment
 
 1. plug the RPi into a router that you have admin access to and determine its IP address
 
-1. ssh into the raspberry pi and clone this repository.
+1. ssh into the raspberry pi
+
+1. install git: `sudo apt install git`
+
+1. clone this repository.
 
 # How to set up the pairing tool
 
