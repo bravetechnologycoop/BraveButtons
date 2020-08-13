@@ -33,13 +33,13 @@ else
     ufw allow https
     ufw enable
 
-    apt-get update
-    apt-get install software-properties-common
+    apt update
+    apt install software-properties-common
     add-apt-repository -y ppa:certbot/certbot
-    apt-get update
-    apt-get install -y nodejs npm certbot postgresql postgresql-contrib
+    apt update
+    apt install -y nodejs npm certbot postgresql postgresql-contrib
     npm install -g pm2 n
-    n stable
+    n 12.18.3         # when you change this version, also change it in BraveButtons/.nvmrc for Travis
     npm install
 
     echo "Please enter in order the name and responder phone number and fallback phone number for the first installation (separated by a space):" 
