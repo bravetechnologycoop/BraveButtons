@@ -27,14 +27,14 @@ else
     ufw allow https
     ufw enable
 
-    apt-get update
-    apt-get install software-properties-common
+    apt update
+    apt install software-properties-common
     add-apt-repository -y ppa:certbot/certbot
-    apt-get update
-    apt-get install -y nodejs npm certbot
+    apt update
+    apt install -y nodejs npm certbot
     npm install
     npm install -g pm2 n
-    n stable
+    n 12.18.3         # keep this in sync with .nvmrc for Travis and with chatbot/setup_server.sh
 
     certbot certonly --standalone 
 
