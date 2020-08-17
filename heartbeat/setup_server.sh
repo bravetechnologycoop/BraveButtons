@@ -32,9 +32,9 @@ else
     add-apt-repository -y ppa:certbot/certbot
     apt update
     apt install -y nodejs npm certbot
-    npm install
     npm install -g pm2 n
     n 12.18.3         # keep this in sync with .nvmrc for Travis and with chatbot/setup_server.sh
+    npm install
 
     certbot certonly --standalone 
 
