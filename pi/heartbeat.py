@@ -83,10 +83,11 @@ def parse_flic_ip_from_darkstat_html(html, mac_address):
         if (lines[i].count(mac_address) > 0):
 
             # this guards against some cases where multiple entries have the same MAC address
-            # this seems to be related to IPv6 - see relevant test case
-            if (lines[i-1].count('flic') > 0):
-                flic_ip_strings = re.findall( r'[0-9]+(?:\.[0-9]+){3}', lines[i-2])
-                return flic_ip_strings[0]
+            # we want the entry where there is an IPv4 address that probably represents the flic hub
+            flic_ip_strings = re.findall( r'[0-9]+(?:\.[0-9]+){3}', lines[i-2])
+            if (len(flic_ip_strings) > 0):
+                if flic_ip_strings[0] != '0.0.0.0':
+                    return flic_ip_strings[0]
     raise FlicNotFoundError('darkstat html did not contain an ip address for the mac address ' + mac_address)
 
 def ping(host):
