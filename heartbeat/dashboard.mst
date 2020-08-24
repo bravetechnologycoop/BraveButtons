@@ -53,6 +53,7 @@ th, td {
                 <th>Last Seen (Flic)</th>
                 <th>Last Seen (Ping)</th>
                 <th>Last Seen (Heartbeat)</th>
+                <th>Muted?</th>
             </tr>
             {{#systems}}
             <tr>
@@ -60,6 +61,7 @@ th, td {
                 <td>{{flic_last_seen}}</td>
                 <td>{{flic_last_ping}}</td>
                 <td>{{heartbeat_last_seen}}</td>
+                <td>{{muted}}</td>
             </tr>
             {{/systems}}
         </table>
