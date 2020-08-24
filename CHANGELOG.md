@@ -10,7 +10,8 @@ the code was deployed.
 
 ## [Unreleased]
 ### Added
-- Changelog.
+- Changelog (CU-5wd4g9).
+- Environment variables to Travis config (CU-b4m32r).
 
 ## [1.4.3] - 2020-08-18
 ### Added
