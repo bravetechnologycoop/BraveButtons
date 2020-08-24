@@ -104,6 +104,16 @@ app.post('/mute_system', jsonBodyParser, (req, res) => {
     res.status(200).send()
 })
 
+app.post('/unmute_system', jsonBodyParser, (req, res) => {
+    log('got a request to unmute system ' + req.body.system_id) 
+    db.update({ system_id: req.body.system_id }, { $set: { muted: false } }, {}, (err, numChanged) => {
+        if(err) {
+            log(err.message)
+        }
+    })
+    res.status(200).send()
+})
+
 app.get('/dashboard', (req, res) => {
     db.find({}, (err, docs) => {
         if(err) {
