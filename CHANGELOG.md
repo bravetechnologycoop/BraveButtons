@@ -15,11 +15,13 @@ the code was deployed.
 - More logging to the Raspberry Pi (CU-behg93).
 - Instructions for interacting with remote managed database to README.
 - Instructions for performing database migrations to README.
+- `POST /unmute_system` API endpoint for the Heartbeat server (CU-baj2pv).
 
 ### Changed
 - "From" phone number used to send messages to the fallback phone is specified in `.env` (CU-6ed85y).
 - Local version of database setup script for use in TravisCI and local dev
 - db.js file now creates pool with remote database parameters
+- Heartbeat Dashboard displays whether a hub is muted or not (CU-baj2pv).
 
 ## [1.4.3] - 2020-08-18
 ### Added

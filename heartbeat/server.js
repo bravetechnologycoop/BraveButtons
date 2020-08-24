@@ -146,7 +146,8 @@ app.get('/dashboard', (req, res) => {
                 system_name: doc.system_name,
                 flic_last_seen: flicLastSeenSecs.toString() + ' seconds ago',
                 flic_last_ping: flicLastPingSecs.toString() + ' seconds ago',
-                heartbeat_last_seen: heartbeatLastSeenSecs.toString() + ' seconds ago' 
+                heartbeat_last_seen: heartbeatLastSeenSecs.toString() + ' seconds ago',
+                muted: doc.muted ? 'Y' : 'N'
             })
         })
         
