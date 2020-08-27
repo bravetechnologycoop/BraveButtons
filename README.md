@@ -96,7 +96,7 @@ appropriates for your local environment
 1. Add psql to the path
    `PATH="/Library/PostgreSQL/9.5/bin:$PATH"`
 
-1. Run `setup_postgresql.sh`
+1. Run `setup_postgresql_local.sh`
 
 # How to add a PostgreSQL migration script 
 
@@ -132,3 +132,27 @@ Reference: https://docs.travis-ci.com/user/environment-variables/#encrypting-env
    output your encrypted variable
 
 1. Copy the encrypted variable into `.travis.yml`
+# How to access a remote database
+
+To access the remote database you'll first need to add the IP you're trying to access it form to the "trusted sources" section of the digital ocean database console located at https://cloud.digitalocean.com/databases/button-db?i=c5171f
+
+On the same page you'll see options for credentials for connecting to the database - both as connection strings and as a psql command with the necessary flags filled in. The syntax is as follows:
+
+`PGPASSWORD=<password> psql -U <user> -h <hostname>.com -p <port> -d <database> --set=sslmode=require`
+
+And you can use the standard psql flags (like -c for commands or -f for file input)
+
+# How to migrate data from one PostgreSQL database to another
+
+The standard way to migrate data is to use the pg_dump command to create a backup of the old database (which is just a sequence of PostgreSQL commands) and to feed this file to the new database.
+
+If you're migrating from a local database to a remote database that has already had users created and migration scripts run on it, you'll want to create this backup without owners (using the -O flag) and specify to only dump the data, not the schema (with the --data-only flag)
+
+You can either pipe the output of pg_dump directly to the new database
+
+ `pgdump --data-only -O pg_brave | PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require`
+
+or save it to an intervening file, and then input this file to the database
+
+`pgdump --data-only -O pg_brave > bravedata.sql`
+`PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require < bravedata.sql`
