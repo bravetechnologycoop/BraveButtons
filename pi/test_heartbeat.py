@@ -30,6 +30,14 @@ class Test__parse_flic_last_seen_from_darkstat_html(object):
             with open(os.path.dirname(__file__) + '/sample_darkstat_html/never.html', 'r') as html_file:
                 html = html_file.read()
                 heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02')
+    
+    def test_log_last_seen_when_darkstat_html_contains_flic_mac_address(self):
+        file_path = os.path.dirname(__file__) + '/sample_darkstat_html/log_last_seen.html'
+        with open(file_path, 'r') as html_file, unittest.mock.patch('heartbeat.logging') as mock_logging:
+            html = html_file.read()
+            heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02')
+
+            mock_logging.info.assert_called_once_with('darkstat html contains flic last seen info:  <td><a href="./192.168.8.114/">192.168.8.114</a></td>  <td>flic</td>  <td><tt>00:00:00:00:00:02</tt></td>  <td class="num">1 hr, 3 mins, 26 secs</td></tr>')
 
 class Test__parse_flic_ip_from_darkstat_html(object):
 
@@ -38,10 +46,36 @@ class Test__parse_flic_ip_from_darkstat_html(object):
             html = html_file.read()
             assert heartbeat.parse_flic_ip_from_darkstat_html(html, '00:00:00:00:00:02') == '192.168.8.114'
 
+    def test_log_ip_when_darkstat_html_contains_flic_mac_address(self):
+        file_path = os.path.dirname(__file__) + '/sample_darkstat_html/log_ip.html'
+        with open(file_path, 'r') as html_file, unittest.mock.patch('heartbeat.logging') as mock_logging:
+            html = html_file.read()
+            heartbeat.parse_flic_ip_from_darkstat_html(html, '00:00:00:00:00:02')
+
+            mock_logging.info.assert_called_once_with('darkstat html contained flic IPv4 address:  <td><a href="./192.168.8.114/">192.168.8.114</a></td>  <td>flic</td>  <td><tt>00:00:00:00:00:02</tt></td>  <td class="num">1 hr, 3 mins, 26 secs</td></tr>')
+
 class Test__ping(object):
 
     def test_localhost(self):
         assert heartbeat.ping('localhost')
+    
+    def test_log_command(self):
+        with unittest.mock.patch('heartbeat.logging') as mock_logging:
+            heartbeat.ping('localhost')
+
+            mock_logging.info.assert_any_call('running: [\'ping\', \'-c\', \'1\', \'localhost\']')
+    
+    def test_log_when_successful(self):
+        with unittest.mock.patch('heartbeat.logging') as mock_logging:
+            heartbeat.ping('localhost')
+
+            mock_logging.info.assert_called_with('returned: 0')
+
+    def test_log_when_errored(self):
+        with unittest.mock.patch('heartbeat.logging') as mock_logging:
+            heartbeat.ping('invalid-ip')
+
+            mock_logging.info.assert_called_with('returned: 2')
 
 class Test__get_system_id_from_path(object):
 

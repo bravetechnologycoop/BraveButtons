@@ -55,6 +55,8 @@ def parse_flic_last_seen_from_darkstat_html(html, flic_mac_address):
         # match lines that contain an actual value for flic last seen
         # sometimes darkstat gives '(never)' in place of a value
         if (lines[i].count(flic_mac_address) > 0) and (lines[i+4].count('(never)') == 0):
+            logging.info('darkstat html contains flic last seen info: {ip} {hostname} {mac} {lastseen}'.format(ip=lines[i-2], hostname=lines[i-1], mac=lines[i], lastseen=lines[i+4]))
+
             last_seen_string = lines[i+4]
 
             last_seen_string = last_seen_string.replace(r'<td class="num">',  '')
@@ -81,19 +83,24 @@ def parse_flic_ip_from_darkstat_html(html, mac_address):
     lines = html.splitlines()
     for i in range(0, len(lines)):
         if (lines[i].count(mac_address) > 0):
-
             # this guards against some cases where multiple entries have the same MAC address
             # we want the entry where there is an IPv4 address that probably represents the flic hub
             flic_ip_strings = re.findall( r'[0-9]+(?:\.[0-9]+){3}', lines[i-2])
             if (len(flic_ip_strings) > 0):
                 if flic_ip_strings[0] != '0.0.0.0':
+                    logging.info('darkstat html contained flic IPv4 address: {ip} {hostname} {mac} {lastseen}'.format(ip=lines[i-2], hostname=lines[i-1], mac=lines[i], lastseen=lines[i+4]))
+
                     return flic_ip_strings[0]
+
     raise FlicNotFoundError('darkstat html did not contain an ip address for the mac address ' + mac_address)
 
 def ping(host):
     param = '-n' if platform.system().lower()=='windows' else '-c'
     command = ['ping', param, '1', host]
-    return subprocess.run(command, stdout=subprocess.DEVNULL).returncode == 0
+    logging.info('running: {}'.format(command))
+    returncode = subprocess.run(command, stdout=subprocess.DEVNULL).returncode
+    logging.info('returned: {}'.format(returncode))
+    return returncode == 0
 
 def send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id):
     body = {"flic_last_seen_secs" : str(flic_last_seen_secs),
@@ -163,7 +170,7 @@ if __name__ == '__main__':
                 # this means that the flic didn't show up in darkstat's list of hosts
                 # typically this happens on startup for a few seconds until the flic becomes active on the network
                 system_ok = True
-                logging.info('flic not found in darkstat html')
+                logging.info(str(e))
             except Exception as e:
                 system_ok = False
                 logging.warning('error in main loop', exc_info=e)
