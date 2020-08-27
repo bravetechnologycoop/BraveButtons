@@ -50,7 +50,7 @@ else
     echo "NOTE that this will have no effect if this script has already been run"
     read installationName responderNumber fallbackNumber
 
-    ./setup_postgresql_server.sh $installationName $responderNumber $fallbackNumber
+    ./setup_postgresql.sh $installationName $responderNumber $fallbackNumber
 
     certbot certonly --standalone 
 
