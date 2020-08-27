@@ -12,6 +12,7 @@ the code was deployed.
 ### Added
 - Changelog (CU-5wd4g9).
 - Environment variables to Travis config (CU-b4m32r).
+- More logging to the Raspberry Pi (CU-behg93).
 
 ## [1.4.3] - 2020-08-18
 ### Added
