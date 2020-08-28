@@ -38,6 +38,7 @@ matrix:
         - PG_PASSWORD=travispassword
         # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
         - RESPONDER_PHONE_TEST=+15005550006
+        - TWILIO_FALLBACK_FROM_NUMBER_TEST=+15005550006
         # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
         - STAFF_PHONE_TEST=+15005550006
         # TWILIO_SID_TEST (from https://www.twilio.com/console/voice/project/test-credentials)
