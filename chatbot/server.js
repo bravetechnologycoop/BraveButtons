@@ -165,7 +165,10 @@ async function sendStaffAlertForSession(sessionId) {
         let installation = await db.getInstallationWithInstallationId(session.installationId)
 
         await client.messages
-            .create({from: session.phoneNumber, body: 'There has been an unresponded request at unit ' + session.unit.toString(), to: installation.fallbackPhoneNumber})
+            .create({
+                from: getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'), 
+                body: 'There has been an unresponded request at ' + installation.name + ' unit ' + session.unit.toString(), to: installation.fallbackPhoneNumber
+            })
             .then(message => {
                 session.fallBackAlertTwilioStatus = message.status;
             })

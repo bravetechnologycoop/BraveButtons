@@ -14,6 +14,9 @@ the code was deployed.
 - Environment variables to Travis config (CU-b4m32r).
 - More logging to the Raspberry Pi (CU-behg93).
 
+### Changed
+- "From" phone number used to send messages to the fallback phone is specified in `.env` (CU-6ed85y).
+
 ## [1.4.3] - 2020-08-18
 ### Added
 - Installation instructions to the README.
