@@ -164,10 +164,10 @@ If you're migrating from a local database to a remote database that has already 
 
 You can either pipe the output of pg_dump directly to the new database
 
- `pgdump --data-only -O pg_brave | PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require`
+ `pg_dump --data-only -O pg_brave | PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require`
 
 or save it to an intervening file, and then input this file to the database
 
-`pgdump --data-only -O pg_brave > bravedata.sql`
+`pg_dump --data-only -O pg_brave > bravedata.sql`
 
 `PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require < bravedata.sql`
