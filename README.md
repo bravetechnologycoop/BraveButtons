@@ -112,9 +112,9 @@ Otherwise, the scripts will not run.
 
 # How to access a remote database
 
-To access the remote database you'll first need to add the IP you're trying to access it form to the "trusted sources" section of the digital ocean database console located at https://cloud.digitalocean.com/databases/button-db?i=c5171f
+To access the remote database you'll first need to add the IP you're trying to access it form to the "trusted sources" section of the digital ocean database console located at https://cloud.digitalocean.com/databases/button-db
 
-To connect, use the connection details available from the connection pools page on Digital Ocean - there should be a pool for testing and one for production, and connectino details will be available as individual parameters, a connection string, and as a psql command with the necessary flags filled in https://cloud.digitalocean.com/databases/button-db/pools?i=c5171f
+To connect, use the connection details available from the connection pools page on Digital Ocean - there should be a pool for testing and one for production, and connection details will be available as individual parameters, a connection string, and as a psql command with the necessary flags filled in https://cloud.digitalocean.com/databases/button-db/pools
 
 
 `PGPASSWORD=<password> psql -U <user> -h <hostname>.com -p <port> -d <database> --set=sslmode=require`
@@ -151,7 +151,7 @@ To access the remote database you'll first need to add the IP you're trying to a
 On the same page you'll see options for credentials for connecting to the database - both as connection strings and as a psql command with the necessary flags filled in. The syntax is as follows:
 # How to run a migration script
 
-Run the setup_postgresql.sh script, making sure to provide the necessary environment variables before the command. The command needs values for PG_PASSWORD, PG_HOST, PG_USER, and PG_PORT, which will be available in the [connection details section of the 'Connection Pools' page.](https://cloud.digitalocean.com/databases/button-db/pools?i=c5171f)
+Run the setup_postgresql.sh script, making sure to provide the necessary environment variables before the command. The command needs values for PG_PASSWORD, PG_HOST, PG_USER, and PG_PORT, which will be available in the [connection details section of the 'Connection Pools' page.](https://cloud.digitalocean.com/databases/button-db/pools)
 
 `PGPASSWORD=password PG_USER=database PG_HOST=hostname PG_PORT=port ./setup_postgresql.sh`
 
