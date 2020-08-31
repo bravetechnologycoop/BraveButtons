@@ -4,8 +4,9 @@ let https = require('https')
 let moment = require('moment-timezone')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
-var cookieParser = require('cookie-parser');
-var session = require('express-session');
+let BraveAlerter = require('brave-alert-lib')
+var cookieParser = require('cookie-parser')
+var session = require('express-session')
 const chalk = require('chalk')
 const Mustache = require('mustache')
 
@@ -29,6 +30,9 @@ const dashboardTemplate = fs.readFileSync(`${__dirname}/dashboard.mst`, 'utf-8')
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname));
+
+let braveAlerter = new BraveAlerter()
+braveAlerter.output()
 
 function log(logString) {
     if(process.env.NODE_ENV === 'test') {
