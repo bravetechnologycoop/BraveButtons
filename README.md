@@ -153,7 +153,7 @@ On the same page you'll see options for credentials for connecting to the databa
 
 Run the setup_postgresql.sh script, making sure to provide the necessary environment variables before the command. The command needs values for PG_PASSWORD, PG_HOST, PG_USER, and PG_PORT, which will be available in the [connection details section of the 'Connection Pools' page.](https://cloud.digitalocean.com/databases/button-db/pools)
 
-`PGPASSWORD=password PG_USER=database PG_HOST=hostname PG_PORT=port ./setup_postgresql.sh`
+`PG_PASSWORD=password PG_USER=database PG_HOST=hostname PG_PORT=port ./setup_postgresql.sh`
 
 # How to migrate data from one PostgreSQL database to another
 
