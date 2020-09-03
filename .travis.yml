@@ -35,12 +35,11 @@ matrix:
      
       # define environment variables 
       env:
-        global:
         - WEB_USERNAME_TEST=TravisDashboardUsername
         - PASSWORD_TEST=TravisDashboardPassword
         - SECRET_TEST=TravisCookieSecret
         - DOMAIN_TEST=chatbot-dev.brave.coop
-        - PG_USER=travis
+        - PG_USER=brave
         - PG_PASSWORD=travispassword
         - PG_PORT=5433
         - PG_HOST=localhost
