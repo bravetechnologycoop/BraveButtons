@@ -13,12 +13,11 @@ the code was deployed.
 - Changelog (CU-5wd4g9).
 - Environment variables to Travis config (CU-b4m32r).
 - More logging to the Raspberry Pi (CU-behg93).
-
-### Changed
 - "From" phone number used to send messages to the fallback phone is specified in `.env` (CU-6ed85y).
-- Changelog.
 - Instructions for interacting with remote managed database to README.
 - Instructions for performing database migrations to README.
+
+### Changed
 - Local version of database setup script for use in TravisCI and local dev
 - db.js file now creates pool with remote database parameters
 
