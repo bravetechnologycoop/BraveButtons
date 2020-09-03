@@ -121,7 +121,6 @@ To connect, use the connection details available from the connection pools page 
 
 You can also append the standard psql flags (like -c for commands or -f for file input)
 
-
 # How to view which migration scripts have been run and when
 
 ```
@@ -145,11 +144,6 @@ Reference: https://docs.travis-ci.com/user/environment-variables/#encrypting-env
 
 1. Copy the encrypted variable into `.travis.yml`
 
-# How to access a remote database
-
-To access the remote database you'll first need to add the IP you're trying to access it form to the "trusted sources" section of the digital ocean database console located at https://cloud.digitalocean.com/databases/button-db?i=c5171f
-
-On the same page you'll see options for credentials for connecting to the database - both as connection strings and as a psql command with the necessary flags filled in. The syntax is as follows:
 # How to run a migration script
 
 Run the setup_postgresql.sh script, making sure to provide the necessary environment variables before the command. The command needs values for PG_PASSWORD, PG_HOST, PG_USER, and PG_PORT, which will be available in the [connection details section of the 'Connection Pools' page.](https://cloud.digitalocean.com/databases/button-db/pools)
