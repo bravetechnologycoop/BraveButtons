@@ -146,7 +146,7 @@ Reference: https://docs.travis-ci.com/user/environment-variables/#encrypting-env
 
 # How to run a migration script
 
-Run the setup_postgresql.sh script, making sure to provide the necessary environment variables before the command. The command needs values for PG_PASSWORD, PG_HOST, PG_USER, and PG_PORT, which will be available in the [connection details section of the 'Connection Pools' page.](https://cloud.digitalocean.com/databases/button-db/pools)
+Run the setup_postgresql.sh script, making sure to provide the necessary environment variables before the command. The command needs values for PG_PASSWORD, PG_HOST, PG_USER, and PG_PORT, which will be available in the [connection details section of the managed database page on Digital Ocean.]https://cloud.digitalocean.com/databases/button-db)
 
 `PG_PASSWORD=password PG_USER=database PG_HOST=hostname PG_PORT=port ./setup_postgresql.sh`
 
@@ -154,7 +154,7 @@ Run the setup_postgresql.sh script, making sure to provide the necessary environ
 
 The standard way to migrate data is to use the pg_dump command to create a backup of the old database (which is just a sequence of PostgreSQL commands) and to feed this file to the new database.
 
-If you're migrating from a local database to a remote database that has already had users created and migration scripts run on it, you'll want to create this backup without owners (using the -O flag) and specify to only dump the data, not the schema (with the --data-only flag)
+If you're migrating from a local database to a remote database that has already had users created and migration scripts run on it, you'll want to create this backup without owners (using the -O flag) and specify to only dump the data, not the schema (with the --data-only flag).
 
 You can either pipe the output of pg_dump directly to the new database
 
@@ -165,3 +165,5 @@ or save it to an intervening file, and then input this file to the database
 `pg_dump --data-only -O pg_brave > bravedata.sql`
 
 `PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require < bravedata.sql`
+
+When performing a migration, make sure to connect directly to the target database rather than through a connection pool.
