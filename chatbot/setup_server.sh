@@ -19,6 +19,10 @@ else
             export PG_USER="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
             export PG_PASSWORD="$value"
+        elif [[ "$name" == "PG_HOST" ]]; then
+            export PG_HOST="$value"
+        elif [[ "$name" == "PG_PORT" ]]; then
+            export PG_PORT="$value"
         fi
     done < $1
 

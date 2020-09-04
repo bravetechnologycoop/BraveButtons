@@ -27,6 +27,10 @@ else
             PG_USER="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
             PG_PASSWORD="$value"
+        elif [[ "$name" == "PG_HOST" ]]; then
+            PG_HOST="$value"
+        elif [[ "$name" == "PG_PORT" ]]; then
+            PG_PORT="$value"
         fi
     done < $1
 
@@ -34,9 +38,9 @@ else
     echo "  Name: $2"
     echo "  Responder Phone: $3"
     echo "  Fallback Phone: $4"
-    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -c "INSERT INTO installations VALUES (DEFAULT, '$2', '$3', '$4');"
+    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO installations VALUES (DEFAULT, '$2', '$3', '$4');"
 
-    installation_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -qtAX -c "SELECT id FROM installations WHERE created_at = (SELECT MAX(created_at) FROM installations);")
+    installation_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM installations WHERE created_at = (SELECT MAX(created_at) FROM installations);")
 
     while IFS=",", read -r button_id unit phone_number; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
@@ -45,7 +49,7 @@ else
             echo "  Unit: $unit"
             echo "  Phone Number: $phone_number"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -c "INSERT INTO registry (button_id, unit, phone_number, installation_id) VALUES ('$button_id', '$unit', '$phone_number', '$installation_id');"
+            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO registry (button_id, unit, phone_number, installation_id) VALUES ('$button_id', '$unit', '$phone_number', '$installation_id');"
         fi
     done < $5
 
