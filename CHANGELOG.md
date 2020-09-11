@@ -11,6 +11,7 @@ the code was deployed.
 ## [Unreleased]
 ### Security
 - Upgrade handlebars (CU-c6rgqh).
+- Upgrade yargs-parser (CU-c6rgqh).
 
 ## [1.5.0] - 2020-09-04
 ### Added
