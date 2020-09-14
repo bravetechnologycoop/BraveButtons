@@ -39,10 +39,10 @@ matrix:
         - PASSWORD_TEST=TravisDashboardPassword
         - SECRET_TEST=TravisCookieSecret
         - DOMAIN_TEST=chatbot-dev.brave.coop
-        - PG_USER=brave
-        - PG_PASSWORD=travispassword
-        - PG_PORT=5433
-        - PG_HOST=localhost
+        - PG_USER_TEST=brave
+        - PG_PASSWORD_TEST=travispassword
+        - PG_PORT_TEST=5433
+        - PG_HOST_TEST=localhost
         # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
         - RESPONDER_PHONE_TEST=+15005550006
         - TWILIO_FALLBACK_FROM_NUMBER_TEST=+15005550006
