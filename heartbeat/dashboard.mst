@@ -11,22 +11,11 @@
     width: 800px;
 }
 
-.header {
-
-}
-
-.normal {
-    background-color: lightgreen;
-}
-
-.error {
-    background-color: red;
-}
-
 table {
     table-layout: fixed;
     max-width: 800px;
     width: 100%;
+    padding-top: 30px;
 }
 
 th, td {
@@ -36,17 +25,21 @@ th, td {
     width: 100%;
 }
 
+dt {
+    font-weight: bold;
+    padding-top: 15px;
+}
 </style>
 </head>
 
 <body>
     <div class="wrapper">
-        <div class="header">
-            Brave Heartbeat Monitor for {{ domain }}
-            <br><br>
-            This page was last refreshed at {{ dashboard_render_time }}
-        </div>
-        <br><br>
+        <header>
+            <p>Brave Heartbeat Monitor for {{ domain }}</p>
+            
+            <p>This page was last refreshed at {{ dashboard_render_time }}</p>
+        </header>
+
         <table>
             <tr>
                 <th>System Name</th>
@@ -65,7 +58,34 @@ th, td {
             </tr>
             {{/systems}}
         </table>
+
+        <dl>
+            <dt>Last Seen (Flic)</dt>
+            <dd>
+                Time since the Flic Hub's MAC address did anything on the network (according to darkstat).
+                This represents real activity from the Flic Hub.
+            </dd>
+            <dt>Last Seen (Ping)</dt>
+            <dd>
+                Time since the Raspberry Pi was able to ping the Flic Hub (using the IP address that darkstat 
+                says is associated with the Flic Hub's MAC address). This indicates that the Flic Hub is powered 
+                on and connected to the network.
+            </dd>
+            <dt>Last Seen (Heartbeat)</dt>
+            <dd>
+                Time since the Last Seen (Flic) and Last Seen (Ping) values were updated (by the Raspberry Pi 
+                calling the /heartbeat endpoint on the Heartbeat Server with the newest values). This indicates 
+                that the Raspberry Pi is powered on and connected to the Internet.
+            </dd>
+            <dt>Muted?</dt>
+            <dd>
+                'N' means that text messages are sent to Brave teammembers when Last Seen values cross set
+                thresholds, so that we can quickly be informed about outages. 'Y' means that these text messages
+                are not sent to any Brave teammembers.
+            </dd>
+        </dl>
     </div>
+
     <script>
     function reloadPage() {
         location.reload(true)
