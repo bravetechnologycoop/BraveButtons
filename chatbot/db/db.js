@@ -1,26 +1,22 @@
 const STATES = require('../SessionStateEnum.js')
+const helpers = require('../helpers.js')
 const SessionState = require('../SessionState.js')
 const Installation = require('../Installation.js')
 const { Pool } = require('pg')
 require('dotenv').config();
 
 const pool = new Pool({
-    host: getEnvVar('PG_HOST'),
-    port: getEnvVar('PG_PORT'),
-    user: getEnvVar('PG_USER'),
-    database: getEnvVar('PG_USER'),
-    password: getEnvVar('PG_PASSWORD'),
+    host: helpers.getEnvVar('PG_HOST'),
+    port: helpers.getEnvVar('PG_PORT'),
+    user: helpers.getEnvVar('PG_USER'),
+    database: helpers.getEnvVar('PG_USER'),
+    password: helpers.getEnvVar('PG_PASSWORD'),
     ssl: true
 })
 
 pool.on('error', (err) => {
     console.error('unexpected database error:', err)
 })
-
-function getEnvVar(name) {
-    return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
-}
-
 
 function createSessionFromRow(r) {
     return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status)
