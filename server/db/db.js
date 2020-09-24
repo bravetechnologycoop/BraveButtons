@@ -2,6 +2,7 @@ const STATES = require('../SessionStateEnum.js')
 const helpers = require('../helpers.js')
 const SessionState = require('../SessionState.js')
 const Installation = require('../Installation.js')
+const Heartbeat = require('../Heartbeat.js')
 const { Pool } = require('pg')
 require('dotenv').config();
 
@@ -24,6 +25,10 @@ function createSessionFromRow(r) {
 
 function createInstallationFromRow(r) {
     return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.incident_categories, r.created_at)
+}
+
+function createHeartbeatFromRow(r) {
+    return new Heartbeat(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_alerts, r.muted, r.twilio_alert_number, r.heartbeat_alert_recipients)
 }
 
 module.exports.beginTransaction = async function() {
@@ -323,6 +328,64 @@ module.exports.getInstallationWithInstallationId = async function(installationId
         return createInstallationFromRow(rows[0])
     }
     return null
+}
+
+module.exports.getHeartbeats = async function(client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    const { rows } = await client.query("SELECT * FROM heartbeat")
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {        
+        return rows.map(createHeartbeatFromRow)
+    }
+    return []
+}
+
+module.exports.getHeartbeatWithSystemId = async function(systemId, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM heartbeat WHERE system_id = $1", [systemId])
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {
+        return createHeartbeatFromRow(rows[0])
+    }
+    return null
+}
+
+module.exports.saveHeartbeat = async function(heartbeat, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM heartbeat WHERE system_id = $1 LIMIT 1", [heartbeat.systemId])
+    if(rows.length === 0) {
+        if(!transactionMode) {
+            client.release()
+        }
+        throw new Error("Tried to save a heartbeat that doesn't exist yet.")
+    }
+    const query = "UPDATE heartbeat SET system_id = $1, flic_last_seen_time = $2, flic_last_ping_time = $3, heartbeat_last_seen_time = $4, system_name = $5, hidden = $6, sent_alerts = $7, muted = $8, twilio_alert_number = $9, heartbeat_alert_recipients = $10 WHERE system_id = $11"
+    const values = [heartbeat.systemId, heartbeat.flicLastSeenTime, heartbeat.flicLastPingTime, heartbeat.heartbeatLastSeenTime, heartbeat.systemName, heartbeat.hidden, heartbeat.sentAlerts, heartbeat.muted, heartbeat.twilioAlertNumber, heartbeat.heartbeatAlertRecipients, heartbeat.systemId]
+    await client.query(query, values) 
+    
+    if(!transactionMode) {
+        client.release()
+    }
 }
 
 module.exports.close = async function() {

@@ -16,6 +16,7 @@ the code was deployed.
 - Ansible playbooks for RPi setup and deployment of updates (CU-5jcgu2 and CU-5jcgvh)
 
 ### Changed
+- merged heartbeat and chatbot functionality into a single application (CU-bgke33)
 - db.js now loads different environment variables depending on NODE_ENV test flag (CU-byp1m3).
 - Increased wait time in fallback message test to address race condition and reduce test flakiness (CU-3j6jj7).
 - setup_pi.sh only echoes SSH public key and blocks if the SSH key does not exist

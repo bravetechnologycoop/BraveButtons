@@ -1,11 +1,11 @@
 # BraveButtons [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=master)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
 
 
-# How to set up a local chatbot dev environment
+# How to set up a local server dev environment
 
 1. clone this repository
 
-1. cd into the `chatbot` directory
+1. cd into the `server` directory
 
 1. run `sudo apt install postgresql` to install postgres
 
@@ -23,7 +23,7 @@
 
 # How to run the linter
 
-1. cd into the `chatbot` directory
+1. cd into the `server` directory
 
 1. run `npm install`
 

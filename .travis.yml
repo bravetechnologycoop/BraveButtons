@@ -16,12 +16,12 @@ matrix:
         - cp pi/template.pi_config.ini pi/pi_config.ini
         - pytest --cov=heartbeat
 
-    # BraveChatbot
+    # BraveServer
     - language: node_js         # node version specified in .nvmrc
 
       # install dependencies
       install:
-        - cd chatbot
+        - cd server
         - npm install
 
       # install database

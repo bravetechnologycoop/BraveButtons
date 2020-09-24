@@ -9,6 +9,9 @@ var session = require('express-session');
 const chalk = require('chalk')
 const Mustache = require('mustache')
 
+const FLIC_THRESHOLD_MILLIS = 180*1000
+const HEARTBEAT_THRESHOLD_MILLIS = 60*1000
+
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 const db = require('./db/db.js')
@@ -26,7 +29,8 @@ const authToken = helpers.getEnvVar('TWILIO_TOKEN');
 
 const client = require('twilio')(accountSid, authToken);
 
-const dashboardTemplate = fs.readFileSync(`${__dirname}/dashboard.mst`, 'utf-8')
+const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/heartbeatDashboard.mst`, 'utf-8')
+const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/chatbotDashboard.mst`, 'utf-8')
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname));
@@ -270,7 +274,7 @@ app.get('/dashboard/:installationId?', async (req, res) => {
             viewParams.recentSessions[i].class = i % 2 === 0 ? "even-row" : "odd-row"
         }
 
-        res.send(Mustache.render(dashboardTemplate, viewParams))
+        res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
     }
     catch(err) {
         log(err)
@@ -342,6 +346,151 @@ app.post('/message', jsonBodyParser, async (req, res) => {
     }
 });
 
+app.post('/heartbeat', jsonBodyParser, async (req, res) => {
+    log(`got a heartbeat from ${req.body.system_id}, flic_last_seen_secs is ${req.body.flic_last_seen_secs}, flic_last_ping_secs is ${req.body.flic_last_ping_secs}`)
+    let heartbeat = await db.getHeartbeatWithSystemId(req.body.system_id)
+    heartbeat.flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
+    heartbeat.flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
+    heartbeat.heartbeatLastSeenTime = moment().toISOString()
+    await db.saveHeartbeat(heartbeat)
+    res.status(200).send()
+})
+
+
+app.post('/rename_system', jsonBodyParser, async (req, res) => {
+    log('got a request to rename system ' + req.body.system_id)
+    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
+    heartbeat.systemName = req.body.system_name
+    await db.saveHeartbeat(heartbeat)
+    res.status(200).send()
+})
+
+app.post('/hide_system', jsonBodyParser, async (req, res) => {
+    log('got a request to hide system ' + req.body.system_id) 
+    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
+    heartbeat.hidden = true
+    await db.saveHeartbeat(heartbeat)
+    res.status(200).send()
+})
+
+app.post('/unhide_system', jsonBodyParser, async (req, res) => {
+    log('got a request to hide system ' + req.body.system_id) 
+    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
+    heartbeat.hidden = false
+    await db.saveHeartbeat(heartbeat)
+    res.status(200).send()
+})
+
+
+app.post('/mute_system', jsonBodyParser, async (req, res) => {
+    log('got a request to mute system ' + req.body.system_id) 
+    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
+    heartbeat.muted = true
+    await db.saveHeartbeat(heartbeat)
+    res.status(200).send()
+})
+
+app.post('/unmute_system', jsonBodyParser, async (req, res) => {
+    log('got a request to unmute system ' + req.body.system_id) 
+    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
+    heartbeat.muted = false
+    await db.saveHeartbeat(heartbeat)
+    res.status(200).send()
+})
+
+app.get('/heartbeatDashboard', async (req, res) => {
+    let heartbeats = await db.getHeartbeats()
+    let viewParams = {
+        domain: helpers.getEnvVar('DOMAIN'),
+        dashboard_render_time: moment().toString(),
+        systems: []   
+    }
+
+    for(const heartbeat of heartbeats){
+
+        if(heartbeat.hidden) {
+            return
+        }
+
+        let flicLastSeenTime = moment(heartbeat.flicLastSeenTime)
+        let flicLastSeenSecs = moment().diff(flicLastSeenTime) / 1000.0
+        flicLastSeenSecs = Math.round(flicLastSeenSecs)
+
+        let heartbeatLastSeenTime = moment(heartbeat.heartbeatLastSeenTime)
+        let heartbeatLastSeenSecs = moment().diff(heartbeatLastSeenTime) / 1000.0
+        heartbeatLastSeenSecs = Math.round(heartbeatLastSeenSecs)
+
+        let flicLastPingTime = moment(heartbeat.flicLastPingTime)
+        let flicLastPingSecs = moment().diff(flicLastPingTime) / 1000.0
+        flicLastPingSecs = Math.round(flicLastPingSecs)
+
+        viewParams.systems.push({
+            system_name: heartbeat.systemName,
+            flic_last_seen: flicLastSeenSecs.toString() + ' seconds ago',
+            flic_last_ping: flicLastPingSecs.toString() + ' seconds ago',
+            heartbeat_last_seen: heartbeatLastSeenSecs.toString() + ' seconds ago',
+            muted: heartbeat.muted ? 'Y' : 'N'
+        })
+    }
+        
+    let htmlString = Mustache.render(heartbeatDashboardTemplate, viewParams)
+    res.send(htmlString)
+})  
+
+
+async function checkHeartbeat() {
+    let heartbeats = await db.getHeartbeats()
+    for (const heartbeat of heartbeats) {
+        let currentTime = moment()
+        let flicLastSeenTime = moment(heartbeat.flicLastSeenTime)
+        let flicDelayMillis = currentTime.diff(flicLastSeenTime)
+        let heartbeatLastSeenTime = moment(heartbeat.heartbeatLastSeenTime)
+        let heartbeatDelayMillis = currentTime.diff(heartbeatLastSeenTime)
+        
+        if(flicDelayMillis > FLIC_THRESHOLD_MILLIS && !heartbeat.sentAlerts) {
+            log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${heartbeat.systemName}`)
+            await updateSentAlerts(heartbeat, 'true')
+            if(heartbeat.muted) {
+                return
+            }
+            sendAlerts(heartbeat.systemName, heartbeat.twilioAlertNumber, heartbeat.heartbeatAlertRecipients)
+        }
+        else if(heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !heartbeat.sentAlerts) {
+            log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${heartbeat.systemName}`)
+            await updateSentAlerts(heartbeat, 'true')
+            if(heartbeat.muted) {
+                return
+            }
+            sendAlerts(heartbeat.systemName, heartbeat.twilioAlertNumber, heartbeat.heartbeatAlertRecipients)
+        }
+        else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && heartbeat.sentAlerts) { 
+            log(`${heartbeat.systemName} has reconnected.`)
+            await updateSentAlerts(heartbeat, 'false')
+            if (heartbeat.muted) {
+                return
+            }
+            sendReconnectionMessage(heartbeat.systemName, heartbeat.twilioAlertNumber, heartbeat.heartbeatAlertRecipients)
+        }
+    }
+}
+
+function sendAlerts(systemName, twilioAlertNumber, heartbeatAlertRecipients) {
+    for(let i=0; i<heartbeatAlertRecipients.length; i++) {
+        sendTwilioMessage(heartbeatAlertRecipients[i], twilioAlertNumber, `The Flic connection for ${systemName} has been lost.`)
+    }
+}
+
+function sendReconnectionMessage(systemName, twilioAlertNumber, heartbeatAlertRecipients) {
+    for(let i=0; i<heartbeatAlertRecipients.length; i++) {
+        sendTwilioMessage(heartbeatAlertRecipients[i], twilioAlertNumber, `${systemName} has reconnected.`)
+    }
+}
+
+async function updateSentAlerts(heartbeat, sentAlerts) {
+    heartbeat.sentAlerts = sentAlerts;
+    await db.saveHeartbeat(heartbeat);
+}
+
 let server;
 
 if (process.env.NODE_ENV === 'test') { // local http server for testing
@@ -353,6 +502,7 @@ else {
         cert: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/fullchain.pem`)
     }
     server = https.createServer(httpsOptions, app).listen(443)
+    setInterval(async function () {checkHeartbeat()}, 1000)
     log('brave server listening on port 443')
 }
 

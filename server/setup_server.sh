@@ -57,7 +57,7 @@ else
     # restart server weekly to ensure it uses the latest certificates (certbot renews them automatically)
     echo "
     PATH=/bin:/usr/bin:/usr/local/bin
-    @weekly env HOME=$HOME pm2 restart server
+    @weekly env HOME=$HOME pm2 restart BraveServer
     " | crontab -
 
     pm2 install pm2-logrotate
@@ -67,8 +67,8 @@ else
     pm2 startup systemd
 
     # ensure that a new process is started or that a running process is restarted
-    pm2 stop server.js
-    pm2 start server.js
-
+    pm2 stop ecosystem.config.js --env production
+    pm2 start ecosystem.config.js --env production
+    
     cd $original_dir
 fi
