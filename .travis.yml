@@ -39,6 +39,10 @@ matrix:
         - PASSWORD_TEST=TravisDashboardPassword
         - SECRET_TEST=TravisCookieSecret
         - DOMAIN_TEST=chatbot-dev.brave.coop
+        - PG_USER_TEST=brave
+        - PG_PASSWORD_TEST=travispassword
+        - PG_PORT_TEST=5433
+        - PG_HOST_TEST=localhost
         - PG_USER=brave
         - PG_PASSWORD=travispassword
         - PG_PORT=5433

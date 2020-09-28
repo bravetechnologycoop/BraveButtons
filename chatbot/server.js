@@ -12,6 +12,7 @@ const Mustache = require('mustache')
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
 const db = require('./db/db.js')
+const helpers = require('./helpers.js')
 const StateMachine = require('./StateMachine.js')
 
 const app = express();
@@ -20,8 +21,8 @@ const unrespondedSessionReminderTimeoutMillis = process.env.NODE_ENV === 'test' 
 const unrespondedSessionAlertTimeoutMillis = process.env.NODE_ENV === 'test' ? 2000 : 420000;
 
 //Set up Twilio
-const accountSid = getEnvVar('TWILIO_SID');
-const authToken = getEnvVar('TWILIO_TOKEN');
+const accountSid = helpers.getEnvVar('TWILIO_SID');
+const authToken = helpers.getEnvVar('TWILIO_TOKEN');
 
 const client = require('twilio')(accountSid, authToken);
 
@@ -37,10 +38,6 @@ function log(logString) {
     else {
         console.log(moment().toISOString() + " - " + logString)
     }
-}
-
-function getEnvVar(name) {
-    return process.env.NODE_ENV === 'test' ? process.env[name + '_TEST'] : process.env[name];
 }
 
 /**
@@ -166,7 +163,7 @@ async function sendStaffAlertForSession(sessionId) {
 
         await client.messages
             .create({
-                from: getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'), 
+                from: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'), 
                 body: 'There has been an unresponded request at ' + installation.name + ' unit ' + session.unit.toString(), to: installation.fallbackPhoneNumber
             })
             .then(message => {
@@ -182,7 +179,7 @@ app.use(cookieParser());
 // initialize express-session to allow us track the logged-in user across sessions.
 app.use(session({
     key: 'user_sid',
-    secret: getEnvVar('SECRET'),
+    secret: helpers.getEnvVar('SECRET'),
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -223,7 +220,7 @@ app.route('/login')
         var username = req.body.username,
             password = req.body.password;
 
-        if ((username === getEnvVar('WEB_USERNAME')) && (password === getEnvVar('PASSWORD'))) {
+        if ((username === helpers.getEnvVar('WEB_USERNAME')) && (password === helpers.getEnvVar('PASSWORD'))) {
             req.session.user = username;
             res.redirect('/dashboard');
         } 
@@ -352,8 +349,8 @@ if (process.env.NODE_ENV === 'test') { // local http server for testing
 }
 else {
     let httpsOptions = {
-        key: fs.readFileSync(`/etc/letsencrypt/live/${getEnvVar('DOMAIN')}/privkey.pem`),
-        cert: fs.readFileSync(`/etc/letsencrypt/live/${getEnvVar('DOMAIN')}/fullchain.pem`)
+        key: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/privkey.pem`),
+        cert: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/fullchain.pem`)
     }
     server = https.createServer(httpsOptions, app).listen(443)
     log('brave server listening on port 443')

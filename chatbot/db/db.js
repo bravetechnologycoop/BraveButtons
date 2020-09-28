@@ -1,15 +1,16 @@
 const STATES = require('../SessionStateEnum.js')
+const helpers = require('../helpers.js')
 const SessionState = require('../SessionState.js')
 const Installation = require('../Installation.js')
 const { Pool } = require('pg')
 require('dotenv').config();
 
 const pool = new Pool({
-    host: process.env.PG_HOST,
-    port: process.env.PG_PORT,
-    user: process.env.PG_USER,
-    database: process.env.PG_USER,
-    password: process.env.PG_PASSWORD,
+    host: helpers.getEnvVar('PG_HOST'),
+    port: helpers.getEnvVar('PG_PORT'),
+    user: helpers.getEnvVar('PG_USER'),
+    database: helpers.getEnvVar('PG_USER'),
+    password: helpers.getEnvVar('PG_PASSWORD'),
     ssl: true
 })
 

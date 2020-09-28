@@ -258,7 +258,7 @@ describe('Chatbot server', () => {
         it('should send a message to the fallback phone number if enough time has passed without a response', async () => {
             let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
             expect(response).to.have.status(200);
-            await sleep(3501)
+            await sleep(4000)
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
             expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(STATES.WAITING_FOR_REPLY);

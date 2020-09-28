@@ -13,6 +13,10 @@ the code was deployed.
 - Upgrade handlebars (CU-c6rgqh).
 - Upgrade yargs-parser (CU-c6rgqh).
 
+### Changed
+- db.js now loads different environment variables depending on NODE_ENV test flag (CU-byp1m3).
+- Increased wait time in fallback message test to address race condition and reduce test flakiness (CU-3j6jj7).
+
 ## [1.5.0] - 2020-09-04
 ### Added
 - Changelog (CU-5wd4g9).
