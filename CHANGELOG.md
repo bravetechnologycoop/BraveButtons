@@ -9,13 +9,16 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
-### Security
-- Upgrade handlebars (CU-c6rgqh).
-- Upgrade yargs-parser (CU-c6rgqh).
+### Added
+- Column definitions to the Heartbeat Dashboard (CU-bgjqh5).
 
 ### Changed
 - db.js now loads different environment variables depending on NODE_ENV test flag (CU-byp1m3).
 - Increased wait time in fallback message test to address race condition and reduce test flakiness (CU-3j6jj7).
+
+### Security
+- Upgrade handlebars (CU-c6rgqh).
+- Upgrade yargs-parser (CU-c6rgqh).
 
 ## [1.5.0] - 2020-09-04
 ### Added
