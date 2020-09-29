@@ -96,6 +96,5 @@ else
   systemctl enable darkstat
   systemctl enable dhcp-helper
 
-  echo "setup almost complete. rebooting..."
-  reboot now
+  echo "setup complete - please reboot the RPi."
 fi
