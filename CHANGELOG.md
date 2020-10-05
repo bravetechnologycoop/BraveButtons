@@ -11,10 +11,13 @@ the code was deployed.
 ## [Unreleased]
 ### Added
 - Column definitions to the Heartbeat Dashboard (CU-bgjqh5).
+- Ansible playbooks for RPi setup and deployment of updates (CU-5jcgu2 and CU-5jcgvh)
 
 ### Changed
 - db.js now loads different environment variables depending on NODE_ENV test flag (CU-byp1m3).
 - Increased wait time in fallback message test to address race condition and reduce test flakiness (CU-3j6jj7).
+- setup_pi.sh only echoes SSH public key and blocks if the SSH key does not exist
+- setup_pi.sh no longer reboots the RPi
 
 ### Security
 - Upgrade handlebars (CU-c6rgqh).
