@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+
+## [1.6.0] - 2020-10-05
 ### Added
 - Column definitions to the Heartbeat Dashboard (CU-bgjqh5).
 - Ansible playbooks for RPi setup and deployment of updates (CU-5jcgu2 and CU-5jcgvh)
@@ -147,7 +149,8 @@ the code was deployed.
 ### Added
 - Initial pi.
 
-[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.4.3...v1.5.0
 [1.4.3]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.4.1...v1.4.2
