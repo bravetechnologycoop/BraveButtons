@@ -113,7 +113,13 @@ ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
 
 1. ensure that the BraveButtons and BraveButtonsConfig repos are up to date
 
-1. run 
+1. run the following command:
+
+```
+ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
+                 ./BraveButtons/ops/update_pi_fleet.yaml \
+                 --ask-vault-pass
+```
 
 # How to run tests for the raspberry pi code:
 
