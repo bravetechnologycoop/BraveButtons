@@ -1,0 +1,26 @@
+---
+# playbook to update entire RPi fleet to latest production code and config
+# this playbook should be executed from the remote access server
+
+- hosts: pi
+  tasks:
+    - name: pull latest production BraveButtons code from git
+      git:
+        repo: https://github.com/bravetechnologycoop/BraveButtons.git
+        dest: /home/pi/BraveButtons
+        version: production
+
+    - name: copy latest pi_config.ini
+      copy:
+        src: "{{ inventory_dir }}/../{{ pi_config_path }}"
+        dest: /home/pi/BraveButtons/pi/pi_config.ini
+
+    - name: run setup_pi.sh
+      become: yes
+      shell: ./BraveButtons/pi/setup_pi.sh ./BraveButtons/pi/pi_config.ini >> /var/log/brave/ansible-update.log 2>&1
+      args:
+        executable: /bin/bash
+        chdir: /home/pi
+
+    - name: reboot pi
+      reboot:

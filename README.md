@@ -72,7 +72,7 @@ appropriates for your local environment
 
 # How to set up a Brave Hub
 
-1. follow the generic RPi setup instruction above
+1. follow the generic RPi setup instructions above
 
 1. cd into the `BraveButtons/pi` directory
 
@@ -80,6 +80,40 @@ appropriates for your local environment
 appropriates for your local environment
 
 1. run `sudo ./setup_pi.sh pi_config.ini`
+
+# How to set up a Brave Hub using Ansible
+
+1. follow the generic RPi setup instructions above
+
+1. install ansible (see https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
+1. on your local machine, ensure that this repo (BraveButtons) and the config repo (BraveButtonsConfig) are present
+
+1. ensure that the new Brave Hub has been added to the appropriate inventory file
+
+1. ensure that the new Brave Hub's password has been added to the appropriate `group_vars` file
+
+1. run `ssh-agent bash` to start a new `ssh-agent` shell
+
+1. run `ssh-add ~/.ssh/id_rsa` to add your ssh key to `ssh-agent` (for access to the remote access server)
+
+1. run the following mega-command:
+
+```
+ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
+                 -i '<local IP address of the RPi>,' \
+                 -e 'target_alias=<alias of new RPi in inventory>' \
+                 ./BraveButtons/ops/setup_pi.yaml \
+                 --ask-vault-pass
+```
+
+# How to deploy updates to the RPi fleet using Ansible
+
+1. ssh into the appropriate remote access server
+
+1. ensure that the BraveButtons and BraveButtonsConfig repos are up to date
+
+1. run 
 
 # How to run tests for the raspberry pi code:
 
