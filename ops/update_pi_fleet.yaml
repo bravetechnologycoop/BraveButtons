@@ -23,4 +23,5 @@
         chdir: /home/pi
 
     - name: reboot pi
+      become: yes
       reboot:
