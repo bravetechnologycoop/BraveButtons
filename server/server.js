@@ -348,88 +348,88 @@ app.post('/message', jsonBodyParser, async (req, res) => {
 
 app.post('/heartbeat', jsonBodyParser, async (req, res) => {
     log(`got a heartbeat from ${req.body.system_id}, flic_last_seen_secs is ${req.body.flic_last_seen_secs}, flic_last_ping_secs is ${req.body.flic_last_ping_secs}`)
-    let heartbeat = await db.getHeartbeatWithSystemId(req.body.system_id)
-    heartbeat.flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
-    heartbeat.flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
-    heartbeat.heartbeatLastSeenTime = moment().toISOString()
-    await db.saveHeartbeat(heartbeat)
+    let hub = await db.getHubWithSystemId(req.body.system_id)
+    hub.flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
+    hub.flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
+    hub.heartbeatLastSeenTime = moment().toISOString()
+    await db.saveHeartbeat(hub)
     res.status(200).send()
 })
 
 
-app.post('/rename_system', jsonBodyParser, async (req, res) => {
+app.post('/heartbeat/rename_system', jsonBodyParser, async (req, res) => {
     log('got a request to rename system ' + req.body.system_id)
-    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
-    heartbeat.systemName = req.body.system_name
-    await db.saveHeartbeat(heartbeat)
+    let hub = await db.getHubWithSystemId(req.body.system_id)
+    hub.systemName = req.body.system_name
+    await db.saveHubRename(hub)
     res.status(200).send()
 })
 
-app.post('/hide_system', jsonBodyParser, async (req, res) => {
+app.post('/heartbeat/hide_system', jsonBodyParser, async (req, res) => {
     log('got a request to hide system ' + req.body.system_id) 
-    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
-    heartbeat.hidden = true
-    await db.saveHeartbeat(heartbeat)
+    let hub = await db.getHubWithSystemId(req.body.system_id)
+    hub.hidden = true
+    await db.saveHubHideStatus(hub)
     res.status(200).send()
 })
 
-app.post('/unhide_system', jsonBodyParser, async (req, res) => {
-    log('got a request to hide system ' + req.body.system_id) 
-    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
-    heartbeat.hidden = false
-    await db.saveHeartbeat(heartbeat)
+app.post('/heartbeat/unhide_system', jsonBodyParser, async (req, res) => {
+    log('got a request to show system ' + req.body.system_id) 
+    let hub = await db.getHubWithSystemId(req.body.system_id)
+    hub.hidden = false
+    await db.saveHubHideStatus(hub)
     res.status(200).send()
 })
 
 
-app.post('/mute_system', jsonBodyParser, async (req, res) => {
+app.post('/heartbeat/mute_system', jsonBodyParser, async (req, res) => {
     log('got a request to mute system ' + req.body.system_id) 
-    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
-    heartbeat.muted = true
-    await db.saveHeartbeat(heartbeat)
+    let hub = await db.getHubWithSystemId(req.body.system_id)
+    hub.muted = true
+    await db.saveHubMuteStatus(hub)
     res.status(200).send()
 })
 
-app.post('/unmute_system', jsonBodyParser, async (req, res) => {
+app.post('/heartbeat/unmute_system', jsonBodyParser, async (req, res) => {
     log('got a request to unmute system ' + req.body.system_id) 
-    let heartbeat = await db.getHeartbeatWithSystemId(req.body.systemid)
-    heartbeat.muted = false
-    await db.saveHeartbeat(heartbeat)
+    let hub = await db.getHubWithSystemId(req.body.system_id)
+    hub.muted = false
+    await db.saveHubMuteStatus(hub)
     res.status(200).send()
 })
 
 app.get('/heartbeatDashboard', async (req, res) => {
-    let heartbeats = await db.getHeartbeats()
+    let hubs = await db.getHubs()
     let viewParams = {
         domain: helpers.getEnvVar('DOMAIN'),
         dashboard_render_time: moment().toString(),
         systems: []   
     }
 
-    for(const heartbeat of heartbeats){
+    for(const hub of hubs){
 
-        if(heartbeat.hidden) {
-            return
+        if(hub.hidden) {
+            continue
         }
 
-        let flicLastSeenTime = moment(heartbeat.flicLastSeenTime)
+        let flicLastSeenTime = moment(hub.flicLastSeenTime)
         let flicLastSeenSecs = moment().diff(flicLastSeenTime) / 1000.0
         flicLastSeenSecs = Math.round(flicLastSeenSecs)
 
-        let heartbeatLastSeenTime = moment(heartbeat.heartbeatLastSeenTime)
+        let heartbeatLastSeenTime = moment(hub.heartbeatLastSeenTime)
         let heartbeatLastSeenSecs = moment().diff(heartbeatLastSeenTime) / 1000.0
         heartbeatLastSeenSecs = Math.round(heartbeatLastSeenSecs)
 
-        let flicLastPingTime = moment(heartbeat.flicLastPingTime)
+        let flicLastPingTime = moment(hub.flicLastPingTime)
         let flicLastPingSecs = moment().diff(flicLastPingTime) / 1000.0
         flicLastPingSecs = Math.round(flicLastPingSecs)
 
         viewParams.systems.push({
-            system_name: heartbeat.systemName,
+            system_name: hub.systemName,
             flic_last_seen: flicLastSeenSecs.toString() + ' seconds ago',
             flic_last_ping: flicLastPingSecs.toString() + ' seconds ago',
             heartbeat_last_seen: heartbeatLastSeenSecs.toString() + ' seconds ago',
-            muted: heartbeat.muted ? 'Y' : 'N'
+            muted: hub.muted ? 'Y' : 'N'
         })
     }
         
@@ -439,56 +439,56 @@ app.get('/heartbeatDashboard', async (req, res) => {
 
 
 async function checkHeartbeat() {
-    let heartbeats = await db.getHeartbeats()
-    for (const heartbeat of heartbeats) {
+    let hubs = await db.getHubs()
+    for (const hub of hubs) {
         let currentTime = moment()
-        let flicLastSeenTime = moment(heartbeat.flicLastSeenTime)
+        let flicLastSeenTime = moment(hub.flicLastSeenTime)
         let flicDelayMillis = currentTime.diff(flicLastSeenTime)
-        let heartbeatLastSeenTime = moment(heartbeat.heartbeatLastSeenTime)
+        let heartbeatLastSeenTime = moment(hub.heartbeatLastSeenTime)
         let heartbeatDelayMillis = currentTime.diff(heartbeatLastSeenTime)
         
-        if(flicDelayMillis > FLIC_THRESHOLD_MILLIS && !heartbeat.sentAlerts) {
-            log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${heartbeat.systemName}`)
-            await updateSentAlerts(heartbeat, 'true')
-            if(heartbeat.muted) {
-                return
+        if(flicDelayMillis > FLIC_THRESHOLD_MILLIS && !hub.sentAlerts) {
+            log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${hub.systemName}`)
+            await updateSentAlerts(hub, 'true')
+            if(hub.muted) {
+                continue
             }
-            sendAlerts(heartbeat.systemName, heartbeat.twilioAlertNumber, heartbeat.heartbeatAlertRecipients)
+            sendAlerts(hub.systemName, helpers.getEnvVar(TWILIO_HEARTBEAT_FROM_NUMBER), hub.heartbeatAlertRecipients)
         }
-        else if(heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !heartbeat.sentAlerts) {
-            log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${heartbeat.systemName}`)
-            await updateSentAlerts(heartbeat, 'true')
-            if(heartbeat.muted) {
-                return
+        else if(heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !hub.sentAlerts) {
+            log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${hub.systemName}`)
+            await updateSentAlerts(hub, 'true')
+            if(hub.muted) {
+                continue
             }
-            sendAlerts(heartbeat.systemName, heartbeat.twilioAlertNumber, heartbeat.heartbeatAlertRecipients)
+            sendAlerts(hub.systemName, helpers.getEnvVar(TWILIO_HEARTBEAT_FROM_NUMBER), hub.heartbeatAlertRecipients)
         }
-        else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && heartbeat.sentAlerts) { 
-            log(`${heartbeat.systemName} has reconnected.`)
-            await updateSentAlerts(heartbeat, 'false')
-            if (heartbeat.muted) {
-                return
+        else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && hub.sentAlerts) { 
+            log(`${hub.systemName} has reconnected.`)
+            await updateSentAlerts(hub, 'false')
+            if (hub.muted) {
+                continue
             }
-            sendReconnectionMessage(heartbeat.systemName, heartbeat.twilioAlertNumber, heartbeat.heartbeatAlertRecipients)
+            sendReconnectionMessage(hub.systemName, helpers.getEnvVar(TWILIO_HEARTBEAT_FROM_NUMBER), hub.heartbeatAlertRecipients)
         }
     }
 }
 
 function sendAlerts(systemName, twilioAlertNumber, heartbeatAlertRecipients) {
-    for(let i=0; i<heartbeatAlertRecipients.length; i++) {
+    for(let i = 0; i < heartbeatAlertRecipients.length; i++) {
         sendTwilioMessage(heartbeatAlertRecipients[i], twilioAlertNumber, `The Flic connection for ${systemName} has been lost.`)
     }
 }
 
 function sendReconnectionMessage(systemName, twilioAlertNumber, heartbeatAlertRecipients) {
-    for(let i=0; i<heartbeatAlertRecipients.length; i++) {
+    for(let i = 0; i < heartbeatAlertRecipients.length; i++) {
         sendTwilioMessage(heartbeatAlertRecipients[i], twilioAlertNumber, `${systemName} has reconnected.`)
     }
 }
 
-async function updateSentAlerts(heartbeat, sentAlerts) {
-    heartbeat.sentAlerts = sentAlerts;
-    await db.saveHeartbeat(heartbeat);
+async function updateSentAlerts(hub, sentAlerts) {
+    hub.sentAlerts = sentAlerts;
+    await db.saveHubAlertStatus(hub);
 }
 
 let server;
@@ -502,7 +502,7 @@ else {
         cert: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/fullchain.pem`)
     }
     server = https.createServer(httpsOptions, app).listen(443)
-    setInterval(async function () {checkHeartbeat()}, 1000)
+    setInterval(checkHeartbeat, 1000)
     log('brave server listening on port 443')
 }
 

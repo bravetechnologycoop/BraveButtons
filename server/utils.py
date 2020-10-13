@@ -8,16 +8,25 @@ matplotlib.use('Agg')
 def send_hide_request(server_url, system_id):
     payload = {"system_id": system_id}
     try:
-        r = requests.post(server_url + r"/hide_system", json=payload)
+        r = requests.post(server_url + r"/heartbeat/hide_system", json=payload)
         print("response to hide request:", r.status_code, r.reason)
     except Exception as e:
         print("error sending hide request")
         print(e)
 
+def send_hide_request(server_url, system_id):
+    payload = {"system_id": system_id}
+    try:
+        r = requests.post(server_url + r"/heartbeat/unhide_system", json=payload)
+        print("response to unhide request:", r.status_code, r.reason)
+    except Exception as e:
+        print("error sending unhide request")
+        print(e)
+
 def send_rename_request(server_url, system_id, name):
     payload = {"system_id": system_id, "system_name": name}
     try:
-        r = requests.post(server_url + r"/rename_system", json=payload)
+        r = requests.post(server_url + r"/heartbeat/rename_system", json=payload)
         print("response to rename request:", r.status_code, r.reason)
     except Exception as e:
         print("error sending rename request")
@@ -26,7 +35,7 @@ def send_rename_request(server_url, system_id, name):
 def send_mute_request(server_url, system_id):
     payload = {"system_id": system_id}
     try:
-        r = requests.post(server_url + r"/mute_system", json=payload)
+        r = requests.post(server_url + r"/heartbeat/mute_system", json=payload)
         print("response to mute request:", r.status_code, r.reason)
     except Exception as e:
         print("error sending mute request")
@@ -35,7 +44,7 @@ def send_mute_request(server_url, system_id):
 def send_unmute_request(server_url, system_id):
     payload = {"system_id": system_id}
     try:
-        r = requests.post(server_url + r"/unmute_system", json=payload)
+        r = requests.post(server_url + r"/heartbeat/unmute_system", json=payload)
         print("response to unmute request:", r.status_code, r.reason)
     except Exception as e:
         print("error sending unmute request")
