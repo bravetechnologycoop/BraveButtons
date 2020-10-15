@@ -13,12 +13,12 @@ csvWriter.pipe(fs.createWriteStream(outputFile))
 
 async function scanAndPairOneButton() {
 
-    let promise = new Promise((resolve, reject) => {
+    let promise = new Promise((resolve, reject) => {    // eslint-disable-line no-unused-vars
 
         let wizard = new FlicScanWizard()
         // wizard.on('foundPublicButton', (bdAddr, name) => console.log(`Found a public button with UUID ${bdAddr}, keep holding it down...`))
         // wizard.on('buttonConnected', (bdAddr, name) => console.log(`Connected to a button with UUID ${bdAddr}, keep holding it down...`)) 
-        wizard.on('completed', async (result, bdAddr, name) => {
+        wizard.on('completed', async (result, bdAddr, name) => {    // eslint-disable-line no-unused-vars
             console.log(`Completed pairing for button ${bdAddr} with result: ${result}`)
             if(result !== 'WizardSuccess') {
                 resolve()
@@ -46,7 +46,7 @@ async function scanAndPairOneButton() {
                 const response = await prompt([unitQuestion, phoneNumberQuestion, confirmQuestion])
                 
                 if(response.confirmation) {
-                    client.getButtonInfo(bdAddr, (bdAddr, uuid, color, serialNumber) => {
+                    client.getButtonInfo(bdAddr, (bdAddr, uuid, color, serialNumber) => {    // eslint-disable-line no-unused-vars
                         csvWriter.write([uuid, response.unit, response.phoneNumber])
                         resolve()
                     })
@@ -67,7 +67,7 @@ async function runPairingTool() {
 
     console.log('Welcome to the Brave Button pairing tool.')
 
-    while(true) {
+    for(;;) {
     
         let continuePairingQuestion = {
             type: 'confirm',
