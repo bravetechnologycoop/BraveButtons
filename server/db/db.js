@@ -336,7 +336,7 @@ module.exports.getHubs = async function(client) {
         client = await pool.connect()
     }
     
-    const { rows } = await client.query("SELECT (system_id, flic_last_seen_time, flic_last_ping_time, heartbeat_last_seen_time, system_name, hidden, sent_alerts, muted, heartbeat_alert_recipients) FROM hubs order by system_name")
+    const { rows } = await client.query("SELECT * FROM hubs order by system_name")
     
     if(!transactionMode) {
         client.release()
@@ -354,7 +354,7 @@ module.exports.getHubWithSystemId = async function(systemId, client) {
         client = await pool.connect()
     }
     
-    let { rows } = await client.query("SELECT (system_id, flic_last_seen_time, flic_last_ping_time, heartbeat_last_seen_time, system_name, hidden, sent_alerts, muted, heartbeat_alert_recipients) FROM hubs WHERE system_id = $1", [systemId])
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1", [systemId])
     
     if(!transactionMode) {
         client.release()
