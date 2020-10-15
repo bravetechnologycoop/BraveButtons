@@ -350,9 +350,9 @@ app.post('/heartbeat', jsonBodyParser, async (req, res) => {
    
     try {
         log(`got a heartbeat from ${req.body.system_id}, flic_last_seen_secs is ${req.body.flic_last_seen_secs}, flic_last_ping_secs is ${req.body.flic_last_ping_secs}`)    
-        flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
-        flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
-        heartbeatLastSeenTime = moment().toISOString()
+        let flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
+        let flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
+        let heartbeatLastSeenTime = moment().toISOString()
         await db.saveHeartbeat(req.body.system_id, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime)
         res.status(200).send()
     }
