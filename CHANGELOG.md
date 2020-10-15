@@ -10,18 +10,19 @@ the code was deployed.
 
 ## [Unreleased]
 ### Added
-- Unhide endpoint for the heartbeat (CU-bgke33)
+- Unhide endpoint for the heartbeat (CU-bgke33).
 - Heartbeat text message alert when the Last Seen (Ping) value is above a threshold (CU-crut3u).
+- Automatic linting using Travis for the Server and the Pairing Tool (CU-cchv7x).
 
 ### Changed
-- Merged heartbeat and chatbot functionality into a single application (CU-bgke33)
+- Merged heartbeat and chatbot functionality into a single application (CU-bgke33).
 - Heartbeat text message alert now further details what triggered the alert (CU-crut3u).
 - Increased alert message threshold for Heartbeat and Flic (Darkstat) (CU-70bdx5).
 
 ## [1.6.0] - 2020-10-05
 ### Added
 - Column definitions to the Heartbeat Dashboard (CU-bgjqh5).
-- Ansible playbooks for RPi setup and deployment of updates (CU-5jcgu2 and CU-5jcgvh)
+- Ansible playbooks for RPi setup and deployment of updates (CU-5jcgu2 and CU-5jcgvh).
 
 ### Changed
 - db.js now loads different environment variables depending on NODE_ENV test flag (CU-byp1m3).

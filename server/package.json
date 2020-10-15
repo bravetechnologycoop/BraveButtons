@@ -22,11 +22,11 @@
     "twilio": "^3.33.2"
   },
   "devDependencies": {
-    "eslint": "^6.7.2",
     "mocha": "^5.2.0",
     "nyc": "^14.1.1"
   },
   "scripts": {
+    "lint": "npx eslint . -c ../.eslintrc.json",
     "test": "NODE_ENV=test mocha --timeout 10000 \"test/**/*.js\"",
     "test-coverage": "nyc --reporter=html --reporter=text npm test",
     "unittest": "NODE_ENV=test mocha --timeout 40000 \"test/SessionStateTest.js\"",

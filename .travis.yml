@@ -65,6 +65,15 @@ matrix:
       before_script:
         - bash setup_postgresql_local.sh TestInstall $RESPONDER_PHONE_TEST $STAFF_PHONE_TEST
 
-      # run unit tests
+      # run linter and unit tests
       script:
+        - npm run lint
         - sudo env "PATH=$PATH" npm run test
+
+    # Pairing Tool
+    - language: node_js         # node version specified in .nvmrc
+
+      # run linter
+      script:
+        - cd pairing-tool
+        - npm run lint

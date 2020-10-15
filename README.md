@@ -25,9 +25,7 @@
 
 1. cd into the `server` directory
 
-1. run `npm install`
-
-1. run `npx eslint .`
+1. run `npm run lint`
 
 # How to set up a generic Raspberry Pi environment (for a Brave Hub or the pairing tool):
 
