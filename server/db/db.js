@@ -454,13 +454,13 @@ module.exports.saveHubHideStatus = async function(systemId, hidden, client) {
     }
 }
 
-module.exports.saveHubAlertStatus = async function(systemId, sentAlerts, client) {
+module.exports.saveHubAlertStatus = async function(hub, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
     if(rows.length === 0) {
         if(!transactionMode) {
             client.release()
@@ -468,7 +468,7 @@ module.exports.saveHubAlertStatus = async function(systemId, sentAlerts, client)
         throw new Error("Tried to save alert sent status for a hub that doesn't exist yet.")
     }
     const query = "UPDATE hubs SET sent_alerts = $1 WHERE system_id = $2"
-    const values = [sentAlerts, systemId]
+    const values = [hub.sentAlerts, hub.systemId]
     await client.query(query, values) 
     
     if(!transactionMode) {
