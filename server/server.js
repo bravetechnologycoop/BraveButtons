@@ -347,55 +347,85 @@ app.post('/message', jsonBodyParser, async (req, res) => {
 });
 
 app.post('/heartbeat', jsonBodyParser, async (req, res) => {
-    log(`got a heartbeat from ${req.body.system_id}, flic_last_seen_secs is ${req.body.flic_last_seen_secs}, flic_last_ping_secs is ${req.body.flic_last_ping_secs}`)
-    let hub = await db.getHubWithSystemId(req.body.system_id)
-    hub.flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
-    hub.flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
-    hub.heartbeatLastSeenTime = moment().toISOString()
-    await db.saveHeartbeat(hub)
-    res.status(200).send()
+   
+    try {
+        log(`got a heartbeat from ${req.body.system_id}, flic_last_seen_secs is ${req.body.flic_last_seen_secs}, flic_last_ping_secs is ${req.body.flic_last_ping_secs}`)    
+        flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
+        flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
+        heartbeatLastSeenTime = moment().toISOString()
+        await db.saveHeartbeat(req.body.system_id, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime)
+        res.status(200).send()
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
 })
 
-
 app.post('/heartbeat/rename_system', jsonBodyParser, async (req, res) => {
-    log('got a request to rename system ' + req.body.system_id)
-    let hub = await db.getHubWithSystemId(req.body.system_id)
-    hub.systemName = req.body.system_name
-    await db.saveHubRename(hub)
-    res.status(200).send()
+
+    try {
+        log('got a request to rename system ' + req.body.system_id)
+        await db.saveHubRename(req.body.system_id, req.body.system_name)
+        res.status(200).send()
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
 })
 
 app.post('/heartbeat/hide_system', jsonBodyParser, async (req, res) => {
-    log('got a request to hide system ' + req.body.system_id) 
-    let hub = await db.getHubWithSystemId(req.body.system_id)
-    hub.hidden = true
-    await db.saveHubHideStatus(hub)
-    res.status(200).send()
+
+    try {
+        log('got a request to hide system ' + req.body.system_id)
+        await db.saveHubMuteStatus(req.body.system_id, true)
+        res.status(200).send()
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
 })
 
 app.post('/heartbeat/unhide_system', jsonBodyParser, async (req, res) => {
-    log('got a request to show system ' + req.body.system_id) 
-    let hub = await db.getHubWithSystemId(req.body.system_id)
-    hub.hidden = false
-    await db.saveHubHideStatus(hub)
-    res.status(200).send()
+
+    try {
+        log('got a request to show system ' + req.body.system_id)
+        await db.saveHubMuteStatus(req.body.system_id, false)
+        res.status(200).send()
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
 })
 
 
 app.post('/heartbeat/mute_system', jsonBodyParser, async (req, res) => {
-    log('got a request to mute system ' + req.body.system_id) 
-    let hub = await db.getHubWithSystemId(req.body.system_id)
-    hub.muted = true
-    await db.saveHubMuteStatus(hub)
-    res.status(200).send()
+
+    try {
+        log('got a request to unmute system ' + req.body.system_id)
+        await db.saveHubMuteStatus(req.body.system_id, true)
+        res.status(200).send()
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
 })
 
 app.post('/heartbeat/unmute_system', jsonBodyParser, async (req, res) => {
-    log('got a request to unmute system ' + req.body.system_id) 
-    let hub = await db.getHubWithSystemId(req.body.system_id)
-    hub.muted = false
-    await db.saveHubMuteStatus(hub)
-    res.status(200).send()
+
+    try {
+        log('got a request to unmute system ' + req.body.system_id)
+        await db.saveHubMuteStatus(req.body.system_id, false)
+        res.status(200).send()
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
 })
 
 app.get('/heartbeatDashboard', async (req, res) => {

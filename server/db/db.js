@@ -366,13 +366,13 @@ module.exports.getHubWithSystemId = async function(systemId, client) {
     return null
 }
 
-module.exports.saveHeartbeat = async function(hub, client) {
+module.exports.saveHeartbeat = async function(systemId, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
     if(rows.length === 0) {
         if(!transactionMode) {
             client.release()
@@ -380,7 +380,7 @@ module.exports.saveHeartbeat = async function(hub, client) {
         throw new Error("Tried to save a heartbeat for a hub that doesn't exist yet.")
     }
     const query = "UPDATE hubs SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3 WHERE system_id = $4"
-    const values = [hub.flicLastSeenTime, hub.flicLastPingTime, hub.heartbeatLastSeenTime, hub.systemId]
+    const values = [flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemId]
     await client.query(query, values) 
     
     if(!transactionMode) {
@@ -388,13 +388,13 @@ module.exports.saveHeartbeat = async function(hub, client) {
     }
 }
 
-module.exports.saveHubRename = async function(hub, client) {
+module.exports.saveHubRename = async function(systemId, systemName, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
     if(rows.length === 0) {
         if(!transactionMode) {
             client.release()
@@ -402,7 +402,7 @@ module.exports.saveHubRename = async function(hub, client) {
         throw new Error("Tried to rename a hub that doesn't exist yet.")
     }
     const query = "UPDATE hubs SET system_name = $1 WHERE system_id = $2"
-    const values = [hub.systemName, hub.systemId]
+    const values = [systemName, systemId]
     await client.query(query, values) 
     
     if(!transactionMode) {
@@ -410,13 +410,13 @@ module.exports.saveHubRename = async function(hub, client) {
     }
 }
 
-module.exports.saveHubMuteStatus = async function(hub, client) {
+module.exports.saveHubMuteStatus = async function(systemId, muted, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
     if(rows.length === 0) {
         if(!transactionMode) {
             client.release()
@@ -424,7 +424,7 @@ module.exports.saveHubMuteStatus = async function(hub, client) {
         throw new Error("Tried to save mute status in a hub that doesn't exist yet.")
     }
     const query = "UPDATE hubs SET muted = $1 WHERE system_id = $2"
-    const values = [hub.muted, hub.systemId]
+    const values = [muted, systemId]
     await client.query(query, values) 
     
     if(!transactionMode) {
@@ -432,13 +432,13 @@ module.exports.saveHubMuteStatus = async function(hub, client) {
     }
 }
 
-module.exports.saveHubHideStatus = async function(hub, client) {
+module.exports.saveHubHideStatus = async function(systemId, hidden, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
     if(rows.length === 0) {
         if(!transactionMode) {
             client.release()
@@ -446,7 +446,7 @@ module.exports.saveHubHideStatus = async function(hub, client) {
         throw new Error("Tried to save hide status for a hub that doesn't exist yet.")
     }
     const query = "UPDATE hubs SET hidden = $1 WHERE system_id = $2"
-    const values = [hub.hidden, hub.systemId]
+    const values = [hidden, systemId]
     await client.query(query, values) 
     
     if(!transactionMode) {
@@ -454,21 +454,21 @@ module.exports.saveHubHideStatus = async function(hub, client) {
     }
 }
 
-module.exports.saveHubAlertStatus = async function(hub, client) {
+module.exports.saveHubAlertStatus = async function(systemId, sentAlerts, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
     if(rows.length === 0) {
         if(!transactionMode) {
             client.release()
         }
-        throw new Error("Tried to save hide status for a hub that doesn't exist yet.")
+        throw new Error("Tried to save alert sent status for a hub that doesn't exist yet.")
     }
     const query = "UPDATE hubs SET sent_alerts = $1 WHERE system_id = $2"
-    const values = [hub.sentAlerts, hub.systemId]
+    const values = [sentAlerts, systemId]
     await client.query(query, values) 
     
     if(!transactionMode) {

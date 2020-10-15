@@ -14,7 +14,7 @@ def send_hide_request(server_url, system_id):
         print("error sending hide request")
         print(e)
 
-def send_hide_request(server_url, system_id):
+def send_unhide_request(server_url, system_id):
     payload = {"system_id": system_id}
     try:
         r = requests.post(server_url + r"/heartbeat/unhide_system", json=payload)

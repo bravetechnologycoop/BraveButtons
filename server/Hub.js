@@ -1,5 +1,5 @@
 class Hub {
-    constructor(systemId,flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemName, hidden, sentAlerts, muted, heartbeatAlertRecipients) {
+    constructor(systemId, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemName, hidden, sentAlerts, muted, heartbeatAlertRecipients) {
         this.systemId = systemId
         this.flicLastSeenTime = flicLastSeenTime
         this.flicLastPingTime = flicLastPingTime

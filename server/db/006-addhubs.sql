@@ -17,10 +17,9 @@ BEGIN
             flic_last_ping_time timestamptz NOT NULL DEFAULT NOW(),
             heartbeat_last_seen_time timestamptz NOT NULL DEFAULT NOW(),
             system_name text,
-            hidden boolean DEFAULT no,
-            sent_alerts boolean DEFAULT no,
-            muted boolean DEFAULT no,
-            twilio_alert_number text,
+            hidden boolean DEFAULT false,
+            sent_alerts boolean DEFAULT false,
+            muted boolean DEFAULT false,
             heartbeat_alert_recipients text[] DEFAULT '{}'
         );
 
