@@ -1,11 +1,11 @@
 # BraveButtons [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=master)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
 
 
-# How to set up a local chatbot dev environment
+# How to set up a local server dev environment
 
 1. clone this repository
 
-1. cd into the `chatbot` directory
+1. cd into the `server` directory
 
 1. run `sudo apt install postgresql` to install postgres
 
@@ -23,24 +23,11 @@
 
 # How to run the linter
 
-1. cd into the `chatbot` directory
+1. cd into the `server` directory
 
 1. run `npm install`
 
 1. run `npx eslint .`
-
-# How to set up a local heartbeat dev environment
-
-1. cd into the `heartbeat` directory
-
-1. copy `template.brave_config.json` to `brave_config.json` and fill out variables
-appropriates for your local environment
-
-1. run `npm install`
-
-1. run `node server.js`
-
-1. to see the dashboard, go to http://localhost:8000/dashboard
 
 # How to set up a generic Raspberry Pi environment (for a Brave Hub or the pairing tool):
 

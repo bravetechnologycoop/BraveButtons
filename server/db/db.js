@@ -2,6 +2,7 @@ const STATES = require('../SessionStateEnum.js')
 const helpers = require('../helpers.js')
 const SessionState = require('../SessionState.js')
 const Installation = require('../Installation.js')
+const Hub = require('../Hub.js')
 const { Pool } = require('pg')
 require('dotenv').config();
 
@@ -24,6 +25,10 @@ function createSessionFromRow(r) {
 
 function createInstallationFromRow(r) {
     return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.incident_categories, r.created_at)
+}
+
+function createHubFromRow(r) {
+    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_alerts, r.muted, r.heartbeat_alert_recipients)
 }
 
 module.exports.beginTransaction = async function() {
@@ -323,6 +328,152 @@ module.exports.getInstallationWithInstallationId = async function(installationId
         return createInstallationFromRow(rows[0])
     }
     return null
+}
+
+module.exports.getHubs = async function(client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    const { rows } = await client.query("SELECT * FROM hubs order by system_name")
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {        
+        return rows.map(createHubFromRow)
+    }
+    return []
+}
+
+module.exports.getHubWithSystemId = async function(systemId, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1", [systemId])
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {
+        return createHubFromRow(rows[0])
+    }
+    return null
+}
+
+module.exports.saveHeartbeat = async function(systemId, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+    if(rows.length === 0) {
+        if(!transactionMode) {
+            client.release()
+        }
+        throw new Error("Tried to save a heartbeat for a hub that doesn't exist yet.")
+    }
+    const query = "UPDATE hubs SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3 WHERE system_id = $4"
+    const values = [flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemId]
+    await client.query(query, values) 
+    
+    if(!transactionMode) {
+        client.release()
+    }
+}
+
+module.exports.saveHubRename = async function(systemId, systemName, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+    if(rows.length === 0) {
+        if(!transactionMode) {
+            client.release()
+        }
+        throw new Error("Tried to rename a hub that doesn't exist yet.")
+    }
+    const query = "UPDATE hubs SET system_name = $1 WHERE system_id = $2"
+    const values = [systemName, systemId]
+    await client.query(query, values) 
+    
+    if(!transactionMode) {
+        client.release()
+    }
+}
+
+module.exports.saveHubMuteStatus = async function(systemId, muted, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+    if(rows.length === 0) {
+        if(!transactionMode) {
+            client.release()
+        }
+        throw new Error("Tried to save mute status in a hub that doesn't exist yet.")
+    }
+    const query = "UPDATE hubs SET muted = $1 WHERE system_id = $2"
+    const values = [muted, systemId]
+    await client.query(query, values) 
+    
+    if(!transactionMode) {
+        client.release()
+    }
+}
+
+module.exports.saveHubHideStatus = async function(systemId, hidden, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+    if(rows.length === 0) {
+        if(!transactionMode) {
+            client.release()
+        }
+        throw new Error("Tried to save hide status for a hub that doesn't exist yet.")
+    }
+    const query = "UPDATE hubs SET hidden = $1 WHERE system_id = $2"
+    const values = [hidden, systemId]
+    await client.query(query, values) 
+    
+    if(!transactionMode) {
+        client.release()
+    }
+}
+
+module.exports.saveHubAlertStatus = async function(hub, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
+    if(rows.length === 0) {
+        if(!transactionMode) {
+            client.release()
+        }
+        throw new Error("Tried to save alert sent status for a hub that doesn't exist yet.")
+    }
+    const query = "UPDATE hubs SET sent_alerts = $1 WHERE system_id = $2"
+    const values = [hub.sentAlerts, hub.systemId]
+    await client.query(query, values) 
+    
+    if(!transactionMode) {
+        client.release()
+    }
 }
 
 module.exports.close = async function() {

@@ -16,12 +16,12 @@ matrix:
         - cp pi/template.pi_config.ini pi/pi_config.ini
         - pytest --cov=heartbeat
 
-    # BraveChatbot
+    # BraveServer
     - language: node_js         # node version specified in .nvmrc
 
       # install dependencies
       install:
-        - cd chatbot
+        - cd server
         - npm install
 
       # install database
@@ -50,6 +50,7 @@ matrix:
         # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
         - RESPONDER_PHONE_TEST=+15005550006
         - TWILIO_FALLBACK_FROM_NUMBER_TEST=+15005550006
+        - TWILIO_HEARTBEAT_FROM_NUMBER_TEST=+15005550006
         # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
         - STAFF_PHONE_TEST=+15005550006
         # TWILIO_SID_TEST (from https://www.twilio.com/console/voice/project/test-credentials)

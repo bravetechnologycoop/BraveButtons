@@ -43,7 +43,7 @@ else
     apt update
     apt install -y nodejs npm certbot postgresql postgresql-contrib
     npm install -g pm2 n
-    n 12.18.3         # keep this in sync with .nvmrc for Travis and with heartbeat/setup_server.sh
+    n 12.18.3         # keep this in sync with .nvmrc for Travis
     npm install
 
     echo "Please enter in order the name and responder phone number and fallback phone number for the first installation (separated by a space):" 
@@ -57,7 +57,7 @@ else
     # restart server weekly to ensure it uses the latest certificates (certbot renews them automatically)
     echo "
     PATH=/bin:/usr/bin:/usr/local/bin
-    @weekly env HOME=$HOME pm2 restart server
+    @weekly env HOME=$HOME pm2 restart BraveServer
     " | crontab -
 
     pm2 install pm2-logrotate
@@ -67,8 +67,8 @@ else
     pm2 startup systemd
 
     # ensure that a new process is started or that a running process is restarted
-    pm2 stop server.js
-    pm2 start server.js
-
+    pm2 stop ecosystem.config.js --env production
+    pm2 start ecosystem.config.js --env production
+    
     cd $original_dir
 fi

@@ -9,6 +9,12 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+### Added
+- Unhide endpoint for the heartbeat (CU-bgke33)
+
+### Changed
+- Merged heartbeat and chatbot functionality into a single application (CU-bgke33)
+
 
 ## [1.6.0] - 2020-10-05
 ### Added

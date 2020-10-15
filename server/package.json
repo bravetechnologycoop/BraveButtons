@@ -1,7 +1,7 @@
 {
-  "name": "chatbot-server",
+  "name": "brave-server",
   "version": "1.0.0",
-  "description": "server for Brave Buttons chatbot",
+  "description": "server for Brave Buttons chatbot and heartbeat monitoring",
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.18.3",
