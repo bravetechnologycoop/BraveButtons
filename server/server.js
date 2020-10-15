@@ -483,7 +483,7 @@ async function checkHeartbeat() {
             if(hub.muted) {
                 continue
             }
-            sendAlerts(hub.systemName, helpers.getEnvVar(TWILIO_HEARTBEAT_FROM_NUMBER), hub.heartbeatAlertRecipients)
+            sendAlerts(hub.systemName, helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'), hub.heartbeatAlertRecipients)
         }
         else if(heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !hub.sentAlerts) {
             log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${hub.systemName}`)
@@ -491,7 +491,7 @@ async function checkHeartbeat() {
             if(hub.muted) {
                 continue
             }
-            sendAlerts(hub.systemName, helpers.getEnvVar(TWILIO_HEARTBEAT_FROM_NUMBER), hub.heartbeatAlertRecipients)
+            sendAlerts(hub.systemName, helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'), hub.heartbeatAlertRecipients)
         }
         else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && hub.sentAlerts) { 
             log(`${hub.systemName} has reconnected.`)
@@ -499,7 +499,7 @@ async function checkHeartbeat() {
             if (hub.muted) {
                 continue
             }
-            sendReconnectionMessage(hub.systemName, helpers.getEnvVar(TWILIO_HEARTBEAT_FROM_NUMBER), hub.heartbeatAlertRecipients)
+            sendReconnectionMessage(hub.systemName, helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'), hub.heartbeatAlertRecipients)
         }
     }
 }
