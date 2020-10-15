@@ -379,7 +379,7 @@ app.post('/heartbeat/hide_system', jsonBodyParser, async (req, res) => {
 
     try {
         log('got a request to hide system ' + req.body.system_id)
-        await db.saveHubMuteStatus(req.body.system_id, true)
+        await db.saveHubHideStatus(req.body.system_id, true)
         res.status(200).send()
     }
     catch(err) {
@@ -392,7 +392,7 @@ app.post('/heartbeat/unhide_system', jsonBodyParser, async (req, res) => {
 
     try {
         log('got a request to show system ' + req.body.system_id)
-        await db.saveHubMuteStatus(req.body.system_id, false)
+        await db.saveHubHideStatus(req.body.system_id, false)
         res.status(200).send()
     }
     catch(err) {
