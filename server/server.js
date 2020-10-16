@@ -11,6 +11,7 @@ const Mustache = require('mustache')
 
 const FLIC_THRESHOLD_MILLIS = 180*1000
 const HEARTBEAT_THRESHOLD_MILLIS = 60*1000
+const PING_THRESHOLD_MILLIS = 320*1000
 
 const STATES = require('./SessionStateEnum.js');
 require('dotenv').load();
@@ -476,6 +477,8 @@ async function checkHeartbeat() {
         let flicDelayMillis = currentTime.diff(flicLastSeenTime)
         let heartbeatLastSeenTime = moment(hub.heartbeatLastSeenTime)
         let heartbeatDelayMillis = currentTime.diff(heartbeatLastSeenTime)
+        let pingLastSeenTime = moment(hub.flicLastPingTime)
+        let pingDelayMillis = currentTime.diff(pingLastSeenTime)
         
         if(flicDelayMillis > FLIC_THRESHOLD_MILLIS && !hub.sentAlerts) {
             log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${hub.systemName}`)
@@ -483,7 +486,15 @@ async function checkHeartbeat() {
             if(hub.muted) {
                 continue
             }
-            sendAlerts(hub.systemName, helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'), hub.heartbeatAlertRecipients)
+            sendAlerts('Darkstat has lost visibility of the Hub', hub.systemName, hub.heartbeatAlertRecipients)
+        }
+        else if(pingDelayMillis > PING_THRESHOLD_MILLIS && !hub.sentAlerts) {
+            log(`ping threshold exceeded; ping delay is ${pingDelayMillis} ms. sending alerts for ${hub.systemName}`)
+            await updateSentAlerts(hub, 'true')
+            if(hub.muted) {
+                continue
+            }
+            sendAlerts('Ping is unable to reach the Hub', hub.systemName, hub.heartbeatAlertRecipients)
         }
         else if(heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !hub.sentAlerts) {
             log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${hub.systemName}`)
@@ -491,28 +502,36 @@ async function checkHeartbeat() {
             if(hub.muted) {
                 continue
             }
-            sendAlerts(hub.systemName, helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'), hub.heartbeatAlertRecipients)
+            sendAlerts('Heartbeat messages have stopped', hub.systemName, hub.heartbeatAlertRecipients)
         }
-        else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && hub.sentAlerts) { 
+        else if((flicDelayMillis < FLIC_THRESHOLD_MILLIS) && (heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS) && (pingDelayMillis < PING_THRESHOLD_MILLIS) && hub.sentAlerts) { 
             log(`${hub.systemName} has reconnected.`)
             await updateSentAlerts(hub, 'false')
             if (hub.muted) {
                 continue
             }
-            sendReconnectionMessage(hub.systemName, helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'), hub.heartbeatAlertRecipients)
+            sendReconnectionMessage(hub.systemName, hub.heartbeatAlertRecipients)
         }
     }
 }
 
-function sendAlerts(systemName, twilioAlertNumber, heartbeatAlertRecipients) {
+function sendAlerts(alertMessage, systemName, heartbeatAlertRecipients) {
     for(let i = 0; i < heartbeatAlertRecipients.length; i++) {
-        sendTwilioMessage(heartbeatAlertRecipients[i], twilioAlertNumber, `The Flic connection for ${systemName} has been lost.`)
+        sendTwilioMessage(
+            heartbeatAlertRecipients[i],
+            helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'),
+            `${alertMessage}, indicating the connection for ${systemName} has been lost.`
+        )
     }
 }
 
-function sendReconnectionMessage(systemName, twilioAlertNumber, heartbeatAlertRecipients) {
+function sendReconnectionMessage(systemName, heartbeatAlertRecipients) {
     for(let i = 0; i < heartbeatAlertRecipients.length; i++) {
-        sendTwilioMessage(heartbeatAlertRecipients[i], twilioAlertNumber, `${systemName} has reconnected.`)
+        sendTwilioMessage(
+            heartbeatAlertRecipients[i],
+            helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'),
+            `${systemName} has reconnected.`
+        )
     }
 }
 
