@@ -9,8 +9,8 @@ var session = require('express-session');
 const chalk = require('chalk')
 const Mustache = require('mustache')
 
-const FLIC_THRESHOLD_MILLIS = 180*1000
-const HEARTBEAT_THRESHOLD_MILLIS = 60*1000
+const FLIC_THRESHOLD_MILLIS = 210*1000
+const HEARTBEAT_THRESHOLD_MILLIS = 75*1000
 const PING_THRESHOLD_MILLIS = 320*1000
 
 const STATES = require('./SessionStateEnum.js');
