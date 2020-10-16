@@ -16,6 +16,7 @@ the code was deployed.
 ### Changed
 - Merged heartbeat and chatbot functionality into a single application (CU-bgke33)
 - Heartbeat text message alert now further details what triggered the alert (CU-crut3u).
+- Increased alert message threshold for Heartbeat and Flic (Darkstat) (CU-70bdx5).
 
 ## [1.6.0] - 2020-10-05
 ### Added
