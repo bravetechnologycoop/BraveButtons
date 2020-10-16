@@ -11,10 +11,11 @@ the code was deployed.
 ## [Unreleased]
 ### Added
 - Unhide endpoint for the heartbeat (CU-bgke33)
+- Heartbeat text message alert when the Last Seen (Ping) value is above a threshold (CU-crut3u).
 
 ### Changed
 - Merged heartbeat and chatbot functionality into a single application (CU-bgke33)
-
+- Heartbeat text message alert now further details what triggered the alert (CU-crut3u).
 
 ## [1.6.0] - 2020-10-05
 ### Added
