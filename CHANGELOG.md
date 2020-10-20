@@ -10,6 +10,7 @@ the code was deployed.
 
 ## [Unreleased]
 ### Added
+- Deployment instructions in the README file (CU-d8rfw8).
 - Unhide endpoint for the heartbeat (CU-bgke33).
 - Heartbeat text message alert when the Last Seen (Ping) value is above a threshold (CU-crut3u).
 - Automatic linting using Travis for the Server and the Pairing Tool (CU-cchv7x).
