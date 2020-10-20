@@ -64,8 +64,7 @@ on which you want to lint
 
 1. cd into the `BraveButtons/pi` directory
 
-1. copy `template.pi_config.ini` to `pi_config.ini` and fill out variables
-appropriates for your local environment
+1. copy `template.pi_config.ini` to `pi_config.ini` and fill out variables appropriately for your local environment
 
 1. run `sudo ./setup_pi.sh pi_config.ini`
 
@@ -99,17 +98,65 @@ ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
 
 1. ssh into the appropriate remote access server
 
-1. ensure that the BraveButtons and BraveButtonsConfig repos are up to date
+1. update the code: `cd ~/BraveButtons && git checkout production && git pull origin production`
+
+1. update the config: `cd ~/BraveButtonsConfig && git checkout production && git pull origin production`
 
 1. run the following command:
 
 ```
-ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
-                 ./BraveButtons/ops/update_pi_fleet.yaml \
+ansible-playbook -i ~/BraveButtonsConfig/ansible/<inventory file name> \
+                 ~/BraveButtons/ops/update_pi_fleet.yaml \
                  --ask-vault-pass
 ```
 
-# How to run tests for the raspberry pi code:
+# How to release a new production version & update the entire Button system (server and RPi fleet)
+
+The following instructions apply if you are deploying a new version of the code, optionally including
+updates to the config repo and/or changes to the config repo schema. If you are only deploying changes
+to the config repo that do not change the schema (eg. adding a new hub, or changing a WiFi password)
+then it is not necessary to create a new numbered version. In this case you can skip step 1 and skip
+making a new tag during step 2. This is essentially redeploying an older version with new config.
+
+1. on your local machine, in the `BraveButtons` repository:
+
+    1. pull the latest code ready for release: `git checkout master && git pull origin master`
+
+    1. decide on an appropriate version number for the new version
+
+    1. update CHANGELOG.md by moving everything in `Unreleased` to a section for the new version
+
+    1. make a new commit directly on `master` which only updates the changelog
+
+    1. tag the new commit - for example, if the version number is v1.0.0, use `git tag v1.0.0`
+
+    1. push the new version to GitHub: `git push origin master --tags`
+
+    1. update the `production` branch: `git checkout production && git merge master && git push origin production`
+
+1. on your local machine, in the `BraveButtonsConfig` repository:
+
+    1. ensure you have the latest version of the code: `git pull origin master`
+
+    1. tag the latest commit with the same version number used above, ie. `git tag v1.0.0`
+
+    1. update the `production` branch: `git checkout production && git merge master && git push origin production --tags`
+
+1. on the production Buttons server (access using ssh):
+
+    1. cd into the `BraveButtons/server` directory
+
+    1. shut down the server process: `sudo pm2 stop BraveServer`
+
+    1. update the RPi fleet as described above (in a separate ssh session)
+
+    1. pull the latest production code: `git checkout production && git pull origin production`
+
+    1. run the server setup script: `sudo ./setup_server.sh ./.env`
+
+1. open the chatbot and heartbeat dashboards and confirm that everything appears to be working normally
+
+# How to run tests for the raspberry pi code: 
 
 1. install pytest and pytest-cov (run `pip3 install pytest pytest-cov`)
 
