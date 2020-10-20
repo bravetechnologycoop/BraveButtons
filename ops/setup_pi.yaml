@@ -85,3 +85,4 @@
         user: brave
         state: present
         key: "{{ hostvars['OPENSSH_PUBLIC_KEY_HOLDER']['public_key'] }}"
+        comment: "{{ ansible_facts.date_time.iso8601 }} - {{ target_alias }}"
