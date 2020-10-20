@@ -23,7 +23,10 @@
 
 # How to run the linter
 
-1. cd into the `server` directory
+1. cd into the `server` directory or the `pairing-tool` directory, depending
+on which you want to lint
+
+1. run `npm install`
 
 1. run `npm run lint`
 

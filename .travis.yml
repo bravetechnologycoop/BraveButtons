@@ -72,7 +72,11 @@ matrix:
     - name: Pairing Tool
       language: node_js         # node version specified in .nvmrc
 
+      # install dependencies
+      install:
+        - cd pairing-tool
+        - npm install
+
       # run linter
       script:
-        - cd pairing-tool
         - npm run lint
