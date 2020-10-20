@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "npx eslint . -c ../.eslintrc.json",
+    "lint": "eslint . -c ../.eslintrc.json",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,5 +14,8 @@
     "csv-write-stream": "^2.0.0",
     "enquirer": "^2.3.4",
     "fliclib-linux-hci": "git+https://github.com/bravetechnologycoop/fliclib-linux-hci.git"
+  },
+  "devDependencies": {
+    "eslint": "^7.11.0"
   }
 }
