@@ -13,6 +13,7 @@ the code was deployed.
 - Unhide endpoint for the heartbeat (CU-bgke33).
 - Heartbeat text message alert when the Last Seen (Ping) value is above a threshold (CU-crut3u).
 - Automatic linting using Travis for the Server and the Pairing Tool (CU-cchv7x).
+- Battery level logging for flic buttons that send requests using the 'Internet Request' action (CU-e4nkb0).
 
 ### Changed
 - Merged heartbeat and chatbot functionality into a single application (CU-bgke33).

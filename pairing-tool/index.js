@@ -8,7 +8,7 @@ let FlicScanWizard = flicLib.FlicScanWizard
 let client = new FlicClient('localhost', 5551)
 
 const outputFile = `./pairing-tool-output-${Math.random().toString(36).slice(-5)}.csv`
-let csvWriter = CsvWriter({headers: ['button_id','unit','phone_number']})
+let csvWriter = CsvWriter({headers: ['button_id','unit','phone_number','button_serial_number']})
 csvWriter.pipe(fs.createWriteStream(outputFile))
 
 async function scanAndPairOneButton() {
@@ -51,7 +51,7 @@ async function scanAndPairOneButton() {
                 if(response.confirmation) {
                     // eslint-disable-next-line no-unused-vars -- these vars may be useful soon
                     client.getButtonInfo(bdAddr, (bdAddr, uuid, color, serialNumber) => {
-                        csvWriter.write([uuid, response.unit, response.phoneNumber])
+                        csvWriter.write([uuid, response.unit, response.phoneNumber, serialNumber])
                         resolve()
                     })
                 }

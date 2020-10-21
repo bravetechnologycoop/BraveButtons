@@ -42,14 +42,15 @@ else
 
     installation_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM installations WHERE created_at = (SELECT MAX(created_at) FROM installations);")
 
-    while IFS=",", read -r button_id unit phone_number; do
+    while IFS=",", read -r button_id unit phone_number button_serial_number; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
             echo "Adding button"
             echo "  Button ID: $button_id"
             echo "  Unit: $unit"
             echo "  Phone Number: $phone_number"
+            echo "  Serial Number: $button_serial_number"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO registry (button_id, unit, phone_number, installation_id) VALUES ('$button_id', '$unit', '$phone_number', '$installation_id');"
+            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO registry (button_id, button_serial_number, unit, phone_number, installation_id) VALUES ('$button_id', '$button_serial_number', '$unit', '$phone_number', '$installation_id');"
         fi
     done < $5
 

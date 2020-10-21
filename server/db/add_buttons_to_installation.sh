@@ -27,24 +27,29 @@ else
             PG_USER="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
             PG_PASSWORD="$value"
+        elif [[ "$name" == "PG_HOST" ]]; then
+            PG_HOST="$value"
+        elif [[ "$name" == "PG_PORT" ]]; then
+            PG_PORT="$value"
         fi
     done < $1
 
-    installation_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -qtAX -c "SELECT id FROM installations WHERE name = '$2';")
+    installation_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM installations WHERE name = '$2';")
 
     if [[ -z "$installation_id" ]]; then
         echo "couldn't find an installation with the given installation name $2"
         exit 1
     fi
 
-    while IFS=",", read -r button_id unit phone_number; do
+    while IFS=",", read -r button_id unit phone_number button_serial_number; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
             echo "Adding button"
             echo "  Button ID: $button_id"
             echo "  Unit: $unit"
             echo "  Phone Number: $phone_number"
+            echo "  Serial Number: $button_serial_number"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -d $PG_USER -c "INSERT INTO registry (button_id, unit, phone_number, installation_id) VALUES ('$button_id', '$unit', '$phone_number', '$installation_id');"
+        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO registry (button_id, button_serial_number, unit, phone_number, installation_id) VALUES ('$button_id', '$button_serial_number', '$unit', '$phone_number', '$installation_id');"
         fi
     done < $3
 
