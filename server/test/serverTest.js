@@ -18,9 +18,11 @@ const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 describe('Chatbot server', () => {
 
     const unit1UUID = '111'
+    const unit1SerialNumber = 'AAAA-A0A0A0'
     const unit1PhoneNumber = '+15005550006'
 
     const unit2UUID = '222'
+    const unit2SerialNumber = 'BBBB-B0B0B0'
     const unit2PhoneNumber = '+15005550006'
 
     const installationResponderPhoneNumber = '+12345678900'
@@ -65,7 +67,7 @@ describe('Chatbot server', () => {
         'To': unit1PhoneNumber
     }
 
-    describe('POST request: button press', () => {
+    describe('POST request: power automate button press', () => {
 
         beforeEach(async function() {
             await db.clearSessions()
@@ -73,8 +75,8 @@ describe('Chatbot server', () => {
             await db.clearInstallations()
             await db.createInstallation("TestInstallation", installationResponderPhoneNumber, installationFallbackPhoneNumber, installationIncidentCategories)
             let installations = await db.getInstallations()
-            await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber)
-            await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber)
+            await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber, unit1SerialNumber)
+            await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber, unit2SerialNumber)
         });
 
         afterEach(async function() {
@@ -169,6 +171,134 @@ describe('Chatbot server', () => {
             expect(session.unit).to.deep.equal('1');
             expect(session.numPresses).to.deep.equal(4);
         });
+    });
+
+    describe('POST request: flic button press', () => {
+
+        beforeEach(async function() {
+            await db.clearSessions()
+            await db.clearButtons()
+            await db.clearInstallations()
+            await db.createInstallation("TestInstallation", installationResponderPhoneNumber, installationFallbackPhoneNumber, installationIncidentCategories)
+            let installations = await db.getInstallations()
+            await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber, unit1SerialNumber)
+            await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber, unit2SerialNumber)
+        });
+
+        afterEach(async function() {
+            await db.clearSessions()
+            await db.clearButtons()
+            await db.clearInstallations()
+            console.log('\n')
+        });
+
+        it('should return 400 to a request with no headers', async () => {
+            let response = await chai.request(server).post('/flic_button_press').send({})
+            expect(response).to.have.status(400)
+        });
+
+        it('should return 400 to a request with only button-serial-number', async () => {
+            let responseNoBatteryLEvel = await chai.request(server).post('/flic_button_press').set('button-serial-number', '100').send({})
+            expect(responseNoBatteryLEvel).to.have.status(400)
+        });
+
+        it('should return 400 to a request with only button-battery-level', async () => {
+            let responseNoSerialNumber = await chai.request(server).post('/flic_button_press').set('button-battery-level', '100').send({})
+            expect(responseNoSerialNumber).to.have.status(400)
+        });
+
+
+        it('should return 400 to a request with an unregistered button', async () => {
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', 'CCCC-C0C0C0').set('button-battery-level', '100').send()
+            expect(response).to.have.status(400)
+        });
+
+        it('should return 200 to a valid request', async () => {
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+            expect(response).to.have.status(200)
+        });
+
+        it('should be able to create a valid session state from valid request', async () => {
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+            expect(response).to.have.status(200)
+
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+            expect(sessions.length).to.equal(1)
+            
+            let session = sessions[0]
+            expect(session).to.not.be.null
+            expect(session).to.have.property('buttonId')
+            expect(session).to.have.property('unit')
+            expect(session).to.have.property('state')
+            expect(session).to.have.property('numPresses')
+            expect(session.buttonId).to.equal(unit1UUID)
+            expect(session.unit).to.equal('1')
+            expect(session.numPresses).to.equal(1)
+        });
+
+        it('should not confuse button presses from different rooms', async () => {
+
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+            response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit2SerialNumber).set('button-battery-level', '100').send()
+            expect(response).to.have.status(200)
+
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+            expect(sessions.length).to.equal(1)
+
+            let session = sessions[0]
+            expect(session).to.not.be.null
+            expect(session).to.have.property('buttonId')
+            expect(session).to.have.property('unit')
+            expect(session).to.have.property('numPresses')
+            expect(session.buttonId).to.equal(unit1UUID)
+            expect(session.unit).to.equal('1')
+            expect(session.numPresses).to.equal(1)
+        });
+
+        it('should only create one new session when receiving multiple presses from the same button', async () => {
+
+            await Promise.all([
+                chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send(),
+                chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send(),
+                chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send(),
+            ])
+
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+            expect(sessions.length).to.equal(1)
+        });
+
+        it('should count button presses accurately during an active session', async () => {
+
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+            response = await chai.request(server).post('/flic_button_press?presses=2').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+            response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+            expect(response).to.have.status(200)
+
+            let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+            expect(sessions.length).to.equal(1)
+
+            let session = sessions[0]
+            expect(session).to.not.be.null
+            expect(session).to.have.property('buttonId')
+            expect(session).to.have.property('unit')
+            expect(session).to.have.property('state')
+            expect(session).to.have.property('numPresses')
+            expect(session.buttonId).to.equal(unit1UUID)
+            expect(session.unit).to.equal('1')
+            expect(session.numPresses).to.equal(4)
+        });
+
+        it('should update battery level column with values from new requests', async () => {
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+            expect(response).to.have.status(200)
+            let button = await db.getButtonWithSerialNumber(unit1SerialNumber)
+
+            expect(button.button_battery_level).to.equal(100)
+            response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '99').send()
+            button = await db.getButtonWithSerialNumber(unit1SerialNumber)
+            expect(button.button_battery_level).to.equal(99)
+        });
+
     });
 
     describe('POST request: twilio message', () => {

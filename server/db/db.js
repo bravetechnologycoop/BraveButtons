@@ -233,13 +233,31 @@ module.exports.getButtonWithButtonId = async function(buttonId, client) {
     return null
 }
 
-module.exports.createButton = async function(buttonId, installationId, unit, phoneNumber, client) {
+module.exports.getButtonWithSerialNumber = async function(serialNumber, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
         client = await pool.connect()
     }
     
-    await client.query("INSERT INTO registry (button_id, installation_id, unit, phone_number) VALUES ($1, $2, $3, $4)", [buttonId, installationId, unit, phoneNumber])
+    let { rows } = await client.query("SELECT * FROM registry WHERE button_serial_number = $1", [serialNumber])
+    
+    if(!transactionMode) {
+        client.release()
+    }
+    
+    if(rows.length > 0) {
+        return rows[0]
+    }
+    return null
+}
+
+module.exports.createButton = async function(buttonId, installationId, unit, phoneNumber, button_serial_number, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    await client.query("INSERT INTO registry (button_id, installation_id, unit, phone_number, button_serial_number) VALUES ($1, $2, $3, $4, $5)", [buttonId, installationId, unit, phoneNumber, button_serial_number])
     
     if(!transactionMode) {
         client.release()
@@ -469,6 +487,28 @@ module.exports.saveHubAlertStatus = async function(hub, client) {
     }
     const query = "UPDATE hubs SET sent_alerts = $1 WHERE system_id = $2"
     const values = [hub.sentAlerts, hub.systemId]
+    await client.query(query, values) 
+    
+    if(!transactionMode) {
+        client.release()
+    }
+}
+
+module.exports.saveButtonBatteryLevel = async function(serialNumber, batteryLevel, client){
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    let { rows } = await client.query("SELECT * FROM registry WHERE button_serial_number = $1 LIMIT 1", [serialNumber])
+    if(rows.length === 0) {
+        if(!transactionMode) {
+            client.release()
+        }
+        throw new Error("Tried to save battery level for a button that isn't registered yet.")
+    }
+    const query = "UPDATE registry SET button_battery_level = $1 WHERE button_serial_number = $2"
+    const values = [batteryLevel, serialNumber]
     await client.query(query, values) 
     
     if(!transactionMode) {

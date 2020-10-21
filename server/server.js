@@ -1,4 +1,5 @@
 let fs = require('fs')
+const Validator = require('express-validator')
 let express = require('express')
 let https = require('https')
 let moment = require('moment-timezone')
@@ -292,6 +293,41 @@ app.get('/logout', (req, res) => {
         res.redirect('/login');
     }
 });
+
+app.post('/flic_button_press', Validator.header(['button-serial-number','button-battery-level']).exists(), async (req, res) => {
+
+    try {
+        const validationErrors = Validator.validationResult(req)
+
+        if(validationErrors.isEmpty()){
+            let button = await db.getButtonWithSerialNumber(req.get('button-serial-number'))
+            if(button === null) {
+                log(`Bad request: Serial Number is not registered. Serial Number is ${req.get('button-serial-number')}`)
+                res.status(400).send();
+            }
+            else {
+                let numPresses = 1
+
+                if(req.query.presses == 2) {
+                    numPresses = 2;
+                }
+                await db.saveButtonBatteryLevel(req.get('button-serial-number'), req.get('button-battery-level'))
+                await handleValidRequest(button, numPresses)
+                res.status(200).send();
+            }
+        }
+        else {
+            log(`Bad request, parameters missing ${JSON.stringify(validationErrors)}`)
+            res.status(400).send()
+
+        }
+    }
+    catch(err) {
+        log(err)
+        res.status(500).send()
+    }
+});
+
 
 app.post('/', jsonBodyParser, async (req, res) => {
 

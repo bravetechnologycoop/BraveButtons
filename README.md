@@ -32,7 +32,7 @@ on which you want to lint
 
 # How to set up a generic Raspberry Pi environment (for a Brave Hub or the pairing tool):
 
-1. use Balena Etcher to flash the SD card with Raspbian Buster
+1. use either Balena Etcher or Raspberry Pi Imager to flash the SD card with Raspbian Buster
 
 1. create a file named `ssh` in the boot partition of the SD card
 
@@ -242,3 +242,11 @@ or save it to an intervening file, and then input this file to the database
 `PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require < bravedata.sql`
 
 When performing a migration, make sure to connect directly to the target database rather than through a connection pool.
+
+# How to pair a button with the 'Internet Request' Flic action
+
+1. Once you've run the pairing tool and button registering scripts, pair the button and select 'Internet Request' from the list of Flic actions. NOTE: this method will *not work from a button that has been paired to a smartphone*. *A Flic hub is required to make this work*
+
+2. Select the POST request button, and input the url as follows:
+`https://chatbot.brave.coop/flic_button_request?presses=1` for the 'Click' and 'Hold' actions, and
+`https://chatbot.brave.coop/flic_button_request?presses=2` for the 'Double Click' action
