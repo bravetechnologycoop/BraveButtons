@@ -4,6 +4,7 @@ const expect = chai.expect
 const { after, afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require("sinon-chai")
+const helpers = require('brave-alert-lib').helpers
 
 chai.use(chaiHttp)
 chai.use(sinonChai)
@@ -13,8 +14,6 @@ const imports = require('../server.js')
 const server = imports.server
 const db = imports.db
 const twilioClient = imports.twilioClient
-
-require('dotenv').load()
 
 const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 
@@ -86,7 +85,7 @@ describe('Chatbot server', () => {
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
-            console.log('\n')
+            helpers.log('\n')
         });
 
         it('should return 400 to a request with an empty body', async () => {
@@ -403,7 +402,7 @@ describe('Chatbot server', () => {
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
-            console.log('\n')
+            helpers.log('\n')
         });
 
         after(async function() {
