@@ -5,36 +5,146 @@ let https = require('https')
 let moment = require('moment-timezone')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
-var cookieParser = require('cookie-parser');
-var session = require('express-session');
+var cookieParser = require('cookie-parser')
+var session = require('express-session')
 const Mustache = require('mustache')
-const helpers = require('brave-alert-lib').helpers
+const { BraveAlerter, AlertSession, ALERT_STATE, helpers } = require('brave-alert-lib')
+
+const db = require('./db/db.js')
 
 const FLIC_THRESHOLD_MILLIS = 210*1000
 const HEARTBEAT_THRESHOLD_MILLIS = 75*1000
 const PING_THRESHOLD_MILLIS = 320*1000
 
-const STATES = require('./SessionStateEnum.js');
-require('dotenv').load();
-const db = require('./db/db.js')
-const StateMachine = require('./StateMachine.js')
+const app = express()
 
-const app = express();
-
-const unrespondedSessionReminderTimeoutMillis = process.env.NODE_ENV === 'test' ? 1000 : 120000
-const unrespondedSessionAlertTimeoutMillis = process.env.NODE_ENV === 'test' ? 2000 : 240000
-
-//Set up Twilio
-const accountSid = helpers.getEnvVar('TWILIO_SID');
-const authToken = helpers.getEnvVar('TWILIO_TOKEN');
-
-const twilioClient = require('twilio')(accountSid, authToken);
+const unrespondedSessionReminderTimeoutMillis = helpers.getEnvVar('REMINDER_TIMEOUT_MS')
+const unrespondedSessionAlertTimeoutMillis = helpers.getEnvVar('FALLBACK_TIMEOUT_MS')
 
 const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/heartbeatDashboard.mst`, 'utf-8')
 const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/chatbotDashboard.mst`, 'utf-8')
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(__dirname))
+
+async function getAlertSession(sessionId) {
+    const session = await db.getSessionWithSessionId(sessionId)
+    const installation = await db.getInstallationWithInstallationId(session.installationId)
+
+    let incidentCategoryKeys = []
+    for (let i = 0; i < installation.incidentCategories.length; i++) {
+        incidentCategoryKeys.push(i.toString())
+    }
+
+    let alertSession = new AlertSession(
+        session.id,
+        session.state,
+        session.incidentType,
+        session.notes,
+        `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
+        installation.responderPhoneNumber,
+        incidentCategoryKeys,
+        installation.incidentCategories,
+    )
+
+    return alertSession
+}
+
+async function getAlertSessionByPhoneNumber(toPhoneNumber) {
+    const session = await db.getMostRecentIncompleteSessionWithPhoneNumber(toPhoneNumber)
+    const installation = await db.getInstallationWithInstallationId(session.installationId)
+
+    // Incident categories in Buttons are 0-indexed
+    let incidentCategoryKeys = []
+    for (var i = 0; i < installation.incidentCategories.length; i++) {
+        incidentCategoryKeys.push(i.toString())
+    }
+
+    let alertSession = new AlertSession(
+        session.id,
+        session.state,
+        session.incidentType,
+        session.notes,
+        `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
+        installation.responderPhoneNumber,
+        incidentCategoryKeys,
+        installation.incidentCategories,
+    )
+
+    return alertSession
+}
+
+async function alertSessionChangedCallback(alertSession) {
+    if (alertSession.alertState) {
+        await db.updateSessionState(alertSession.sessionId, alertSession.alertState)
+    }
+    
+    if (alertSession.incidentCategoryKey) {
+        const installation = await db.getInstallationWithSessionId(alertSession.sessionId)
+        await db.updateSessionIncidentCategory(alertSession.sessionId, installation.incidentCategories[alertSession.incidentCategoryKey])
+    }
+
+    if (alertSession.details) {
+        await db.updateSessionNotes(alertSession.sessionId, alertSession.details)
+    }
+
+    if (alertSession.fallbackReturnMessage) {
+        await db.updateFallbackReturnMessage(alertSession.sessionId, alertSession.fallbackReturnMessage)
+    }
+}
+
+function createResponseStringFromIncidentCategories(categories) {
+    const reducer = (accumulator, currentValue, currentIndex) => `${accumulator}${currentIndex} - ${currentValue}\n`
+    const s = `Now that you have responded, please reply with the number that best describes the incident:\n${categories.reduce(reducer, '')}`
+    return s
+}
+
+function getReturnMessage(fromAlertState, toAlertState, incidentCategories) {
+    let returnMessage
+
+    switch(fromAlertState) {
+        case ALERT_STATE.STARTED:
+        case ALERT_STATE.WAITING_FOR_REPLY:
+            returnMessage = createResponseStringFromIncidentCategories(incidentCategories)
+            break
+
+        case ALERT_STATE.WAITING_FOR_CATEGORY:
+            if (toAlertState === ALERT_STATE.WAITING_FOR_CATEGORY) {
+                returnMessage = 'Sorry, the incident type wasn\'t recognized. Please try again.'
+            }
+            else if (toAlertState === ALERT_STATE.WAITING_FOR_DETAILS) {
+                returnMessage = 'Thank you. If you like, you can reply with any further details about the incident.'
+            }
+            break
+
+        case ALERT_STATE.WAITING_FOR_DETAILS:
+            returnMessage = 'Thank you. This session is now complete. (You don\'t need to respond to this message.)'
+            break
+
+        case ALERT_STATE.COMPLETED:
+            returnMessage = 'There is no active session for this button. (You don\'t need to respond to this message.)'
+            break
+
+        default:
+            returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.'
+            break
+    }
+
+    return returnMessage
+}
+
+// Configure BraveAlerter
+const braveAlerter = new BraveAlerter(
+    getAlertSession,
+    getAlertSessionByPhoneNumber,
+    alertSessionChangedCallback,
+    true,
+    getReturnMessage,
+)
+
+// Add BraveAlerter's routes ( /alert/* )
+app.use(braveAlerter.getRouter())
+
 
 async function handleValidRequest(button, numPresses, batteryLevel) {
     helpers.log('UUID: ' + button.button_id.toString() + ' SerialNumber: ' + button.button_serial_number + ' Unit: ' + button.unit.toString() + ' Presses: ' + numPresses.toString() + ' BatteryLevel: ' + batteryLevel)
@@ -64,35 +174,6 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     await db.commitTransaction(client)
 }
 
-async function handleTwilioRequest(req) {
-
-    let phoneNumber = req.body.From;
-    let buttonPhone = req.body.To;
-    let message = req.body.Body;
-
-    let session = await db.getMostRecentIncompleteSessionWithPhoneNumber(buttonPhone)
-
-    if (session === null) {
-        helpers.log(`received twilio message with no corresponding open session: ${message}`)
-        return 200
-    }
-
-    let installation = await db.getInstallationWithInstallationId(session.installationId)
-
-    if (phoneNumber === installation.responderPhoneNumber) {
-
-        let stateMachine = new StateMachine(installation)
-        let {newSessionState, returnMessage} = stateMachine.processStateTransitionWithMessage(session, message)
-        await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, returnMessage);
-        await db.saveSession(newSessionState)
-        return 200;
-    } 
-    else {
-        helpers.log('Invalid Phone Number');
-        return 400;
-    }
-}
-
 async function needToSendButtonPressMessageForSession(session) {
     return (session.numPresses === 1 || session.numPresses === 2 || session.numPresses % 5 === 0)
 }
@@ -101,67 +182,26 @@ async function sendButtonPressMessageForSession(session, client) {
     let installation = await db.getInstallationWithInstallationId(session.installationId, client)
 
     if (session.numPresses === 1) {
-        await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + '. Please respond "Ok" when you have followed up on the call.')
-        setTimeout(sendReminderMessageForSession, unrespondedSessionReminderTimeoutMillis, session.id)
-        setTimeout(sendStaffAlertForSession, unrespondedSessionAlertTimeoutMillis, session.id)
-    } 
+        const alertInfo = {
+            sessionId: session.id,
+            toPhoneNumber: installation.responderPhoneNumber,
+            fromPhoneNumber: session.phoneNumber,
+            message: `There has been a request for help from Unit ${session.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
+            reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
+            fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
+            reminderMessage: 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
+            fallbackMessage: `There has been an unresponded request at ${installation.name} unit ${session.unit.toString()}`,
+            fallbackToPhoneNumber: installation.fallbackPhoneNumber,
+            fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
+        }
+        braveAlerter.startAlertSession(alertInfo)
+    }
     else if (session.numPresses % 5 === 0 || session.numPresses === 2) {
-        await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.')
-    }
-}
-
-async function sendTwilioMessage(toPhoneNumber, fromPhoneNumber, message) {
-    try {
-        await twilioClient.messages.create({from: fromPhoneNumber, body: message, to: toPhoneNumber})
-            .then(message => helpers.log(message.sid))
-    }
-    catch(err) {
-        helpers.log(err)
-    }
-}
-
-async function sendReminderMessageForSession(sessionId) {
-
-    let session = await db.getSessionWithSessionId(sessionId)
-
-
-    if (session === null) {
-        helpers.log("couldn't find session when sending reminder message")
-        return
-    }
-    
-    if (session.state === STATES.STARTED) {
-
-        let installation = await db.getInstallationWithInstallationId(session.installationId)
-
-        session.state = STATES.WAITING_FOR_REPLY
-        await db.saveSession(session)
-        await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, 'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.');
-    }
-}
-
-async function sendStaffAlertForSession(sessionId) {
-
-    let session = await db.getSessionWithSessionId(sessionId)
-
-    if (session === null) {
-        return
-    }
-
-    if (session.state === STATES.WAITING_FOR_REPLY) {
-
-        let installation = await db.getInstallationWithInstallationId(session.installationId)
-
-        await twilioClient.messages
-            .create({
-                from: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'), 
-                body: 'There has been an unresponded request at ' + installation.name + ' unit ' + session.unit.toString(), to: installation.fallbackPhoneNumber
-            })
-            .then(message => {
-                session.fallBackAlertTwilioStatus = message.status;
-            })
-        await db.saveSession(session)
-
+        braveAlerter.sendSingleAlert(
+            installation.responderPhoneNumber,
+            session.phoneNumber,
+            `This in an urgent request. The button has been pressed ${session.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
+        )
     }
 }
 
@@ -322,7 +362,6 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
 
 
 app.post('/', jsonBodyParser, async (req, res) => {
-
     try {
         const requiredBodyParams = ['UUID','Type'];
 
@@ -344,27 +383,6 @@ app.post('/', jsonBodyParser, async (req, res) => {
         }
         else {
             helpers.log('Bad request: UUID is missing');
-            res.status(400).send();
-        }
-    }
-    catch(err) {
-        helpers.log(err)
-        res.status(500).send()
-    }
-});
-
-app.post('/message', jsonBodyParser, async (req, res) => {
-
-    try {
-        const requiredBodyParams = ['Body', 'From', 'To'];
-
-        if (helpers.isValidRequest(req, requiredBodyParams)) {
-            let status = await handleTwilioRequest(req);
-            res.writeHead(200, {'Content-Type': 'text/xml'});
-            res.status(status).send();
-        } 
-        else {
-            helpers.log('Bad request: Body or From fields are missing');
             res.status(400).send();
         }
     }
@@ -544,7 +562,7 @@ async function checkHeartbeat() {
 
 function sendAlerts(alertMessage, systemName, heartbeatAlertRecipients) {
     for(let i = 0; i < heartbeatAlertRecipients.length; i++) {
-        sendTwilioMessage(
+        braveAlerter.sendSingleAlert(
             heartbeatAlertRecipients[i],
             helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'),
             `${alertMessage}, indicating the connection for ${systemName} has been lost.`
@@ -554,7 +572,7 @@ function sendAlerts(alertMessage, systemName, heartbeatAlertRecipients) {
 
 function sendReconnectionMessage(systemName, heartbeatAlertRecipients) {
     for(let i = 0; i < heartbeatAlertRecipients.length; i++) {
-        sendTwilioMessage(
+        braveAlerter.sendSingleAlert(
             heartbeatAlertRecipients[i],
             helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'),
             `${systemName} has reconnected.`
@@ -582,6 +600,6 @@ else {
     helpers.log('brave server listening on port 443')
 }
 
-module.exports.twilioClient = twilioClient   // For tests
+module.exports.braveAlerter = braveAlerter      // for tests
 module.exports.server = server
 module.exports.db = db
