@@ -1,5 +1,5 @@
 const STATES = require('../SessionStateEnum.js')
-const helpers = require('../helpers.js')
+const helpers = require('brave-alert-lib').helpers
 const SessionState = require('../SessionState.js')
 const Installation = require('../Installation.js')
 const Hub = require('../Hub.js')
@@ -205,7 +205,7 @@ module.exports.saveSession = async function(session, client) {
 
 module.exports.clearSessions = async function(client) {
     if(process.env.NODE_ENV !== "test") {
-        console.log("warning - tried to clear sessions database outside of a test environment!")
+        helpers.log("warning - tried to clear sessions database outside of a test environment!")
         return
     }
     let transactionMode = (typeof client !== 'undefined')
@@ -271,7 +271,7 @@ module.exports.createButton = async function(buttonId, installationId, unit, pho
 
 module.exports.clearButtons = async function(client) {
     if(process.env.NODE_ENV !== "test") {
-        console.log("warning - tried to clear registry database outside of a test environment!")
+        helpers.log("warning - tried to clear registry database outside of a test environment!")
         return
     }
     let transactionMode = (typeof client !== 'undefined')
@@ -302,7 +302,7 @@ module.exports.createInstallation = async function(name, responderPhoneNumber, f
 
 module.exports.clearInstallations = async function(client) {
     if(process.env.NODE_ENV !== "test") {
-        console.log("warning - tried to clear installations table outside of a test environment!")
+        helpers.log("warning - tried to clear installations table outside of a test environment!")
         return
     }
     let transactionMode = (typeof client !== 'undefined')
