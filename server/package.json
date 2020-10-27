@@ -5,8 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v1.0.0",
-    "chalk": "^2.4.2",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#td-odetect-fixes",
     "cookie-parser": "^1.4.3",
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
@@ -16,8 +15,7 @@
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.23",
     "mustache": "^3.0.1",
-    "pg": "^7.8.0",
-    "twilio": "^3.33.2"
+    "pg": "^7.8.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",

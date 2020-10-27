@@ -4,16 +4,14 @@ const expect = chai.expect
 const { after, afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require("sinon-chai")
-const helpers = require('brave-alert-lib').helpers
+const { ALERT_STATE, helpers } = require('brave-alert-lib')
 
 chai.use(chaiHttp)
 chai.use(sinonChai)
 
-const STATES = require('../SessionStateEnum.js')
 const imports = require('../server.js')
 const server = imports.server
 const db = imports.db
-const twilioClient = imports.twilioClient
 
 const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 
@@ -223,7 +221,7 @@ describe('Chatbot server', () => {
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
-            console.log('\n')
+            helpers.log('\n')
         });
 
         it('should return 400 to a request with no headers', async () => {
@@ -393,11 +391,13 @@ describe('Chatbot server', () => {
             await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber, unit1SerialNumber)
             await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber, unit2SerialNumber)
 
-            sinon.spy(twilioClient.messages, 'create')
+            sinon.spy(imports.braveAlerter, 'startAlertSession')
+            sinon.spy(imports.braveAlerter, 'sendSingleAlert')
         });
 
         afterEach(async function() {
-            twilioClient.messages.create.restore()
+            imports.braveAlerter.sendSingleAlert.restore()
+            imports.braveAlerter.startAlertSession.restore()
 
             await db.clearSessions()
             await db.clearButtons()
@@ -406,10 +406,9 @@ describe('Chatbot server', () => {
         });
 
         after(async function() {
-
             // wait for the staff reminder timers to finish
             await sleep(3000)
-            
+
             await db.close()
             server.close()
         })
@@ -419,7 +418,7 @@ describe('Chatbot server', () => {
             await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
             await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
 
-            expect(twilioClient.messages.create).to.be.calledOnce
+            expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
         })
 
         it('should send the initial and urgent text messages after a valid double click request to /', async () => {
@@ -427,17 +426,13 @@ describe('Chatbot server', () => {
             await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
             await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
 
-            expect(twilioClient.messages.create).to.be.calledWith({
-                body: 'There has been a request for help from Unit 1. Please respond "Ok" when you have followed up on the call.',
-                from: sinon.match.any,
-                to: sinon.match.any,
-            })
+            expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
-            expect(twilioClient.messages.create).to.be.calledWith({
-                body: 'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
-                from: sinon.match.any, 
-                to: sinon.match.any,
-            })
+            expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
+                sinon.match.any,
+                sinon.match.any, 
+                'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+            )
         })
 
         it('should send the initial text message after a valid single click request to /flic_button_press', async () => {
@@ -447,7 +442,7 @@ describe('Chatbot server', () => {
                 .set('button-battery-level', '100')
                 .send()
 
-            expect(twilioClient.messages.create).to.be.calledOnce
+            expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
         })
 
         it('should send the initial and urgent text messages after a valid double click request to /flic_button_press', async () => {
@@ -457,17 +452,13 @@ describe('Chatbot server', () => {
                 .set('button-battery-level', '100')
                 .send()
 
-            expect(twilioClient.messages.create).to.be.calledWith({
-                body: 'There has been a request for help from Unit 1. Please respond "Ok" when you have followed up on the call.',
-                from: sinon.match.any,
-                to: sinon.match.any,
-            })
+            expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
-            expect(twilioClient.messages.create).to.be.calledWith({
-                body: 'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
-                from: sinon.match.any, 
-                to: sinon.match.any,
-            })
+            expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
+                sinon.match.any,
+                sinon.match.any, 
+                'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+            )
         })
 
         it('should return ok to a valid request', async () => {
@@ -475,17 +466,17 @@ describe('Chatbot server', () => {
             await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
             await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
 
-            let response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
+            let response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_InitialStaffResponse);
             expect(response).to.have.status(200);
         });
 
         it('should return 400 to a request with incomplete data', async () => {
-            let response = await chai.request(server).post('/message').send({'Body': 'hi'});
+            let response = await chai.request(server).post('/alert/sms').send({'Body': 'hi'});
             expect(response).to.have.status(400);
         });
 
         it('should return 400 to a request from an invalid phone number', async () => {
-            let response = await chai.request(server).post('/message').send({'Body': 'hi', 'From': '+16664206969'});
+            let response = await chai.request(server).post('/alert/sms').send({'Body': 'hi', 'From': '+16664206969'});
             expect(response).to.have.status(400);
         });
 
@@ -496,28 +487,28 @@ describe('Chatbot server', () => {
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
-            expect(sessions[0].state, 'state after initial button press').to.deep.equal(STATES.STARTED);
+            expect(sessions[0].state, 'state after initial button press').to.deep.equal(ALERT_STATE.STARTED);
 
-            let response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
+            let response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_InitialStaffResponse);
             expect(response).to.have.status(200);
 
             sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
-            expect(sessions[0].state, 'state after initial staff response').to.deep.equal(STATES.WAITING_FOR_CATEGORY);
+            expect(sessions[0].state, 'state after initial staff response').to.deep.equal(ALERT_STATE.WAITING_FOR_CATEGORY);
 
-            response = await chai.request(server).post('/message').send(twilioMessageUnit1_IncidentCategoryResponse)
+            response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_IncidentCategoryResponse)
             expect(response).to.have.status(200)
  
             sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
-            expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(STATES.WAITING_FOR_DETAILS)
+            expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(ALERT_STATE.WAITING_FOR_DETAILS)
 
-            response = await chai.request(server).post('/message').send(twilioMessageUnit1_IncidentNotesResponse)
+            response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_IncidentNotesResponse)
             expect(response).to.have.status(200)
  
             sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
-            expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(STATES.COMPLETED) 
+            expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(ALERT_STATE.COMPLETED) 
 
             // now start a new session for a different unit
             // Power Automate always sends two requests
@@ -526,7 +517,7 @@ describe('Chatbot server', () => {
 
             sessions = await db.getAllSessionsWithButtonId(unit2UUID)
             expect(sessions.length).to.equal(1)
-            expect(sessions[0].state, 'state after new button press from a different unit').to.deep.equal(STATES.STARTED)
+            expect(sessions[0].state, 'state after new button press from a different unit').to.deep.equal(ALERT_STATE.STARTED)
             expect(sessions[0].buttonId).to.deep.equal(unit2UUID)
             expect(sessions[0].unit).to.deep.equal('2')
             expect(sessions[0].numPresses).to.deep.equal(1)
@@ -537,11 +528,11 @@ describe('Chatbot server', () => {
             let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
             response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
 
-            expect(response).to.have.status(200);
+            expect(response).to.have.status(200)
             await sleep(4000)
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
-            expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(STATES.WAITING_FOR_REPLY);
+            expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(ALERT_STATE.WAITING_FOR_REPLY);
             expect(sessions[0].fallBackAlertTwilioStatus).to.not.be.null
             expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('failed')
             expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('undelivered')

@@ -1,5 +1,4 @@
-const STATES = require('../SessionStateEnum.js')
-const helpers = require('brave-alert-lib').helpers
+const { ALERT_STATE, helpers } = require('brave-alert-lib')
 const SessionState = require('../SessionState.js')
 const Installation = require('../Installation.js')
 const Hub = require('../Hub.js')
@@ -60,7 +59,7 @@ module.exports.getUnrespondedSessionWithButtonId = async function(buttonId, clie
     }
 
     const query = "SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4"
-    const values = [buttonId, STATES.WAITING_FOR_CATEGORY, STATES.WAITING_FOR_DETAILS, STATES.COMPLETED]
+    const values = [buttonId, ALERT_STATE.WAITING_FOR_CATEGORY, ALERT_STATE.WAITING_FOR_DETAILS, ALERT_STATE.COMPLETED]
     const { rows } = await client.query(query, values)
    
     if(!transactionMode) {
@@ -80,7 +79,7 @@ module.exports.getMostRecentIncompleteSessionWithPhoneNumber = async function(ph
     }
     
     const query = "SELECT * FROM sessions WHERE phone_number = $1 AND state != $2 ORDER BY created_at DESC LIMIT 1"
-    const values = [phoneNumber, STATES.COMPLETED]
+    const values = [phoneNumber, ALERT_STATE.COMPLETED]
     const { rows } = await client.query(query, values)
     
     if(!transactionMode) {
@@ -168,7 +167,7 @@ module.exports.createSession = async function(installationId, buttonId, unit, ph
         client = await pool.connect()
     }
     
-    const values = [installationId, buttonId, unit, phoneNumber, STATES.STARTED, numPresses]
+    const values = [installationId, buttonId, unit, phoneNumber, ALERT_STATE.STARTED, numPresses]
     const { rows } = await client.query('INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', values)
    
     if(!transactionMode) {
@@ -201,6 +200,74 @@ module.exports.saveSession = async function(session, client) {
     if(!transactionMode) {
         client.release()
     }
+}
+
+module.exports.updateSessionState = async function(id, state, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    const query = 'UPDATE sessions SET state = $1 WHERE id = $2'
+    const values = [state, id]
+    await client.query(query, values)
+
+    if(!transactionMode) {
+        client.release()
+    }
+
+    return null
+}
+
+module.exports.updateSessionIncidentCategory = async function(id, incidentCategory, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    const query = 'UPDATE sessions SET incident_type = $1 WHERE id = $2'
+    const values = [incidentCategory, id]
+    await client.query(query, values)
+    
+    if(!transactionMode) {
+        client.release()
+    }
+
+    return null
+}
+
+module.exports.updateSessionNotes = async function(id, notes, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    const query = 'UPDATE sessions SET notes = $1 WHERE id = $2'
+    const values = [notes, id]
+    await client.query(query, values)
+    
+    if(!transactionMode) {
+        client.release()
+    }
+
+    return null
+}
+
+module.exports.updateFallbackReturnMessage = async function(id, fallbackReturnMessage, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+    
+    const query = 'UPDATE sessions SET fallback_alert_twilio_status = $1 WHERE id = $2'
+    const values = [fallbackReturnMessage, id]
+    await client.query(query, values)
+    
+    if(!transactionMode) {
+        client.release()
+    }
+
+    return null
 }
 
 module.exports.clearSessions = async function(client) {
@@ -292,7 +359,7 @@ module.exports.createInstallation = async function(name, responderPhoneNumber, f
     if(!transactionMode) {
         client = await pool.connect()
     }
-    
+
     await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number, incident_categories) VALUES ($1, $2, $3, $4)", [name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories])
     
     if(!transactionMode) {
@@ -350,6 +417,25 @@ module.exports.getInstallationWithInstallationId = async function(installationId
     if(rows.length > 0) {
         return createInstallationFromRow(rows[0])
     }
+    return null
+}
+
+module.exports.getInstallationWithSessionId = async function(sessionId, client) {
+    let transactionMode = (typeof client !== 'undefined')
+    if(!transactionMode) {
+        client = await pool.connect()
+    }
+
+    let { rows } = await client.query("SELECT i.* FROM sessions s LEFT JOIN installations i ON s.installation_id = i.id WHERE s.id = $1", [sessionId])
+
+    if(!transactionMode) {
+        client.release()
+    }
+
+    if(rows.length > 0) {
+        return createInstallationFromRow(rows[0])
+    }
+
     return null
 }
 
