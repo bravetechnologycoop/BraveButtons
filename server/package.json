@@ -6,8 +6,6 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v1.0.0",
-    "chai": "^4.2.0",
-    "chai-http": "^4.2.0",
     "chalk": "^2.4.2",
     "cookie-parser": "^1.4.3",
     "dotenv": "^6.1.0",
@@ -22,6 +20,8 @@
     "twilio": "^3.33.2"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.2.0",
     "eslint": "^7.11.0",
     "mocha": "^5.2.0",
     "sinon": "^9.0.3",
