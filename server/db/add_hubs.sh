@@ -16,8 +16,8 @@ elif [[ ! -n "$2" ]]; then
     echo ""
     echo "The hubs CSV file"
     echo "MUST have the header 'system_id, system_name, heartbeat_alert_recipients'"
-    echo "MUST use Unix line endings (LF), or else the phone numbers will have '\r' at the end"
-    echo "MUST end with a newline, or else the last button will be silently ignored"
+    echo "MUST use Unix line endings (LF)"
+    echo "MUST end with a newline, or else the last hub will be silently ignored"
     echo ""
     cd $original_dir
     exit 1
