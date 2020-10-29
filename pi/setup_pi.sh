@@ -26,6 +26,8 @@ else
       fallback_ssid="$value"
     elif [[ "$name" == "fallback_psk" ]]; then
       fallback_psk="$value"
+    elif [[ "$name" == "flic_hub_interface" ]]; then
+      flic_hub_interface="$value"
     fi
   done < $1
 
@@ -41,8 +43,14 @@ else
   apt install -y darkstat python3-gpiozero autossh ssh parprouted dhcp-helper avahi-daemon python3-pip
   pip3 install python-daemon
 
-  cat "$BASEDIR/darkstat_init.txt" > /etc/darkstat/init.cfg
-  cat "$BASEDIR/interfaces.txt" > /etc/network/interfaces
+  darkstat_init_file=$(<$BASEDIR/darkstat_init.txt)
+  darkstat_init_file="${darkstat_init_file//FLIC_HUB_INTERFACE/$flic_hub_interface}"
+  echo "$darkstat_init_file" > /etc/darkstat/init.cfg
+
+  interfaces_file=$(<$BASEDIR/interfaces.txt)
+  interfaces_file="${interfaces_file//FLIC_HUB_INTERFACE/$flic_hub_interface}"
+  echo "$interfaces_file" > /etc/network/interfaces
+
   cat "$BASEDIR/avahi-daemon.txt" > /etc/avahi/avahi-daemon.conf
 
   echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/local.conf
