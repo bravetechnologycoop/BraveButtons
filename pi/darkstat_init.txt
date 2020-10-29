@@ -1,5 +1,5 @@
 START_DARKSTAT=yes
-INTERFACE="-i eth0"
+INTERFACE="-i FLIC_HUB_INTERFACE"
 PORT="-p 8888"
 
 # File will be relative to $DIR:
