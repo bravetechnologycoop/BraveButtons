@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+
+## [2.0.0] - 2020-10-29
 ### Added
 - Deployment instructions in the README file (CU-d8rfw8).
 - Unhide endpoint for the heartbeat (CU-bgke33).
@@ -16,6 +18,7 @@ the code was deployed.
 - Automatic linting using Travis for the Server and the Pairing Tool (CU-cchv7x).
 - Battery level logging for flic buttons that send requests using the 'Internet Request' action (CU-e4nkb0).
 - Power over Ethernet support in pi_config.ini and setup_pi.sh (CU-erwdt4).
+- Shell script for adding new hubs to database.
 
 ### Changed
 - Merged heartbeat and chatbot functionality into a single application (CU-bgke33).
@@ -162,7 +165,8 @@ the code was deployed.
 ### Added
 - Initial pi.
 
-[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.6.0...v2.0.0
 [1.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.4.3...v1.5.0
 [1.4.3]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.4.2...v1.4.3
