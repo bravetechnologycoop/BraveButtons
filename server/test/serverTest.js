@@ -90,23 +90,34 @@ describe('Chatbot server', () => {
         });
 
         it('should return 400 to a request with an empty body', async () => {
-            let response = await chai.request(server).post('/').send({});
+            // Power Automate always sends two requests
+            let response = await chai.request(server).post('/').send({})
+            response = await chai.request(server).post('/').send({})
+
             expect(response).to.have.status(400);
         });
 
         it('should return 400 to a request with an unregistered button', async () => {
-            let response = await chai.request(server).post('/').send({'UUID': '666','Type': 'click'});
+            // Power Automate always sends two requests
+            let response = await chai.request(server).post('/').send({'UUID': '666','Type': 'click'})
+            response = await chai.request(server).post('/').send({'UUID': '666','Type': 'click'})
+
             expect(response).to.have.status(400);
         });
 
         it('should return 200 to a valid request', async () => {
-            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            // Power Automate always sends two requests
+            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+
             expect(response).to.have.status(200);
         });
 
         it('should be able to create a valid session state from valid request', async () => {
-			
-            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            // Power Automate always sends two requests
+            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+
             expect(response).to.have.status(200);
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -124,9 +135,14 @@ describe('Chatbot server', () => {
         });
 
         it('should not confuse button presses from different rooms', async () => {
+            // Power Automate always sends two requests
+            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
 
-            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
-            response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick);
+            // Power Automate always sends two requests
+            response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick)
+            response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick)
+
             expect(response).to.have.status(200);
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -145,9 +161,17 @@ describe('Chatbot server', () => {
         it('should only create one new session when receiving multiple presses from the same button', async () => {
 
             await Promise.all([
+                // Power Automate always sends two requests
                 chai.request(server).post('/').send(unit1FlicRequest_SingleClick),
+                chai.request(server).post('/').send(unit1FlicRequest_SingleClick),
+
+                // Power Automate always sends two requests
                 chai.request(server).post('/').send(unit1FlicRequest_DoubleClick),
-                chai.request(server).post('/').send(unit1FlicRequest_Hold)
+                chai.request(server).post('/').send(unit1FlicRequest_DoubleClick),
+
+                // Power Automate always sends two requests
+                chai.request(server).post('/').send(unit1FlicRequest_Hold),
+                chai.request(server).post('/').send(unit1FlicRequest_Hold),
             ])
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -155,10 +179,18 @@ describe('Chatbot server', () => {
         });
 
         it('should count button presses accurately during an active session', async () => {
+            // Power Automate always sends two requests
+            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
 
-            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
-            response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick);
-            response = await chai.request(server).post('/').send(unit1FlicRequest_Hold);
+            // Power Automate always sends two requests
+            response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
+            response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
+
+            // Power Automate always sends two requests
+            response = await chai.request(server).post('/').send(unit1FlicRequest_Hold)
+            response = await chai.request(server).post('/').send(unit1FlicRequest_Hold)
+
             expect(response).to.have.status(200);
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -339,6 +371,8 @@ describe('Chatbot server', () => {
         it('should send the initial text message after a valid single click request to /', async () => {
             // Power Automate always sends two requests
             await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+
             expect(twilioClient.messages.create).to.be.calledOnce
         })
 
@@ -346,6 +380,7 @@ describe('Chatbot server', () => {
             // Power Automate always sends two requests
             await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
             await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
+
             expect(twilioClient.messages.create).to.be.calledOnce
         })
 
@@ -370,8 +405,11 @@ describe('Chatbot server', () => {
         })
 
         it('should return ok to a valid request', async () => {
-            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
-            response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
+            // Power Automate always sends two requests
+            await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+
+            let response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
             expect(response).to.have.status(200);
         });
 
@@ -386,14 +424,15 @@ describe('Chatbot server', () => {
         });
 
         it('should return ok to a valid request and advance the session appropriately', async () => {
-            
-            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            // Power Automate always sends two requests
+            await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
 
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
             expect(sessions.length).to.equal(1)
             expect(sessions[0].state, 'state after initial button press').to.deep.equal(STATES.STARTED);
 
-            response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
+            let response = await chai.request(server).post('/message').send(twilioMessageUnit1_InitialStaffResponse);
             expect(response).to.have.status(200);
 
             sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -415,7 +454,9 @@ describe('Chatbot server', () => {
             expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(STATES.COMPLETED) 
 
             // now start a new session for a different unit
-            response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick);
+            // Power Automate always sends two requests
+            await chai.request(server).post('/').send(unit2FlicRequest_SingleClick)
+            await chai.request(server).post('/').send(unit2FlicRequest_SingleClick)
 
             sessions = await db.getAllSessionsWithButtonId(unit2UUID)
             expect(sessions.length).to.equal(1)
@@ -426,7 +467,10 @@ describe('Chatbot server', () => {
         });
 
         it('should send a message to the fallback phone number if enough time has passed without a response', async () => {
-            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick);
+            // Power Automate always sends two requests
+            let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+
             expect(response).to.have.status(200);
             await sleep(4000)
             let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
