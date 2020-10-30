@@ -113,18 +113,18 @@ async function handleTwilioRequest(req) {
 }
 
 async function needToSendButtonPressMessageForSession(session) {
-    return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0)
+    return (session.numPresses === 1 || session.numPresses === 2 || session.numPresses % 5 === 0)
 }
 
 async function sendButtonPressMessageForSession(session, client) {
     let installation = await db.getInstallationWithInstallationId(session.installationId, client)
 
     if (session.numPresses === 1) {
-        await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.')
+        await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + '. Please respond "Ok" when you have followed up on the call.')
         setTimeout(sendReminderMessageForSession, unrespondedSessionReminderTimeoutMillis, session.id)
         setTimeout(sendStaffAlertForSession, unrespondedSessionAlertTimeoutMillis, session.id)
     } 
-    else if (session.numPresses % 5 === 0 || session.numPresses === 3) {
+    else if (session.numPresses % 5 === 0 || session.numPresses === 2) {
         await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, 'This in an urgent request. The button has been pressed ' + session.numPresses.toString() + ' times. Please respond "Ok" when you have followed up on the call.')
     }
 }
@@ -163,7 +163,7 @@ async function sendStaffAlertForSession(sessionId) {
 
     let session = await db.getSessionWithSessionId(sessionId)
 
-    if (session === null) {         
+    if (session === null) {
         return
     }
 
