@@ -12,6 +12,9 @@ the code was deployed.
 ### Changed
 - The time between the initial text message and the reminder is now 2 minutes (CU-eanm0j).
 
+### Fixed
+- Double click handling (CU-f0w9qm).
+
 ## [2.0.0] - 2020-10-29
 ### Added
 - Deployment instructions in the README file (CU-d8rfw8).

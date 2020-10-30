@@ -207,7 +207,8 @@ app.use((req, res, next) => {
 var sessionChecker = (req, res, next) => {
     if (req.session.user && req.cookies.user_sid) {
         res.redirect('/dashboard');
-    } else {
+    }
+    else {
         next();
     }
 };
@@ -343,7 +344,7 @@ app.post('/', jsonBodyParser, async (req, res) => {
             else {
                 let numPresses = 1
 
-                if(req.body.Type == 'double_click') {
+                if (req.body.Type.startsWith('double')) {
                     numPresses = 2;
                 }
 
