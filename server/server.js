@@ -340,10 +340,10 @@ app.post('/', jsonBodyParser, async (req, res) => {
                 res.status(400).send();
             }
             else {
-                await handleValidRequest(button, 1)
+                await handleValidRequest(button, 0.5)
 
                 if (req.body.Type.startsWith('double')) {
-                    await handleValidRequest(button, 1)
+                    await handleValidRequest(button, 0.5)
                 }
 
                 res.status(200).send();

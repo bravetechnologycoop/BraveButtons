@@ -14,6 +14,7 @@ the code was deployed.
 
 ### Fixed
 - Double click handling (CU-f0w9qm).
+- Button press counting for POST requests to '/' to workaround a MS Flow bug (CU-f0w9qm).
 
 ## [2.0.0] - 2020-10-29
 ### Added

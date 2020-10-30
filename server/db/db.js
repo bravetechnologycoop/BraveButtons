@@ -3,7 +3,8 @@ const helpers = require('../helpers.js')
 const SessionState = require('../SessionState.js')
 const Installation = require('../Installation.js')
 const Hub = require('../Hub.js')
-const { Pool } = require('pg')
+const { Pool, types } = require('pg')
+
 require('dotenv').config();
 
 const pool = new Pool({
@@ -17,6 +18,10 @@ const pool = new Pool({
 
 pool.on('error', (err) => {
     console.error('unexpected database error:', err)
+})
+
+types.setTypeParser(types.builtins.NUMERIC, value => {
+    return parseFloat(value)
 })
 
 function createSessionFromRow(r) {
