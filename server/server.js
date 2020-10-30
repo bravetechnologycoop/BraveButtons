@@ -29,7 +29,7 @@ const unrespondedSessionAlertTimeoutMillis = process.env.NODE_ENV === 'test' ? 2
 const accountSid = helpers.getEnvVar('TWILIO_SID');
 const authToken = helpers.getEnvVar('TWILIO_TOKEN');
 
-const client = require('twilio')(accountSid, authToken);
+const twilioClient = require('twilio')(accountSid, authToken);
 
 const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/heartbeatDashboard.mst`, 'utf-8')
 const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/chatbotDashboard.mst`, 'utf-8')
@@ -72,7 +72,7 @@ async function handleValidRequest(button, numPresses) {
     }
 
     if(needToSendButtonPressMessageForSession(session)) {
-        sendButtonPressMessageForSession(session)
+        sendButtonPressMessageForSession(session, client)
     }
 
     await db.commitTransaction(client)
@@ -111,9 +111,8 @@ async function needToSendButtonPressMessageForSession(session) {
     return (session.numPresses === 1 || session.numPresses === 3 || session.numPresses % 5 === 0)
 }
 
-async function sendButtonPressMessageForSession(session) {
-
-    let installation = await db.getInstallationWithInstallationId(session.installationId)
+async function sendButtonPressMessageForSession(session, client) {
+    let installation = await db.getInstallationWithInstallationId(session.installationId, client)
 
     if (session.numPresses === 1) {
         await sendTwilioMessage(installation.responderPhoneNumber, session.phoneNumber, 'There has been a request for help from Unit ' + session.unit.toString() + ' . Please respond "Ok" when you have followed up on the call.')
@@ -127,7 +126,7 @@ async function sendButtonPressMessageForSession(session) {
 
 async function sendTwilioMessage(toPhoneNumber, fromPhoneNumber, message) {
     try {
-        await client.messages.create({from: fromPhoneNumber, body: message, to: toPhoneNumber})
+        await twilioClient.messages.create({from: fromPhoneNumber, body: message, to: toPhoneNumber})
             .then(message => log(message.sid))
     }
     catch(err) {
@@ -167,7 +166,7 @@ async function sendStaffAlertForSession(sessionId) {
 
         let installation = await db.getInstallationWithInstallationId(session.installationId)
 
-        await client.messages
+        await twilioClient.messages
             .create({
                 from: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'), 
                 body: 'There has been an unresponded request at ' + installation.name + ' unit ' + session.unit.toString(), to: installation.fallbackPhoneNumber
@@ -592,5 +591,6 @@ else {
     log('brave server listening on port 443')
 }
 
+module.exports.twilioClient = twilioClient   // For tests
 module.exports.server = server
 module.exports.db = db

@@ -1,18 +1,21 @@
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-chai.use(chaiHttp);
-const expect = chai.expect;
-var describe = require('mocha').describe
-var it = require('mocha').it
-var beforeEach = require('mocha').beforeEach
-var afterEach = require('mocha').afterEach
-var after = require('mocha').after
+const chai = require('chai')
+const chaiHttp = require('chai-http')
+const expect = chai.expect
+const { after, afterEach, beforeEach, describe, it } = require('mocha')
+const sinon = require('sinon')
+const sinonChai = require("sinon-chai")
 
-const STATES = require('../SessionStateEnum.js');
-let imports = require('../server.js')
-let server = imports.server
-let db =imports.db
-require('dotenv').load();
+chai.use(chaiHttp)
+chai.use(sinonChai)
+
+const STATES = require('../SessionStateEnum.js')
+const imports = require('../server.js')
+const server = imports.server
+const db = imports.db
+const twilioClient = imports.twilioClient
+
+require('dotenv').load()
+
 const sleep = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 
 describe('Chatbot server', () => {
@@ -309,11 +312,15 @@ describe('Chatbot server', () => {
             await db.clearInstallations()
             await db.createInstallation("TestInstallation", installationResponderPhoneNumber, installationFallbackPhoneNumber, installationIncidentCategories)
             let installations = await db.getInstallations()
-            await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber)
-            await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber)
+            await db.createButton(unit1UUID, installations[0].id, "1", unit1PhoneNumber, unit1SerialNumber)
+            await db.createButton(unit2UUID, installations[0].id, "2", unit2PhoneNumber, unit2SerialNumber)
+
+            sinon.spy(twilioClient.messages, 'create')
         });
 
         afterEach(async function() {
+            twilioClient.messages.create.restore()
+
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
@@ -327,6 +334,39 @@ describe('Chatbot server', () => {
             
             await db.close()
             server.close()
+        })
+
+        it('should send the initial text message after a valid single click request to /', async () => {
+            // Power Automate always sends two requests
+            await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+            expect(twilioClient.messages.create).to.be.calledOnce
+        })
+
+        it('should send the initial text message after a valid double click request to /', async () => {
+            // Power Automate always sends two requests
+            await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
+            await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
+            expect(twilioClient.messages.create).to.be.calledOnce
+        })
+
+        it('should send the initial text message after a valid single click request to /flic_button_press', async () => {
+            await chai.request(server)
+                .post('/flic_button_press')
+                .set('button-serial-number', unit1SerialNumber)
+                .set('button-battery-level', '100')
+                .send()
+
+            expect(twilioClient.messages.create).to.be.calledOnce
+        })
+
+        it('should send the initial text message after a valid double click request to /flic_button_press', async () => {
+            await chai.request(server)
+                .post('/flic_button_press?presses=2')
+                .set('button-serial-number', unit1SerialNumber)
+                .set('button-battery-level', '100')
+                .send()
+
+            expect(twilioClient.messages.create).to.be.calledOnce
         })
 
         it('should return ok to a valid request', async () => {
