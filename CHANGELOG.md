@@ -11,6 +11,7 @@ the code was deployed.
 ## [Unreleased]
 ### Changed
 - The time between the initial text message and the reminder is now 2 minutes (CU-eanm0j).
+- Allow calls to `POST /flic_button_press` without the `button-battery-level` header (CU-f0w9qm).
 
 ### Fixed
 - Double click handling (CU-f0w9qm).

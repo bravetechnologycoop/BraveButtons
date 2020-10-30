@@ -232,10 +232,10 @@ describe('Chatbot server', () => {
             expect(response).to.have.status(400)
         });
 
-        it('should return 400 to a request with only button-serial-number', async () => {
-            let responseNoBatteryLEvel = await chai.request(server).post('/flic_button_press').set('button-serial-number', '100').send({})
-            expect(responseNoBatteryLEvel).to.have.status(400)
-        });
+        it('should return 200 to a request with only button-serial-number', async () => {
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).send({})
+            expect(response).to.have.status(200)
+        })
 
         it('should return 400 to a request with only button-battery-level', async () => {
             let responseNoSerialNumber = await chai.request(server).post('/flic_button_press').set('button-battery-level', '100').send({})
@@ -323,18 +323,65 @@ describe('Chatbot server', () => {
             expect(session.numPresses).to.equal(4)
         });
 
+        it('should leave battery level null if initial request do not provide button-battery-level', async () => {
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).send()
+
+            expect(response).to.have.status(200)
+
+            let button = await db.getButtonWithSerialNumber(unit1SerialNumber)
+            expect(button.button_battery_level).to.be.null
+        })
+
+        it('should leave battery level null if initial battery level is < 0', async () => {
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '-1').send()
+
+            expect(response).to.have.status(200)
+
+            let button = await db.getButtonWithSerialNumber(unit1SerialNumber)
+            expect(button.button_battery_level).to.be.null
+        })
+
+        it('should leave battery level null if initial battery level is > 100', async () => {
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '101').send()
+
+            expect(response).to.have.status(200)
+
+            let button = await db.getButtonWithSerialNumber(unit1SerialNumber)
+            expect(button.button_battery_level).to.be.null
+        })
+
         it('should update battery level column with values from new requests', async () => {
             let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+
             expect(response).to.have.status(200)
             let button = await db.getButtonWithSerialNumber(unit1SerialNumber)
-
             expect(button.button_battery_level).to.equal(100)
-            response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '99').send()
-            button = await db.getButtonWithSerialNumber(unit1SerialNumber)
-            expect(button.button_battery_level).to.equal(99)
-        });
 
-    });
+            response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '1').send()
+            button = await db.getButtonWithSerialNumber(unit1SerialNumber)
+            expect(button.button_battery_level).to.equal(1)
+
+            response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '0').send()
+            button = await db.getButtonWithSerialNumber(unit1SerialNumber)
+            expect(button.button_battery_level).to.equal(0)
+        })
+
+        it('should not change battery level column if subsequent requests do not provide button-battery-level', async () => {
+            const fakeBatteryLevel = 23
+
+            let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', fakeBatteryLevel.toString()).send()
+            expect(response).to.have.status(200)
+
+            let button = await db.getButtonWithSerialNumber(unit1SerialNumber)
+            expect(button.button_battery_level).to.equal(fakeBatteryLevel)
+
+            response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).send()
+            expect(response).to.have.status(200)
+            
+            let buttonAgain = await db.getButtonWithSerialNumber(unit1SerialNumber)
+            expect(buttonAgain.button_battery_level).to.equal(fakeBatteryLevel)
+        })
+    })
 
     describe('POST request: twilio message', () => {
 
