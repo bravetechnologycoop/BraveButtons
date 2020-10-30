@@ -423,12 +423,22 @@ describe('Chatbot server', () => {
             expect(twilioClient.messages.create).to.be.calledOnce
         })
 
-        it('should send the initial text message after a valid double click request to /', async () => {
+        it('should send the initial and urgent text messages after a valid double click request to /', async () => {
             // Power Automate always sends two requests
             await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
             await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
 
-            expect(twilioClient.messages.create).to.be.calledOnce
+            expect(twilioClient.messages.create).to.be.calledWith({
+                body: 'There has been a request for help from Unit 1. Please respond "Ok" when you have followed up on the call.',
+                from: sinon.match.any,
+                to: sinon.match.any,
+            })
+
+            expect(twilioClient.messages.create).to.be.calledWith({
+                body: 'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+                from: sinon.match.any, 
+                to: sinon.match.any,
+            })
         })
 
         it('should send the initial text message after a valid single click request to /flic_button_press', async () => {
@@ -441,14 +451,24 @@ describe('Chatbot server', () => {
             expect(twilioClient.messages.create).to.be.calledOnce
         })
 
-        it('should send the initial text message after a valid double click request to /flic_button_press', async () => {
+        it('should send the initial and urgent text messages after a valid double click request to /flic_button_press', async () => {
             await chai.request(server)
                 .post('/flic_button_press?presses=2')
                 .set('button-serial-number', unit1SerialNumber)
                 .set('button-battery-level', '100')
                 .send()
 
-            expect(twilioClient.messages.create).to.be.calledOnce
+            expect(twilioClient.messages.create).to.be.calledWith({
+                body: 'There has been a request for help from Unit 1. Please respond "Ok" when you have followed up on the call.',
+                from: sinon.match.any,
+                to: sinon.match.any,
+            })
+
+            expect(twilioClient.messages.create).to.be.calledWith({
+                body: 'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+                from: sinon.match.any, 
+                to: sinon.match.any,
+            })
         })
 
         it('should return ok to a valid request', async () => {
