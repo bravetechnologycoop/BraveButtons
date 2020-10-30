@@ -36,7 +36,7 @@ describe('Chatbot server', () => {
 
     const unit1FlicRequest_DoubleClick = {
         'UUID': unit1UUID,
-        'Type': 'double_click'
+        'Type': 'double click'
     };
 
     const unit1FlicRequest_Hold = {
