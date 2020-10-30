@@ -306,13 +306,12 @@ app.post('/flic_button_press', Validator.header(['button-serial-number','button-
                 res.status(400).send();
             }
             else {
-                let numPresses = 1
+                await handleValidRequest(button, 1)
 
                 if(req.query.presses == 2) {
-                    numPresses = 2;
+                    await handleValidRequest(button, 1)
                 }
                 await db.saveButtonBatteryLevel(req.get('button-serial-number'), req.get('button-battery-level'))
-                await handleValidRequest(button, numPresses)
                 res.status(200).send();
             }
         }
@@ -341,13 +340,12 @@ app.post('/', jsonBodyParser, async (req, res) => {
                 res.status(400).send();
             }
             else {
-                let numPresses = 1
+                await handleValidRequest(button, 1)
 
                 if (req.body.Type.startsWith('double')) {
-                    numPresses = 2;
+                    await handleValidRequest(button, 1)
                 }
 
-                await handleValidRequest(button, numPresses)
                 res.status(200).send();
             }
         }
