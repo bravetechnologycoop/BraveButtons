@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+### Changed
+- The time between the initial text message and the reminder is now 2 minutes (CU-eanm0j).
 
 ## [2.0.0] - 2020-10-29
 ### Added

@@ -22,8 +22,8 @@ const StateMachine = require('./StateMachine.js')
 
 const app = express();
 
-const unrespondedSessionReminderTimeoutMillis = process.env.NODE_ENV === 'test' ? 1000 : 300000;
-const unrespondedSessionAlertTimeoutMillis = process.env.NODE_ENV === 'test' ? 2000 : 420000;
+const unrespondedSessionReminderTimeoutMillis = process.env.NODE_ENV === 'test' ? 1000 : 120000
+const unrespondedSessionAlertTimeoutMillis = process.env.NODE_ENV === 'test' ? 2000 : 240000
 
 //Set up Twilio
 const accountSid = helpers.getEnvVar('TWILIO_SID');
