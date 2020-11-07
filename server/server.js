@@ -8,8 +8,9 @@ let jsonBodyParser = bodyParser.json()
 var cookieParser = require('cookie-parser')
 var session = require('express-session')
 const Mustache = require('mustache')
-const { BraveAlerter, AlertSession, ALERT_STATE, helpers } = require('brave-alert-lib')
+const helpers = require('brave-alert-lib').helpers
 
+const BraveAlerterConfigurator = require('./BraveAlerterConfigurator.js')
 const db = require('./db/db.js')
 
 const FLIC_THRESHOLD_MILLIS = 210*1000
@@ -27,120 +28,8 @@ const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/chatbotDashboard.
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(__dirname))
 
-async function getAlertSession(sessionId) {
-    const session = await db.getSessionWithSessionId(sessionId)
-    const installation = await db.getInstallationWithInstallationId(session.installationId)
-
-    let incidentCategoryKeys = []
-    for (let i = 0; i < installation.incidentCategories.length; i++) {
-        incidentCategoryKeys.push(i.toString())
-    }
-
-    let alertSession = new AlertSession(
-        session.id,
-        session.state,
-        session.incidentType,
-        session.notes,
-        `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-        installation.responderPhoneNumber,
-        incidentCategoryKeys,
-        installation.incidentCategories,
-    )
-
-    return alertSession
-}
-
-async function getAlertSessionByPhoneNumber(toPhoneNumber) {
-    const session = await db.getMostRecentIncompleteSessionWithPhoneNumber(toPhoneNumber)
-    const installation = await db.getInstallationWithInstallationId(session.installationId)
-
-    // Incident categories in Buttons are 0-indexed
-    let incidentCategoryKeys = []
-    for (var i = 0; i < installation.incidentCategories.length; i++) {
-        incidentCategoryKeys.push(i.toString())
-    }
-
-    let alertSession = new AlertSession(
-        session.id,
-        session.state,
-        session.incidentType,
-        session.notes,
-        `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-        installation.responderPhoneNumber,
-        incidentCategoryKeys,
-        installation.incidentCategories,
-    )
-
-    return alertSession
-}
-
-async function alertSessionChangedCallback(alertSession) {
-    if (alertSession.alertState) {
-        await db.updateSessionState(alertSession.sessionId, alertSession.alertState)
-    }
-    
-    if (alertSession.incidentCategoryKey) {
-        const installation = await db.getInstallationWithSessionId(alertSession.sessionId)
-        await db.updateSessionIncidentCategory(alertSession.sessionId, installation.incidentCategories[alertSession.incidentCategoryKey])
-    }
-
-    if (alertSession.details) {
-        await db.updateSessionNotes(alertSession.sessionId, alertSession.details)
-    }
-
-    if (alertSession.fallbackReturnMessage) {
-        await db.updateFallbackReturnMessage(alertSession.sessionId, alertSession.fallbackReturnMessage)
-    }
-}
-
-function createResponseStringFromIncidentCategories(categories) {
-    const reducer = (accumulator, currentValue, currentIndex) => `${accumulator}${currentIndex} - ${currentValue}\n`
-    const s = `Now that you have responded, please reply with the number that best describes the incident:\n${categories.reduce(reducer, '')}`
-    return s
-}
-
-function getReturnMessage(fromAlertState, toAlertState, incidentCategories) {
-    let returnMessage
-
-    switch(fromAlertState) {
-        case ALERT_STATE.STARTED:
-        case ALERT_STATE.WAITING_FOR_REPLY:
-            returnMessage = createResponseStringFromIncidentCategories(incidentCategories)
-            break
-
-        case ALERT_STATE.WAITING_FOR_CATEGORY:
-            if (toAlertState === ALERT_STATE.WAITING_FOR_CATEGORY) {
-                returnMessage = 'Sorry, the incident type wasn\'t recognized. Please try again.'
-            }
-            else if (toAlertState === ALERT_STATE.WAITING_FOR_DETAILS) {
-                returnMessage = 'Thank you. If you like, you can reply with any further details about the incident.'
-            }
-            break
-
-        case ALERT_STATE.WAITING_FOR_DETAILS:
-            returnMessage = 'Thank you. This session is now complete. (You don\'t need to respond to this message.)'
-            break
-
-        case ALERT_STATE.COMPLETED:
-            returnMessage = 'There is no active session for this button. (You don\'t need to respond to this message.)'
-            break
-
-        default:
-            returnMessage = 'Thank you for responding. Unfortunately, we have encountered an error in our system and will deal with it shortly.'
-            break
-    }
-
-    return returnMessage
-}
-
 // Configure BraveAlerter
-const braveAlerter = new BraveAlerter(
-    getAlertSession,
-    getAlertSessionByPhoneNumber,
-    alertSessionChangedCallback,
-    true,
-    getReturnMessage,
-)
+const braveAlerter = (new BraveAlerterConfigurator()).createBraveAlerter()
 
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
