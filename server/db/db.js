@@ -4,8 +4,6 @@ const Installation = require('../Installation.js')
 const Hub = require('../Hub.js')
 const { Pool, types } = require('pg')
 
-require('dotenv').config();
-
 const pool = new Pool({
     host: helpers.getEnvVar('PG_HOST'),
     port: helpers.getEnvVar('PG_PORT'),
@@ -271,7 +269,7 @@ module.exports.updateFallbackReturnMessage = async function(id, fallbackReturnMe
 }
 
 module.exports.clearSessions = async function(client) {
-    if(process.env.NODE_ENV !== "test") {
+    if(!helpers.isTestEnvironment()) {
         helpers.log("warning - tried to clear sessions database outside of a test environment!")
         return
     }
@@ -337,7 +335,7 @@ module.exports.createButton = async function(buttonId, installationId, unit, pho
 }
 
 module.exports.clearButtons = async function(client) {
-    if(process.env.NODE_ENV !== "test") {
+    if(!helpers.isTestEnvironment()) {
         helpers.log("warning - tried to clear registry database outside of a test environment!")
         return
     }
@@ -368,7 +366,7 @@ module.exports.createInstallation = async function(name, responderPhoneNumber, f
 }
 
 module.exports.clearInstallations = async function(client) {
-    if(process.env.NODE_ENV !== "test") {
+    if(!helpers.isTestEnvironment()) {
         helpers.log("warning - tried to clear installations table outside of a test environment!")
         return
     }
