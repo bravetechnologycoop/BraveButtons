@@ -476,7 +476,7 @@ async function updateSentAlerts(hub, sentAlerts) {
 
 let server;
 
-if (process.env.NODE_ENV === 'test') { // local http server for testing
+if (helpers.isTestEnvironment()) { // local http server for testing
     server = app.listen(8000);
 }
 else {
