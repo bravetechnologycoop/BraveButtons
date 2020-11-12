@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+
+## [2.1.0] - 2020-11-12
 ### Changed
 - The time between the initial text message and the reminder is now 2 minutes (CU-eanm0j).
 - Allow calls to `POST /flic_button_press` without the `button-battery-level` header (CU-f0w9qm).
@@ -173,7 +175,8 @@ the code was deployed.
 ### Added
 - Initial pi.
 
-[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.6.0...v2.0.0
 [1.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.4.3...v1.5.0
