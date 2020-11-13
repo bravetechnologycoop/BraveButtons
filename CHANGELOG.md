@@ -12,6 +12,9 @@ the code was deployed.
 ### Added
 - Added is_active field to conditionally display only active active installations in dashboard (CU-fwpya5).
 
+### Fixed
+- Built in documentation in `add_buttons.csv.example` and `add_installation.sh` (CU-f8w261).
+
 ## [2.1.0] - 2020-11-12
 ### Changed
 - The time between the initial text message and the reminder is now 2 minutes (CU-eanm0j).
