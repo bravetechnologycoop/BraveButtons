@@ -1,6 +1,6 @@
 class SessionState {
 
-    constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus) {
+    constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus, buttonBatteryLevel) {
         this.id = id
         this.installationId = installationId
         this.buttonId = buttonId
@@ -13,10 +13,15 @@ class SessionState {
         this.incidentType = incidentType
         this.notes = notes
         this.fallBackAlertTwilioStatus = fallBackAlertTwilioStatus
+        this.buttonBatteryLevel = buttonBatteryLevel
     }
 
     incrementButtonPresses(numPresses) {
         this.numPresses += numPresses
+    }
+
+    updateBatteryLevel(buttonBatteryLevel) {
+        this.buttonBatteryLevel = buttonBatteryLevel
     }
 
 }

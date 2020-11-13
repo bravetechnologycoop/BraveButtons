@@ -41,19 +41,28 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     let client = await db.beginTransaction()
 
     let session = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
-        
-    if (session === null) {
-        session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, client)
-    }
-    else {
-        session.incrementButtonPresses(numPresses)
-        await db.saveSession(session, client)
-    }
 
     if ((batteryLevel !== undefined) &&
             (batteryLevel >= 0) &&
             (batteryLevel <= 100)) {
-        await db.saveButtonBatteryLevel(button.button_serial_number, batteryLevel, client)
+        if (session === null) {
+            session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, batteryLevel, client)
+        }
+        else {
+            session.incrementButtonPresses(numPresses)
+            session.updateBatteryLevel(batteryLevel)
+            await db.saveSession(session, client)
+        }
+
+    }else{
+        if (session === null) {
+            session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
+        }
+        else {
+            session.incrementButtonPresses(numPresses)
+            await db.saveSession(session, client)
+        }
+
     }
 
     if(needToSendButtonPressMessageForSession(session)) {
@@ -211,6 +220,7 @@ app.get('/dashboard/:installationId?', async (req, res) => {
                 numPresses: recentSession.numPresses.toString(),
                 incidentType: recentSession.incidentType,
                 notes: recentSession.notes,
+                buttonBatteryLevel: recentSession.buttonBatteryLevel
             })
         }
           
@@ -261,7 +271,7 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
                 await handleValidRequest(button, 1, batteryLevel)
 
                 if (req.query.presses == 2) {
-                    await handleValidRequest(button, 1)
+                    await handleValidRequest(button, 1, batteryLevel)
                 }
 
                 res.status(200).send();
