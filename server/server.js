@@ -260,7 +260,11 @@ app.get('/dashboard/:installationId?', async (req, res) => {
         let viewParams = {
             recentSessions: [],
             currentInstallationName: currentInstallation.name,
-            installations: allInstallations.map(installation => { return { name: installation.name, id: installation.id }})
+            installations: allInstallations
+                .filter(installation => installation.isActive)
+                .map(installation => { 
+                    return { name: installation.name, id: installation.id }
+                })
         }
 
         for(const recentSession of recentSessions) {

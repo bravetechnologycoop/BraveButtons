@@ -29,7 +29,7 @@ function createSessionFromRow(r) {
 }
 
 function createInstallationFromRow(r) {
-    return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.incident_categories, r.created_at)
+    return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.incident_categories, r.is_active, r.created_at)
 }
 
 function createHubFromRow(r) {
@@ -293,7 +293,7 @@ module.exports.createInstallation = async function(name, responderPhoneNumber, f
         client = await pool.connect()
     }
     
-    await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number, incident_categories) VALUES ($1, $2, $3, $4)", [name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories])
+    await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number, incident_categories, is_active) VALUES ($1, $2, $3, $4)", [name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories, true])
     
     if(!transactionMode) {
         client.release()
