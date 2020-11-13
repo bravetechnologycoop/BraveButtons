@@ -15,7 +15,7 @@ elif [[ ! -n "$5" ]]; then
     echo "Example: $0 ./../.env NewInstallation +16041234567 +17781234567 ./add_buttons.csv.example"
     echo ""
     echo "The registry CSV file"
-    echo "MUST have the header 'button_id,unit,phone_number'"
+    echo "MUST have the header 'button_id,unit,phone_number,button_serial_number'"
     echo "MUST use Unix line endings (LF), or else the phone numbers will have '\r' at the end"
     echo "MUST end with a newline, or else the last button will be silently ignored"
     echo ""
