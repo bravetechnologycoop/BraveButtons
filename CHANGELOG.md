@@ -11,6 +11,7 @@ the code was deployed.
 ## [Unreleased]
 ### Added
 - Added landing page for chatbot dashboard so page will load when there are no installations selected or present (CU-gurbtf).
+- Added Battery Level to sessions table and dashboard display (CU-fgyh0g).
 
 ### Changed
 - Update to use brave-alert-lib v2.1.0 which includes Twilio validation (CU-dgmfbv).

@@ -26,6 +26,7 @@ function createTestSessionState() {
         '1',
         'fakeNotes',
         'fakeFallbackTwilioState',
+        null
     )
 }
 
@@ -52,7 +53,7 @@ describe('BraveAlerterConfigurator', () => {
             await db.clearInstallations()
             await db.createInstallation('', this.installationResponderPhoneNumber, '',this.installationIncidentCategories)
             let installations = await db.getInstallations()
-            await db.createSession(installations[0].id, '', '701', '', 1)
+            await db.createSession(installations[0].id, '', '701', '', 1, null)
             const sessions = await db.getAllSessions()
             const session = sessions[0]
             this.sessionId = session.id
