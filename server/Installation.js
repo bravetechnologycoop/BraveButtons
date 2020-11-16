@@ -10,4 +10,4 @@ class Installation {
     }
 }
 
-module.exports = Installation;
+module.exports = Installation
