@@ -293,7 +293,7 @@ module.exports.createInstallation = async function(name, responderPhoneNumber, f
         client = await pool.connect()
     }
     
-    await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number, incident_categories, is_active) VALUES ($1, $2, $3, $4)", [name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories, true])
+    await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number, incident_categories) VALUES ($1, $2, $3, $4)", [name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories])
     
     if(!transactionMode) {
         client.release()
