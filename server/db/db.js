@@ -29,7 +29,7 @@ function createSessionFromRow(r) {
 }
 
 function createInstallationFromRow(r) {
-    return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.incident_categories, r.created_at)
+    return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_number, r.incident_categories, r.is_active, r.created_at)
 }
 
 function createHubFromRow(r) {

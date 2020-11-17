@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+### Added
+- Added is_active field to conditionally display only active active installations in dashboard (CU-fwpya5).
 
 ## [2.1.0] - 2020-11-12
 ### Changed
