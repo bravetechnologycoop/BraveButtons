@@ -3,7 +3,9 @@
 
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <style>
 
 body {
@@ -15,22 +17,27 @@ body {
 .navbar {
     background-color: rgb(0, 184, 184);
     color: rgb(247, 249, 250);
-    width: 100%;
-    height: 60px;
-    line-height: 60px;
+    height: auto;
+    max-height: auto;
 }
 
-.navbar span {
-    margin-left: 60px;
-    font-size: 24px;
-}
-
-.navbar a {
-    float: right;
-    margin-right: 60px;
+.nav-item {
     font-size: 20px;
-    text-decoration: none;
+
     color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: auto;
+    max-height: auto;
+}
+
+.nav-item:hover {
+    overflow: visible;
+}
+
+#navbar-brand{
+    font-size: x-large;
 }
 
 .content-area {
@@ -76,16 +83,37 @@ th, td {
     word-wrap: break-word;
 }
 
+button {
+    border: 3px solid rgb(88, 88, 91);
+    color: white;
+}
+
+.navbar a:active {
+    color: white;
+}
+
 </style>
 </head>
 
 <body>
-    <div class="navbar">
-        <span>Brave Chatbot Dashboard</span>
+<nav class="navbar navbar-expand-xl navbar-dark">
+    <div class="container-fluid">
+  <a class="navbar-brand" id="navbar-brand">Brave Chatbot Dashboard</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="nav navbar-nav">
         {{#installations}}
-            <a href="/dashboard/{{id}}">{{name}}</a>
+            <li class="nav-item">
+        <a class="nav-link" href="/dashboard/{{id}}">{{name}}</a>
+      </li>
         {{/installations}}
-    </div>
+    </ul>
+  </div>
+  </div>
+</nav>
     <div class="content-area">
         <div class="content-wrapper">
             <br><br>
@@ -121,5 +149,8 @@ th, td {
     }
     setInterval(reloadPage, 30000)
     </script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 </html>
