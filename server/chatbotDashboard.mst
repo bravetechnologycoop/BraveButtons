@@ -89,9 +89,9 @@ th, td {
         </div>
       </li>
       <li>
-      <form>
-        <button type="submit" class="btn btn-link btn-outline btn-logout" action="/logout" method="GET">Logout</button>
-      </form>
+        <button class="btn btn-link btn-outline btn-logout">
+            <a href="/logout">Logout</a>
+        </button>
     </li>
     </ul>
   </div>
