@@ -9,20 +9,24 @@
         </div>
 
         <div class="container row">
-            <div class="jumbotron col-sm-4 pull-center">
-                <form action="/login" method="post">
-                    <div>
-                        <label>Username:</label>
-                        <input type="text" name="username"/>
+            <div class="jumbotron col-md-5">
+                <form class='form-horizontal'>
+                    <div class="form-group row row-no-gutters">
+                        <label for="username" class="control-label">Username:</label>
+                        <div>
+                            <input type="text" class="form-control" id="username">
+                        </div>
                     </div>
-                    <div>
-                        <label>Password:</label>
-                        <input type="password" name="password"/>
+                    <div class="form-group row row-no-gutters">
+                        <label for="password" class="control-label">Password:</label>
+                        <div>
+                            <input type="password" class="form-control" id="password">
+                        </div>
                     </div>
-                    <div>
+                    <div class="form-group row row-no-gutters">
                         <input class="btn btn-primary" type="submit" value="Log In"/>
                     </div>
-                </form>                  
+                </form>
             </div>          
         </div>
     </body>
