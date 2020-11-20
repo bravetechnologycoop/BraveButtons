@@ -16,7 +16,6 @@
             background-color: rgb(247, 249, 250);
             margin: 0px;
             font-family: 'Montserrat', sans-serif;
-            font-size: 1em;
         }
 
         .navbar-toggler {
@@ -24,8 +23,9 @@
             border-radius: 5px;
         }
 
-        .navbar {
+        .navbar, .btn-logout {
             background-color: rgb(0, 184, 184);
+            font-size: 20px;
         }
 
         .nav-item a {
@@ -43,10 +43,15 @@
             overflow: hidden; 
             white-space: nowrap; 
             text-overflow: ellipsis;
+        }
+
+        .btn-logout, .btn-logout > a {
+            width: auto;
+            text-decoration: none;
         }    
 
         #navbar-brand {
-            font-size: x-large;
+            font-size: 24px;
             color: rgb(247, 249, 250);
         }
 
@@ -56,9 +61,9 @@
         }
 
         .content-wrapper {
-            margin-left: 60px;
-            margin-right: 60px;
-            margin-top: 20px;
+            margin-left: 7%;
+            margin-right: 7%;
+            margin-top: 5%;
         }
 
         .even-row {
@@ -86,8 +91,7 @@
 
         th, td {
             text-align: left;
-            max-width: 400px;
-            height: 40px;
+            height: auto;
             width: 100%;
             white-space: pre-wrap;
             word-wrap: break-word;
@@ -95,12 +99,22 @@
 
         @media screen and (max-width: 770px) {
 
+            .navbar, .btn-logout, h3 {
+                font-size: 1em; 
+                font-weight: 900;
+            }
+
+            #navbar-brand {
+                font-size: 4.5vw;
+                font-weight: 700;
+            }
+
             .nav-item {
                 text-align: right;
             }
 
-            #navbar-brand {
-                font-size: 1.25em;
+            .navbar-toggler {
+                border: none;
             }
 
             .dropdown-menu {
@@ -125,7 +139,7 @@
 
             .nav-link.dropdown-item:hover {
                 color: white;
-                background-color: transparent;
+                background-color: rgb(0, 200, 200);
             }
 
             .dropdown-menu.show {
@@ -134,13 +148,11 @@
 
             .btn-logout {
                 padding-right: 0%;
-                font-weight: 700;
             }
 
-            h3 {
-                font-size: 1.2em;
-                font-weight: 900;
-            }    
+            table {
+                font-size: 1.8vw;
+            }
         }
 
     </style>
@@ -157,7 +169,7 @@
         <ul class="navbar-nav ml-auto">
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Installations
+                Installations
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
             {{#installations}}
@@ -166,8 +178,8 @@
             </div>
         </li>
         <li class="nav-item">
-            <button class="btn btn-link btn-outline btn-logout">
-                <a href="/logout">Log Out</a>
+            <button class="btn btn-logout">
+                <a href="/logout" class="text-decoration-none">Log Out</a>
             </button>
         </li>
         </ul>
@@ -175,19 +187,21 @@
     </nav>
     <div class="content-area">
         <div class="content-wrapper">
-            <br><br>
             <h3>{{currentInstallationName}}</h3>
-            <br><br>
-            <table>
+            <div class="table-responsive">
+            <table class="table table-striped table-sm">
+            <thead>
                 <tr class="table-header">
-                    <th>Unit</th>
-                    <th>Presses</th>
-                    <th>State</th>
-                    <th>Category</th>
-                    <th>Notes</th>
-                    <th>Started At</th>
-                    <th>Updated At</th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Presses</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Notes</th>
+                    <th scope="col">Started At</th>
+                    <th scope="col">Updated At</th>
                 </tr>
+            </thead>
+            <tbody>
                 {{#recentSessions}}
                 <tr class="table-data {{class}}">
                     <td>{{unit}}</td>
@@ -199,7 +213,9 @@
                     <td>{{updatedAt}}</td>
                 </tr>
                 {{/recentSessions}}
+            </tbody>
             </table>
+            </div>
         </div>
     </div>
     <script>
