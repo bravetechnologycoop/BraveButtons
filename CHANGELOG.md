@@ -10,7 +10,10 @@ the code was deployed.
 
 ## [Unreleased]
 ### Added
-- Added is_active field to conditionally display only active active installations in dashboard (CU-fwpya5).
+- Added is_active field to conditionally display only active installations in dashboard (CU-fwpya5).
+
+### Fixed
+- All installations now displayed in dropdown on dashboard, and page is responsive (CU-fmudrh).
 
 ## [2.1.0] - 2020-11-12
 ### Changed
