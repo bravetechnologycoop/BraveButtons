@@ -5,11 +5,29 @@ const { afterEach, before, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require("sinon-chai")
 const db = require('../db/db.js')
+const SessionState = require('../SessionState.js')
 
 const BraveAlerterConfigurator = require('./../BraveAlerterConfigurator.js')
 
 // Configure Chai
 chai.use(sinonChai)
+
+function createTestSessionState() {
+    return new SessionState(
+        'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc',
+        'fakeInstallationId',
+        'fakeButtonId',
+        'fakeUnit',
+        'fakePhone',
+        'fakeState',
+        'fakeNumPresses',
+        'fakeCreatedAt',
+        'fakeUpdatedAt',
+        '1',
+        'fakeNotes',
+        'fakeFallbackTwilioState',
+    )
+}
 
 describe('BraveAlerterConfigurator', () => {
     describe('createBraveAlerter', () => {
@@ -35,11 +53,13 @@ describe('BraveAlerterConfigurator', () => {
             await db.createInstallation('', this.installationResponderPhoneNumber, '',this.installationIncidentCategories)
             let installations = await db.getInstallations()
             await db.createSession(installations[0].id, '', '701', '', 1)
-            let sessions = await db.getAllSessions()
-            this.sessionId = sessions[0].id
-            await db.updateSessionState(this.sessionId, this.sessionState)
-            await db.updateSessionIncidentCategory(this.sessionId, this.sessionIncidentType)
-            await db.updateSessionNotes(this.sessionId, this.sessionNotes)
+            const sessions = await db.getAllSessions()
+            const session = sessions[0]
+            this.sessionId = session.id
+            session.state = this.sessionState
+            session.incidentType = this.sessionIncidentType
+            session.notes = this.sessionNotes
+            await db.saveSession(session)
         })
 
         afterEach(async () => {
@@ -80,11 +100,13 @@ describe('BraveAlerterConfigurator', () => {
             await db.createInstallation('', this.installationResponderPhoneNumber, '',this.installationIncidentCategories)
             let installations = await db.getInstallations()
             await db.createSession(installations[0].id, '', '701', this.sessionToPhoneNumber, 1)
-            let sessions = await db.getAllSessions()
-            this.sessionId = sessions[0].id
-            await db.updateSessionState(this.sessionId, this.sessionState)
-            await db.updateSessionIncidentCategory(this.sessionId, this.sessionIncidentType)
-            await db.updateSessionNotes(this.sessionId, this.sessionNotes)
+            const sessions = await db.getAllSessions()
+            const session = sessions[0]
+            this.sessionId = session.id
+            session.state = this.sessionState
+            session.incidentType = this.sessionIncidentType
+            session.notes = this.sessionNotes
+            await db.saveSession(session)
         })
 
         afterEach(async () => {
@@ -112,36 +134,37 @@ describe('BraveAlerterConfigurator', () => {
 
     describe('alertSessionChangedCallback', () => {
         beforeEach(() => {
-            sinon.stub(db, 'updateSessionState')
+            sinon.stub(db, 'beginTransaction')
+            sinon.stub(db, 'getSessionWithSessionId').returns(
+                createTestSessionState()
+            )
             sinon.stub(db, 'getInstallationWithSessionId').returns({
                 incidentCategories: ['Cat0', 'Cat1', 'Cat2']
             })
-            sinon.stub(db, 'updateSessionIncidentCategory')
-            sinon.stub(db, 'updateSessionNotes')
-            sinon.stub(db, 'updateFallbackReturnMessage')
+            sinon.stub(db, 'saveSession')
+            sinon.stub(db, 'commitTransaction')
         })
 
         afterEach(() => {
-            db.updateFallbackReturnMessage.restore()
-            db.updateSessionNotes.restore()
-            db.updateSessionIncidentCategory.restore()
+            db.commitTransaction.restore()
+            db.saveSession.restore()
             db.getInstallationWithSessionId.restore()
-            db.updateSessionState.restore()
+            db.getSessionWithSessionId.restore()
+            db.beginTransaction.restore()
         })
 
         it('if given only alertState should update only alertState', async () => {
-            const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
             const braveAlerterConfigurator = new BraveAlerterConfigurator()
             const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
             await braveAlerter.alertSessionChangedCallback(new AlertSession(
-                sessionId,
+                this.fakeSessionId,
                 ALERT_STATE.WAITING_FOR_REPLY,
             ))
 
-            expect(db.updateSessionState).to.be.calledWith(sessionId, ALERT_STATE.WAITING_FOR_REPLY)
-            expect(db.updateSessionIncidentCategory).not.to.be.called
-            expect(db.updateSessionNotes).not.to.be.called
-            expect(db.updateFallbackReturnMessage).not.to.be.called
+            const expectedSession = createTestSessionState()
+            expectedSession.state = ALERT_STATE.WAITING_FOR_REPLY
+
+            expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
         })
 
         it('if given alertState and categoryKey should update alertState and category', async () => {
@@ -154,10 +177,11 @@ describe('BraveAlerterConfigurator', () => {
                 '0'
             ))
 
-            expect(db.updateSessionState).to.be.calledWith(sessionId, ALERT_STATE.WAITING_FOR_DETAILS)
-            expect(db.updateSessionIncidentCategory).to.be.calledWith(sessionId, 'Cat0')
-            expect(db.updateSessionNotes).not.to.be.called
-            expect(db.updateFallbackReturnMessage).not.to.be.called
+            const expectedSession = createTestSessionState()
+            expectedSession.state = ALERT_STATE.WAITING_FOR_DETAILS
+            expectedSession.incidentType = 'Cat0'
+
+            expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
         })
 
         it('if given alertState and details should update alertState and details', async () => {
@@ -171,10 +195,11 @@ describe('BraveAlerterConfigurator', () => {
                 'fakeDetails'
             ))
 
-            expect(db.updateSessionState).to.be.calledWith(sessionId, ALERT_STATE.COMPLETED)
-            expect(db.updateSessionIncidentCategory).not.to.be.called
-            expect(db.updateSessionNotes).to.be.calledWith(sessionId, 'fakeDetails')
-            expect(db.updateFallbackReturnMessage).not.to.be.called
+            const expectedSession = createTestSessionState()
+            expectedSession.state = ALERT_STATE.COMPLETED
+            expectedSession.notes = 'fakeDetails'
+
+            expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
         })
 
         it('if given only fallback return message should update only fallback return message', async () => {
@@ -189,10 +214,10 @@ describe('BraveAlerterConfigurator', () => {
                 'fakeFallbackReturnMessage'
             ))
 
-            expect(db.updateSessionState).not.to.be.called
-            expect(db.updateSessionIncidentCategory).not.to.be.called
-            expect(db.updateSessionNotes).not.to.be.called
-            expect(db.updateFallbackReturnMessage).to.be.calledWith(sessionId, 'fakeFallbackReturnMessage')
+            const expectedSession = createTestSessionState()
+            expectedSession.fallBackAlertTwilioStatus = 'fakeFallbackReturnMessage'
+            
+            expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
         })
     })
 
