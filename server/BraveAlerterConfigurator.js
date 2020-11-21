@@ -53,22 +53,32 @@ class BraveAlerterConfigurator {
     }
 
     async alertSessionChangedCallback(alertSession) {
-        if (alertSession.alertState) {
-            await db.updateSessionState(alertSession.sessionId, alertSession.alertState)
-        }
+        let client = await db.beginTransaction()
+
+        const session = await db.getSessionWithSessionId(alertSession.sessionId, client)
         
-        if (alertSession.incidentCategoryKey) {
-            const installation = await db.getInstallationWithSessionId(alertSession.sessionId)
-            await db.updateSessionIncidentCategory(alertSession.sessionId, installation.incidentCategories[alertSession.incidentCategoryKey])
+        if (session) {
+            if (alertSession.alertState) {
+                session.state = alertSession.alertState
+            }
+            
+            if (alertSession.incidentCategoryKey) {
+                const installation = await db.getInstallationWithSessionId(alertSession.sessionId, client)
+                session.incidentType = installation.incidentCategories[alertSession.incidentCategoryKey]
+            }
+        
+            if (alertSession.details) {
+                session.notes = alertSession.details
+            }
+        
+            if (alertSession.fallbackReturnMessage) {
+                session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
+            }
+
+            await db.saveSession(session, client)
         }
-    
-        if (alertSession.details) {
-            await db.updateSessionNotes(alertSession.sessionId, alertSession.details)
-        }
-    
-        if (alertSession.fallbackReturnMessage) {
-            await db.updateFallbackReturnMessage(alertSession.sessionId, alertSession.fallbackReturnMessage)
-        }
+
+        await db.commitTransaction(client)
     }
 
     getReturnMessage(fromAlertState, toAlertState, incidentCategories) {
