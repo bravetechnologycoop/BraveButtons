@@ -5,7 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#td-odetect-fixes",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v2.0.0",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
