@@ -1,40 +1,54 @@
 <html>
     <head>
-        <title>Brave Button Dashboard</title>
+        <title>Brave Chatbot Dashboard: Login</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+        <style>
+
+            body {
+                width: 90%;
+            }
+            
+            input {
+                max-width: 60%;
+            }
+
+            .jumbotron {
+                max-width: 80%;
+            }   
+
+            @media screen and (max-width: 770px) {
+                form {
+                    padding-left: 5%
+                }
+            }
+
+        </style>
     </head>
     <body class="container">
         <div class="page-header">
             <h1>Welcome to the Brave Button Pilot monitoring system. Please provide your credentials to proceed.</h1>
         </div>
 
-        <nav class="navbar navbar-default">
-            <div class="container-fluid">
-                <!-- Collect the nav links, forms, and other content for toggling -->
-                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav">
-                        <li><a href="/login">Log In</a></li>
-                        <li><a href="/logout">Log Out</a></li>
-                    </ul>
-                </div><!-- /.navbar-collapse -->
-            </div><!-- /.container-fluid -->
-        </nav>
-
         <div class="container row">
-            <div class="jumbotron col-sm-4 pull-center">
-                <form action="/login" method="post">
-                    <div>
-                        <label>Username:</label>
-                        <input type="text" name="username"/>
+            <div class="jumbotron col-md-5">
+                <form class="form-horizontal" action="login" method="post">
+                    <div class="form-group row row-no-gutters">
+                        <label for="username" class="control-label">Username:</label>
+                        <div>
+                            <input type="text" class="form-control" name="username" id="username">
+                        </div>
                     </div>
-                    <div>
-                        <label>Password:</label>
-                        <input type="password" name="password"/>
+                    <div class="form-group row row-no-gutters">
+                        <label for="password" class="control-label">Password:</label>
+                        <div>
+                            <input type="password" class="form-control" name="password" id="password">
+                        </div>
                     </div>
-                    <div>
+                    <div class="form-group row row-no-gutters">
                         <input class="btn btn-primary" type="submit" value="Log In"/>
                     </div>
-                </form>                  
+                </form>
             </div>          
         </div>
     </body>

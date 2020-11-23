@@ -2,124 +2,222 @@
 <html lang="en">
 
 <head>
-<meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-<style>
+    <title>Brave Chatbot Dashboard</title>
 
-body {
-    background-color: rgb(247, 249, 250);
-    margin: 0px;
-    font-family: 'Montserrat', sans-serif;
-}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-.navbar {
-    background-color: rgb(0, 184, 184);
-    color: rgb(247, 249, 250);
-    width: 100%;
-    height: 60px;
-    line-height: 60px;
-}
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-.navbar span {
-    margin-left: 60px;
-    font-size: 24px;
-}
+    <style>
 
-.navbar a {
-    float: right;
-    margin-right: 60px;
-    font-size: 20px;
-    text-decoration: none;
-    color: white;
-}
+        body {
+            background-color: rgb(247, 249, 250);
+            margin: 0px;
+            font-family: 'Montserrat', sans-serif;
+        }
 
-.content-area {
-    background-color: rgb(247, 249, 250);
-    color: rgb(88, 88, 91);
-}
+        .navbar-toggler {
+            border: 2px solid rgba(255, 255, 255, .4);
+            border-radius: 5px;
+        }
 
-.content-wrapper {
-    margin-left: 60px;
-    margin-right: 60px;
-    margin-top: 20px;
-}
+        .navbar, .btn-logout {
+            background-color: rgb(0, 184, 184);
+            font-size: 20px;
+        }
 
-.even-row {
-    background-color: rgb(247, 249, 250);
-}
+        .nav-item a {
+            color: rgb(247, 249, 250);
+        }
 
-.odd-row {
-    background-color: rgb(233, 235, 236);
-}
+        .dropdown,
+        .dropdown-toggle,
+        .dropdown-menu {
+            width: 100%;	
+        }
 
-.table-header {
-    font-weight: 600;
-}
+        .nav-link.dropdown-item {
+            color: rgb(88, 88, 91);
+            overflow: hidden; 
+            white-space: nowrap; 
+            text-overflow: ellipsis;
+        }
 
-.table-data {
-    font-weight: 400;
-}
+        .btn-logout, .btn-logout > a {
+            width: auto;
+            text-decoration: none;
+        }    
 
-table {
-    table-layout: fixed;
-    width: 100%;
-    border-collapse: collapse;
-    border-spacing: 5px 5px;
-}
+        #navbar-brand {
+            font-size: 24px;
+            color: rgb(247, 249, 250);
+        }
 
-th, td {
-    text-align: left;
-    max-width: 400px;
-    height: 40px;
-    width: 100%;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
+        .content-area {
+            background-color: rgb(247, 249, 250);
+            color: rgb(88, 88, 91);
+        }
 
-</style>
+        .content-wrapper {
+            margin-left: 7%;
+            margin-right: 7%;
+            margin-top: 5%;
+        }
+
+        .table-header {
+            font-weight: 600;
+        }
+
+        .table-data {
+            font-weight: 400;
+        }
+
+        table {
+            table-layout: fixed;
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 5px 5px;
+        }
+
+        th, td {
+            text-align: left;
+            height: auto;
+            width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .table>thead>tr>th,
+        .table>tbody>tr>th,
+        .table>tbody>tr>td {
+            border: none;
+        }
+
+        @media screen and (max-width: 770px) {
+
+            .navbar, .btn-logout, h3 {
+                font-size: 1em; 
+                font-weight: 900;
+            }
+
+            #navbar-brand {
+                font-size: 4.5vw;
+                font-weight: 700;
+            }
+
+            .nav-item {
+                text-align: right;
+            }
+
+            .navbar-toggler {
+                border: none;
+            }
+
+            .dropdown-menu {
+                background-color: rgb(0, 184, 184);
+                border: none;
+                padding-right: 3%;
+            }
+
+            .nav-link.dropdown-item {
+                color: rgb(247, 249, 250);
+                text-align: right;
+            }
+
+            .nav-link.dropdown-item:hover {
+                color: white;
+                background-color: rgb(0, 200, 200);
+            }
+
+            .dropdown-menu.show {
+                padding-top: 0%;
+            }
+
+            .btn-logout {
+                padding-right: 0%;
+            }
+
+            table {
+                font-size: 1.8vw;
+            }
+        }
+
+    </style>
 </head>
 
 <body>
-    <div class="navbar">
-        <span>Brave Chatbot Dashboard</span>
-        {{#installations}}
-            <a href="/dashboard/{{id}}">{{name}}</a>
-        {{/installations}}
-    </div>
+    <nav class="navbar navbar-expand-md">
+        <a class="navbar-brand" id="navbar-brand">Brave Chatbot Dashboard</a>
+        <button class="navbar-toggler navbar-dark" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Installations
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    {{#installations}}
+                        <a class="nav-link dropdown-item" href="/dashboard/{{id}}">{{name}}</a>
+                    {{/installations}}
+                </div>
+            </li>
+            <li class="nav-item">
+                <button class="btn btn-logout">
+                    <a href="/logout" class="text-decoration-none">Log Out</a>
+                </button>
+            </li>
+            </ul>
+        </div>
+    </nav>
     <div class="content-area">
         <div class="content-wrapper">
-            <br><br>
             <h3>{{currentInstallationName}}</h3>
-            <br><br>
-            <table>
-                <tr class="table-header">
-                    <th>Unit</th>
-                    <th>Presses</th>
-                    <th>State</th>
-                    <th>Category</th>
-                    <th>Notes</th>
-                    <th>Started At</th>
-                    <th>Updated At</th>
-                </tr>
-                {{#recentSessions}}
-                <tr class="table-data {{class}}">
-                    <td>{{unit}}</td>
-                    <td>{{numPresses}}</td>
-                    <td>{{state}}</td>
-                    <td>{{incidentType}}</td>
-                    <td>{{notes}}</td>
-                    <td>{{createdAt}}</td>
-                    <td>{{updatedAt}}</td>
-                </tr>
-                {{/recentSessions}}
-            </table>
+            <br>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr class="table-header" scope="row">
+                            <th scope="col">Unit</th>
+                            <th scope="col">Presses</th>
+                            <th scope="col">State</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Notes</th>
+                            <th scope="col">Started At</th>
+                            <th scope="col">Updated At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#recentSessions}}
+                            <tr class="table-data {{class}}">
+                                <th scope="row" class="unit">{{unit}}</th>
+                                <td>{{numPresses}}</td>
+                                <td>{{state}}</td>
+                                <td>{{incidentType}}</td>
+                                <td>{{notes}}</td>
+                                <td>{{createdAt}}</td>
+                                <td>{{updatedAt}}</td>
+                            </tr>
+                        {{/recentSessions}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+    
     <script>
-    function reloadPage() {
-        location.reload(true)
-    }
-    setInterval(reloadPage, 30000)
+        function reloadPage() {
+            location.reload(true)
+        }
+        setInterval(reloadPage, 30000)
     </script>
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 </html>
