@@ -14,6 +14,10 @@ class BraveAlerterConfigurator {
 
     async getAlertSession(sessionId) {
         const session = await db.getSessionWithSessionId(sessionId)
+        if (session === null) {
+            return null
+        }
+
         const installation = await db.getInstallationWithInstallationId(session.installationId)
     
         const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
@@ -34,6 +38,10 @@ class BraveAlerterConfigurator {
 
     async getAlertSessionByPhoneNumber(toPhoneNumber) {
         const session = await db.getMostRecentIncompleteSessionWithPhoneNumber(toPhoneNumber)
+        if (session === null) {
+            return null
+        }
+
         const installation = await db.getInstallationWithInstallationId(session.installationId)
     
         const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
