@@ -28,6 +28,8 @@ else
       fallback_psk="$value"
     elif [[ "$name" == "flic_hub_interface" ]]; then
       flic_hub_interface="$value"
+    elif [[ "$name" == "network_interface" ]]; then
+      network_interface="$value"
     fi
   done < $1
 
@@ -49,6 +51,17 @@ else
 
   interfaces_file=$(<$BASEDIR/interfaces.txt)
   interfaces_file="${interfaces_file//FLIC_HUB_INTERFACE/$flic_hub_interface}"
+
+  interfaces_file="${interfaces_file//NETWORK_INTERFACE/$network_interface}"
+  
+  # if we're using wifi then we need to configure wpa_suppplicant with this line
+  wpa_conf_config='wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf'
+  if [[ "$network_interface" != "wlan0"  ]]; then
+    wpa_conf_config=''
+  fi
+
+  interfaces_file="${interfaces_file//WPA_CONF/$wpa_conf_config}"
+
   echo "$interfaces_file" > /etc/network/interfaces
 
   cat "$BASEDIR/avahi-daemon.txt" > /etc/avahi/avahi-daemon.conf

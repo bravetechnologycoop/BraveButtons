@@ -10,6 +10,7 @@ the code was deployed.
 
 ## [Unreleased]
 ### Added
+- `pi_setup.sh` and the associated template files now support network over PoE (CU-gcuhbk).
 - Added is_active field to conditionally display only active installations in dashboard (CU-fwpya5).
 - Log API key validity for `/flic_button_press` (CU-gwxnde).
 
