@@ -221,10 +221,21 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
         if(validationErrors.isEmpty()){
             const serialNumber = req.get('button-serial-number')
             const batteryLevel = req.get('button-battery-level')
+            const buttonName = req.get('button-name')
+            const apiKey = req.query.apikey
+
+            // Log the vaiditiy of the API key
+            // TODO (CU-gwxnde) Replace this with a 401 unauthorized if invalid
+            if (apiKey !== helpers.getEnvVar('FLIC_BUTTON_PRESS_API_KEY')) {
+                helpers.log(`INVALID api key from '${buttonName}' (${serialNumber})`)
+            }
+            else {
+                helpers.log(`VALID api key from '${buttonName}' (${serialNumber})`)
+            }
 
             let button = await db.getButtonWithSerialNumber(serialNumber)
             if(button === null) {
-                helpers.log(`Bad request: Serial Number is not registered. Serial Number is ${serialNumber}`)
+                helpers.log(`Bad request: Serial Number is not registered. Serial Number for '${buttonName}' is ${serialNumber}`)
                 res.status(400).send();
             }
             else {

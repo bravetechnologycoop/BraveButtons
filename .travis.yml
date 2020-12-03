@@ -61,7 +61,7 @@ matrix:
         - PGPORT=5433
         - REMINDER_TIMEOUT_MS_TEST=1000
         - FALLBACK_TIMEOUT_MS_TEST=2000
-
+        - FLIC_BUTTON_PRESS_API_KEY_TEST=testFlicApiKey
 
       # setup database
       before_script:
