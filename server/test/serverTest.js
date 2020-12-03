@@ -208,6 +208,8 @@ describe('Chatbot server', () => {
     describe('POST request: flic button press', () => {
 
         beforeEach(async function() {
+            sinon.stub(helpers, 'log')
+
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
@@ -221,6 +223,8 @@ describe('Chatbot server', () => {
             await db.clearSessions()
             await db.clearButtons()
             await db.clearInstallations()
+
+            helpers.log.restore()
             helpers.log('\n')
         });
 
@@ -238,7 +242,6 @@ describe('Chatbot server', () => {
             let responseNoSerialNumber = await chai.request(server).post('/flic_button_press').set('button-battery-level', '100').send({})
             expect(responseNoSerialNumber).to.have.status(400)
         });
-
 
         it('should return 400 to a request with an unregistered button', async () => {
             let response = await chai.request(server).post('/flic_button_press').set('button-serial-number', 'CCCC-C0C0C0').set('button-battery-level', '100').send()
@@ -377,6 +380,24 @@ describe('Chatbot server', () => {
             
             let buttonAgain = await db.getButtonWithSerialNumber(unit1SerialNumber)
             expect(buttonAgain.button_battery_level).to.equal(fakeBatteryLevel)
+        })
+
+        it('should log a valid request when given the correct API key', async () => {
+            const buttonName = 'fakeButtonName'
+            await chai.request(server).post('/flic_button_press?apikey=testFlicApiKey').set('button-serial-number', unit1SerialNumber).set('button-name', buttonName).send()
+            expect(helpers.log).to.have.been.calledWith(`VALID api key from '${buttonName}' (${unit1SerialNumber})`)
+        })
+
+        it('should log an invalid request when given an incorrect API key', async () => {
+            const buttonName = 'fakeButtonName'
+            await chai.request(server).post('/flic_button_press?apikey=NOTtestFlicApiKey').set('button-serial-number', unit1SerialNumber).set('button-name', buttonName).send()
+            expect(helpers.log).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
+        })
+
+        it('should log a valid request when not given an API key', async () => {
+            const buttonName = 'fakeButtonName'
+            await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-name', buttonName).send()
+            expect(helpers.log).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
         })
     })
 

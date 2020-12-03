@@ -11,6 +11,7 @@ the code was deployed.
 ## [Unreleased]
 ### Added
 - Added is_active field to conditionally display only active installations in dashboard (CU-fwpya5).
+- Log API key validity for `/flic_button_press` (CU-gwxnde).
 
 ### Fixed
 - All installations now displayed in dropdown on dashboard, and page is responsive (CU-fmudrh).
