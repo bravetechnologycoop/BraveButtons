@@ -67,7 +67,10 @@ else
   cat "$BASEDIR/avahi-daemon.txt" > /etc/avahi/avahi-daemon.conf
 
   echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/local.conf
-  echo 'DHCPHELPER_OPTS="-b wlan0"' > /etc/default/dhcp-helper
+
+  dhcp_helper_file=$(<$BASEDIR/dhcp_helper.txt)
+  dhcp_helper_file="${dhcp_helper_file//NETWORK_INTERFACE/$network_interface}"
+  echo "$dhcp_helper_file" > /etc/default/dhcp-helper
   
   mkdir -p /var/log/brave
   touch /var/log/brave/heartbeat-out.log
