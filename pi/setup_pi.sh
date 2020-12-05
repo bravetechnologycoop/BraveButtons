@@ -45,11 +45,11 @@ else
   apt install -y darkstat python3-gpiozero autossh ssh parprouted dhcp-helper avahi-daemon python3-pip
   pip3 install python-daemon
 
-  darkstat_init_file=$(<$BASEDIR/darkstat_init.txt)
+  darkstat_init_file=$(<$BASEDIR/templates/darkstat_init.txt)
   darkstat_init_file="${darkstat_init_file//FLIC_HUB_INTERFACE/$flic_hub_interface}"
   echo "$darkstat_init_file" > /etc/darkstat/init.cfg
 
-  interfaces_file=$(<$BASEDIR/interfaces.txt)
+  interfaces_file=$(<$BASEDIR/templates/interfaces.txt)
   interfaces_file="${interfaces_file//FLIC_HUB_INTERFACE/$flic_hub_interface}"
 
   interfaces_file="${interfaces_file//NETWORK_INTERFACE/$network_interface}"
@@ -64,11 +64,11 @@ else
 
   echo "$interfaces_file" > /etc/network/interfaces
 
-  cat "$BASEDIR/avahi-daemon.txt" > /etc/avahi/avahi-daemon.conf
+  cat "$BASEDIR/templates/avahi_daemon.txt" > /etc/avahi/avahi-daemon.conf
 
   echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/local.conf
 
-  dhcp_helper_file=$(<$BASEDIR/dhcp_helper.txt)
+  dhcp_helper_file=$(<$BASEDIR/templates/dhcp_helper.txt)
   dhcp_helper_file="${dhcp_helper_file//NETWORK_INTERFACE/$network_interface}"
   echo "$dhcp_helper_file" > /etc/default/dhcp-helper
   
@@ -96,12 +96,12 @@ else
     read -p "please copy the SSH public key to the remote access server. press [Enter] when you are finished."
   fi
 
-  autossh_systemd_unit_file=$(<$BASEDIR/autossh_systemd_unit_file.txt)
+  autossh_systemd_unit_file=$(<$BASEDIR/templates/autossh_systemd_unit_file.txt)
   autossh_systemd_unit_file="${autossh_systemd_unit_file//REMOTE_ACCESS_PORT/$remoteAccessPort}"
   autossh_systemd_unit_file="${autossh_systemd_unit_file//REMOTE_ACCESS_SERVER_FQDN/$remoteAccessServerFQDN}"
   echo "$autossh_systemd_unit_file" > /etc/systemd/system/brave-autossh.service
 
-  wpa_supplicant_config_file=$(<$BASEDIR/wpa_supplicant.txt)
+  wpa_supplicant_config_file=$(<$BASEDIR/templates/wpa_supplicant.txt)
   wpa_supplicant_config_file="${wpa_supplicant_config_file//FALLBACK_SSID/$fallback_ssid}"
   wpa_supplicant_config_file="${wpa_supplicant_config_file//FALLBACK_PSK/$fallback_psk}"
   wpa_supplicant_config_file="${wpa_supplicant_config_file//SSID/$ssid}"
@@ -110,7 +110,7 @@ else
 
   heartbeatScriptDir="$(pwd)/$BASEDIR"
   heartbeatScriptDir=${heartbeatScriptDir%"/."}
-  heartbeat_systemd_unit_file=$(<$BASEDIR/heartbeat_systemd_unit_file.txt)
+  heartbeat_systemd_unit_file=$(<$BASEDIR/templates/heartbeat_systemd_unit_file.txt)
   heartbeat_systemd_unit_file="${heartbeat_systemd_unit_file//HEARTBEAT_SCRIPT_DIR/$heartbeatScriptDir}"
   echo "$heartbeat_systemd_unit_file" > /etc/systemd/system/brave-heartbeat.service
 
