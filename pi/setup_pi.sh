@@ -48,30 +48,34 @@ else
   darkstat_init_file=$(<$BASEDIR/templates/darkstat_init.txt)
   darkstat_init_file="${darkstat_init_file//FLIC_HUB_INTERFACE/$flic_hub_interface}"
   echo "$darkstat_init_file" > /etc/darkstat/init.cfg
+  
+  dhcp_helper_file=$(<$BASEDIR/templates/dhcp_helper.txt)
+  dhcp_helper_file="${dhcp_helper_file//NETWORK_INTERFACE/$network_interface}"
+  echo "$dhcp_helper_file" > /etc/default/dhcp-helper
+
+  # if we're using wifi then we need to configure wpa_suppplicant with this line
+  wpa_conf_config=''
+  if [[ "$network_interface" == "wlan0"  ]]; then
+    wpa_conf_config='wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf'
+
+    wpa_supplicant_config_file=$(<$BASEDIR/templates/wpa_supplicant.txt)
+    wpa_supplicant_config_file="${wpa_supplicant_config_file//FALLBACK_SSID/$fallback_ssid}"
+    wpa_supplicant_config_file="${wpa_supplicant_config_file//FALLBACK_PSK/$fallback_psk}"
+    wpa_supplicant_config_file="${wpa_supplicant_config_file//SSID/$ssid}"
+    wpa_supplicant_config_file="${wpa_supplicant_config_file//PSK/$psk}"
+    echo "$wpa_supplicant_config_file" > /etc/wpa_supplicant/wpa_supplicant.conf
+  fi
 
   interfaces_file=$(<$BASEDIR/templates/interfaces.txt)
   interfaces_file="${interfaces_file//FLIC_HUB_INTERFACE/$flic_hub_interface}"
-
   interfaces_file="${interfaces_file//NETWORK_INTERFACE/$network_interface}"
-  
-  # if we're using wifi then we need to configure wpa_suppplicant with this line
-  wpa_conf_config='wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf'
-  if [[ "$network_interface" != "wlan0"  ]]; then
-    wpa_conf_config=''
-  fi
-
   interfaces_file="${interfaces_file//WPA_CONF/$wpa_conf_config}"
-
   echo "$interfaces_file" > /etc/network/interfaces
 
   cat "$BASEDIR/templates/avahi_daemon.txt" > /etc/avahi/avahi-daemon.conf
 
   echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/local.conf
-
-  dhcp_helper_file=$(<$BASEDIR/templates/dhcp_helper.txt)
-  dhcp_helper_file="${dhcp_helper_file//NETWORK_INTERFACE/$network_interface}"
-  echo "$dhcp_helper_file" > /etc/default/dhcp-helper
-  
+ 
   mkdir -p /var/log/brave
   touch /var/log/brave/heartbeat-out.log
   touch /var/log/brave/heartbeat-err.log
@@ -100,13 +104,6 @@ else
   autossh_systemd_unit_file="${autossh_systemd_unit_file//REMOTE_ACCESS_PORT/$remoteAccessPort}"
   autossh_systemd_unit_file="${autossh_systemd_unit_file//REMOTE_ACCESS_SERVER_FQDN/$remoteAccessServerFQDN}"
   echo "$autossh_systemd_unit_file" > /etc/systemd/system/brave-autossh.service
-
-  wpa_supplicant_config_file=$(<$BASEDIR/templates/wpa_supplicant.txt)
-  wpa_supplicant_config_file="${wpa_supplicant_config_file//FALLBACK_SSID/$fallback_ssid}"
-  wpa_supplicant_config_file="${wpa_supplicant_config_file//FALLBACK_PSK/$fallback_psk}"
-  wpa_supplicant_config_file="${wpa_supplicant_config_file//SSID/$ssid}"
-  wpa_supplicant_config_file="${wpa_supplicant_config_file//PSK/$psk}"
-  echo "$wpa_supplicant_config_file" > /etc/wpa_supplicant/wpa_supplicant.conf
 
   heartbeatScriptDir="$(pwd)/$BASEDIR"
   heartbeatScriptDir=${heartbeatScriptDir%"/."}
