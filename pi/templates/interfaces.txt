@@ -1,6 +1,9 @@
 # refer to https://wiki.debian.org/BridgeNetworkConnectionsProxyArp
 # FLIC_HUB_INTERFACE is the interface connecting the Flic Hub to the RPi (either eth0 or eth1)
 # NETWORK_INTERFACE is the interface connecting the RPi to the external network (either wlan0 or eth0)
+# eth0 is the builtin RPi ethernet interface. this is the interface used for PoE.
+# for the Brave Hub, eth1 is the USB-to-serial adapter (if present). in general eth1 could be any other ethernet interface.
+# wlan0 is the WiFi interface.
 
 auto lo
 iface lo inet loopback
