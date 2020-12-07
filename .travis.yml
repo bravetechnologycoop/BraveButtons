@@ -13,7 +13,7 @@ matrix:
 
       # run unit tests
       script:
-        - cp pi/template.pi_config.ini pi/pi_config.ini
+        - cp pi/example.pi_config.ini pi/pi_config.ini
         - pytest --cov=heartbeat
 
     - name: Server
