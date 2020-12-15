@@ -5,12 +5,8 @@
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "chai": "^4.2.0",
-    "chai-http": "^4.2.0",
-    "chalk": "^2.4.2",
-    "connect-nedb-session": "0.0.3",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v2.0.0",
     "cookie-parser": "^1.4.3",
-    "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "express-validator": "^6.6.1",
@@ -18,11 +14,11 @@
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.23",
     "mustache": "^3.0.1",
-    "node-json-db": "^0.9.1",
-    "pg": "^7.8.0",
-    "twilio": "^3.33.2"
+    "pg": "^7.8.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.2.0",
     "eslint": "^7.11.0",
     "mocha": "^5.2.0",
     "sinon": "^9.0.3",

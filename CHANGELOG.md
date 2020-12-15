@@ -10,10 +10,20 @@ the code was deployed.
 
 ## [Unreleased]
 ### Added
+- Added landing page so that dashboard will load with no installations present or selected (CU-gurbtf).
+
+## [3.0.0] - 2020-12-07
+### Added
+- `pi_setup.sh` and the associated template files now support network over PoE (CU-gcuhbk).
 - Added is_active field to conditionally display only active installations in dashboard (CU-fwpya5).
+- Log API key validity for `/flic_button_press` (CU-gwxnde).
+
+### Changed
+- Use the Brave Alert Library for the text message flow (CU-bar0fm).
 
 ### Fixed
 - All installations now displayed in dropdown on dashboard, and page is responsive (CU-fmudrh).
+- Built in documentation in `add_buttons.csv.example` and `add_installation.sh` (CU-f8w261).
 
 ## [2.1.0] - 2020-11-12
 ### Changed
@@ -180,7 +190,8 @@ the code was deployed.
 ### Added
 - Initial pi.
 
-[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.6.0...v2.0.0
 [1.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.5.0...v1.6.0
