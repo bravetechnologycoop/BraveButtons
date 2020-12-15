@@ -150,68 +150,85 @@ app.route('/login')
         }
     });
 
-app.get('/dashboard/:installationId?', async (req, res) => {
-
+app.get("/dashboard", async (req, res) => {
     if (!req.session.user || !req.cookies.user_sid) {
-        res.redirect('/login')
+        res.redirect("/login")
         return
     }
-    else if(typeof req.params.installationId !== "string") {
-        let installations = await db.getInstallations()
-        res.redirect('/dashboard/' + installations[0].id)
-        return
-    }
-
+      
     try {
-        let recentSessions = await db.getRecentSessionsWithInstallationId(req.params.installationId)
-        let currentInstallation = await db.getInstallationWithInstallationId(req.params.installationId)
         let allInstallations = await db.getInstallations()
-        
+            
+        let viewParams = {
+            installations: allInstallations
+                .filter((installation) => installation.isActive)
+                .map((installation) => {
+                    return { name: installation.name, id: installation.id }
+                }),
+        };
+        viewParams.viewMessage = allInstallations.length >= 1 ? "Please select an installation" : "No installations to display"
+      
+        res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
+    } catch (err) {
+        helpers.log(err)
+        res.status(500).send()
+    }
+})
+      
+app.get("/dashboard/:installationId?", async (req, res) => {
+    if (!req.session.user || !req.cookies.user_sid) {
+        res.redirect("/login")
+        return
+    } else if (typeof req.params.installationId !== "string") {
+        let installations = await db.getInstallations()
+        res.redirect("/dashboard/" + installations[0].id)
+        return
+    }
+      
+    try {
+        let recentSessions = await db.getRecentSessionsWithInstallationId(
+            req.params.installationId
+        )
+        let currentInstallation = await db.getInstallationWithInstallationId(
+            req.params.installationId
+        )
+        let allInstallations = await db.getInstallations()
+      
         let viewParams = {
             recentSessions: [],
             currentInstallationName: currentInstallation.name,
             installations: allInstallations
-                .filter(installation => installation.isActive)
-                .map(installation => { 
+                .filter((installation) => installation.isActive)
+                .map((installation) => {
                     return { name: installation.name, id: installation.id }
-                })
-        }
-
-        for(const recentSession of recentSessions) {
+                }),
+        };
+      
+        for (const recentSession of recentSessions) {
             let createdAt = moment(recentSession.createdAt, moment.ISO_8601)
             let updatedAt = moment(recentSession.updatedAt, moment.ISO_8601)
             viewParams.recentSessions.push({
                 unit: recentSession.unit,
-                createdAt: createdAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
-                updatedAt: updatedAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
+                createdAt: createdAt
+                    .tz("America/Vancouver")
+                    .format("DD MMM Y, hh:mm:ss A"),
+                updatedAt: updatedAt
+                    .tz("America/Vancouver")
+                    .format("DD MMM Y, hh:mm:ss A"),
                 state: recentSession.state,
                 numPresses: recentSession.numPresses.toString(),
                 incidentType: recentSession.incidentType,
-                notes: recentSession.notes
+                notes: recentSession.notes,
             })
         }
-        
-        for(let i=0; i<viewParams.recentSessions.length; i++) {
-            viewParams.recentSessions[i].class = i % 2 === 0 ? "even-row" : "odd-row"
-        }
-
+      
         res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
     }
     catch(err) {
         helpers.log(err)
         res.status(500).send()
     }
-});
-
-app.get('/logout', (req, res) => {
-    if (req.session.user && req.cookies.user_sid) {
-        res.clearCookie('user_sid');
-        res.redirect('/');
-    } 
-    else {
-        res.redirect('/login');
-    }
-});
+})
 
 app.post('/flic_button_press', Validator.header(['button-serial-number']).exists(), async (req, res) => {
 
