@@ -316,28 +316,28 @@ app
 
 app.get("/dashboard", async (req, res) => {
     if (!req.session.user || !req.cookies.user_sid) {
-        res.redirect("/login");
-        return;
+        res.redirect("/login")
+        return
     }
 
     try {
-        let allInstallations = await db.getInstallations();
+        let allInstallations = await db.getInstallations()
         
         let viewParams = {
             installations: allInstallations
                 .filter((installation) => installation.isActive)
                 .map((installation) => {
-                    return { name: installation.name, id: installation.id };
+                    return { name: installation.name, id: installation.id }
                 }),
         };
         viewParams.viewMessage = allInstallations.length >= 1 ? "Please select an installation" : "No installations to display"
 
-        res.send(Mustache.render(chatbotDashboardTemplate, viewParams));
+        res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
     } catch (err) {
-        log(err);
-        res.status(500).send();
+        log(err)
+        res.status(500).send()
     }
-});
+})
 
 app.get("/dashboard/:installationId?", async (req, res) => {
     if (!req.session.user || !req.cookies.user_sid) {
@@ -384,10 +384,6 @@ app.get("/dashboard/:installationId?", async (req, res) => {
                 incidentType: recentSession.incidentType,
                 notes: recentSession.notes,
             });
-        }
-
-        for (let i = 0; i < viewParams.recentSessions.length; i++) {
-            viewParams.recentSessions[i].class = i % 2 === 0 ? "even-row" : "odd-row";
         }
 
         res.send(Mustache.render(chatbotDashboardTemplate, viewParams));
