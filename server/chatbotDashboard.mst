@@ -176,6 +176,7 @@
     </nav>
     <div class="content-area">
         <div class="content-wrapper">
+            {{#currentInstallationName}}
             <h3>{{currentInstallationName}}</h3>
             <br>
             <div class="table-responsive">
@@ -206,6 +207,10 @@
                     </tbody>
                 </table>
             </div>
+            {{/currentInstallationName}}
+            {{^currentInstallationName}}
+             <h4>{{viewMessage}}</h4>
+            {{/currentInstallationName}}
         </div>
     </div>
     
