@@ -516,28 +516,6 @@ module.exports.saveHubAlertStatus = async function(hub, client) {
     }
 }
 
-module.exports.saveButtonBatteryLevel = async function(serialNumber, batteryLevel, client){
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
-    
-    let { rows } = await client.query("SELECT * FROM registry WHERE button_serial_number = $1 LIMIT 1", [serialNumber])
-    if(rows.length === 0) {
-        if(!transactionMode) {
-            client.release()
-        }
-        throw new Error("Tried to save battery level for a button that isn't registered yet.")
-    }
-    const query = "UPDATE registry SET button_battery_level = $1 WHERE button_serial_number = $2"
-    const values = [batteryLevel, serialNumber]
-    await client.query(query, values) 
-    
-    if(!transactionMode) {
-        client.release()
-    }
-}
-
 module.exports.close = async function() {
     await pool.end()
 }
