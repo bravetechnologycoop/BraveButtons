@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+### Added
+- Added landing page so page will load when there are no installations selected or present (CU-gurbtf).
 
 ## [3.0.0] - 2020-12-07
 ### Added
