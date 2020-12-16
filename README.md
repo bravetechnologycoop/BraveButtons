@@ -245,8 +245,7 @@ When performing a migration, make sure to connect directly to the target databas
 
 # How to pair a button with the 'Internet Request' Flic action
 
-1. Once you've run the pairing tool and button registering scripts, pair the button and select 'Internet Request' from the list of Flic actions. NOTE: this method will *not work from a button that has been paired to a smartphone*. *A Flic hub is required to make this work*
+1. Once you've run the pairing tool and button registering scripts, pair the button and select 'Internet Request' from the list of Flic actions under "Click" (do not add anything under "Double Click" or "Hold"). NOTE: this method will *not work from a button that has been paired to a smartphone*. *A Flic hub is required to make this work*
 
 2. Select the POST request button, and input the url as follows:
-`https://chatbot.brave.coop/flic_button_press?presses=1` for the 'Click' and 'Hold' actions, and
-`https://chatbot.brave.coop/flic_button_press?presses=2` for the 'Double Click' action
+`https://chatbot.brave.coop/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
