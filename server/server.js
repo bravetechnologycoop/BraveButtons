@@ -226,7 +226,6 @@ app.get('/dashboard/:installationId?', async (req, res) => {
     }
 })
       
-
 app.get('/logout', (req, res) => {
     if (req.session.user && req.cookies.user_sid) {
         res.clearCookie('user_sid')
