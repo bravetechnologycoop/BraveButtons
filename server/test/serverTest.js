@@ -4,7 +4,7 @@ const expect = chai.expect
 const { after, afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require("sinon-chai")
-const { ALERT_STATE, helpers } = require('brave-alert-lib')
+const { ALERT_STATE, helpers, Twilio } = require('brave-alert-lib')
 
 chai.use(chaiHttp)
 chai.use(sinonChai)
@@ -414,6 +414,8 @@ describe('Chatbot server', () => {
 
             sinon.spy(imports.braveAlerter, 'startAlertSession')
             sinon.spy(imports.braveAlerter, 'sendSingleAlert')
+
+            sinon.stub(Twilio, 'isValidTwilioRequest').returns(true)
         });
 
         afterEach(async function() {
@@ -424,6 +426,9 @@ describe('Chatbot server', () => {
             await db.clearButtons()
             await db.clearInstallations()
             helpers.log('\n')
+
+            Twilio.isValidTwilioRequest.restore()
+
         });
 
         after(async function() {
