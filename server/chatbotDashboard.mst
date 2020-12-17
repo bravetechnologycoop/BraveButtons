@@ -201,8 +201,8 @@
                         </thead>
                         <tbody>
                             {{#recentSessions}}
-                                <tr class="table-data {{class}}">
-                                    <th scope="row" class="unit">{{unit}}</th>
+                                <tr class="table-data">
+                                    <th scope="row">{{unit}}</th>
                                     <td>{{numPresses}}</td>
                                     <td>{{state}}</td>
                                     <td>{{incidentType}}</td>

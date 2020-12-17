@@ -186,12 +186,8 @@ app.get('/dashboard/:installationId?', async (req, res) => {
     }
           
     try {
-        let recentSessions = await db.getRecentSessionsWithInstallationId(
-            req.params.installationId
-        )
-        let currentInstallation = await db.getInstallationWithInstallationId(
-            req.params.installationId
-        )
+        let recentSessions = await db.getRecentSessionsWithInstallationId(req.params.installationId)
+        let currentInstallation = await db.getInstallationWithInstallationId(req.params.installationId)
         let allInstallations = await db.getInstallations()
           
         let viewParams = {
