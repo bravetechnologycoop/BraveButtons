@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+### Changed
+- Update to use brave-alert-lib v2.1.0 which includes Twilio validation (CU-dgmfbv).
 
 ## [3.0.0] - 2020-12-07
 ### Added
