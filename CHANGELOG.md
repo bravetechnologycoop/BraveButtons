@@ -12,6 +12,9 @@ the code was deployed.
 ### Added
 - Added landing page for chatbot dashboard so page will load when there are no installations selected or present (CU-gurbtf).
 
+### Changed
+- Update to use brave-alert-lib v2.1.0 which includes Twilio validation (CU-dgmfbv).
+
 ## [3.0.0] - 2020-12-07
 ### Added
 - `pi_setup.sh` and the associated template files now support network over PoE (CU-gcuhbk).
