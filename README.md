@@ -15,7 +15,7 @@
 
 1. run `source .env`
 
-1. run `sudo ./setup_postgresql.sh`
+1. run `sudo PG_PORT=$PG_PORT PG_USER=$PG_USER PG_PASSWORD=$PG_PASSWORD PG_HOST=$PG_HOST ./setup_postgresql_local_dev.sh`
 
 1. to check that everything is working, run `npm test` and check that the tests pass.
 
@@ -163,15 +163,6 @@ making a new tag during step 2. This is essentially redeploying an older version
 1. cd into the `pi` directory
 
 1. run `/home/pi/.local/bin/pytest --cov=heartbeat`
-
-# How to install PostgreSQL on a Mac
-
-1. Download the PostgreSQL 9.5 installer from https://www.enterprisedb.com/downloads/postgres-postgresql-downloads and follow the installation instructions
-
-1. Add psql to the path
-   `PATH="/Library/PostgreSQL/9.5/bin:$PATH"`
-
-1. Run `setup_postgresql_local.sh`
 
 # How to add a PostgreSQL migration script 
 

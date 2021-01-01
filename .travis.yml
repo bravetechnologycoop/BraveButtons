@@ -65,7 +65,7 @@ matrix:
 
       # setup database
       before_script:
-        - bash setup_postgresql_local.sh TestInstall $RESPONDER_PHONE_TEST $STAFF_PHONE_TEST
+        - bash setup_postgresql_local_dev.sh
 
       # run linter and unit tests
       script:
