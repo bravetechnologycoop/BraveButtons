@@ -442,6 +442,13 @@ app.get('/heartbeatDashboard', async (req, res) => {
     res.send(htmlString)
 })  
 
+app.post('/alert/test', async (req, res) => {
+    res.status(200).send({
+        key1: 'value1',
+        key2: 2,
+    })
+})
+
 
 async function checkHeartbeat() {
     let hubs = await db.getHubs()
