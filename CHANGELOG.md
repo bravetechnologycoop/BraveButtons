@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+
+## [3.1.0] - 2021-01-04
 ### Added
 - Added landing page for chatbot dashboard so page will load when there are no installations selected or present (CU-gurbtf).
 - Added Battery Level to sessions table and dashboard display (CU-fgyh0g).
@@ -194,7 +196,8 @@ the code was deployed.
 ### Added
 - Initial pi.
 
-[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v1.6.0...v2.0.0
