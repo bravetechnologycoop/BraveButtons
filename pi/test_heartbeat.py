@@ -69,6 +69,12 @@ class Test__parse_link_quality_from_iwconfig_output(object):
             link_quality = heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
             assert math.isclose(0.5, link_quality, abs_tol=0.001)
 
+    def test_no_wlan0_in_output(self):
+        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/no_wlan0.txt', 'r') as iwconfig_output_file:
+            iwconfig_output = iwconfig_output_file.read()
+            link_quality = heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+            assert math.isclose(-1.0, link_quality, abs_tol=0.001)
+
 class Test__ping(object):
 
     def test_localhost(self):
