@@ -3,21 +3,22 @@ import pytest
 import unittest.mock
 import socket
 import os
+import math
 
 class Test__parse_flic_last_seen_from_darkstat_html(object):
 
     def test_seconds(self):
-        with open(os.path.dirname(__file__) + '/sample_darkstat_html/59_secs.html', 'r') as html_file:
+        with open(os.path.dirname(__file__) + '/test_files/sample_darkstat_html/59_secs.html', 'r') as html_file:
             html = html_file.read()
             assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 59
 
     def test_seconds_minutes(self):
-        with open(os.path.dirname(__file__) + '/sample_darkstat_html/316_secs.html', 'r') as html_file:
+        with open(os.path.dirname(__file__) + '/test_files/sample_darkstat_html/316_secs.html', 'r') as html_file:
             html = html_file.read()
             assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 316
 
     def test_seconds_minutes_hours(self):
-        with open(os.path.dirname(__file__) + '/sample_darkstat_html/3806_secs.html', 'r') as html_file:
+        with open(os.path.dirname(__file__) + '/test_files/sample_darkstat_html/3806_secs.html', 'r') as html_file:
             html = html_file.read()
             assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 3806
 
@@ -27,12 +28,12 @@ class Test__parse_flic_last_seen_from_darkstat_html(object):
 
     def test_never(self):
         with pytest.raises(heartbeat.FlicNotFoundError):
-            with open(os.path.dirname(__file__) + '/sample_darkstat_html/never.html', 'r') as html_file:
+            with open(os.path.dirname(__file__) + '/test_files/sample_darkstat_html/never.html', 'r') as html_file:
                 html = html_file.read()
                 heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02')
     
     def test_log_last_seen_when_darkstat_html_contains_flic_mac_address(self):
-        file_path = os.path.dirname(__file__) + '/sample_darkstat_html/log_last_seen.html'
+        file_path = os.path.dirname(__file__) + '/test_files/sample_darkstat_html/log_last_seen.html'
         with open(file_path, 'r') as html_file, unittest.mock.patch('heartbeat.logging') as mock_logging:
             html = html_file.read()
             heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02')
@@ -42,17 +43,31 @@ class Test__parse_flic_last_seen_from_darkstat_html(object):
 class Test__parse_flic_ip_from_darkstat_html(object):
 
     def test_valid_input(self):
-        with open(os.path.dirname(__file__) + '/sample_darkstat_html/59_secs.html', 'r') as html_file:
+        with open(os.path.dirname(__file__) + '/test_files/sample_darkstat_html/59_secs.html', 'r') as html_file:
             html = html_file.read()
             assert heartbeat.parse_flic_ip_from_darkstat_html(html, '00:00:00:00:00:02') == '192.168.8.114'
 
     def test_log_ip_when_darkstat_html_contains_flic_mac_address(self):
-        file_path = os.path.dirname(__file__) + '/sample_darkstat_html/log_ip.html'
+        file_path = os.path.dirname(__file__) + '/test_files/sample_darkstat_html/log_ip.html'
         with open(file_path, 'r') as html_file, unittest.mock.patch('heartbeat.logging') as mock_logging:
             html = html_file.read()
             heartbeat.parse_flic_ip_from_darkstat_html(html, '00:00:00:00:00:02')
 
             mock_logging.info.assert_called_once_with('darkstat html contained flic IPv4 address:  <td><a href="./192.168.8.114/">192.168.8.114</a></td>  <td>flic</td>  <td><tt>00:00:00:00:00:02</tt></td>  <td class="num">1 hr, 3 mins, 26 secs</td></tr>')
+
+class Test__parse_link_quality_from_iwconfig_output(object):
+
+    def test_link_quality_1(self):
+        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/link_quality_1.txt', 'r') as iwconfig_output_file:
+            iwconfig_output = iwconfig_output_file.read()
+            link_quality = heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+            assert math.isclose(1.0, link_quality, abs_tol=0.001)
+
+    def test_link_quality_half(self):
+        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/link_quality_half.txt', 'r') as iwconfig_output_file:
+            iwconfig_output = iwconfig_output_file.read()
+            link_quality = heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+            assert math.isclose(0.5, link_quality, abs_tol=0.001)
 
 class Test__ping(object):
 

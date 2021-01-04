@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+### Added
+- Added wifi link quality monitoring to Brave Hub in heartbeat.py (CU-fmy630).
 
 ## [3.1.0] - 2021-01-04
 ### Added
