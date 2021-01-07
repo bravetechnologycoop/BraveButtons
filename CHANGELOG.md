@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+### Security
+- Update Twilio references in order to get the latest version of axios (CU-j6yuzk).
 
 ## [3.1.0] - 2021-01-04
 ### Added
