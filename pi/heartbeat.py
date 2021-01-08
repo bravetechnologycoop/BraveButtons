@@ -105,28 +105,24 @@ def ping(host):
 
 def parse_link_quality_from_iwconfig_output(iwconfig_output_text):
     lines = iwconfig_output_text.split('\n')
-    for i in range(0, len(lines)):
-        # note: hardcoded wireless network interface name
-        if ('wlan0' in lines[i]) and (i+5 < len(lines)):
-            # this should be something like 'Link Quality=69/70  Signal level=-41 dBm' which we then split
-            stats_strings = lines[i+5].split('  ')
-            for j in range(0, len(stats_strings)):
-                if 'Link Quality' in stats_strings[j]:
-                    quality_string = stats_strings[j].split('=')[1]
-                    # normalize the fraction since the denominator varies
-                    numerator = quality_string.split('/')[0]
-                    denominator = quality_string.split('/')[1]
-                    return float(numerator) / float(denominator)
-    return -1.0
+    if len(lines) > 5:
+        # lines[5] should be something like 'Link Quality=69/70  Signal level=-41 dBm' which we then split
+        stats_strings = lines[5].split('  ')
+        for i in range(0, len(stats_strings)):
+            if 'Link Quality' in stats_strings[i]:
+                quality_string = stats_strings[i].split('=')[1]
+                # normalize the fraction since the denominator varies
+                numerator = quality_string.split('/')[0]
+                denominator = quality_string.split('/')[1]
+                link_quality = float(numerator) / float(denominator)
+                logging.info('wlan0 link quality is %f', link_quality)
+                return
+    logging.warning("error parsing iwconfig output")
 
 def log_wifi_link_quality():
     try:
-        iwconfig_output_text = subprocess.check_output('iwconfig').decode('utf-8')
-        link_quality = parse_link_quality_from_iwconfig_output(iwconfig_output_text)
-        if link_quality < 0:
-            logging.warning("error parsing iwconfig output")
-        else:
-            logging.info('wlan0 link quality is %f', link_quality)
+        iwconfig_output_text = subprocess.check_output(['iwconfig', 'wlan0']).decode('utf-8')
+        parse_link_quality_from_iwconfig_output(iwconfig_output_text)
     except Exception as e:
         logging.warning("error logging wifi link quality", exc_info=e)
 
@@ -187,7 +183,7 @@ if __name__ == '__main__':
 
         while True:
             try:
-                if NETWORK_INTERFACE is 'wlan0':
+                if NETWORK_INTERFACE == 'wlan0':
                     log_wifi_link_quality()
                 html = get_darkstat_html()
                 ip = parse_flic_ip_from_darkstat_html(html, FLIC_MAC_ADDRESS)

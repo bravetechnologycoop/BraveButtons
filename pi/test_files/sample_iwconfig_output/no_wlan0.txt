@@ -1,6 +1,1 @@
-eth0      no wireless extensions.
-
-eth1      no wireless extensions.
-
-lo        no wireless extensions.
-
+wlan0     No such device

@@ -3,7 +3,6 @@ import pytest
 import unittest.mock
 import socket
 import os
-import math
 
 class Test__parse_flic_last_seen_from_darkstat_html(object):
 
@@ -59,21 +58,24 @@ class Test__parse_link_quality_from_iwconfig_output(object):
 
     def test_link_quality_1(self):
         with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/link_quality_1.txt', 'r') as iwconfig_output_file:
-            iwconfig_output = iwconfig_output_file.read()
-            link_quality = heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
-            assert math.isclose(1.0, link_quality, abs_tol=0.001)
+            with unittest.mock.patch('heartbeat.logging') as mock_logging:
+                iwconfig_output = iwconfig_output_file.read()
+                heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+                mock_logging.info.assert_called_once_with('wlan0 link quality is %f', 1.0)
 
     def test_link_quality_half(self):
         with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/link_quality_half.txt', 'r') as iwconfig_output_file:
-            iwconfig_output = iwconfig_output_file.read()
-            link_quality = heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
-            assert math.isclose(0.5, link_quality, abs_tol=0.001)
+            with unittest.mock.patch('heartbeat.logging') as mock_logging:
+                iwconfig_output = iwconfig_output_file.read()
+                heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+                mock_logging.info.assert_called_once_with('wlan0 link quality is %f', 0.5)
 
     def test_no_wlan0_in_output(self):
         with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/no_wlan0.txt', 'r') as iwconfig_output_file:
-            iwconfig_output = iwconfig_output_file.read()
-            link_quality = heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
-            assert math.isclose(-1.0, link_quality, abs_tol=0.001)
+            with unittest.mock.patch('heartbeat.logging') as mock_logging:
+                iwconfig_output = iwconfig_output_file.read()
+                heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+                mock_logging.warning.assert_called_once_with('error parsing iwconfig output')
 
 class Test__ping(object):
 

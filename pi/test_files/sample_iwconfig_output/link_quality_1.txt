@@ -1,7 +1,3 @@
-eth0      no wireless extensions.
-
-lo        no wireless extensions.
-
 wlan0     IEEE 802.11  ESSID:"sample network name"
           Mode:Managed  Frequency:5.22 GHz  Access Point: F6:A2:95:10:4D:40
           Bit Rate=150 Mb/s   Tx-Power=31 dBm
