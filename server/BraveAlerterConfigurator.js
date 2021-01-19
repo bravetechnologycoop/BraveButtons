@@ -13,50 +13,63 @@ class BraveAlerterConfigurator {
     }
 
     async getAlertSession(sessionId) {
-        const session = await db.getSessionWithSessionId(sessionId)
-        if (session === null) {
-            return null
-        }
+        let alertSession = null
+        try {
+            const session = await db.getSessionWithSessionId(sessionId)
+            if (session === null) {
+                return null
+            }
 
-        const installation = await db.getInstallationWithInstallationId(session.installationId)
-    
-        const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
-    
-        let alertSession = new AlertSession(
-            session.id,
-            session.state,
-            session.incidentType,
-            session.notes,
-            `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-            installation.responderPhoneNumber,
-            incidentCategoryKeys,
-            installation.incidentCategories,
-        )
+            const installation = await db.getInstallationWithInstallationId(session.installationId)
+        
+            const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
+        
+            alertSession = new AlertSession(
+                session.id,
+                session.state,
+                session.incidentType,
+                session.notes,
+                `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
+                installation.responderPhoneNumber,
+                incidentCategoryKeys,
+                installation.incidentCategories,
+            )
+        }
+        catch (e) {
+            helpers.log(`getAlertSession: failed to get and create a new alert session: ${JSON.stringify(e)}`)
+        }
     
         return alertSession
     }
 
     async getAlertSessionByPhoneNumber(toPhoneNumber) {
-        const session = await db.getMostRecentIncompleteSessionWithPhoneNumber(toPhoneNumber)
-        if (session === null) {
-            return null
-        }
+        let alertSession = null
 
-        const installation = await db.getInstallationWithInstallationId(session.installationId)
-    
-        const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
-    
-        let alertSession = new AlertSession(
-            session.id,
-            session.state,
-            session.incidentType,
-            session.notes,
-            `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-            installation.responderPhoneNumber,
-            incidentCategoryKeys,
-            installation.incidentCategories,
-        )
-    
+        try {
+            const session = await db.getMostRecentIncompleteSessionWithPhoneNumber(toPhoneNumber)
+            if (session === null) {
+                return null
+            }
+
+            const installation = await db.getInstallationWithInstallationId(session.installationId)
+        
+            const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
+        
+            alertSession = new AlertSession(
+                session.id,
+                session.state,
+                session.incidentType,
+                session.notes,
+                `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
+                installation.responderPhoneNumber,
+                incidentCategoryKeys,
+                installation.incidentCategories,
+            )
+        }
+        catch(e) {
+            helpers.log(`getAlertSessionByPhoneNumber: failed to get and create a new alert session: ${JSON.stringify(e)}`)
+        }
+        
         return alertSession
     }
 
@@ -65,6 +78,10 @@ class BraveAlerterConfigurator {
 
         try {
             client = await db.beginTransaction()
+            if (client === null) {
+                helpers.log(`alertSessionChangedCallback: Error starting transaction`)
+                return
+            }
 
             const session = await db.getSessionWithSessionId(alertSession.sessionId, client)
             
@@ -93,7 +110,7 @@ class BraveAlerterConfigurator {
         } catch (e) {
             try {
                 await db.rollbackTransaction(client)
-                helpers.log(`Rolled back transaction because of error: ${e}`)
+                helpers.log(`alertSessionChangedCallback: Rolled back transaction because of error: ${e}`)
             } catch (error) {
                 // Do nothing
                 helpers.log(`alertSessionChangedCallback: Error rolling back transaction: ${e}`)
