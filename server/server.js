@@ -38,38 +38,50 @@ app.use(braveAlerter.getRouter())
 async function handleValidRequest(button, numPresses, batteryLevel) {
     helpers.log('UUID: ' + button.button_id.toString() + ' SerialNumber: ' + button.button_serial_number + ' Unit: ' + button.unit.toString() + ' Presses: ' + numPresses.toString() + ' BatteryLevel: ' + batteryLevel)
 
-    let client = await db.beginTransaction()
+    let client 
+    
+    try {
+        client = await db.beginTransaction()
 
-    let session = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
+        let session = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
 
-    if ((batteryLevel !== undefined) &&
-            (batteryLevel >= 0) &&
-            (batteryLevel <= 100)) {
-        if (session === null) {
-            session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, batteryLevel, client)
-        }
-        else {
-            session.incrementButtonPresses(numPresses)
-            session.updateBatteryLevel(batteryLevel)
-            await db.saveSession(session, client)
+        if ((batteryLevel !== undefined) &&
+                (batteryLevel >= 0) &&
+                (batteryLevel <= 100)) {
+            if (session === null) {
+                session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, batteryLevel, client)
+            }
+            else {
+                session.incrementButtonPresses(numPresses)
+                session.updateBatteryLevel(batteryLevel)
+                await db.saveSession(session, client)
+            }
+
+        }else{
+            if (session === null) {
+                session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
+            }
+            else {
+                session.incrementButtonPresses(numPresses)
+                await db.saveSession(session, client)
+            }
+
         }
 
-    }else{
-        if (session === null) {
-            session = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
-        }
-        else {
-            session.incrementButtonPresses(numPresses)
-            await db.saveSession(session, client)
+        if(needToSendButtonPressMessageForSession(session)) {
+            sendButtonPressMessageForSession(session, client)
         }
 
+        await db.commitTransaction(client)
+    } catch (e) {
+        try {
+            await db.rollbackTransaction(client)
+            helpers.log(`Rolled back transaction because of error: ${e}`)
+        } catch (error) {
+            // Do nothing
+            helpers.log(`handleValidRequest: Error rolling back transaction: ${e}`)
+        }
     }
-
-    if(needToSendButtonPressMessageForSession(session)) {
-        sendButtonPressMessageForSession(session, client)
-    }
-
-    await db.commitTransaction(client)
 }
 
 async function needToSendButtonPressMessageForSession(session) {

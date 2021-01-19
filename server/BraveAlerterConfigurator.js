@@ -1,4 +1,4 @@
-const { BraveAlerter, AlertSession, ALERT_STATE } = require('brave-alert-lib')
+const { BraveAlerter, AlertSession, ALERT_STATE, helpers } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 class BraveAlerterConfigurator {
@@ -61,32 +61,44 @@ class BraveAlerterConfigurator {
     }
 
     async alertSessionChangedCallback(alertSession) {
-        let client = await db.beginTransaction()
+        let client
 
-        const session = await db.getSessionWithSessionId(alertSession.sessionId, client)
-        
-        if (session) {
-            if (alertSession.alertState) {
-                session.state = alertSession.alertState
-            }
+        try {
+            client = await db.beginTransaction()
+
+            const session = await db.getSessionWithSessionId(alertSession.sessionId, client)
             
-            if (alertSession.incidentCategoryKey) {
-                const installation = await db.getInstallationWithSessionId(alertSession.sessionId, client)
-                session.incidentType = installation.incidentCategories[alertSession.incidentCategoryKey]
-            }
-        
-            if (alertSession.details) {
-                session.notes = alertSession.details
-            }
-        
-            if (alertSession.fallbackReturnMessage) {
-                session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
+            if (session) {
+                if (alertSession.alertState) {
+                    session.state = alertSession.alertState
+                }
+                
+                if (alertSession.incidentCategoryKey) {
+                    const installation = await db.getInstallationWithSessionId(alertSession.sessionId, client)
+                    session.incidentType = installation.incidentCategories[alertSession.incidentCategoryKey]
+                }
+            
+                if (alertSession.details) {
+                    session.notes = alertSession.details
+                }
+            
+                if (alertSession.fallbackReturnMessage) {
+                    session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
+                }
+
+                await db.saveSession(session, client)
             }
 
-            await db.saveSession(session, client)
+            await db.commitTransaction(client)
+        } catch (e) {
+            try {
+                await db.rollbackTransaction(client)
+                helpers.log(`Rolled back transaction because of error: ${e}`)
+            } catch (error) {
+                // Do nothing
+                helpers.log(`alertSessionChangedCallback: Error rolling back transaction: ${e}`)
+            }
         }
-
-        await db.commitTransaction(client)
     }
 
     getReturnMessage(fromAlertState, toAlertState, incidentCategories) {
