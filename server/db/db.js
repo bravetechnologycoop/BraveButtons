@@ -50,6 +50,11 @@ module.exports.commitTransaction = async function(client) {
     client.release()
 }
 
+module.exports.rollbackTransaction = async function(client) {
+    await client.query("ROLLBACK")
+    client.release()
+}
+
 module.exports.getUnrespondedSessionWithButtonId = async function(buttonId, client) {
     let transactionMode = (typeof client !== 'undefined')
     if(!transactionMode) {
