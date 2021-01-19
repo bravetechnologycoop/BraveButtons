@@ -34,174 +34,293 @@ function createHubFromRow(r) {
 }
 
 module.exports.beginTransaction = async function() {
-    let client = await pool.connect()
-    await client.query("BEGIN")
+    let client = null
     
-    // this fixes a race condition when two button press messages are received in quick succession
-    // this means that only one transaction executes at a time, which is not good for performance
-    // we should revisit this when / if db performance becomes a concern
-    await client.query("LOCK TABLE sessions, registry, installations, migrations")
-    
+    try {
+        client = await pool.connect()
+        await client.query("BEGIN")
+        
+        // this fixes a race condition when two button press messages are received in quick succession
+        // this means that only one transaction executes at a time, which is not good for performance
+        // we should revisit this when / if db performance becomes a concern
+        await client.query("LOCK TABLE sessions, registry, installations, migrations")
+    }
+    catch(e) {
+        helpers.log(`Error running the beginTransaction query: ${e}`);
+        if (client) {
+            try {
+                await this.rollbackTransaction(client)
+            } catch(err) {
+                helpers.log(`beginTransaction: Error rolling back the errored transaction: ${err}`)
+            }
+        }
+    }
+
     return client
 }
 
 module.exports.commitTransaction = async function(client) {
-    await client.query("COMMIT")
-    client.release()
+    try {
+        await client.query("COMMIT")
+    }
+    catch(e) {
+        helpers.log(`Error running the commitTransaction query: ${e}`)
+    } finally {
+        try {
+            client.release()
+        } catch(err) {
+            helpers.log(`commitTransaction: Error releasing client: ${err}`)
+        }
+    }
 }
 
 module.exports.rollbackTransaction = async function(client) {
-    await client.query("ROLLBACK")
-    client.release()
+    try {
+        await client.query("ROLLBACK")
+    }
+    catch(e) {
+        helpers.log(`Error running the rollbackTransaction query: ${e}`);
+    } finally {
+        try {
+            client.release()
+        } catch(err) {
+            helpers.log(`rollbackTransaction: Error releasing client: ${err}`)
+        }
+    }
 }
 
 module.exports.getUnrespondedSessionWithButtonId = async function(buttonId, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+    
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+
+        const query = "SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4"
+        const values = [buttonId, ALERT_STATE.WAITING_FOR_CATEGORY, ALERT_STATE.WAITING_FOR_DETAILS, ALERT_STATE.COMPLETED]
+        const { rows } = await client.query(query, values)
+
+        if(rows.length > 0) {        
+            return createSessionFromRow(rows[0])
+        }
+    }
+    catch(e) {
+        helpers.log(`Error running the getUnrespondedSessionWithButtonId query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getUnrespondedSessionWithButtonId: Error releasing client: ${err}`)
+            }
+        }
     }
 
-    const query = "SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4"
-    const values = [buttonId, ALERT_STATE.WAITING_FOR_CATEGORY, ALERT_STATE.WAITING_FOR_DETAILS, ALERT_STATE.COMPLETED]
-    const { rows } = await client.query(query, values)
-   
-    if(!transactionMode) {
-        client.release()
-    }
-
-    if(rows.length > 0) {        
-        return createSessionFromRow(rows[0])
-    }
     return null
 }
 
 module.exports.getMostRecentIncompleteSessionWithPhoneNumber = async function(phoneNumber, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        const query = "SELECT * FROM sessions WHERE phone_number = $1 AND state != $2 ORDER BY created_at DESC LIMIT 1"
+        const values = [phoneNumber, ALERT_STATE.COMPLETED]
+        const { rows } = await client.query(query, values)
+        
+        if(rows.length > 0) {        
+            return createSessionFromRow(rows[0])
+        }
     }
-    
-    const query = "SELECT * FROM sessions WHERE phone_number = $1 AND state != $2 ORDER BY created_at DESC LIMIT 1"
-    const values = [phoneNumber, ALERT_STATE.COMPLETED]
-    const { rows } = await client.query(query, values)
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getMostRecentIncompleteSessionWithPhoneNumber query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getMostRecentIncompleteSessionWithPhoneNumber: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {        
-        return createSessionFromRow(rows[0])
-    }
+
     return null
 }
 
 module.exports.getAllSessionsWithButtonId = async function(buttonId, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        let { rows } = await client.query("SELECT * FROM sessions WHERE button_id = $1", [buttonId])
+        
+        if(rows.length > 0) {
+            return rows.map(createSessionFromRow)
+        }
     }
-    
-    let { rows } = await client.query("SELECT * FROM sessions WHERE button_id = $1", [buttonId])
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getAllSessionsWithButtonId query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getAllSessionsWithButtonId: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {
-        return rows.map(createSessionFromRow)
-    }
+
     return []
 }
 
 module.exports.getRecentSessionsWithInstallationId = async function(installationId, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        let { rows } = await client.query("SELECT * FROM sessions WHERE installation_id = $1 ORDER BY created_at DESC LIMIT 40", [installationId])
+        
+        if(rows.length > 0) {
+            return rows.map(createSessionFromRow)
+        }
     }
-    
-    let { rows } = await client.query("SELECT * FROM sessions WHERE installation_id = $1 ORDER BY created_at DESC LIMIT 40", [installationId])
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getRecentSessionsWithInstallationId query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getRecentSessionsWithInstallationId: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {
-        return rows.map(createSessionFromRow)
-    }
+
     return []
 }
 
 module.exports.getSessionWithSessionId = async function(sessionId, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        let { rows } = await client.query("SELECT * FROM sessions WHERE id = $1", [sessionId])
+        
+        if(rows.length > 0) {
+            return createSessionFromRow(rows[0])
+        }
     }
-    
-    let { rows } = await client.query("SELECT * FROM sessions WHERE id = $1", [sessionId])
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getSessionWithSessionId query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getSessionWithSessionId: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {
-        return createSessionFromRow(rows[0])
-    }
+
     return null
 }
 
 module.exports.getAllSessions = async function(client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
+    const transactionMode = (typeof client !== 'undefined')
 
-    const { rows } = await client.query("SELECT * FROM sessions")
-    
-    if(!transactionMode) {
-        client.release()
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+
+        const { rows } = await client.query("SELECT * FROM sessions")
+
+        return rows.map(createSessionFromRow)
+    }
+    catch(e) {
+        helpers.log(`Error running the getAllSessions query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getAllSessions: Error releasing client: ${err}`)
+            }
+        }
     }
     
-    return rows.map(createSessionFromRow)
+    return null
 }
 
 module.exports.createSession = async function(installationId, buttonId, unit, phoneNumber, numPresses, buttonBatteryLevel, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        const values = [installationId, buttonId, unit, phoneNumber, ALERT_STATE.STARTED, numPresses, buttonBatteryLevel]
+        const { rows } = await client.query('INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses, button_battery_level) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', values)
+
+        if(rows.length > 0) {
+            return createSessionFromRow(rows[0])
+        }
     }
-    
-    const values = [installationId, buttonId, unit, phoneNumber, ALERT_STATE.STARTED, numPresses, buttonBatteryLevel]
-    const { rows } = await client.query('INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses, button_battery_level) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', values)
-   
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the createSession query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`createSession: Error releasing client: ${err}`)
+            }
+        }
     }
 
-    if(rows.length > 0) {
-        return createSessionFromRow(rows[0])
-    }
     return null
 }
 
 module.exports.saveSession = async function(session, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
-    
-    let { rows } = await client.query("SELECT * FROM sessions WHERE id = $1 LIMIT 1", [session.id])
-    if(rows.length === 0) {
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
         if(!transactionMode) {
-            client.release()
+            client = await pool.connect()
         }
-        throw new Error("Tried to save a session that doesn't exist yet. Use createSession() instead.")
+        
+        let { rows } = await client.query("SELECT * FROM sessions WHERE id = $1 LIMIT 1", [session.id])
+        if(rows.length === 0) {
+            throw new Error("Tried to save a session that doesn't exist yet. Use createSession() instead.")
+        }
+        const query = "UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status =$9, button_battery_level=$10 WHERE id = $11"
+        const values = [session.installationId, session.buttonId, session.unit, session.phoneNumber, session.state, session.numPresses, session.incidentType, session.notes, session.fallBackAlertTwilioStatus, session.buttonBatteryLevel, session.id]
+        await client.query(query, values)
     }
-    const query = "UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status =$9, button_battery_level=$10 WHERE id = $11"
-    const values = [session.installationId, session.buttonId, session.unit, session.phoneNumber, session.state, session.numPresses, session.incidentType, session.notes, session.fallBackAlertTwilioStatus, session.buttonBatteryLevel, session.id]
-    await client.query(query, values) 
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the saveSession query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`saveSession: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
@@ -211,64 +330,108 @@ module.exports.clearSessions = async function(client) {
         helpers.log("warning - tried to clear sessions database outside of a test environment!")
         return
     }
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+
+    const transactionMode = (typeof client !== 'undefined')
+    
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        await client.query("DELETE FROM sessions")
     }
-    
-    await client.query("DELETE FROM sessions")
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the clearSessions query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`clearSessions: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
 module.exports.getButtonWithButtonId = async function(buttonId, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        let { rows } = await client.query("SELECT * FROM registry WHERE button_id = $1", [buttonId])
+        
+        if(rows.length > 0) {
+            return rows[0]
+        }
     }
-    
-    let { rows } = await client.query("SELECT * FROM registry WHERE button_id = $1", [buttonId])
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getButtonWithButtonId query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getButtonWithButtonId: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {
-        return rows[0]
-    }
+
     return null
 }
 
 module.exports.getButtonWithSerialNumber = async function(serialNumber, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        let { rows } = await client.query("SELECT * FROM registry WHERE button_serial_number = $1", [serialNumber])
+        
+        if(rows.length > 0) {
+            return rows[0]
+        }
     }
-    
-    let { rows } = await client.query("SELECT * FROM registry WHERE button_serial_number = $1", [serialNumber])
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getButtonWithSerialNumber query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getButtonWithSerialNumber: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {
-        return rows[0]
-    }
+
     return null
 }
 
 module.exports.createButton = async function(buttonId, installationId, unit, phoneNumber, button_serial_number, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        await client.query("INSERT INTO registry (button_id, installation_id, unit, phone_number, button_serial_number) VALUES ($1, $2, $3, $4, $5)", [buttonId, installationId, unit, phoneNumber, button_serial_number])
+
     }
-    
-    await client.query("INSERT INTO registry (button_id, installation_id, unit, phone_number, button_serial_number) VALUES ($1, $2, $3, $4, $5)", [buttonId, installationId, unit, phoneNumber, button_serial_number])
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the createButton query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`createButton: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
@@ -277,29 +440,49 @@ module.exports.clearButtons = async function(client) {
         helpers.log("warning - tried to clear registry database outside of a test environment!")
         return
     }
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+
+    const transactionMode = (typeof client !== 'undefined')
+    
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        await client.query("DELETE FROM registry")
     }
-    
-    await client.query("DELETE FROM registry")
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the clearButtons query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`clearButtons: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
 module.exports.createInstallation = async function(name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories, client) {
-    
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
+    const transactionMode = (typeof client !== 'undefined')
 
-    await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number, incident_categories) VALUES ($1, $2, $3, $4)", [name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories])
-    
-    if(!transactionMode) {
-        client.release()
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+
+        await client.query("INSERT INTO installations (name, responder_phone_number, fall_back_phone_number, incident_categories) VALUES ($1, $2, $3, $4)", [name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories])
+    }
+    catch(e) {
+        helpers.log(`Error running the createInstallation query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`createInstallation: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
@@ -308,219 +491,328 @@ module.exports.clearInstallations = async function(client) {
         helpers.log("warning - tried to clear installations table outside of a test environment!")
         return
     }
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        await client.query("DELETE FROM installations")
     }
-    
-    await client.query("DELETE FROM installations")
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the clearInstallations query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`clearInstallations: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
 module.exports.getInstallations = async function(client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        const { rows } = await client.query("SELECT * FROM installations")
+        
+        if(rows.length > 0) {        
+            return rows.map(createInstallationFromRow)
+        }
     }
-    
-    const { rows } = await client.query("SELECT * FROM installations")
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getInstallations query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getInstallations: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {        
-        return rows.map(createInstallationFromRow)
-    }
+
     return []
 }
 
-module.exports.getInstallationWithInstallationId = async function(installationId, client) { 
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+module.exports.getInstallationWithInstallationId = async function(installationId, client) {
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        let { rows } = await client.query("SELECT * FROM installations WHERE id = $1", [installationId])
+        
+        if(rows.length > 0) {
+            return createInstallationFromRow(rows[0])
+        }
     }
-    
-    let { rows } = await client.query("SELECT * FROM installations WHERE id = $1", [installationId])
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getInstallationWithInstallationId query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getInstallationWithInstallationId: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {
-        return createInstallationFromRow(rows[0])
-    }
+
     return null
 }
 
 module.exports.getInstallationWithSessionId = async function(sessionId, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+
+        let { rows } = await client.query("SELECT i.* FROM sessions s LEFT JOIN installations i ON s.installation_id = i.id WHERE s.id = $1", [sessionId])
+
+        if(rows.length > 0) {
+            return createInstallationFromRow(rows[0])
+        }
     }
-
-    let { rows } = await client.query("SELECT i.* FROM sessions s LEFT JOIN installations i ON s.installation_id = i.id WHERE s.id = $1", [sessionId])
-
-    if(!transactionMode) {
-        client.release()
-    }
-
-    if(rows.length > 0) {
-        return createInstallationFromRow(rows[0])
+    catch(e) {
+        helpers.log(`Error running the getInstallationWithSessionId query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getInstallationWithSessionId: Error releasing client: ${err}`)
+            }
+        }
     }
 
     return null
 }
 
 module.exports.getHubs = async function(client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        const { rows } = await client.query("SELECT * FROM hubs order by system_name")
+        
+        if(rows.length > 0) {        
+            return rows.map(createHubFromRow)
+        }
     }
-    
-    const { rows } = await client.query("SELECT * FROM hubs order by system_name")
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the getHubs query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getHubs: Error releasing client: ${err}`)
+            }
+        }
     }
-    
-    if(rows.length > 0) {        
-        return rows.map(createHubFromRow)
-    }
+
     return []
 }
 
 module.exports.getHubWithSystemId = async function(systemId, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
+    const transactionMode = (typeof client !== 'undefined')
     
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1", [systemId])
-    
-    if(!transactionMode) {
-        client.release()
+    try {
+        if(!transactionMode) {
+            client = await pool.connect()
+        }
+        
+        let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1", [systemId])
+        
+        if(rows.length > 0) {
+            return createHubFromRow(rows[0])
+        }
     }
-    
-    if(rows.length > 0) {
-        return createHubFromRow(rows[0])
+    catch(e) {
+        helpers.log(`Error running the getHubWithSystemId query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`getHubWithSystemId: Error releasing client: ${err}`)
+            }
+        }
     }
+
     return null
 }
 
 module.exports.saveHeartbeat = async function(systemId, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
-    
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
-    if(rows.length === 0) {
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
         if(!transactionMode) {
-            client.release()
+            client = await pool.connect()
         }
-        throw new Error("Tried to save a heartbeat for a hub that doesn't exist yet.")
+        
+        let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+        if(rows.length === 0) {
+            throw new Error("Tried to save a heartbeat for a hub that doesn't exist yet.")
+        }
+
+        const query = "UPDATE hubs SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3 WHERE system_id = $4"
+        const values = [flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemId]
+        await client.query(query, values) 
     }
-    const query = "UPDATE hubs SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3 WHERE system_id = $4"
-    const values = [flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemId]
-    await client.query(query, values) 
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the saveHeartbeat query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`saveHeartbeat: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
 module.exports.saveHubRename = async function(systemId, systemName, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
-    
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
-    if(rows.length === 0) {
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
         if(!transactionMode) {
-            client.release()
+            client = await pool.connect()
         }
-        throw new Error("Tried to rename a hub that doesn't exist yet.")
+        
+        let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+        if(rows.length === 0) {
+            throw new Error("Tried to rename a hub that doesn't exist yet.")
+        }
+
+        const query = "UPDATE hubs SET system_name = $1 WHERE system_id = $2"
+        const values = [systemName, systemId]
+        await client.query(query, values) 
     }
-    const query = "UPDATE hubs SET system_name = $1 WHERE system_id = $2"
-    const values = [systemName, systemId]
-    await client.query(query, values) 
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the saveHubRename query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`saveHubRename: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
 module.exports.saveHubMuteStatus = async function(systemId, muted, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
-    
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
-    if(rows.length === 0) {
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
         if(!transactionMode) {
-            client.release()
+            client = await pool.connect()
         }
-        throw new Error("Tried to save mute status in a hub that doesn't exist yet.")
+        
+        let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+        if(rows.length === 0) {
+            throw new Error("Tried to save mute status in a hub that doesn't exist yet.")
+        }
+        const query = "UPDATE hubs SET muted = $1 WHERE system_id = $2"
+        const values = [muted, systemId]
+        await client.query(query, values) 
     }
-    const query = "UPDATE hubs SET muted = $1 WHERE system_id = $2"
-    const values = [muted, systemId]
-    await client.query(query, values) 
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the saveHubMuteStatus query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`saveHubMuteStatus: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
 module.exports.saveHubHideStatus = async function(systemId, hidden, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
-    
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
-    if(rows.length === 0) {
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
         if(!transactionMode) {
-            client.release()
+            client = await pool.connect()
         }
-        throw new Error("Tried to save hide status for a hub that doesn't exist yet.")
+        
+        let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [systemId])
+        if(rows.length === 0) {
+            throw new Error("Tried to save hide status for a hub that doesn't exist yet.")
+        }
+      
+        const query = "UPDATE hubs SET hidden = $1 WHERE system_id = $2"
+        const values = [hidden, systemId]
+        await client.query(query, values)
     }
-    const query = "UPDATE hubs SET hidden = $1 WHERE system_id = $2"
-    const values = [hidden, systemId]
-    await client.query(query, values) 
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the saveHubHideStatus query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`saveHubHideStatus: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
 module.exports.saveHubAlertStatus = async function(hub, client) {
-    let transactionMode = (typeof client !== 'undefined')
-    if(!transactionMode) {
-        client = await pool.connect()
-    }
-    
-    let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
-    if(rows.length === 0) {
+    const transactionMode = (typeof client !== 'undefined')
+
+    try {
         if(!transactionMode) {
-            client.release()
+            client = await pool.connect()
         }
-        throw new Error("Tried to save alert sent status for a hub that doesn't exist yet.")
+        
+        let { rows } = await client.query("SELECT * FROM hubs WHERE system_id = $1 LIMIT 1", [hub.systemId])
+        if(rows.length === 0) {
+            throw new Error("Tried to save alert sent status for a hub that doesn't exist yet.")
+        }
+
+        const query = "UPDATE hubs SET sent_alerts = $1 WHERE system_id = $2"
+        const values = [hub.sentAlerts, hub.systemId]
+        await client.query(query, values) 
     }
-    const query = "UPDATE hubs SET sent_alerts = $1 WHERE system_id = $2"
-    const values = [hub.sentAlerts, hub.systemId]
-    await client.query(query, values) 
-    
-    if(!transactionMode) {
-        client.release()
+    catch(e) {
+        helpers.log(`Error running the saveHubAlertStatus query: ${e}`);
+    } finally {
+        if (!transactionMode) {
+            try {
+                client.release()
+            } catch(err) {
+                helpers.log(`saveHubAlertStatus: Error releasing client: ${err}`)
+            }
+        }
     }
 }
 
 module.exports.close = async function() {
-    await pool.end()
+    try {
+        await pool.end()
+    }
+    catch(e) {
+        helpers.log(`Error running the close query: ${e}`);
+    }
 }

@@ -12,6 +12,9 @@ the code was deployed.
 ### Added
 - Added wifi link quality monitoring to Brave Hub in heartbeat.py (CU-fmy630).
 
+### Fixed
+- Handle all promise rejections in async function (CU-brqahw).
+
 ### Security
 - Update Twilio references in order to get the latest version of axios (CU-j6yuzk).
 
