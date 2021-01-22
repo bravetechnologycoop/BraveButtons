@@ -12,6 +12,9 @@ the code was deployed.
 ### Added
 - Added wifi link quality monitoring to Brave Hub in heartbeat.py (CU-fmy630).
 
+### Security
+- Update Twilio references in order to get the latest version of axios (CU-j6yuzk).
+
 ## [3.1.0] - 2021-01-04
 ### Added
 - Added landing page for chatbot dashboard so page will load when there are no installations selected or present (CU-gurbtf).
