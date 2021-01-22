@@ -18,6 +18,7 @@ config.read(str(configPath))
 
 SERVER_URL = config['Heartbeat']['heartbeatServerFQDN']
 FLIC_MAC_ADDRESS = config['Heartbeat']['flicMACAddress']
+NETWORK_INTERFACE = config['Setup']['network_interface']
 RELAY_PIN = 10
 LED_PIN = 9
 
@@ -102,6 +103,29 @@ def ping(host):
     logging.info('returned: {}'.format(returncode))
     return returncode == 0
 
+def parse_link_quality_from_iwconfig_output(iwconfig_output_text):
+    lines = iwconfig_output_text.split('\n')
+    if len(lines) > 5:
+        # lines[5] should be something like 'Link Quality=69/70  Signal level=-41 dBm' which we then split
+        stats_strings = lines[5].split('  ')
+        for i in range(0, len(stats_strings)):
+            if 'Link Quality' in stats_strings[i]:
+                quality_string = stats_strings[i].split('=')[1]
+                # normalize the fraction since the denominator varies
+                numerator = quality_string.split('/')[0]
+                denominator = quality_string.split('/')[1]
+                link_quality = float(numerator) / float(denominator)
+                logging.info('wlan0 link quality is %f', link_quality)
+                return
+    logging.warning("error parsing iwconfig output")
+
+def log_wifi_link_quality():
+    try:
+        iwconfig_output_text = subprocess.check_output(['iwconfig', 'wlan0']).decode('utf-8')
+        parse_link_quality_from_iwconfig_output(iwconfig_output_text)
+    except Exception as e:
+        logging.warning("error logging wifi link quality", exc_info=e)
+
 def send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id):
     body = {"flic_last_seen_secs" : str(flic_last_seen_secs),
             "flic_last_ping_secs" : str(flic_last_ping_secs),
@@ -159,6 +183,8 @@ if __name__ == '__main__':
 
         while True:
             try:
+                if NETWORK_INTERFACE == 'wlan0':
+                    log_wifi_link_quality()
                 html = get_darkstat_html()
                 ip = parse_flic_ip_from_darkstat_html(html, FLIC_MAC_ADDRESS)
                 if ping(ip):
