@@ -2,6 +2,7 @@ let fs = require('fs')
 const Validator = require('express-validator')
 let express = require('express')
 let https = require('https')
+const WebSocket = require('ws')
 let moment = require('moment-timezone')
 let bodyParser = require('body-parser')
 let jsonBodyParser = bodyParser.json()
@@ -534,6 +535,27 @@ else {
     server = https.createServer(httpsOptions, app).listen(443)
     setInterval(checkHeartbeat, 1000)
     helpers.log('brave server listening on port 443')
+
+    // Set up web sockets
+    const wss = new WebSocket.Server({ server })
+    wss.on('connection', ws => {
+        ws.on('message', message => {
+            console.log(`Received ${message}`)
+            ws.send(`You sent me ${message}`)
+
+            ws.send(JSON.stringify({
+                type: 'NEW_ALERT',
+                data: 'new alert message',
+            }))
+
+            ws.send(JSON.stringify({
+                type: 'OTHER',
+                data: 'other message',
+            }))
+        })
+
+        ws.send('TKD feedback from connection')
+    })
 }
 
 module.exports.braveAlerter = braveAlerter      // for tests
