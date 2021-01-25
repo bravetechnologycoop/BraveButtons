@@ -35,7 +35,7 @@
     "twilio": "^3.54.2"
   },
   "scripts": {
-    "lint": "eslint . -c ../.eslintrc.json",
+    "lint": "eslint .",
     "test": "NODE_ENV=test mocha --timeout 10000 \"test/**/*.js\"",
     "test-coverage": "nyc --reporter=html --reporter=text npm test",
     "unittest": "NODE_ENV=test mocha --timeout 40000 \"test/SessionStateTest.js\"",
