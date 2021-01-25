@@ -18,6 +18,7 @@
   "devDependencies": {
     "eslint": "^7.2.0",
     "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-brave": "git+https://github.com/bravetechnologycoop/eslint-config-brave.git",
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsx-a11y": "^6.4.1",
