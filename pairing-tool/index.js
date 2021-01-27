@@ -48,7 +48,7 @@ async function scanAndPairOneButton() {
 
         if (response.confirmation) {
           // eslint-disable-next-line no-unused-vars -- these vars may be useful soon
-          client.getButtonInfo(bdAddr, (uuid, color, serialNumber) => {
+          client.getButtonInfo(bdAddr, (_bdAddr, uuid, color, serialNumber) => {
             csvWriter.write([uuid, response.unit, response.phoneNumber, serialNumber])
             resolve()
           })

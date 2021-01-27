@@ -134,8 +134,10 @@ class BraveAlerterConfigurator {
   }
 
   createResponseStringFromIncidentCategories(categories) {
-    // eslint-disable-next-line func-style
-    const reducer = (accumulator, currentValue, currentIndex) => `${accumulator}${currentIndex} - ${currentValue}\n`
+    function reducer(accumulator, currentValue, currentIndex) {
+      return `${accumulator}${currentIndex} - ${currentValue}\n`
+    }
+
     const s = `Now that you have responded, please reply with the number that best describes the incident:\n${categories.reduce(reducer, '')}`
 
     return s

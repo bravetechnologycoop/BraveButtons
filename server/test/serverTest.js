@@ -1,5 +1,4 @@
 /* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-unused-expressions */
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 
@@ -558,7 +557,13 @@ describe('Chatbot server', () => {
     })
 
     it('should send the initial text message after a valid single click request to /flic_button_press', async () => {
-      await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send()
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-battery-level', '100')
+        .send()
 
       expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
     })
