@@ -101,7 +101,7 @@ module.exports.getUnrespondedSessionWithButtonId = async function(buttonId, clie
         const values = [buttonId, ALERT_STATE.WAITING_FOR_CATEGORY, ALERT_STATE.WAITING_FOR_DETAILS, ALERT_STATE.COMPLETED]
         const { rows } = await client.query(query, values)
 
-        if(rows.length > 0) {        
+        if(rows.length > 0) {     
             return createSessionFromRow(rows[0])
         }
     }
@@ -324,6 +324,14 @@ module.exports.saveSession = async function(session, client) {
     }
 }
 
+module.exports.getPool = function() {
+    if(!helpers.isTestEnvironment()) {
+        helpers.log('warning - tried to get pool outside the test environment')
+        return
+    }
+
+    return pool
+}
 
 module.exports.clearSessions = async function(client) {
     if(!helpers.isTestEnvironment()) {
