@@ -12,7 +12,10 @@ the code was deployed.
 ### Added
 - Implement linting on Buttons repo (CU-eprhhn).
 
-## [3.2.0]
+## Changed
+- Use `npm ci` instead of `npm install` in Travis and the deployment scripts (CU-jcwffp).
+
+## [3.2.0] - 2020-02-01
 ### Added
 - Added wifi link quality monitoring to Brave Hub in heartbeat.py (CU-fmy630).
 
