@@ -44,7 +44,7 @@ else
     apt install -y nodejs npm certbot postgresql postgresql-contrib
     npm install -g pm2 n
     n 12.18.3         # keep this in sync with .nvmrc for Travis
-    npm install
+    npm ci
 
     echo "Please enter in order the name and responder phone number and fallback phone number for the first installation (separated by a space):" 
     echo "NOTE that this will have no effect if this script has already been run"

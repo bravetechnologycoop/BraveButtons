@@ -22,7 +22,7 @@ matrix:
       # install dependencies
       install:
         - cd server
-        - npm install
+        - npm ci
 
       # install database
       addons:
@@ -78,7 +78,7 @@ matrix:
       # install dependencies
       install:
         - cd pairing-tool
-        - npm install
+        - npm ci
 
       # run linter
       script:

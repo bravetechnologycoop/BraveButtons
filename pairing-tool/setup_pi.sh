@@ -17,5 +17,5 @@ else
   PATH="$PATH"
 
   # install dependencies
-  su pi -c 'npm install'
+  su pi -c 'npm ci'
 fi
