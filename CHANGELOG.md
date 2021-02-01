@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+
+## [3.2.0]
 ### Added
 - Added wifi link quality monitoring to Brave Hub in heartbeat.py (CU-fmy630).
 
@@ -204,7 +206,8 @@ the code was deployed.
 ### Added
 - Initial pi.
 
-[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v2.0.0...v2.1.0
