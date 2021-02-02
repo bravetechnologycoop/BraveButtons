@@ -36,34 +36,38 @@ const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
 
-async function needToSendButtonPressMessageForSession(currentSession) {
+function needToSendButtonPressMessageForSession(currentSession) {
   return currentSession.numPresses === 1 || currentSession.numPresses === 2 || currentSession.numPresses % 5 === 0
 }
 
 async function sendButtonPressMessageForSession(currentSession, client) {
-  const installation = await db.getInstallationWithInstallationId(currentSession.installationId, client)
+  try {
+    const installation = await db.getInstallationWithInstallationId(currentSession.installationId, client)
 
-  if (currentSession.numPresses === 1) {
-    const alertInfo = {
-      sessionId: currentSession.id,
-      toPhoneNumber: installation.responderPhoneNumber,
-      fromPhoneNumber: currentSession.phoneNumber,
-      message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
-      reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
-      fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
-      reminderMessage:
-        'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
-      fallbackMessage: `There has been an unresponded request at ${installation.name} unit ${currentSession.unit.toString()}`,
-      fallbackToPhoneNumber: installation.fallbackPhoneNumber,
-      fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
+    if (currentSession.numPresses === 1) {
+      const alertInfo = {
+        sessionId: currentSession.id,
+        toPhoneNumber: installation.responderPhoneNumber,
+        fromPhoneNumber: currentSession.phoneNumber,
+        message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
+        reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
+        fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
+        reminderMessage:
+          'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
+        fallbackMessage: `There has been an unresponded request at ${installation.name} unit ${currentSession.unit.toString()}`,
+        fallbackToPhoneNumber: installation.fallbackPhoneNumber,
+        fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
+      }
+      braveAlerter.startAlertSession(alertInfo)
+    } else if (currentSession.numPresses % 5 === 0 || currentSession.numPresses === 2) {
+      braveAlerter.sendSingleAlert(
+        installation.responderPhoneNumber,
+        currentSession.phoneNumber,
+        `This in an urgent request. The button has been pressed ${currentSession.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
+      )
     }
-    braveAlerter.startAlertSession(alertInfo)
-  } else if (currentSession.numPresses % 5 === 0 || currentSession.numPresses === 2) {
-    braveAlerter.sendSingleAlert(
-      installation.responderPhoneNumber,
-      currentSession.phoneNumber,
-      `This in an urgent request. The button has been pressed ${currentSession.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
-    )
+  } catch (e) {
+    helpers.log(`sendButtonPressMessageForSession: Failed to start alert session for ${currentSession.phoneNumber}: ${JSON.stringify(e)}`)
   }
 }
 
@@ -74,38 +78,54 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     } Unit: ${button.unit.toString()} Presses: ${numPresses.toString()} BatteryLevel: ${batteryLevel}`,
   )
 
-  const client = await db.beginTransaction()
+  let client
 
-  let unrespondedSession = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
-
-  if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-    if (unrespondedSession === null) {
-      unrespondedSession = await db.createSession(
-        button.installation_id,
-        button.button_id,
-        button.unit,
-        button.phone_number,
-        numPresses,
-        batteryLevel,
-        client,
-      )
-    } else {
-      unrespondedSession.incrementButtonPresses(numPresses)
-      unrespondedSession.updateBatteryLevel(batteryLevel)
-      await db.saveSession(unrespondedSession, client)
+  try {
+    client = await db.beginTransaction()
+    if (client === null) {
+      helpers.log(`handleValidRequest: Error starting transaction`)
+      return
     }
-  } else if (unrespondedSession === null) {
-    unrespondedSession = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
-  } else {
-    unrespondedSession.incrementButtonPresses(numPresses)
-    await db.saveSession(unrespondedSession, client)
-  }
 
-  if (needToSendButtonPressMessageForSession(unrespondedSession)) {
-    sendButtonPressMessageForSession(unrespondedSession, client)
-  }
+    let currentSession = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
 
-  await db.commitTransaction(client)
+    if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
+      if (currentSession === null) {
+        currentSession = await db.createSession(
+          button.installation_id,
+          button.button_id,
+          button.unit,
+          button.phone_number,
+          numPresses,
+          batteryLevel,
+          client,
+        )
+      } else {
+        currentSession.incrementButtonPresses(numPresses)
+        currentSession.updateBatteryLevel(batteryLevel)
+        await db.saveSession(currentSession, client)
+      }
+    } else if (currentSession === null) {
+      currentSession = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
+    } else {
+      currentSession.incrementButtonPresses(numPresses)
+      await db.saveSession(currentSession, client)
+    }
+
+    if (needToSendButtonPressMessageForSession(currentSession)) {
+      sendButtonPressMessageForSession(currentSession, client)
+    }
+
+    await db.commitTransaction(client)
+  } catch (e) {
+    try {
+      await db.rollbackTransaction(client)
+      helpers.log(`handleValidRequest: Rolled back transaction because of error: ${e}`)
+    } catch (error) {
+      // Do nothing
+      helpers.log(`handleValidRequest: Error rolling back transaction: ${e}`)
+    }
+  }
 }
 
 app.use(cookieParser())
@@ -190,16 +210,17 @@ app.get('/dashboard/:installationId?', async (req, res) => {
     res.redirect('/login')
     return
   }
-  if (typeof req.params.installationId !== 'string') {
-    const installations = await db.getInstallations()
-    res.redirect(`/dashboard/${installations[0].id}`)
-    return
-  }
 
   try {
+    const allInstallations = await db.getInstallations()
+
+    if (typeof req.params.installationId !== 'string') {
+      res.redirect(`/dashboard/${allInstallations[0].id}`)
+      return
+    }
+
     const recentSessions = await db.getRecentSessionsWithInstallationId(req.params.installationId)
     const currentInstallation = await db.getInstallationWithInstallationId(req.params.installationId)
-    const allInstallations = await db.getInstallations()
 
     const viewParams = {
       recentSessions: [],
@@ -382,7 +403,13 @@ app.post('/heartbeat/unmute_system', jsonBodyParser, async (req, res) => {
 })
 
 app.get('/heartbeatDashboard', async (req, res) => {
-  const hubs = await db.getHubs()
+  let hubs = []
+  try {
+    hubs = await db.getHubs()
+  } catch (e) {
+    helpers.log(`Failed to get hubs in /heartbeatDashboard: ${JSON.stringify(e)}`)
+  }
+
   const viewParams = {
     domain: helpers.getEnvVar('DOMAIN'),
     dashboard_render_time: moment().toString(),
@@ -435,57 +462,65 @@ function sendReconnectionMessage(systemName, heartbeatAlertRecipients) {
   }
 }
 
-async function updateSentAlerts(currentHub, sentAlerts) {
-  const hub = currentHub
-  hub.sentAlerts = sentAlerts
-  await db.saveHubAlertStatus(hub)
+async function updateSentAlerts(hubParam, sentAlerts) {
+  const hub = hubParam
+  try {
+    hub.sentAlerts = sentAlerts
+    await db.saveHubAlertStatus(hub)
+  } catch (e) {
+    helpers.log(`updateSentAlerts: failed to save hub alert status: ${JSON.stringify(e)}`)
+  }
 }
 
 async function checkHeartbeat() {
-  const hubs = await db.getHubs()
-  for (const hub of hubs) {
-    const currentTime = moment()
-    const flicLastSeenTime = moment(hub.flicLastSeenTime)
-    const flicDelayMillis = currentTime.diff(flicLastSeenTime)
-    const heartbeatLastSeenTime = moment(hub.heartbeatLastSeenTime)
-    const heartbeatDelayMillis = currentTime.diff(heartbeatLastSeenTime)
-    const pingLastSeenTime = moment(hub.flicLastPingTime)
-    const pingDelayMillis = currentTime.diff(pingLastSeenTime)
+  try {
+    const hubs = await db.getHubs()
+    for (const hub of hubs) {
+      const currentTime = moment()
+      const flicLastSeenTime = moment(hub.flicLastSeenTime)
+      const flicDelayMillis = currentTime.diff(flicLastSeenTime)
+      const heartbeatLastSeenTime = moment(hub.heartbeatLastSeenTime)
+      const heartbeatDelayMillis = currentTime.diff(heartbeatLastSeenTime)
+      const pingLastSeenTime = moment(hub.flicLastPingTime)
+      const pingDelayMillis = currentTime.diff(pingLastSeenTime)
 
-    if (flicDelayMillis > FLIC_THRESHOLD_MILLIS && !hub.sentAlerts) {
-      helpers.log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${hub.systemName}`)
-      await updateSentAlerts(hub, 'true')
-      if (hub.muted) {
-        continue
+      if (flicDelayMillis > FLIC_THRESHOLD_MILLIS && !hub.sentAlerts) {
+        helpers.log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${hub.systemName}`)
+        await updateSentAlerts(hub, 'true')
+        if (hub.muted) {
+          continue
+        }
+        sendAlerts('Darkstat has lost visibility of the Hub', hub.systemName, hub.heartbeatAlertRecipients)
+      } else if (pingDelayMillis > PING_THRESHOLD_MILLIS && !hub.sentAlerts) {
+        helpers.log(`ping threshold exceeded; ping delay is ${pingDelayMillis} ms. sending alerts for ${hub.systemName}`)
+        await updateSentAlerts(hub, 'true')
+        if (hub.muted) {
+          continue
+        }
+        sendAlerts('Ping is unable to reach the Hub', hub.systemName, hub.heartbeatAlertRecipients)
+      } else if (heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !hub.sentAlerts) {
+        helpers.log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${hub.systemName}`)
+        await updateSentAlerts(hub, 'true')
+        if (hub.muted) {
+          continue
+        }
+        sendAlerts('Heartbeat messages have stopped', hub.systemName, hub.heartbeatAlertRecipients)
+      } else if (
+        flicDelayMillis < FLIC_THRESHOLD_MILLIS &&
+        heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS &&
+        pingDelayMillis < PING_THRESHOLD_MILLIS &&
+        hub.sentAlerts
+      ) {
+        helpers.log(`${hub.systemName} has reconnected.`)
+        await updateSentAlerts(hub, 'false')
+        if (hub.muted) {
+          continue
+        }
+        sendReconnectionMessage(hub.systemName, hub.heartbeatAlertRecipients)
       }
-      sendAlerts('Darkstat has lost visibility of the Hub', hub.systemName, hub.heartbeatAlertRecipients)
-    } else if (pingDelayMillis > PING_THRESHOLD_MILLIS && !hub.sentAlerts) {
-      helpers.log(`ping threshold exceeded; ping delay is ${pingDelayMillis} ms. sending alerts for ${hub.systemName}`)
-      await updateSentAlerts(hub, 'true')
-      if (hub.muted) {
-        continue
-      }
-      sendAlerts('Ping is unable to reach the Hub', hub.systemName, hub.heartbeatAlertRecipients)
-    } else if (heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !hub.sentAlerts) {
-      helpers.log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${hub.systemName}`)
-      await updateSentAlerts(hub, 'true')
-      if (hub.muted) {
-        continue
-      }
-      sendAlerts('Heartbeat messages have stopped', hub.systemName, hub.heartbeatAlertRecipients)
-    } else if (
-      flicDelayMillis < FLIC_THRESHOLD_MILLIS &&
-      heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS &&
-      pingDelayMillis < PING_THRESHOLD_MILLIS &&
-      hub.sentAlerts
-    ) {
-      helpers.log(`${hub.systemName} has reconnected.`)
-      await updateSentAlerts(hub, 'false')
-      if (hub.muted) {
-        continue
-      }
-      sendReconnectionMessage(hub.systemName, hub.heartbeatAlertRecipients)
     }
+  } catch (e) {
+    helpers.log(`Failed to check heartbeat: ${JSON.stringify(e)}`)
   }
 }
 

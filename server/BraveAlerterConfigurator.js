@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-const { BraveAlerter, AlertSession, ALERT_STATE } = require('brave-alert-lib')
+const { BraveAlerter, AlertSession, ALERT_STATE, helpers } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 class BraveAlerterConfigurator {
@@ -14,80 +14,107 @@ class BraveAlerterConfigurator {
   }
 
   async getAlertSession(sessionId) {
-    const session = await db.getSessionWithSessionId(sessionId)
-    if (session === null) {
-      return null
+    let alertSession = null
+    try {
+      const session = await db.getSessionWithSessionId(sessionId)
+      if (session === null) {
+        return null
+      }
+
+      const installation = await db.getInstallationWithInstallationId(session.installationId)
+
+      const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
+
+      alertSession = new AlertSession(
+        session.id,
+        session.state,
+        session.incidentType,
+        session.notes,
+        `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
+        installation.responderPhoneNumber,
+        incidentCategoryKeys,
+        installation.incidentCategories,
+      )
+    } catch (e) {
+      helpers.log(`getAlertSession: failed to get and create a new alert session: ${JSON.stringify(e)}`)
     }
-
-    const installation = await db.getInstallationWithInstallationId(session.installationId)
-
-    const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
-
-    const alertSession = new AlertSession(
-      session.id,
-      session.state,
-      session.incidentType,
-      session.notes,
-      `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-      installation.responderPhoneNumber,
-      incidentCategoryKeys,
-      installation.incidentCategories,
-    )
 
     return alertSession
   }
 
   async getAlertSessionByPhoneNumber(toPhoneNumber) {
-    const session = await db.getMostRecentIncompleteSessionWithPhoneNumber(toPhoneNumber)
-    if (session === null) {
-      return null
+    let alertSession = null
+
+    try {
+      const session = await db.getMostRecentIncompleteSessionWithPhoneNumber(toPhoneNumber)
+      if (session === null) {
+        return null
+      }
+
+      const installation = await db.getInstallationWithInstallationId(session.installationId)
+
+      const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
+
+      alertSession = new AlertSession(
+        session.id,
+        session.state,
+        session.incidentType,
+        session.notes,
+        `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
+        installation.responderPhoneNumber,
+        incidentCategoryKeys,
+        installation.incidentCategories,
+      )
+    } catch (e) {
+      helpers.log(`getAlertSessionByPhoneNumber: failed to get and create a new alert session: ${JSON.stringify(e)}`)
     }
-
-    const installation = await db.getInstallationWithInstallationId(session.installationId)
-
-    const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
-
-    const alertSession = new AlertSession(
-      session.id,
-      session.state,
-      session.incidentType,
-      session.notes,
-      `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-      installation.responderPhoneNumber,
-      incidentCategoryKeys,
-      installation.incidentCategories,
-    )
 
     return alertSession
   }
 
   async alertSessionChangedCallback(alertSession) {
-    const client = await db.beginTransaction()
+    let client
 
-    const session = await db.getSessionWithSessionId(alertSession.sessionId, client)
-
-    if (session) {
-      if (alertSession.alertState) {
-        session.state = alertSession.alertState
+    try {
+      client = await db.beginTransaction()
+      if (client === null) {
+        helpers.log(`alertSessionChangedCallback: Error starting transaction`)
+        return
       }
 
-      if (alertSession.incidentCategoryKey) {
-        const installation = await db.getInstallationWithSessionId(alertSession.sessionId, client)
-        session.incidentType = installation.incidentCategories[alertSession.incidentCategoryKey]
+      const session = await db.getSessionWithSessionId(alertSession.sessionId, client)
+
+      if (session) {
+        if (alertSession.alertState) {
+          session.state = alertSession.alertState
+        }
+
+        if (alertSession.incidentCategoryKey) {
+          const installation = await db.getInstallationWithSessionId(alertSession.sessionId, client)
+          session.incidentType = installation.incidentCategories[alertSession.incidentCategoryKey]
+        }
+
+        if (alertSession.details) {
+          session.notes = alertSession.details
+        }
+
+        if (alertSession.fallbackReturnMessage) {
+          session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
+        }
+
+        await db.saveSession(session, client)
       }
 
-      if (alertSession.details) {
-        session.notes = alertSession.details
+      await db.commitTransaction(client)
+    } catch (e) {
+      try {
+        await db.rollbackTransaction(client)
+        helpers.log(`alertSessionChangedCallback: Rolled back transaction because of error: ${e}`)
+      } catch (error) {
+        // Do nothing
+        helpers.log(`alertSessionChangedCallback: Error rolling back transaction: ${e}`)
       }
-
-      if (alertSession.fallbackReturnMessage) {
-        session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
-      }
-
-      await db.saveSession(session, client)
     }
-
-    await db.commitTransaction(client)
   }
 
   getReturnMessage(fromAlertState, toAlertState, incidentCategories) {

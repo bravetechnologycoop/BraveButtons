@@ -7,30 +7,12 @@ const { afterEach, before, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 const db = require('../db/db.js')
-const SessionState = require('../SessionState.js')
+const { createTestSessionState } = require('./testingHelpers.js')
 
 const BraveAlerterConfigurator = require('../BraveAlerterConfigurator.js')
 
 // Configure Chai
 chai.use(sinonChai)
-
-function createTestSessionState() {
-  return new SessionState(
-    'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc',
-    'fakeInstallationId',
-    'fakeButtonId',
-    'fakeUnit',
-    'fakePhone',
-    'fakeState',
-    'fakeNumPresses',
-    'fakeCreatedAt',
-    'fakeUpdatedAt',
-    '1',
-    'fakeNotes',
-    'fakeFallbackTwilioState',
-    null,
-  )
-}
 
 describe('BraveAlerterConfigurator', () => {
   describe('createBraveAlerter', () => {
