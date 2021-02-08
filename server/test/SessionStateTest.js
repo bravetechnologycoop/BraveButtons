@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 const chai = require('chai')
 
 const expect = chai.expect

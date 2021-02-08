@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 const { ALERT_STATE, AlertSession } = require('brave-alert-lib')
 const chai = require('chai')
 

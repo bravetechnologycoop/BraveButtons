@@ -15,7 +15,8 @@ const pool = new Pool({
 })
 
 pool.on('error', err => {
-  helpers.log('unexpected database error:', err)
+  // eslint-disable-next-line no-console
+  console.error('unexpected database error:', err)
 })
 
 types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
@@ -309,8 +310,7 @@ async function saveSession(session, clientParam) {
     if (rows.length === 0) {
       throw new Error("Tried to save a session that doesn't exist yet. Use createSession() instead.")
     }
-    const query =
-      'UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status =$9, button_battery_level=$10 WHERE id = $11'
+
     const values = [
       session.installationId,
       session.buttonId,
@@ -324,7 +324,10 @@ async function saveSession(session, clientParam) {
       session.buttonBatteryLevel,
       session.id,
     ]
-    await client.query(query, values)
+    await client.query(
+      'UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status =$9, button_battery_level=$10 WHERE id = $11',
+      values,
+    )
   } catch (e) {
     helpers.log(`Error running the saveSession query: ${e}`)
   } finally {
@@ -705,9 +708,11 @@ async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heart
       throw new Error("Tried to save a heartbeat for a hub that doesn't exist yet.")
     }
 
-    const query = 'UPDATE hubs SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3 WHERE system_id = $4'
     const values = [flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemId]
-    await client.query(query, values)
+    await client.query(
+      'UPDATE hubs SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3 WHERE system_id = $4',
+      values,
+    )
   } catch (e) {
     helpers.log(`Error running the saveHeartbeat query: ${e}`)
   } finally {
@@ -719,7 +724,6 @@ async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heart
       }
     }
   }
-  throw new Error("Tried to save a heartbeat for a hub that doesn't exist yet.")
 }
 
 async function saveHubRename(systemId, systemName, clientParam) {
@@ -736,9 +740,8 @@ async function saveHubRename(systemId, systemName, clientParam) {
       throw new Error("Tried to rename a hub that doesn't exist yet.")
     }
 
-    const query = 'UPDATE hubs SET system_name = $1 WHERE system_id = $2'
     const values = [systemName, systemId]
-    await client.query(query, values)
+    await client.query('UPDATE hubs SET system_name = $1 WHERE system_id = $2', values)
   } catch (e) {
     helpers.log(`Error running the saveHubRename query: ${e}`)
   } finally {
@@ -750,7 +753,6 @@ async function saveHubRename(systemId, systemName, clientParam) {
       }
     }
   }
-  throw new Error("Tried to rename a hub that doesn't exist yet.")
 }
 
 async function saveHubMuteStatus(systemId, muted, clientParam) {
@@ -780,7 +782,6 @@ async function saveHubMuteStatus(systemId, muted, clientParam) {
       }
     }
   }
-  throw new Error("Tried to save mute status in a hub that doesn't exist yet.")
 }
 
 async function saveHubHideStatus(systemId, hidden, clientParam) {
@@ -811,7 +812,6 @@ async function saveHubHideStatus(systemId, hidden, clientParam) {
       }
     }
   }
-  throw new Error("Tried to save hide status for a hub that doesn't exist yet.")
 }
 
 async function saveHubAlertStatus(hub, clientParam) {
@@ -842,7 +842,6 @@ async function saveHubAlertStatus(hub, clientParam) {
       }
     }
   }
-  throw new Error("Tried to save alert sent status for a hub that doesn't exist yet.")
 }
 
 async function close() {

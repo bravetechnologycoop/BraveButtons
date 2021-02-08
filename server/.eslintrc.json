@@ -1,22 +1,5 @@
 {
     "extends": [
         "eslint-config-brave"
-    ],
-    "env": {
-        "mocha": true
-      },
-      "rules": {
-        "no-unused-vars": [
-          "error",
-          {
-            "varsIgnorePattern": "should|expect"
-          }
-        ]
-      },
-      "overrides": [{
-        "files": [ "./test/*" ],
-        "rules": {
-          "no-unused-expressions": 0
-        }
-      }]
+    ]
 }
