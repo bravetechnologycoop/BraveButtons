@@ -14,6 +14,7 @@ the code was deployed.
 
 ## Changed
 - Use `npm ci` instead of `npm install` in Travis and the deployment scripts (CU-jcwffp).
+- Added timestamps to error logs (CU-jcuw85).
 
 ## [3.2.0] - 2020-02-01
 ### Added
