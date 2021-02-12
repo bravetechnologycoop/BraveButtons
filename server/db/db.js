@@ -845,7 +845,11 @@ async function saveHubAlertStatus(hub, clientParam) {
 }
 
 async function close() {
-  await pool.end()
+  try {
+    await pool.end()
+  } catch (e) {
+    helpers.log(`Error running the close query: ${e}`)
+  }
 }
 
 module.exports = {
