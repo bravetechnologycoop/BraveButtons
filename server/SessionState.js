@@ -1,29 +1,28 @@
 class SessionState {
+  // prettier-ignore
+  constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus, buttonBatteryLevel) {
+    this.id = id
+    this.installationId = installationId
+    this.buttonId = buttonId
+    this.unit = unit
+    this.phoneNumber = phoneNumber
+    this.state = state
+    this.numPresses = numPresses
+    this.createdAt = createdAt
+    this.updatedAt = updatedAt
+    this.incidentType = incidentType
+    this.notes = notes
+    this.fallBackAlertTwilioStatus = fallBackAlertTwilioStatus
+    this.buttonBatteryLevel = buttonBatteryLevel
+  }
 
-    constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus, buttonBatteryLevel) {
-        this.id = id
-        this.installationId = installationId
-        this.buttonId = buttonId
-        this.unit = unit
-        this.phoneNumber = phoneNumber
-        this.state = state
-        this.numPresses = numPresses 
-        this.createdAt = createdAt
-        this.updatedAt = updatedAt
-        this.incidentType = incidentType
-        this.notes = notes
-        this.fallBackAlertTwilioStatus = fallBackAlertTwilioStatus
-        this.buttonBatteryLevel = buttonBatteryLevel
-    }
+  incrementButtonPresses(numPresses) {
+    this.numPresses += numPresses
+  }
 
-    incrementButtonPresses(numPresses) {
-        this.numPresses += numPresses
-    }
-
-    updateBatteryLevel(buttonBatteryLevel) {
-        this.buttonBatteryLevel = buttonBatteryLevel
-    }
-
+  updateBatteryLevel(buttonBatteryLevel) {
+    this.buttonBatteryLevel = buttonBatteryLevel
+  }
 }
 
-module.exports = SessionState;
+module.exports = SessionState

@@ -9,6 +9,8 @@ was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
+### Added
+- Implement linting on Buttons repo (CU-eprhhn).
 
 ## [3.2.0]
 ### Added

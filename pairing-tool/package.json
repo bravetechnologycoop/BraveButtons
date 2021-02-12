@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint . -c ../.eslintrc.json",
+    "lint": "eslint .",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,6 +16,15 @@
     "fliclib-linux-hci": "git+https://github.com/bravetechnologycoop/fliclib-linux-hci.git"
   },
   "devDependencies": {
-    "eslint": "^7.11.0"
+    "eslint": "^7.19.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-brave": "git+https://github.com/bravetechnologycoop/eslint-config-brave.git#v1.0.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "prettier": "^2.2.1"
   }
 }
