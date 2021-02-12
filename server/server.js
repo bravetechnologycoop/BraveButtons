@@ -123,7 +123,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
       helpers.log(`handleValidRequest: Rolled back transaction because of error: ${e}`)
     } catch (error) {
       // Do nothing
-      helpers.log(`handleValidRequest: Error rolling back transaction: ${e}`)
+      helpers.log(`handleValidRequest: Error rolling back transaction: ${error} Rollback attempted because of error: ${e}`)
     }
   }
 }
