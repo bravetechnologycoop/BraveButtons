@@ -1,5 +1,6 @@
 /* eslint-disable no-continue */
 const fs = require('fs')
+const fastcsv = require('fast-csv')
 const Validator = require('express-validator')
 const express = require('express')
 const https = require('https')
@@ -20,6 +21,7 @@ const HEARTBEAT_THRESHOLD_MILLIS = 75 * 1000
 const PING_THRESHOLD_MILLIS = 320 * 1000
 
 const app = express()
+const ws = fs.createWriteStream('buttons-data.csv')
 
 const unrespondedSessionReminderTimeoutMillis = helpers.getEnvVar('REMINDER_TIMEOUT_MS')
 const unrespondedSessionAlertTimeoutMillis = helpers.getEnvVar('FALLBACK_TIMEOUT_MS')
@@ -69,6 +71,19 @@ async function sendButtonPressMessageForSession(currentSession, client) {
   } catch (e) {
     helpers.log(`sendButtonPressMessageForSession: Failed to start alert session for ${currentSession.phoneNumber}: ${JSON.stringify(e)}`)
   }
+}
+
+async function generateCSV() {
+  const client = await db.beginTransaction()
+
+  if (client === null) {
+    helpers.log(`generateCSV: Error starting transaction`)
+    return
+  }
+
+  const data = await db.getDataForExport(client)
+
+  fastcsv.write(data, { headers: true }).pipe(ws)
 }
 
 async function handleValidRequest(button, numPresses, batteryLevel) {
@@ -195,6 +210,7 @@ app.get('/dashboard', async (req, res) => {
       installations: allInstallations
         .filter(installation => installation.isActive)
         .map(installation => ({ name: installation.name, id: installation.id })),
+      exportCSV: generateCSV(),
     }
     viewParams.viewMessage = allInstallations.length >= 1 ? 'Please select an installation' : 'No installations to display'
 
@@ -228,6 +244,7 @@ app.get('/dashboard/:installationId?', async (req, res) => {
       installations: allInstallations
         .filter(installation => installation.isActive)
         .map(installation => ({ name: installation.name, id: installation.id })),
+      exportCSV: generateCSV(),
     }
 
     for (const recentSession of recentSessions) {

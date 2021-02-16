@@ -10,6 +10,7 @@
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "express-validator": "^6.6.1",
+    "fast-csv": "^4.3.6",
     "lodash": "^4.17.19",
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.23",

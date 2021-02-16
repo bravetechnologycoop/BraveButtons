@@ -844,6 +844,35 @@ async function saveHubAlertStatus(hub, clientParam) {
   }
 }
 
+async function getDataForExport(clientParam) {
+  let client = clientParam
+  const transactionMode = typeof client !== 'undefined'
+
+  try {
+    if (!transactionMode) {
+      client = await pool.connect()
+    }
+
+    const { rows } = await client.query(
+      'SELECT s.id AS session_id, r.id AS registry_id, i.id AS installation_id, * FROM installations i JOIN sessions s ON i.id = s.installation_id JOIN registry r ON i.id = r.installation_id',
+    )
+
+    if (rows.length > 0) {
+      return rows
+    }
+  } catch (e) {
+    helpers.log(`Error running the getDataForExport query: ${e}`)
+  } finally {
+    if (!transactionMode) {
+      try {
+        client.release()
+      } catch (err) {
+        helpers.log(`getDataForExport: Error releasing client: ${err}`)
+      }
+    }
+  }
+}
+
 async function close() {
   try {
     await pool.end()
@@ -866,6 +895,7 @@ module.exports = {
   getAllSessionsWithButtonId,
   getButtonWithButtonId,
   getButtonWithSerialNumber,
+  getDataForExport,
   getHubs,
   getHubWithSystemId,
   getInstallations,
