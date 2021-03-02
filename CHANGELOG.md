@@ -11,6 +11,7 @@ the code was deployed.
 ## [Unreleased]
 ### Added
 - Implement linting on Buttons repo (CU-eprhhn).
+- Add CSV button to dashboard (CU-c8htxp).
 
 ## Changed
 - Use `npm ci` instead of `npm install` in Travis and the deployment scripts (CU-jcwffp).
