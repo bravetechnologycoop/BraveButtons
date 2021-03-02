@@ -16,6 +16,9 @@ the code was deployed.
 ## Changed
 - Use `npm ci` instead of `npm install` in Travis and the deployment scripts (CU-jcwffp).
 
+### Fixed
+- Do not serve static files from server (CU-mz0td3).
+
 ## [3.2.0] - 2020-02-01
 ### Added
 - Added wifi link quality monitoring to Brave Hub in heartbeat.py (CU-fmy630).
