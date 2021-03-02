@@ -270,8 +270,9 @@ app.get('/buttons-data', async (req, res) => {
   fastcsv
     .writeToPath(path.resolve(__dirname, 'buttons-data.csv'), data, { headers: true })
     .on('finish', () => {
-      helpers.log('CSV file successfully created')
-      res.sendFile(`${__dirname}/buttons-data.csv`)
+      res.download(`${__dirname}/buttons-data.csv`, 'buttons-data.csv', () => {
+        helpers.log('CSV file successfully created')
+      })
     })
     // eslint-disable-next-line no-console
     .on('error', err => console.error(err))
