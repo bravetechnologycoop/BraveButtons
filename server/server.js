@@ -1,12 +1,11 @@
 /* eslint-disable no-continue */
 const fs = require('fs')
-const fastcsv = require('fast-csv')
-const path = require('path')
 const Validator = require('express-validator')
 const express = require('express')
 const https = require('https')
 const moment = require('moment-timezone')
 const bodyParser = require('body-parser')
+const { Parser } = require('json2csv')
 
 const jsonBodyParser = bodyParser.json()
 const cookieParser = require('cookie-parser')
@@ -33,6 +32,8 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 // Configure BraveAlerter
 const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
+
+const csvParser = new Parser()
 
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
@@ -71,10 +72,6 @@ async function sendButtonPressMessageForSession(currentSession, client) {
     helpers.log(`sendButtonPressMessageForSession: Failed to start alert session for ${currentSession.phoneNumber}: ${JSON.stringify(e)}`)
   }
 }
-
-// async function generateCSV() {
-
-// }
 
 async function handleValidRequest(button, numPresses, batteryLevel) {
   helpers.log(
@@ -258,24 +255,10 @@ app.get('/dashboard/:installationId?', async (req, res) => {
 })
 
 app.get('/buttons-data', async (req, res) => {
-  const client = await db.beginTransaction()
+  const data = await db.getDataForExport()
 
-  if (client === null) {
-    helpers.log(`generateCSV: Error starting transaction`)
-    return
-  }
-
-  const data = await db.getDataForExport(client)
-
-  fastcsv
-    .writeToPath(path.resolve(__dirname, 'buttons-data.csv'), data, { headers: true })
-    .on('finish', () => {
-      res.download(`${__dirname}/buttons-data.csv`, 'buttons-data.csv', () => {
-        helpers.log('CSV file successfully created')
-      })
-    })
-    // eslint-disable-next-line no-console
-    .on('error', err => console.error(err))
+  const csv = csvParser.parse(data)
+  res.set('Content-Type', 'text/csv').attachment('buttons-data.csv').send(csv)
 })
 
 app.get('/logout', (req, res) => {
