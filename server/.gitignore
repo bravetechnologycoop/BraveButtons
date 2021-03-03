@@ -11,4 +11,3 @@ sessionsTest.db
 .nyc_output
 coverage
 db/seeds.sql
-buttons-data.csv

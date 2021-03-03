@@ -854,7 +854,7 @@ async function getDataForExport(clientParam) {
     }
 
     const { rows } = await client.query(
-      'SELECT s.id AS session_id, i.id AS installation_id, * FROM installations i JOIN sessions s ON i.id = s.installation_id JOIN registry r ON i.id = r.installation_id',
+      'SELECT s.id AS session_id, i.id AS installation_id, r.id AS registry_id, * FROM installations i JOIN sessions s ON i.id = s.installation_id JOIN registry r ON i.id = r.installation_id',
     )
 
     if (rows.length > 0) {

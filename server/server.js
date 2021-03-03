@@ -156,20 +156,20 @@ app.use((req, res, next) => {
 
 // middleware function to check for logged-in users
 function sessionChecker(req, res, next) {
-  if (req.session.user && req.cookies.user_sid) {
-    res.redirect('/dashboard')
+  if (!req.session.user || !req.cookies.user_sid) {
+    res.redirect('/login')
   } else {
     next()
   }
 }
 
 app.get('/', sessionChecker, (req, res) => {
-  res.redirect('/login')
+  res.redirect('/dashboard')
 })
 
 app
   .route('/login')
-  .get(sessionChecker, (req, res) => {
+  .get((req, res) => {
     res.sendFile(`${__dirname}/login.html`)
   })
   .post((req, res) => {
@@ -184,7 +184,7 @@ app
     }
   })
 
-app.get('/dashboard', async (req, res) => {
+app.get('/dashboard', sessionChecker, async (req, res) => {
   if (!req.session.user || !req.cookies.user_sid) {
     res.redirect('/login')
     return
@@ -207,7 +207,7 @@ app.get('/dashboard', async (req, res) => {
   }
 })
 
-app.get('/dashboard/:installationId?', async (req, res) => {
+app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
   if (!req.session.user || !req.cookies.user_sid) {
     res.redirect('/login')
     return
@@ -254,11 +254,14 @@ app.get('/dashboard/:installationId?', async (req, res) => {
   }
 })
 
-app.get('/buttons-data', async (req, res) => {
+app.get('/buttons-data', sessionChecker, async (req, res) => {
   const data = await db.getDataForExport()
-
   const csv = csvParser.parse(data)
-  res.set('Content-Type', 'text/csv').attachment('buttons-data.csv').send(csv)
+
+  const millis = Date.now()
+  const timestamp = new Date(millis).toISOString().slice(0, -5).replace(/T|:/g, '_')
+
+  res.set('Content-Type', 'text/csv').attachment(`buttons-data(${timestamp}).csv`).send(csv)
 })
 
 app.get('/logout', (req, res) => {
