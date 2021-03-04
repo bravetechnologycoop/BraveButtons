@@ -854,7 +854,8 @@ async function getDataForExport(clientParam) {
     }
 
     const { rows } = await client.query(
-      'SELECT s.id AS session_id, i.id AS installation_id, r.id AS registry_id, * FROM installations i JOIN sessions s ON i.id = s.installation_id JOIN registry r ON i.id = r.installation_id',
+      `SELECT i.name AS "Installation Name", i.responder_phone_number as "Responder Phone", i.fall_back_phone_number AS "Fallback Phone", i.created_at AS "Date Installation Created", i.incident_categories AS "Incident Categories", i.is_active AS "Active?", s.button_id AS "Button ID", r.button_id AS "Button ID Registry - compare", s.unit AS "Unit", r.unit AS "Unit Registry - Compare", s.phone_number AS "Button Phone", r.phone_number AS "Button Phone Registry - compare", s.state AS "Session State", s.num_presses AS "Number of Presses", s.created_at AS 
+      "Session Start", s.updated_at AS "Last Session Activity", s.incident_type AS "Session Incident Type", s.notes as "Session Notes", s.fallback_alert_twilio_status AS "Fallback Alert Status (Twilio)", s.button_battery_level AS "Button Battery Level", r.created_at AS "Date Button Created", r.updated_at AS "Button Last Updated", r.button_serial_number AS "Button Serial Number" FROM installations i JOIN sessions s ON i.id = s.installation_id JOIN registry r ON i.id = r.installation_id`,
     )
 
     if (rows.length > 0) {
