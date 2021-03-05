@@ -33,8 +33,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // Configure BraveAlerter
 const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
 
-const csvParser = new Parser()
-
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
 
@@ -256,11 +254,11 @@ app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
 
 app.get('/buttons-data', sessionChecker, async (req, res) => {
   const data = await db.getDataForExport()
+  const csvParser = new Parser()
   const csv = csvParser.parse(data)
 
   const millis = Date.now()
   const timestamp = new Date(millis).toISOString().slice(0, -5).replace(/T|:/g, '_')
-  console.log(data)
 
   res.set('Content-Type', 'text/csv').attachment(`buttons-data(${timestamp}).csv`).send(csv)
 })
