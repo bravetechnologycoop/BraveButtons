@@ -282,7 +282,6 @@ app.get('/buttons-data', sessionChecker, async (req, res) => {
   const millis = Date.now()
   const timestamp = new Date(millis).toISOString().slice(0, -5).replace(/T|:/g, '_')
 
-  helpers.log(`After query: ${timestamp}`)
   res.set('Content-Type', 'text/csv').attachment(`buttons-data(${timestamp}).csv`).send(csv)
 })
 
