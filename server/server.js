@@ -254,7 +254,29 @@ app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
 
 app.get('/buttons-data', sessionChecker, async (req, res) => {
   const data = await db.getDataForExport()
-  const csvParser = new Parser()
+  const fields = [
+    'Installation Name',
+    'Responder Phone',
+    'Fallback Phone',
+    'Date Installation Created',
+    'Incident Categories',
+    'Active?',
+    'Unit',
+    'Button Phone',
+    'Session State',
+    'Number of Presses',
+    'Session Start',
+    'Last Session Activity',
+    'Session Incident Type',
+    'Session Notes',
+    'Fallback Alert Status (Twilio)',
+    'Button Battery Level',
+    'Date Button Created',
+    'Button Last Updated',
+    'Button Serial Number',
+  ]
+
+  const csvParser = new Parser({ fields })
   const csv = csvParser.parse(data)
 
   const millis = Date.now()
