@@ -10,7 +10,7 @@ const jsonBodyParser = bodyParser.json()
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const Mustache = require('mustache')
-const helpers = require('brave-alert-lib').helpers
+const { ALERT_STATE, helpers } = require('brave-alert-lib')
 
 const BraveAlerterConfigurator = require('./BraveAlerterConfigurator.js')
 const db = require('./db/db.js')
@@ -18,6 +18,8 @@ const db = require('./db/db.js')
 const FLIC_THRESHOLD_MILLIS = 210 * 1000
 const HEARTBEAT_THRESHOLD_MILLIS = 75 * 1000
 const PING_THRESHOLD_MILLIS = 320 * 1000
+const SESSION_RESET_TIMEOUT = 7200 * 1000
+const REMINDER_MESSAGE_THRESHOLD = 120 * 1000
 
 const app = express()
 
@@ -36,18 +38,41 @@ const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
 
-function needToSendButtonPressMessageForSession(currentSession) {
-  return currentSession.numPresses === 1 || currentSession.numPresses === 2 || currentSession.numPresses % 5 === 0
+async function needToSendButtonPressMessageForSession(currentSession) {
+  const currentTime = await db.getCurrentTime()
+  return (
+    currentSession.numPresses === 1 ||
+    currentSession.numPresses === 2 ||
+    currentSession.numPresses % 5 === 0 ||
+    currentTime - currentSession.updatedAt > 120000
+  )
 }
 
-async function sendButtonPressMessageForSession(currentSession, client) {
+async function sendButtonPressMessageForSession(sessionParam, client) {
   try {
-    const installation = await db.getInstallationWithInstallationId(currentSession.installationId, client)
+    const installation = await db.getInstallationWithInstallationId(sessionParam.installationId, client)
+
+    const currentTime = await db.getCurrentTime(client)
+    let currentSession
+
+    if (sessionParam.state === ALERT_STATE.WAITING_FOR_REPLY && currentTime - sessionParam.updatedAt >= SESSION_RESET_TIMEOUT) {
+      currentSession = db.createSession(
+        sessionParam.installationId,
+        sessionParam.buttonId,
+        sessionParam.unit,
+        sessionParam.phoneNumber,
+        1, // set presses to 1
+        sessionParam.buttonBatteryLevel,
+        client,
+      )
+    } else {
+      currentSession = sessionParam
+    }
 
     if (currentSession.numPresses === 1) {
       const alertInfo = {
         sessionId: currentSession.id,
-        toPhoneNumber: installation.responderPhoneNumber,
+        toPhoneNumber: '+17788876845',
         fromPhoneNumber: currentSession.phoneNumber,
         message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
         reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
@@ -59,7 +84,11 @@ async function sendButtonPressMessageForSession(currentSession, client) {
         fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
       }
       braveAlerter.startAlertSession(alertInfo)
-    } else if (currentSession.numPresses % 5 === 0 || currentSession.numPresses === 2) {
+    } else if (
+      currentSession.numPresses % 5 === 0 ||
+      currentSession.numPresses === 2 ||
+      currentTime - currentSession.updatedAt > REMINDER_MESSAGE_THRESHOLD
+    ) {
       braveAlerter.sendSingleAlert(
         installation.responderPhoneNumber,
         currentSession.phoneNumber,
@@ -67,7 +96,7 @@ async function sendButtonPressMessageForSession(currentSession, client) {
       )
     }
   } catch (e) {
-    helpers.log(`sendButtonPressMessageForSession: Failed to start alert session for ${currentSession.phoneNumber}: ${JSON.stringify(e)}`)
+    helpers.log(`sendButtonPressMessageForSession: Failed to start alert session for ${sessionParam.phoneNumber}: ${JSON.stringify(e)}`)
   }
 }
 
