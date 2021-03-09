@@ -44,7 +44,7 @@ async function needToSendButtonPressMessageForSession(currentSession) {
     currentSession.numPresses === 1 ||
     currentSession.numPresses === 2 ||
     currentSession.numPresses % 5 === 0 ||
-    currentTime - currentSession.updatedAt > 120000
+    currentTime - currentSession.updatedAt > REMINDER_MESSAGE_THRESHOLD
   )
 }
 
@@ -72,7 +72,7 @@ async function sendButtonPressMessageForSession(sessionParam, client) {
     if (currentSession.numPresses === 1) {
       const alertInfo = {
         sessionId: currentSession.id,
-        toPhoneNumber: '+17788876845',
+        toPhoneNumber: installation.responderPhoneNumber,
         fromPhoneNumber: currentSession.phoneNumber,
         message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
         reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
