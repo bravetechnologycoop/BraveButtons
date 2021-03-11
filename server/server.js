@@ -118,9 +118,11 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     }
 
     let currentSession = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
+    const currentTime = await db.getCurrentTime(client)
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-      if (currentSession === null) {
+      if (currentSession === null || currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT) {
+        console.log('**inside battery level check block***')
         currentSession = await db.createSession(
           button.installation_id,
           button.button_id,
@@ -130,6 +132,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
           batteryLevel,
           client,
         )
+        console.log(`new session: ${JSON.stringify(currentSession)}`)
       } else {
         currentSession.incrementButtonPresses(numPresses)
         currentSession.updateBatteryLevel(batteryLevel)
