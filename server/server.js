@@ -41,11 +41,10 @@ app.use(braveAlerter.getRouter())
 async function needToSendButtonPressMessageForSession(currentSession) {
   const currentTime = await db.getCurrentTime()
   return (
-    currentSession.numPresses % 1 === 0 &&
-    (currentSession.numPresses === 1 ||
-      currentSession.numPresses === 2 ||
-      currentSession.numPresses % 5 === 0 ||
-      currentTime - currentSession.updatedAt >= REMINDER_MESSAGE_THRESHOLD)
+    currentSession.numPresses === 1 ||
+    currentSession.numPresses === 2 ||
+    currentSession.numPresses % 5 === 0 ||
+    currentTime - currentSession.updatedAt >= REMINDER_MESSAGE_THRESHOLD
   )
 }
 
@@ -54,21 +53,7 @@ async function sendButtonPressMessageForSession(sessionParam, client) {
     const installation = await db.getInstallationWithInstallationId(sessionParam.installationId, client)
 
     const currentTime = await db.getCurrentTime(client)
-    let currentSession
-
-    if (sessionParam.state === ALERT_STATE.WAITING_FOR_REPLY && currentTime - sessionParam.updatedAt >= SESSION_RESET_TIMEOUT) {
-      currentSession = db.createSession(
-        sessionParam.installationId,
-        sessionParam.buttonId,
-        sessionParam.unit,
-        sessionParam.phoneNumber,
-        1, // set presses to 1
-        sessionParam.buttonBatteryLevel,
-        client,
-      )
-    } else {
-      currentSession = sessionParam
-    }
+    const currentSession = sessionParam
 
     if (currentSession.numPresses === 1) {
       const alertInfo = {
@@ -121,7 +106,10 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     const currentTime = await db.getCurrentTime(client)
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-      if (currentSession === null || currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT) {
+      if (
+        currentSession === null ||
+        (currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT && currentSession.state === ALERT_STATE.WAITING_FOR_REPLY)
+      ) {
         console.log('**inside battery level check block***')
         currentSession = await db.createSession(
           button.installation_id,
@@ -134,18 +122,22 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         )
         console.log(`new session: ${JSON.stringify(currentSession)}`)
       } else {
+        console.log('***inside battery else***')
         currentSession.incrementButtonPresses(numPresses)
         currentSession.updateBatteryLevel(batteryLevel)
         await db.saveSession(currentSession, client)
       }
     } else if (currentSession === null) {
+      console.log('**current session is null**')
       currentSession = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
     } else {
       currentSession.incrementButtonPresses(numPresses)
+      console.log('***inside battery else, incrementing press***')
       await db.saveSession(currentSession, client)
     }
 
     if (needToSendButtonPressMessageForSession(currentSession)) {
+      console.log('***need to send press***')
       sendButtonPressMessageForSession(currentSession, client)
     }
 
