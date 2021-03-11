@@ -110,7 +110,6 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         currentSession === null ||
         (currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT && currentSession.state === ALERT_STATE.WAITING_FOR_REPLY)
       ) {
-        console.log('**inside battery level check block***')
         currentSession = await db.createSession(
           button.installation_id,
           button.button_id,
@@ -120,24 +119,19 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
           batteryLevel,
           client,
         )
-        console.log(`new session: ${JSON.stringify(currentSession)}`)
       } else {
-        console.log('***inside battery else***')
         currentSession.incrementButtonPresses(numPresses)
         currentSession.updateBatteryLevel(batteryLevel)
         await db.saveSession(currentSession, client)
       }
     } else if (currentSession === null) {
-      console.log('**current session is null**')
       currentSession = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
     } else {
       currentSession.incrementButtonPresses(numPresses)
-      console.log('***inside battery else, incrementing press***')
       await db.saveSession(currentSession, client)
     }
 
     if (needToSendButtonPressMessageForSession(currentSession)) {
-      console.log('***need to send press***')
       sendButtonPressMessageForSession(currentSession, client)
     }
 
