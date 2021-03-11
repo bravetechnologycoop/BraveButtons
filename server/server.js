@@ -41,10 +41,11 @@ app.use(braveAlerter.getRouter())
 async function needToSendButtonPressMessageForSession(currentSession) {
   const currentTime = await db.getCurrentTime()
   return (
-    currentSession.numPresses === 1 ||
-    currentSession.numPresses === 2 ||
-    currentSession.numPresses % 5 === 0 ||
-    currentTime - currentSession.updatedAt > REMINDER_MESSAGE_THRESHOLD
+    currentSession.numPresses % 1 === 0 &&
+    (currentSession.numPresses === 1 ||
+      currentSession.numPresses === 2 ||
+      currentSession.numPresses % 5 === 0 ||
+      currentTime - currentSession.updatedAt >= REMINDER_MESSAGE_THRESHOLD)
   )
 }
 
@@ -87,7 +88,7 @@ async function sendButtonPressMessageForSession(sessionParam, client) {
     } else if (
       currentSession.numPresses % 5 === 0 ||
       currentSession.numPresses === 2 ||
-      currentTime - currentSession.updatedAt > REMINDER_MESSAGE_THRESHOLD
+      currentTime - currentSession.updatedAt >= REMINDER_MESSAGE_THRESHOLD
     ) {
       braveAlerter.sendSingleAlert(
         installation.responderPhoneNumber,

@@ -853,7 +853,7 @@ async function getCurrentTime(clientParam) {
     }
 
     const { rows } = await client.query('SELECT CURRENT_TIMESTAMP')
-    const time = rows[0].now
+    const time = rows[0].current_timestamp
 
     return time
   } catch (e) {
