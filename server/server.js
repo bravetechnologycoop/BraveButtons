@@ -48,12 +48,11 @@ async function needToSendButtonPressMessageForSession(currentSession) {
   )
 }
 
-async function sendButtonPressMessageForSession(sessionParam, client) {
+async function sendButtonPressMessageForSession(currentSession, client) {
   try {
-    const installation = await db.getInstallationWithInstallationId(sessionParam.installationId, client)
+    const installation = await db.getInstallationWithInstallationId(currentSession.installationId, client)
 
     const currentTime = await db.getCurrentTime(client)
-    const currentSession = sessionParam
 
     if (currentSession.numPresses === 1) {
       const alertInfo = {
@@ -82,7 +81,7 @@ async function sendButtonPressMessageForSession(sessionParam, client) {
       )
     }
   } catch (e) {
-    helpers.log(`sendButtonPressMessageForSession: Failed to start alert session for ${sessionParam.phoneNumber}: ${JSON.stringify(e)}`)
+    helpers.log(`sendButtonPressMessageForSession: Failed to start alert session for ${currentSession.phoneNumber}: ${JSON.stringify(e)}`)
   }
 }
 
