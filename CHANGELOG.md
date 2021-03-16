@@ -13,10 +13,14 @@ the code was deployed.
 ## [3.3.0] - 2020-03-08
 ### Added
 - Implement linting on Buttons repo (CU-eprhhn).
+- Add CSV button to dashboard (CU-c8htxp).
 
 ## Changed
 - Use `npm ci` instead of `npm install` in Travis and the deployment scripts (CU-jcwffp).
 - Added timestamps to error logs (CU-jcuw85).
+
+### Fixed
+- Do not serve static files from server (CU-mz0td3).
 
 ## [3.2.0] - 2020-02-01
 ### Added
