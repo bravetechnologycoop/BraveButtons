@@ -15,8 +15,7 @@ const pool = new Pool({
 })
 
 pool.on('error', err => {
-  // eslint-disable-next-line no-console
-  console.error('unexpected database error:', err)
+  helpers.logError(`unexpected database error: ${JSON.stringify(err)}`)
 })
 
 types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
