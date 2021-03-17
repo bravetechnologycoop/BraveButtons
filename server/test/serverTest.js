@@ -555,6 +555,9 @@ describe('Chatbot server', () => {
       )
     })
 
+    // should start a new session if it has been >= 2 hours since last update of most recent open session, with no battery level sent
+    // should send an additional urgent message if it has been >= 2 minutes since last session update even for non-multiples of 5, with no battery level sent
+
     it('should send the initial text message after a valid single click request to /flic_button_press', async () => {
       // eslint-disable-next-line prettier/prettier
       await chai
@@ -583,6 +586,9 @@ describe('Chatbot server', () => {
         'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
       )
     })
+
+    // should start a new session if it has been >= 2 hours since last update of most recent open session, with battery level sent
+    // should send an additional urgent message if it has been >= 2 minutes since last session update even for non-multiples of 5, with battery level sent
 
     it('should return ok to a valid request', async () => {
       // Power Automate always sends two requests
