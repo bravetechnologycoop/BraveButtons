@@ -10,7 +10,7 @@ const jsonBodyParser = bodyParser.json()
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const Mustache = require('mustache')
-const { ALERT_STATE, helpers } = require('brave-alert-lib')
+const helpers = require('brave-alert-lib').helpers
 
 const BraveAlerterConfigurator = require('./BraveAlerterConfigurator.js')
 const db = require('./db/db.js')
@@ -18,8 +18,8 @@ const db = require('./db/db.js')
 const FLIC_THRESHOLD_MILLIS = 210 * 1000
 const HEARTBEAT_THRESHOLD_MILLIS = 75 * 1000
 const PING_THRESHOLD_MILLIS = 320 * 1000
-const SESSION_RESET_TIMEOUT = 7200 * 1000
-const REMINDER_MESSAGE_THRESHOLD = 120 * 1000
+const SESSION_RESET_TIMEOUT = 2 * 60 * 60 * 1000
+const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
 
 const app = express()
 
@@ -37,53 +37,6 @@ const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
 
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
-
-async function needToSendButtonPressMessageForSession(currentSession) {
-  const currentTime = await db.getCurrentTime()
-  return (
-    currentSession.numPresses === 1 ||
-    currentSession.numPresses === 2 ||
-    currentSession.numPresses % 5 === 0 ||
-    currentTime - currentSession.updatedAt >= REMINDER_MESSAGE_THRESHOLD
-  )
-}
-
-async function sendButtonPressMessageForSession(currentSession, client) {
-  try {
-    const installation = await db.getInstallationWithInstallationId(currentSession.installationId, client)
-
-    const currentTime = await db.getCurrentTime(client)
-
-    if (currentSession.numPresses === 1) {
-      const alertInfo = {
-        sessionId: currentSession.id,
-        toPhoneNumber: installation.responderPhoneNumber,
-        fromPhoneNumber: currentSession.phoneNumber,
-        message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
-        reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
-        fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
-        reminderMessage:
-          'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
-        fallbackMessage: `There has been an unresponded request at ${installation.name} unit ${currentSession.unit.toString()}`,
-        fallbackToPhoneNumber: installation.fallbackPhoneNumber,
-        fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
-      }
-      braveAlerter.startAlertSession(alertInfo)
-    } else if (
-      currentSession.numPresses % 5 === 0 ||
-      currentSession.numPresses === 2 ||
-      currentTime - currentSession.updatedAt >= REMINDER_MESSAGE_THRESHOLD
-    ) {
-      braveAlerter.sendSingleAlert(
-        installation.responderPhoneNumber,
-        currentSession.phoneNumber,
-        `This in an urgent request. The button has been pressed ${currentSession.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
-      )
-    }
-  } catch (e) {
-    helpers.log(`sendButtonPressMessageForSession: Failed to start alert session for ${currentSession.phoneNumber}: ${JSON.stringify(e)}`)
-  }
-}
 
 async function handleValidRequest(button, numPresses, batteryLevel) {
   helpers.log(
@@ -105,10 +58,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     const currentTime = await db.getCurrentTime(client)
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-      if (
-        currentSession === null ||
-        (currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT && currentSession.state === ALERT_STATE.WAITING_FOR_REPLY)
-      ) {
+      if (currentSession === null || currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT) {
         currentSession = await db.createSession(
           button.installation_id,
           button.button_id,
@@ -123,15 +73,42 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         currentSession.updateBatteryLevel(batteryLevel)
         await db.saveSession(currentSession, client)
       }
-    } else if (currentSession === null) {
+    } else if (currentSession === null || currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT) {
       currentSession = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
     } else {
       currentSession.incrementButtonPresses(numPresses)
       await db.saveSession(currentSession, client)
     }
 
-    if (needToSendButtonPressMessageForSession(currentSession)) {
-      sendButtonPressMessageForSession(currentSession, client)
+    const installation = await db.getInstallationWithInstallationId(currentSession.installationId, client)
+
+    if (currentSession.numPresses === 1) {
+      const alertInfo = {
+        sessionId: currentSession.id,
+        toPhoneNumber: installation.responderPhoneNumber,
+        fromPhoneNumber: currentSession.phoneNumber,
+        message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
+        reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
+        fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
+        reminderMessage:
+          'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
+        fallbackMessage: `There has been an unresponded request at ${installation.name} unit ${currentSession.unit.toString()}`,
+        fallbackToPhoneNumber: installation.fallbackPhoneNumber,
+        fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
+      }
+      braveAlerter.startAlertSession(alertInfo)
+    } else if (
+      currentSession.numPresses % 5 === 0 ||
+      currentSession.numPresses === 2 ||
+      currentTime - currentSession.updatedAt >= SUBSEQUENT_URGENT_MESSAGE_THRESHOLD
+    ) {
+      braveAlerter.sendSingleAlert(
+        installation.responderPhoneNumber,
+        currentSession.phoneNumber,
+        `This in an urgent request. The button has been pressed ${currentSession.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
+      )
+    } else {
+      // no alert to be sent
     }
 
     await db.commitTransaction(client)
