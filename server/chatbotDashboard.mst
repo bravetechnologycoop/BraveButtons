@@ -23,7 +23,7 @@
             border-radius: 5px;
         }
 
-        .navbar, .btn-logout {
+        .navbar, .btn-navbar {
             background-color: rgb(0, 184, 184);
             font-size: 20px;
         }
@@ -49,7 +49,7 @@
             opacity: .75;
         }
 
-        .btn-logout, .btn-logout > a {
+        .btn-navbar, .btn-navbar > a {
             width: auto;
             text-decoration: none;
         }    
@@ -101,7 +101,7 @@
 
         @media screen and (max-width: 770px) {
 
-            .navbar, .btn-logout, h3 {
+            .navbar, .btn-navbar, h3 {
                 font-size: 1em; 
                 font-weight: 900;
             }
@@ -139,7 +139,7 @@
                 padding-top: 0%;
             }
 
-            .btn-logout {
+            .btn-navbar {
                 padding-right: 0%;
             }
 
@@ -174,7 +174,12 @@
                 </div>
             </li>
             <li class="nav-item">
-                <button class="btn btn-logout">
+                <button class="btn btn-navbar" id="export-csv">
+                    <a href="/buttons-data" class="text-decoration-none">Export CSV</a>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="btn btn-navbar">
                     <a href="/logout" class="text-decoration-none">Log Out</a>
                 </button>
             </li>

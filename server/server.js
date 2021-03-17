@@ -5,6 +5,7 @@ const express = require('express')
 const https = require('https')
 const moment = require('moment-timezone')
 const bodyParser = require('body-parser')
+const { Parser } = require('json2csv')
 
 const jsonBodyParser = bodyParser.json()
 const cookieParser = require('cookie-parser')
@@ -30,7 +31,6 @@ const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/heartbeatDashbo
 const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/chatbotDashboard.mst`, 'utf-8')
 
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(express.static(__dirname))
 
 // Configure BraveAlerter
 const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
@@ -149,20 +149,20 @@ app.use((req, res, next) => {
 
 // middleware function to check for logged-in users
 function sessionChecker(req, res, next) {
-  if (req.session.user && req.cookies.user_sid) {
-    res.redirect('/dashboard')
+  if (!req.session.user || !req.cookies.user_sid) {
+    res.redirect('/login')
   } else {
     next()
   }
 }
 
 app.get('/', sessionChecker, (req, res) => {
-  res.redirect('/login')
+  res.redirect('/dashboard')
 })
 
 app
   .route('/login')
-  .get(sessionChecker, (req, res) => {
+  .get((req, res) => {
     res.sendFile(`${__dirname}/login.html`)
   })
   .post((req, res) => {
@@ -177,7 +177,7 @@ app
     }
   })
 
-app.get('/dashboard', async (req, res) => {
+app.get('/dashboard', sessionChecker, async (req, res) => {
   if (!req.session.user || !req.cookies.user_sid) {
     res.redirect('/login')
     return
@@ -200,7 +200,7 @@ app.get('/dashboard', async (req, res) => {
   }
 })
 
-app.get('/dashboard/:installationId?', async (req, res) => {
+app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
   if (!req.session.user || !req.cookies.user_sid) {
     res.redirect('/login')
     return
@@ -245,6 +245,39 @@ app.get('/dashboard/:installationId?', async (req, res) => {
     helpers.log(err)
     res.status(500).send()
   }
+})
+
+app.get('/buttons-data', sessionChecker, async (req, res) => {
+  const data = await db.getDataForExport()
+  const fields = [
+    'Installation Name',
+    'Responder Phone',
+    'Fallback Phone',
+    'Date Installation Created',
+    'Incident Categories',
+    'Active?',
+    'Unit',
+    'Button Phone',
+    'Session State',
+    'Number of Presses',
+    'Session Start',
+    'Last Session Activity',
+    'Session Incident Type',
+    'Session Notes',
+    'Fallback Alert Status (Twilio)',
+    'Button Battery Level',
+    'Date Button Created',
+    'Button Last Updated',
+    'Button Serial Number',
+  ]
+
+  const csvParser = new Parser({ fields })
+  const csv = csvParser.parse(data)
+
+  const millis = Date.now()
+  const timestamp = new Date(millis).toISOString().slice(0, -5).replace(/T|:/g, '_')
+
+  res.set('Content-Type', 'text/csv').attachment(`buttons-data(${timestamp}).csv`).send(csv)
 })
 
 app.get('/logout', (req, res) => {
