@@ -10,7 +10,7 @@ the code was deployed.
 
 ## [Unreleased]
 ### Added
-- Send urgent messages if it has been more than 2 minutes since last button press, regardless of if it is a multiple of 5 presses (CU-j6y98q).
+- Send urgent message on button press if it has been >= 2 minutes since last session update, regardless of if it is a multiple of 5 presses (CU-j6y98q).
 - Start new session if "current" session is waiting for reply and it has been >= 2 hours since last update (CU-j6yfct).
 
 ## [3.3.0] - 2020-03-08
