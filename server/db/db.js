@@ -879,8 +879,8 @@ async function getCurrentTime(clientParam) {
       client = await pool.connect()
     }
 
-    const { rows } = await client.query('SELECT CURRENT_TIMESTAMP')
-    const time = rows[0].current_timestamp
+    const { rows } = await client.query('SELECT NOW()')
+    const time = rows[0].now
 
     return time
   } catch (e) {

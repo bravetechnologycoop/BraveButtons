@@ -555,9 +555,6 @@ describe('Chatbot server', () => {
       )
     })
 
-    // should start a new session if it has been >= 2 hours since last update of most recent open session, with no battery level sent
-    // should send an additional urgent message if it has been >= 2 minutes since last session update even for non-multiples of 5, with no battery level sent
-
     it('should send the initial text message after a valid single click request to /flic_button_press', async () => {
       // eslint-disable-next-line prettier/prettier
       await chai
@@ -587,8 +584,164 @@ describe('Chatbot server', () => {
       )
     })
 
-    // should start a new session if it has been >= 2 hours since last update of most recent open session, with battery level sent
-    // should send an additional urgent message if it has been >= 2 minutes since last session update even for non-multiples of 5, with battery level sent
+    it('should start a new session if it has been >= 2 hours since last update of most recent open session, with no battery level sent', async () => {
+      const delayMs = 2 * 60 * 60 * 1000 + 7 * 60 * 1000 // 2h, + 7 mins to compensate for reminder/fallback updates
+      const timeNow = await db.getCurrentTime()
+      const timeNowMs = Date.parse(timeNow)
+
+      sinon
+        .stub(db, 'getCurrentTime')
+        .onFirstCall()
+        .returns(timeNow)
+        .onSecondCall()
+        .returns(timeNowMs + delayMs)
+
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
+
+      expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
+
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
+
+      expect(imports.braveAlerter.startAlertSession).to.have.been.calledTwice
+
+      db.getCurrentTime.restore()
+    })
+
+    it('should start a new session if it has been >= 2 hours since last update of most recent open session, with battery level sent', async () => {
+      const delayMs = 2 * 60 * 60 * 1000 + 7 * 60 * 1000 // 2h, + 7 mins to compensate for reminder/fallback updates
+      const timeNow = await db.getCurrentTime()
+      const timeNowMs = Date.parse(timeNow)
+
+      sinon
+        .stub(db, 'getCurrentTime')
+        .onFirstCall()
+        .returns(timeNow)
+        .onSecondCall()
+        .returns(timeNowMs + delayMs)
+
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-battery-level', '100')
+        .send()
+
+      expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
+
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-battery-level', '100')
+        .send()
+
+      expect(imports.braveAlerter.startAlertSession).to.have.been.calledTwice
+
+      db.getCurrentTime.restore()
+    })
+
+    it('should send an additional urgent message if it has been >= 2 minutes since last session update even for non-multiples of 5, with no battery level sent', async () => {
+      const delayMs = 9 * 60 * 1000 // 9 minutes, to compensate for reminder/fallback messages + 2 mins + a bit extra
+      const timeNow = await db.getCurrentTime()
+      const timeNowMs = Date.parse(timeNow)
+
+      sinon
+        .stub(db, 'getCurrentTime')
+        .onFirstCall()
+        .returns(timeNow)
+        .onThirdCall()
+        .returns(timeNowMs + delayMs)
+
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press?presses=2')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
+
+      expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
+
+      expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
+        sinon.match.any,
+        sinon.match.any,
+        'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+      )
+
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
+
+      expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
+        sinon.match.any,
+        sinon.match.any,
+        'This in an urgent request. The button has been pressed 3 times. Please respond "Ok" when you have followed up on the call.',
+      )
+
+      expect(imports.braveAlerter.sendSingleAlert).to.have.been.calledTwice
+
+      db.getCurrentTime.restore()
+    })
+
+    it('should send an additional urgent message if it has been >= 2 minutes since last session update even for non-multiples of 5, with battery level sent', async () => {
+      const delayMs = 9 * 60 * 1000 // 9 minutes, to compensate for reminder/fallback messages + 2 mins + a bit extra
+      const timeNow = await db.getCurrentTime()
+      const timeNowMs = Date.parse(timeNow)
+
+      sinon
+        .stub(db, 'getCurrentTime')
+        .onFirstCall()
+        .returns(timeNow)
+        .onThirdCall()
+        .returns(timeNowMs + delayMs)
+
+      await chai
+        .request(server)
+        .post('/flic_button_press?presses=2')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-battery-level', '100')
+        .send()
+
+      expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
+
+      expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
+        sinon.match.any,
+        sinon.match.any,
+        'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+      )
+
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-battery-level', '100')
+        .send()
+
+      expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
+        sinon.match.any,
+        sinon.match.any,
+        'This in an urgent request. The button has been pressed 3 times. Please respond "Ok" when you have followed up on the call.',
+      )
+
+      expect(imports.braveAlerter.sendSingleAlert).to.have.been.calledTwice
+
+      db.getCurrentTime.restore()
+    })
 
     it('should return ok to a valid request', async () => {
       // Power Automate always sends two requests
