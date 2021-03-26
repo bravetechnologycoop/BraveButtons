@@ -1,9 +1,9 @@
 class Installation {
-  constructor(id, name, responderPhoneNumber, fallbackPhoneNumber, incidentCategories, isActive, createdAt) {
+  constructor(id, name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, isActive, createdAt) {
     this.id = id
     this.name = name
     this.responderPhoneNumber = responderPhoneNumber
-    this.fallbackPhoneNumber = fallbackPhoneNumber
+    this.fallbackPhoneNumbers = fallbackPhoneNumbers
     this.incidentCategories = incidentCategories
     this.isActive = isActive
     this.createdAt = createdAt

@@ -29,7 +29,7 @@ describe('Chatbot server', () => {
   const unit2PhoneNumber = '+15005550006'
 
   const installationResponderPhoneNumber = '+12345678900'
-  const installationFallbackPhoneNumber = '+12345678900'
+  const installationFallbackPhoneNumbers = ['+12345678900']
   const installationIncidentCategories = ['Accidental', 'Safer Use', 'Overdose', 'Other']
 
   const unit1FlicRequest_SingleClick = {
@@ -78,7 +78,7 @@ describe('Chatbot server', () => {
       await db.createInstallation(
         'TestInstallation',
         installationResponderPhoneNumber,
-        installationFallbackPhoneNumber,
+        installationFallbackPhoneNumbers,
         installationIncidentCategories,
       )
       const installations = await db.getInstallations()
@@ -221,7 +221,7 @@ describe('Chatbot server', () => {
       await db.createInstallation(
         'TestInstallation',
         installationResponderPhoneNumber,
-        installationFallbackPhoneNumber,
+        installationFallbackPhoneNumbers,
         installationIncidentCategories,
       )
       const installations = await db.getInstallations()
@@ -500,7 +500,7 @@ describe('Chatbot server', () => {
       await db.createInstallation(
         'TestInstallation',
         installationResponderPhoneNumber,
-        installationFallbackPhoneNumber,
+        installationFallbackPhoneNumbers,
         installationIncidentCategories,
       )
       const installations = await db.getInstallations()
@@ -814,8 +814,8 @@ describe('Chatbot server', () => {
       expect(sessions.length).to.equal(1)
       expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(ALERT_STATE.WAITING_FOR_REPLY)
       expect(sessions[0].fallBackAlertTwilioStatus).to.not.be.null
-      expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('failed')
-      expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('undelivered')
+      expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('failed, ')
+      expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('undelivered, ')
       expect(sessions[0].fallBackAlertTwilioStatus).to.be.oneOf(['queued', 'sent', 'delivered'])
     })
   })

@@ -34,7 +34,7 @@ describe('BraveAlerterConfigurator', () => {
 
       await db.clearSessions()
       await db.clearInstallations()
-      await db.createInstallation('', this.installationResponderPhoneNumber, '', this.installationIncidentCategories)
+      await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories)
       const installations = await db.getInstallations()
       await db.createSession(installations[0].id, '', '701', '', 1, null)
       const sessions = await db.getAllSessions()
@@ -83,7 +83,7 @@ describe('BraveAlerterConfigurator', () => {
 
       await db.clearSessions()
       await db.clearInstallations()
-      await db.createInstallation('', this.installationResponderPhoneNumber, '', this.installationIncidentCategories)
+      await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories)
       const installations = await db.getInstallations()
       await db.createSession(installations[0].id, '', '701', this.sessionToPhoneNumber, 1)
       const sessions = await db.getAllSessions()

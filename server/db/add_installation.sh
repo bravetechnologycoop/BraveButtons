@@ -10,9 +10,9 @@ if [[ $EUID > 0 ]]; then
     exit 1
 elif [[ ! -n "$5" ]]; then
     echo ""
-    echo "Usage: $0 path_to_.env_file new_installation_name responder_phone_number fallback_phone_number path_to_registry_csv"
+    echo "Usage: $0 path_to_.env_file new_installation_name responder_phone_number fallback_phone_numbers path_to_registry_csv"
     echo "" 
-    echo "Example: $0 ./../.env NewInstallation +16041234567 +17781234567 ./add_buttons.csv.example"
+    echo "Example: $0 ./../.env NewInstallation +16041234567 '{\"+17781234567\",\"+17789876543\"}' ./add_buttons.csv.example"
     echo ""
     echo "The registry CSV file"
     echo "MUST have the header 'button_id,unit,phone_number,button_serial_number'"
@@ -37,7 +37,7 @@ else
     echo "Adding new installation"
     echo "  Name: $2"
     echo "  Responder Phone: $3"
-    echo "  Fallback Phone: $4"
+    echo "  Fallback Phones: $4"
     sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO installations VALUES (DEFAULT, '$2', '$3', '$4');"
 
     installation_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM installations WHERE created_at = (SELECT MAX(created_at) FROM installations);")
