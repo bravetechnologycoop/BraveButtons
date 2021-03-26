@@ -93,7 +93,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         reminderMessage:
           'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
         fallbackMessage: `There has been an unresponded request at ${installation.name} unit ${currentSession.unit.toString()}`,
-        fallbackToPhoneNumber: installation.fallbackPhoneNumber,
+        fallbackToPhoneNumbers: installation.fallbackPhoneNumbers,
         fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
       }
       braveAlerter.startAlertSession(alertInfo)
@@ -252,7 +252,7 @@ app.get('/buttons-data', sessionChecker, async (req, res) => {
   const fields = [
     'Installation Name',
     'Responder Phone',
-    'Fallback Phone',
+    'Fallback Phones',
     'Date Installation Created',
     'Incident Categories',
     'Active?',

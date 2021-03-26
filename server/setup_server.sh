@@ -46,7 +46,7 @@ else
     n 12.18.3         # keep this in sync with .nvmrc for Travis
     npm ci
 
-    echo "Please enter in order the name and responder phone number and fallback phone number for the first installation (separated by a space):" 
+    echo "Please enter in order the name and responder phone number and one fallback phone number for the first installation (separated by a space):" 
     echo "NOTE that this will have no effect if this script has already been run"
     read installationName responderNumber fallbackNumber
 
