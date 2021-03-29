@@ -8,19 +8,21 @@ Please note that the date associated with a release is the date the code
 was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
-## [Unreleased]
+## [3.4.0] - 2020-03-29
+### Added
+- Add CSV button to dashboard (CU-c8htxp).
+
+### Fixed
+- Do not serve static files from server (CU-mz0td3).
 
 ## [3.3.0] - 2020-03-08
 ### Added
 - Implement linting on Buttons repo (CU-eprhhn).
-- Add CSV button to dashboard (CU-c8htxp).
 
 ## Changed
 - Use `npm ci` instead of `npm install` in Travis and the deployment scripts (CU-jcwffp).
 - Added timestamps to error logs (CU-jcuw85).
 
-### Fixed
-- Do not serve static files from server (CU-mz0td3).
 
 ## [3.2.0] - 2020-02-01
 ### Added
