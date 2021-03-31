@@ -156,6 +156,24 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 1. open the chatbot and heartbeat dashboards and confirm that everything appears to be working normally
 
+# How to check the logs
+
+- To view the logs on the server, first SSH into the server.
+
+    - Run `sudo pm2 logs` to follow a tail of both console and error logs
+
+    - Run `less ~/.pm2/logs/BraveServer-out.log` to view the console logs or `less ~/.pm2/logs/BraveServer-error.log` to view the error logs
+
+    - Run `tail -f ~/.pm2/logs/BraveServer-out.log` to follow the tail of the console logs or `tail -f ~/.pm2/logs/BraveServer-error.log` to follow the tail of the error logs
+
+    - Run `zcat ~/.pm2/logs/<filename.log.gz> | less` to view any of the archived logs in `~/.pm2/logs`
+
+- To view the logs on the Raspberry Pi, first SSH into the remote access server and then SSH into the pi
+
+    - Run `tail -f /var/log/brave/heartbeat.log` to follow the tail of the logs
+
+    - Run `less /var/log/brave/<logfilename>` to view any of the logs in `/var/log/brave`
+
 # How to run tests for the raspberry pi code: 
 
 1. install pytest and pytest-cov (run `pip3 install pytest pytest-cov`)
@@ -199,9 +217,22 @@ ORDER BY id;
 
 Reference: https://docs.travis-ci.com/user/environment-variables/#encrypting-environment-variables
 
-1. Download the Travis CLI `brew install travis` or `gem install travis`
+1. Download the Travis CLI `gem install travis`
 
 1. cd to anywhere in this repo
+
+1. temporarily create a personal access token on GitHub https://github.com/settings/tokens with the following permissions:
+
+   - `repo`
+   - `read:packages`
+   - `read:org`
+   - `read:public_key`
+   - `read:repo_hook`
+   - `user`
+   - `read:discussion`
+   - `read:enterprise`
+
+1. login using `travis login --pro --github-token <token from github>`
 
 1. For a given `VAR_NAME` that you want to have value `secret_value`, run
    `travis encrypt --pro VAR_NAME=secret_value`
@@ -209,6 +240,8 @@ Reference: https://docs.travis-ci.com/user/environment-variables/#encrypting-env
    output your encrypted variable
 
 1. Copy the encrypted variable into `.travis.yml`
+
+1. Delete your personal access token from GitHub
 
 # How to run a migration script
 
