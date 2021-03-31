@@ -44,7 +44,7 @@ async function beginTransaction() {
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await client.query('LOCK TABLE sessions, registry, installations, migrations')
+    await client.query('LOCK TABLE sessions, buttons, installations, migrations')
   } catch (e) {
     helpers.log(`Error running the beginTransaction query: ${e}`)
     if (client) {
@@ -386,7 +386,7 @@ async function getButtonWithButtonId(buttonId, clientParam) {
       client = await pool.connect()
     }
 
-    const { rows } = await client.query('SELECT * FROM registry WHERE button_id = $1', [buttonId])
+    const { rows } = await client.query('SELECT * FROM buttons WHERE button_id = $1', [buttonId])
 
     if (rows.length > 0) {
       return rows[0]
@@ -415,7 +415,7 @@ async function getButtonWithSerialNumber(serialNumber, clientParam) {
       client = await pool.connect()
     }
 
-    const { rows } = await client.query('SELECT * FROM registry WHERE button_serial_number = $1', [serialNumber])
+    const { rows } = await client.query('SELECT * FROM buttons WHERE button_serial_number = $1', [serialNumber])
 
     if (rows.length > 0) {
       return rows[0]
@@ -444,7 +444,7 @@ async function createButton(buttonId, installationId, unit, phoneNumber, button_
       client = await pool.connect()
     }
 
-    await client.query('INSERT INTO registry (button_id, installation_id, unit, phone_number, button_serial_number) VALUES ($1, $2, $3, $4, $5)', [
+    await client.query('INSERT INTO buttons (button_id, installation_id, unit, phone_number, button_serial_number) VALUES ($1, $2, $3, $4, $5)', [
       buttonId,
       installationId,
       unit,
@@ -466,7 +466,7 @@ async function createButton(buttonId, installationId, unit, phoneNumber, button_
 
 async function clearButtons(clientParam) {
   if (!helpers.isTestEnvironment()) {
-    helpers.log('warning - tried to clear registry database outside of a test environment!')
+    helpers.log('warning - tried to clear buttons database outside of a test environment!')
     return
   }
 
@@ -478,7 +478,7 @@ async function clearButtons(clientParam) {
       client = await pool.connect()
     }
 
-    await client.query('DELETE FROM registry')
+    await client.query('DELETE FROM buttons')
   } catch (e) {
     helpers.log(`Error running the clearButtons query: ${e}`)
   } finally {
@@ -853,7 +853,7 @@ async function getDataForExport(clientParam) {
     }
 
     const { rows } = await client.query(
-      `SELECT i.name AS "Installation Name", i.responder_phone_number AS "Responder Phone", i.fall_back_phone_numbers AS "Fallback Phones", TO_CHAR(i.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Date Installation Created", i.incident_categories AS "Incident Categories", i.is_active AS "Active?", s.unit AS "Unit", s.phone_number AS "Button Phone", s.state AS "Session State", s.num_presses AS "Number of Presses", TO_CHAR(s.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Session Start", TO_CHAR(s.updated_at, 'yyyy-MM-dd HH:mm:ss') AS "Last Session Activity", s.incident_type AS "Session Incident Type", s.notes as "Session Notes", s.fallback_alert_twilio_status AS "Fallback Alert Status (Twilio)", s.button_battery_level AS "Button Battery Level", TO_CHAR(r.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Date Button Created", TO_CHAR(r.updated_at, 'yyyy-MM-dd HH:mm:ss') AS "Button Last Updated", r.button_serial_number AS "Button Serial Number" FROM sessions s JOIN registry r ON s.button_id = r.button_id JOIN installations i ON i.id = s.installation_id`,
+      `SELECT i.name AS "Installation Name", i.responder_phone_number AS "Responder Phone", i.fall_back_phone_numbers AS "Fallback Phones", TO_CHAR(i.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Date Installation Created", i.incident_categories AS "Incident Categories", i.is_active AS "Active?", s.unit AS "Unit", s.phone_number AS "Button Phone", s.state AS "Session State", s.num_presses AS "Number of Presses", TO_CHAR(s.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Session Start", TO_CHAR(s.updated_at, 'yyyy-MM-dd HH:mm:ss') AS "Last Session Activity", s.incident_type AS "Session Incident Type", s.notes as "Session Notes", s.fallback_alert_twilio_status AS "Fallback Alert Status (Twilio)", s.button_battery_level AS "Button Battery Level", TO_CHAR(r.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Date Button Created", TO_CHAR(r.updated_at, 'yyyy-MM-dd HH:mm:ss') AS "Button Last Updated", r.button_serial_number AS "Button Serial Number" FROM sessions s JOIN buttons r ON s.button_id = r.button_id JOIN installations i ON i.id = s.installation_id`,
     )
 
     return rows
