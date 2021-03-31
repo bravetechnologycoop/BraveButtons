@@ -16,6 +16,10 @@ the code was deployed.
 - Start new session if "current" session is waiting for reply and it has been >= 2 hours since last update (CU-j6yfct).
 - Ability to have multiple fallback phone numbers (CU-pv8hd5).
 
+### Changed
+
+- Renamed `registry` table to `buttons` (CU-p107rc).
+
 ## [3.4.0] - 2020-03-29
 
 ### Added
