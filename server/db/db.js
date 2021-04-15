@@ -870,6 +870,32 @@ async function getDataForExport(clientParam) {
   }
 }
 
+async function getCurrentTime(clientParam) {
+  let client = clientParam
+  const transactionMode = typeof client !== 'undefined'
+
+  try {
+    if (!transactionMode) {
+      client = await pool.connect()
+    }
+
+    const { rows } = await client.query('SELECT NOW()')
+    const time = rows[0].now
+
+    return time
+  } catch (e) {
+    helpers.log(`Error running the getCurrentTime query: ${e}`)
+  } finally {
+    if (!transactionMode) {
+      try {
+        client.release()
+      } catch (err) {
+        helpers.log(`getCurrentTime: Error releasing client: ${err}`)
+      }
+    }
+  }
+}
+
 async function close() {
   try {
     await pool.end()
@@ -892,6 +918,7 @@ module.exports = {
   getAllSessionsWithButtonId,
   getButtonWithButtonId,
   getButtonWithSerialNumber,
+  getCurrentTime,
   getDataForExport,
   getHubs,
   getHubWithSystemId,

@@ -8,6 +8,11 @@ Please note that the date associated with a release is the date the code
 was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
+## [Unreleased]
+### Added
+- Send urgent message on button press if it has been >= 2 minutes since last session update, regardless of if it is a multiple of 5 presses (CU-j6y98q).
+- Start new session if "current" session is waiting for reply and it has been >= 2 hours since last update (CU-j6yfct).
+
 ## [3.4.0] - 2020-03-29
 ### Added
 - Add CSV button to dashboard (CU-c8htxp).
