@@ -13,17 +13,21 @@ the code was deployed.
 - Send urgent message on button press if it has been >= 2 minutes since last session update, regardless of if it is a multiple of 5 presses (CU-j6y98q).
 - Start new session if "current" session is waiting for reply and it has been >= 2 hours since last update (CU-j6yfct).
 
+## [3.4.0] - 2020-03-29
+### Added
+- Add CSV button to dashboard (CU-c8htxp).
+
+### Fixed
+- Do not serve static files from server (CU-mz0td3).
+
 ## [3.3.0] - 2020-03-08
 ### Added
 - Implement linting on Buttons repo (CU-eprhhn).
-- Add CSV button to dashboard (CU-c8htxp).
 
 ## Changed
 - Use `npm ci` instead of `npm install` in Travis and the deployment scripts (CU-jcwffp).
 - Added timestamps to error logs (CU-jcuw85).
 
-### Fixed
-- Do not serve static files from server (CU-mz0td3).
 
 ## [3.2.0] - 2020-02-01
 ### Added
