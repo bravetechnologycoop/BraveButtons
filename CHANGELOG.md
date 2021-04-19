@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [3.5.1] - 2021-04-19
+
 ### Fixes
 - Now always gets the most recent unresponded session (CU-tb9pvc).
 
@@ -299,7 +301,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.5.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.5.1...HEAD
+[3.5.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.5.0...v3.5.1
 [3.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.2.0...v3.3.0
