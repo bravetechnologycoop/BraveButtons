@@ -11,7 +11,7 @@ const { ALERT_STATE, helpers } = require('brave-alert-lib')
 chai.use(chaiHttp)
 chai.use(sinonChai)
 
-const imports = require('../server.js')
+const imports = require('../../server.js')
 
 const server = imports.server
 const db = imports.db
@@ -80,6 +80,7 @@ describe('Chatbot server', () => {
         installationResponderPhoneNumber,
         installationFallbackPhoneNumbers,
         installationIncidentCategories,
+        null,
       )
       const installations = await db.getInstallations()
       await db.createButton(unit1UUID, installations[0].id, '1', unit1PhoneNumber, unit1SerialNumber)
@@ -223,6 +224,7 @@ describe('Chatbot server', () => {
         installationResponderPhoneNumber,
         installationFallbackPhoneNumbers,
         installationIncidentCategories,
+        null,
       )
       const installations = await db.getInstallations()
       await db.createButton(unit1UUID, installations[0].id, '1', unit1PhoneNumber, unit1SerialNumber)
@@ -502,6 +504,7 @@ describe('Chatbot server', () => {
         installationResponderPhoneNumber,
         installationFallbackPhoneNumbers,
         installationIncidentCategories,
+        null,
       )
       const installations = await db.getInstallations()
       await db.createButton(unit1UUID, installations[0].id, '1', unit1PhoneNumber, unit1SerialNumber)

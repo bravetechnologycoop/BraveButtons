@@ -5,7 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v3.0.0",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#td-device-designation",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
@@ -40,7 +40,8 @@
     "lint": "eslint .",
     "test": "NODE_ENV=test mocha --timeout 10000 \"test/**/*.js\"",
     "test-coverage": "nyc --reporter=html --reporter=text npm test",
-    "unittest": "NODE_ENV=test mocha --timeout 40000 \"test/SessionStateTest.js\"",
+    "integrationtest": "NODE_ENV=test mocha --timeout 40000 \"test/integration/**/*.js\"",
+    "unittest": "NODE_ENV=test mocha --timeout 40000 \"test/unit/**/*.js\"",
     "start": "node server.js"
   },
   "repository": {
