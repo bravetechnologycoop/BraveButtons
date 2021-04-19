@@ -26,7 +26,8 @@ function createSessionFromRow(r) {
 }
 
 function createInstallationFromRow(r) {
-  return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at)
+  // prettier-ignore
+  return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.api_key)
 }
 
 function createHubFromRow(r) {
@@ -492,7 +493,7 @@ async function clearButtons(clientParam) {
   }
 }
 
-async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, clientParam) {
+async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, apiKey, clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
 
@@ -502,8 +503,8 @@ async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbe
     }
 
     await client.query(
-      'INSERT INTO installations (name, responder_phone_number, fall_back_phone_numbers, incident_categories) VALUES ($1, $2, $3, $4)',
-      [name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories],
+      'INSERT INTO installations (name, responder_phone_number, fall_back_phone_numbers, incident_categories, api_key) VALUES ($1, $2, $3, $4, $5)',
+      [name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, apiKey],
     )
   } catch (e) {
     helpers.log(`Error running the createInstallation query: ${e}`)
@@ -573,6 +574,35 @@ async function getInstallations(clientParam) {
   }
 
   return []
+}
+
+async function getInstallationsWithApiKey(apiKey, clientParam) {
+  let client = clientParam
+  const transactionMode = typeof client !== 'undefined'
+
+  try {
+    if (!transactionMode) {
+      client = await pool.connect()
+    }
+
+    const { rows } = await client.query('SELECT * FROM installations WHERE api_key = $1', [apiKey])
+
+    if (rows.length > 0) {
+      return rows.map(createInstallationFromRow)
+    }
+  } catch (e) {
+    helpers.log(`Error running the getInstallationsWithApiKey query: ${e}`)
+  } finally {
+    if (!transactionMode) {
+      try {
+        client.release()
+      } catch (err) {
+        helpers.log(`getInstallationsWithApiKey: Error releasing client: ${err}`)
+      }
+    }
+  }
+
+  return null
 }
 
 async function getInstallationWithInstallationId(installationId, clientParam) {
@@ -923,6 +953,7 @@ module.exports = {
   getHubs,
   getHubWithSystemId,
   getInstallations,
+  getInstallationsWithApiKey,
   getInstallationWithInstallationId,
   getInstallationWithSessionId,
   getMostRecentIncompleteSessionWithPhoneNumber,

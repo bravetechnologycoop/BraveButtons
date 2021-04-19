@@ -6,7 +6,7 @@ const describe = require('mocha').describe
 const it = require('mocha').it
 const ALERT_STATE = require('brave-alert-lib').ALERT_STATE
 
-const SessionState = require('../SessionState.js')
+const SessionState = require('../../SessionState.js')
 
 describe('SessionState class', () => {
   const sessionId = '12345'

@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-const { BraveAlerter, AlertSession, ALERT_STATE, helpers } = require('brave-alert-lib')
+const { BraveAlerter, AlertSession, ALERT_STATE, helpers, Location, SYSTEM } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 class BraveAlerterConfigurator {
@@ -8,6 +8,7 @@ class BraveAlerterConfigurator {
       this.getAlertSession.bind(this),
       this.getAlertSessionByPhoneNumber.bind(this),
       this.alertSessionChangedCallback,
+      this.getLocationByApiKey.bind(this),
       true,
       this.getReturnMessage.bind(this),
     )
@@ -115,6 +116,18 @@ class BraveAlerterConfigurator {
         helpers.log(`alertSessionChangedCallback: Error rolling back transaction: ${e}`)
       }
     }
+  }
+
+  async getLocationByApiKey(apiKey) {
+    const installations = await db.getInstallationsWithApiKey(apiKey)
+
+    if (!Array.isArray(installations) || installations.length === 0) {
+      return null
+    }
+
+    // Even if there is more than one matching installation, we only return one and it will
+    // be used by the Alert App to indentify this installation
+    return new Location(installations[0].name, SYSTEM.BUTTONS)
   }
 
   getReturnMessage(fromAlertState, toAlertState, incidentCategories) {

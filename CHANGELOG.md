@@ -11,14 +11,20 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- API Key for installations (CU-hjwazd).
+
 ## [3.5.1] - 2021-04-19
 
 ### Fixes
+
 - Now always gets the most recent unresponded session (CU-tb9pvc).
 
 ## [3.5.0] - 2021-04-19
 
 ### Added
+
 - Send urgent message on button press if it has been >= 2 minutes since last session update, regardless of if it is a multiple of 5 presses (CU-j6y98q).
 - Start new session if "current" session is waiting for reply and it has been >= 2 hours since last update (CU-j6yfct).
 - Ability to have multiple fallback phone numbers (CU-pv8hd5).
@@ -30,9 +36,11 @@ the code was deployed.
 ## [3.4.0] - 2021-03-29
 
 ### Added
+
 - Add CSV button to dashboard (CU-c8htxp).
 
 ### Fixed
+
 - Do not serve static files from server (CU-mz0td3).
 
 ## [3.3.0] - 2021-03-08

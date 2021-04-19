@@ -8,8 +8,8 @@ const { helpers } = require('brave-alert-lib')
 
 chai.use(sinonChai)
 
-const db = require('../db/db.js')
-const { createTestSessionState } = require('./testingHelpers')
+const db = require('../../db/db.js')
+const { createTestSessionState } = require('../testingHelpers')
 
 describe('DB', () => {
   describe('getUnrespondedSessionWithButtonId', () => {
