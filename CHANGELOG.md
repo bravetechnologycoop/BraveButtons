@@ -11,6 +11,9 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Fixes
+- Now always gets the most recent unresponded session (CU-tb9pvc).
+
 ## [3.5.0] - 2021-04-19
 
 ### Added

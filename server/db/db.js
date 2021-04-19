@@ -96,7 +96,7 @@ async function getUnrespondedSessionWithButtonId(buttonId, clientParam) {
       client = await pool.connect()
     }
 
-    const query = 'SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4'
+    const query = 'SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4 ORDER BY created_at DESC LIMIT 1'
     const values = [buttonId, ALERT_STATE.WAITING_FOR_CATEGORY, ALERT_STATE.WAITING_FOR_DETAILS, ALERT_STATE.COMPLETED]
     const { rows } = await client.query(query, values)
 
