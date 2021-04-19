@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [3.5.0] - 2021-04-19
+
 ### Added
 - Send urgent message on button press if it has been >= 2 minutes since last session update, regardless of if it is a multiple of 5 presses (CU-j6y98q).
 - Start new session if "current" session is waiting for reply and it has been >= 2 hours since last update (CU-j6yfct).
@@ -20,7 +22,7 @@ the code was deployed.
 
 - Renamed `registry` table to `buttons` (CU-p107rc).
 
-## [3.4.0] - 2020-03-29
+## [3.4.0] - 2021-03-29
 
 ### Added
 - Add CSV button to dashboard (CU-c8htxp).
@@ -28,7 +30,7 @@ the code was deployed.
 ### Fixed
 - Do not serve static files from server (CU-mz0td3).
 
-## [3.3.0] - 2020-03-08
+## [3.3.0] - 2021-03-08
 
 ### Added
 
@@ -39,7 +41,7 @@ the code was deployed.
 - Use `npm ci` instead of `npm install` in Travis and the deployment scripts (CU-jcwffp).
 - Added timestamps to error logs (CU-jcuw85).
 
-## [3.2.0] - 2020-02-01
+## [3.2.0] - 2021-02-01
 
 ### Added
 
@@ -294,7 +296,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.4.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.5.0...HEAD
+[3.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.1.0...v3.2.0
