@@ -291,7 +291,7 @@ app.get('/logout', (req, res) => {
 
 app.post('/flic_button_press', Validator.header(['button-serial-number']).exists(), async (req, res) => {
   try {
-    const validationErrors = Validator.validationResult(req)
+    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
     if (validationErrors.isEmpty()) {
       const serialNumber = req.get('button-serial-number')
@@ -309,8 +309,9 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
 
       const button = await db.getButtonWithSerialNumber(serialNumber)
       if (button === null) {
-        helpers.log(`Bad request: Serial Number is not registered. Serial Number for '${buttonName}' is ${serialNumber}`)
-        res.status(400).send()
+        const errorMessage = `Bad request to ${req.path}: Serial Number is not registered. Serial Number for '${buttonName}' is ${serialNumber}`
+        helpers.log(errorMessage)
+        res.status(400).send(`Bad request to ${req.path}: Serial Number is not registered`)
       } else {
         await handleValidRequest(button, 1, batteryLevel)
 
@@ -322,8 +323,9 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
         res.status(200).send()
       }
     } else {
-      helpers.log(`Bad request, parameters missing ${JSON.stringify(validationErrors)}`)
-      res.status(400).send()
+      const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
+      helpers.log(errorMessage)
+      res.status(400).send(errorMessage)
     }
   } catch (err) {
     helpers.log(err)
@@ -338,8 +340,8 @@ app.post('/', jsonBodyParser, async (req, res) => {
     if (helpers.isValidRequest(req, requiredBodyParams)) {
       const button = await db.getButtonWithButtonId(req.body.UUID)
       if (button === null) {
-        helpers.log(`Bad request: UUID is not registered. UUID is ${req.body.UUID}`)
-        res.status(400).send()
+        helpers.log(`Bad request to /: UUID is not registered. UUID is ${req.body.UUID}`)
+        res.status(400).send('Bad request to /: UUID is not registered')
       } else {
         await handleValidRequest(button, 0.5)
 
@@ -350,8 +352,9 @@ app.post('/', jsonBodyParser, async (req, res) => {
         res.status(200).send()
       }
     } else {
-      helpers.log('Bad request: UUID is missing')
-      res.status(400).send()
+      const errorMessage = 'Bad request to /: UUID or Type is missing'
+      helpers.log(errorMessage)
+      res.status(400).send(errorMessage)
     }
   } catch (err) {
     helpers.log(err)
