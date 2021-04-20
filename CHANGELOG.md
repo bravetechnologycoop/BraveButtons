@@ -15,6 +15,10 @@ the code was deployed.
 
 - API Key for installations (CU-hjwazd).
 
+### Changed
+
+- Improved some API error messages.
+
 ## [3.5.1] - 2021-04-19
 
 ### Fixes
