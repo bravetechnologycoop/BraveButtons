@@ -18,6 +18,8 @@ the code was deployed.
 ### Changed
 
 - Improved some API error messages.
+- `heartbeat.py` extra delay in run loop now depends on run loop duration (CU-mrz5r1).
+- `heartbeat.py` now retries the heartbeat HTTP request once before turning off the Flic hub.
 
 ## [3.5.1] - 2021-04-19
 

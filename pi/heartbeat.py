@@ -181,6 +181,8 @@ if __name__ == '__main__':
         system_id = get_system_id_from_path('/usr/local/brave/system_id')
         flic_last_reboot = datetime.datetime.now()
 
+        run_loop_last_run_time = datetime.datetime.now()
+
         while True:
             try:
                 if NETWORK_INTERFACE == 'wlan0':
@@ -192,6 +194,10 @@ if __name__ == '__main__':
                 num_secs_darkstat = parse_flic_last_seen_from_darkstat_html(html, FLIC_MAC_ADDRESS)
                 num_secs_ping = (datetime.datetime.now() - last_ping).total_seconds()
                 system_ok = send_heartbeat(num_secs_darkstat, num_secs_ping, system_id)
+                if not system_ok:
+                    # retry heartbeat request once
+                    # if the issue was a timeout error and the retry works, this will avoid turning off the Flic hub
+                    system_ok = send_heartbeat(num_secs_darkstat, num_secs_ping, system_id)
             except FlicNotFoundError as e:
                 # this means that the flic didn't show up in darkstat's list of hosts
                 # typically this happens on startup for a few seconds until the flic becomes active on the network
@@ -207,4 +213,10 @@ if __name__ == '__main__':
                 else:
                     relay.off()
                     led.off()
-                time.sleep(10)
+
+                # run the loop at most once every 10 seconds
+                # if the run loop takes longer then 10 seconds we don't need to sleep (eg. if http requests time out)
+                run_loop_duration = (datetime.datetime.now() - run_loop_last_run_time).total_seconds()
+                sleep_time = max(10.0 - run_loop_duration, 0.0)
+                time.sleep(sleep_time)
+                run_loop_last_run_time = datetime.datetime.now()
