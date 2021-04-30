@@ -50,7 +50,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
   try {
     client = await db.beginTransaction()
     if (client === null) {
-      helpers.log(`handleValidRequest: Error starting transaction`)
+      helpers.logError(`handleValidRequest: Error starting transaction`)
       return
     }
 
@@ -115,10 +115,10 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
   } catch (e) {
     try {
       await db.rollbackTransaction(client)
-      helpers.log(`handleValidRequest: Rolled back transaction because of error: ${e}`)
+      helpers.logError(`handleValidRequest: Rolled back transaction because of error: ${e}`)
     } catch (error) {
       // Do nothing
-      helpers.log(`handleValidRequest: Error rolling back transaction: ${error} Rollback attempted because of error: ${e}`)
+      helpers.logError(`handleValidRequest: Error rolling back transaction: ${error} Rollback attempted because of error: ${e}`)
     }
   }
 }
@@ -195,7 +195,7 @@ app.get('/dashboard', sessionChecker, async (req, res) => {
 
     res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -242,7 +242,7 @@ app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
 
     res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -302,7 +302,7 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
       // Log the vaiditiy of the API key
       // TODO (CU-gwxnde) Replace this with a 401 unauthorized if invalid
       if (apiKey !== helpers.getEnvVar('FLIC_BUTTON_PRESS_API_KEY')) {
-        helpers.log(`INVALID api key from '${buttonName}' (${serialNumber})`)
+        helpers.logError(`INVALID api key from '${buttonName}' (${serialNumber})`)
       } else {
         helpers.log(`VALID api key from '${buttonName}' (${serialNumber})`)
       }
@@ -310,7 +310,7 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
       const button = await db.getButtonWithSerialNumber(serialNumber)
       if (button === null) {
         const errorMessage = `Bad request to ${req.path}: Serial Number is not registered. Serial Number for '${buttonName}' is ${serialNumber}`
-        helpers.log(errorMessage)
+        helpers.logError(errorMessage)
         res.status(400).send(`Bad request to ${req.path}: Serial Number is not registered`)
       } else {
         await handleValidRequest(button, 1, batteryLevel)
@@ -324,11 +324,11 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
       }
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
-      helpers.log(errorMessage)
+      helpers.logError(errorMessage)
       res.status(400).send(errorMessage)
     }
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -340,7 +340,7 @@ app.post('/', jsonBodyParser, async (req, res) => {
     if (helpers.isValidRequest(req, requiredBodyParams)) {
       const button = await db.getButtonWithButtonId(req.body.UUID)
       if (button === null) {
-        helpers.log(`Bad request to /: UUID is not registered. UUID is ${req.body.UUID}`)
+        helpers.logError(`Bad request to /: UUID is not registered. UUID is ${req.body.UUID}`)
         res.status(400).send('Bad request to /: UUID is not registered')
       } else {
         await handleValidRequest(button, 0.5)
@@ -353,11 +353,11 @@ app.post('/', jsonBodyParser, async (req, res) => {
       }
     } else {
       const errorMessage = 'Bad request to /: UUID or Type is missing'
-      helpers.log(errorMessage)
+      helpers.logError(errorMessage)
       res.status(400).send(errorMessage)
     }
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -373,7 +373,7 @@ app.post('/heartbeat', jsonBodyParser, async (req, res) => {
     await db.saveHeartbeat(req.body.system_id, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime)
     res.status(200).send()
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -384,7 +384,7 @@ app.post('/heartbeat/rename_system', jsonBodyParser, async (req, res) => {
     await db.saveHubRename(req.body.system_id, req.body.system_name)
     res.status(200).send()
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -395,7 +395,7 @@ app.post('/heartbeat/hide_system', jsonBodyParser, async (req, res) => {
     await db.saveHubHideStatus(req.body.system_id, true)
     res.status(200).send()
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -406,7 +406,7 @@ app.post('/heartbeat/unhide_system', jsonBodyParser, async (req, res) => {
     await db.saveHubHideStatus(req.body.system_id, false)
     res.status(200).send()
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -417,7 +417,7 @@ app.post('/heartbeat/mute_system', jsonBodyParser, async (req, res) => {
     await db.saveHubMuteStatus(req.body.system_id, true)
     res.status(200).send()
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -428,7 +428,7 @@ app.post('/heartbeat/unmute_system', jsonBodyParser, async (req, res) => {
     await db.saveHubMuteStatus(req.body.system_id, false)
     res.status(200).send()
   } catch (err) {
-    helpers.log(err)
+    helpers.logError(err)
     res.status(500).send()
   }
 })
@@ -438,7 +438,7 @@ app.get('/heartbeatDashboard', async (req, res) => {
   try {
     hubs = await db.getHubs()
   } catch (e) {
-    helpers.log(`Failed to get hubs in /heartbeatDashboard: ${JSON.stringify(e)}`)
+    helpers.logError(`Failed to get hubs in /heartbeatDashboard: ${JSON.stringify(e)}`)
   }
 
   const viewParams = {
@@ -499,7 +499,7 @@ async function updateSentAlerts(hubParam, sentAlerts) {
     hub.sentAlerts = sentAlerts
     await db.saveHubAlertStatus(hub)
   } catch (e) {
-    helpers.log(`updateSentAlerts: failed to save hub alert status: ${JSON.stringify(e)}`)
+    helpers.logError(`updateSentAlerts: failed to save hub alert status: ${JSON.stringify(e)}`)
   }
 }
 
@@ -516,21 +516,21 @@ async function checkHeartbeat() {
       const pingDelayMillis = currentTime.diff(pingLastSeenTime)
 
       if (flicDelayMillis > FLIC_THRESHOLD_MILLIS && !hub.sentAlerts) {
-        helpers.log(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${hub.systemName}`)
+        helpers.logSentry(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${hub.systemName}`)
         await updateSentAlerts(hub, 'true')
         if (hub.muted) {
           continue
         }
         sendAlerts('Darkstat has lost visibility of the Hub', hub.systemName, hub.heartbeatAlertRecipients)
       } else if (pingDelayMillis > PING_THRESHOLD_MILLIS && !hub.sentAlerts) {
-        helpers.log(`ping threshold exceeded; ping delay is ${pingDelayMillis} ms. sending alerts for ${hub.systemName}`)
+        helpers.logSentry(`ping threshold exceeded; ping delay is ${pingDelayMillis} ms. sending alerts for ${hub.systemName}`)
         await updateSentAlerts(hub, 'true')
         if (hub.muted) {
           continue
         }
         sendAlerts('Ping is unable to reach the Hub', hub.systemName, hub.heartbeatAlertRecipients)
       } else if (heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !hub.sentAlerts) {
-        helpers.log(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${hub.systemName}`)
+        helpers.logSentry(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${hub.systemName}`)
         await updateSentAlerts(hub, 'true')
         if (hub.muted) {
           continue
@@ -551,7 +551,7 @@ async function checkHeartbeat() {
       }
     }
   } catch (e) {
-    helpers.log(`Failed to check heartbeat: ${JSON.stringify(e)}`)
+    helpers.logError(`Failed to check heartbeat: ${JSON.stringify(e)}`)
   }
 }
 
@@ -561,6 +561,7 @@ if (helpers.isTestEnvironment()) {
   // local http server for testing
   server = app.listen(8000)
 } else {
+  helpers.setupSentry(app, helpers.getEnvVar('SENTRY_DSN'), helpers.getEnvVar('SENTRY_ENVIRONMENT'), helpers.getEnvVar('SENTRY_RELEASE'))
   const httpsOptions = {
     key: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/privkey.pem`),
     cert: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/fullchain.pem`),

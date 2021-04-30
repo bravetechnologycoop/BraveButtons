@@ -37,7 +37,7 @@ class BraveAlerterConfigurator {
         installation.incidentCategories,
       )
     } catch (e) {
-      helpers.log(`getAlertSession: failed to get and create a new alert session: ${JSON.stringify(e)}`)
+      helpers.logError(`getAlertSession: failed to get and create a new alert session: ${JSON.stringify(e)}`)
     }
 
     return alertSession
@@ -67,7 +67,7 @@ class BraveAlerterConfigurator {
         installation.incidentCategories,
       )
     } catch (e) {
-      helpers.log(`getAlertSessionByPhoneNumber: failed to get and create a new alert session: ${JSON.stringify(e)}`)
+      helpers.logError(`getAlertSessionByPhoneNumber: failed to get and create a new alert session: ${JSON.stringify(e)}`)
     }
 
     return alertSession
@@ -79,7 +79,7 @@ class BraveAlerterConfigurator {
     try {
       client = await db.beginTransaction()
       if (client === null) {
-        helpers.log(`alertSessionChangedCallback: Error starting transaction`)
+        helpers.logError(`alertSessionChangedCallback: Error starting transaction`)
         return
       }
 
@@ -110,10 +110,10 @@ class BraveAlerterConfigurator {
     } catch (e) {
       try {
         await db.rollbackTransaction(client)
-        helpers.log(`alertSessionChangedCallback: Rolled back transaction because of error: ${e}`)
+        helpers.logError(`alertSessionChangedCallback: Rolled back transaction because of error: ${e}`)
       } catch (error) {
         // Do nothing
-        helpers.log(`alertSessionChangedCallback: Error rolling back transaction: ${e}`)
+        helpers.logError(`alertSessionChangedCallback: Error rolling back transaction: ${e}`)
       }
     }
   }

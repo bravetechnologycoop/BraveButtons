@@ -16,29 +16,29 @@ describe('DB', () => {
     describe('when not given a client', () => {
       describe('if an error is thrown while trying to get a DB client from the pool', () => {
         beforeEach(() => {
-          sinon.stub(helpers, 'log')
+          sinon.stub(helpers, 'logError')
           this.pool = db.getPool()
           sinon.stub(this.pool, 'connect').rejects
         })
 
         afterEach(() => {
-          helpers.log.restore()
+          helpers.logError.restore()
           this.pool.connect.restore()
         })
 
         it('should log the error', async () => {
           await db.getUnrespondedSessionWithButtonId('fakeButtonId')
-          expect(helpers.log).to.be.calledWithMatch('Error running the getUnrespondedSessionWithButtonId query:')
+          expect(helpers.logError).to.be.calledWithMatch('Error running the getUnrespondedSessionWithButtonId query:')
         })
 
         it('should log that it could not release the client', async () => {
           await db.getUnrespondedSessionWithButtonId('fakeButtonId')
-          expect(helpers.log).to.be.calledWithMatch('getUnrespondedSessionWithButtonId: Error releasing client:')
+          expect(helpers.logError).to.be.calledWithMatch('getUnrespondedSessionWithButtonId: Error releasing client:')
         })
 
         it('should not do any other logging', async () => {
           await db.getUnrespondedSessionWithButtonId('fakeButtonId')
-          expect(helpers.log).to.be.calledTwice
+          expect(helpers.logError).to.be.calledTwice
         })
 
         it('should return null', async () => {
@@ -49,7 +49,7 @@ describe('DB', () => {
 
       describe('if an error is thrown during a database query', () => {
         beforeEach(() => {
-          sinon.stub(helpers, 'log')
+          sinon.stub(helpers, 'logError')
           this.client = {
             query: sinon.stub().rejects,
             release: sinon.stub(),
@@ -59,18 +59,18 @@ describe('DB', () => {
         })
 
         afterEach(() => {
-          helpers.log.restore()
+          helpers.logError.restore()
           this.pool.connect.restore()
         })
 
         it('should log the error', async () => {
           await db.getUnrespondedSessionWithButtonId('fakeButtonId')
-          expect(helpers.log).to.be.calledWithMatch('Error running the getUnrespondedSessionWithButtonId query:')
+          expect(helpers.logError).to.be.calledWithMatch('Error running the getUnrespondedSessionWithButtonId query:')
         })
 
         it('should not do any other logging', async () => {
           await db.getUnrespondedSessionWithButtonId('fakeButtonId')
-          expect(helpers.log).to.be.calledOnce
+          expect(helpers.logError).to.be.calledOnce
         })
 
         it('should release the client', async () => {
@@ -141,7 +141,7 @@ describe('DB', () => {
   describe('when given a client', () => {
     describe('if an error is thrown during a database query', () => {
       beforeEach(() => {
-        sinon.stub(helpers, 'log')
+        sinon.stub(helpers, 'logError')
 
         this.pool = db.getPool()
         sinon.stub(this.pool, 'connect')
@@ -153,18 +153,18 @@ describe('DB', () => {
       })
 
       afterEach(() => {
-        helpers.log.restore()
+        helpers.logError.restore()
         this.pool.connect.restore()
       })
 
       it('should log the error', async () => {
         await db.getUnrespondedSessionWithButtonId('fakeButtonId', this.client)
-        expect(helpers.log).to.be.calledWithMatch('Error running the getUnrespondedSessionWithButtonId query:')
+        expect(helpers.logError).to.be.calledWithMatch('Error running the getUnrespondedSessionWithButtonId query:')
       })
 
       it('should not do any other logging', async () => {
         await db.getUnrespondedSessionWithButtonId('fakeButtonId', this.client)
-        expect(helpers.log).to.be.calledOnce
+        expect(helpers.logError).to.be.calledOnce
       })
 
       it('should not try to get a client from the pool', async () => {
