@@ -215,6 +215,7 @@ describe('Chatbot server', () => {
   describe('POST request: flic button press', () => {
     beforeEach(async () => {
       sinon.stub(helpers, 'log')
+      sinon.stub(helpers, 'logError')
 
       await db.clearSessions()
       await db.clearButtons()
@@ -237,6 +238,7 @@ describe('Chatbot server', () => {
       await db.clearInstallations()
 
       helpers.log.restore()
+      helpers.logError.restore()
       helpers.log('\n')
     })
 
@@ -484,13 +486,13 @@ describe('Chatbot server', () => {
         .set('button-serial-number', unit1SerialNumber)
         .set('button-name', buttonName)
         .send()
-      expect(helpers.log).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
+      expect(helpers.logError).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
     })
 
     it('should log a valid request when not given an API key', async () => {
       const buttonName = 'fakeButtonName'
       await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-name', buttonName).send()
-      expect(helpers.log).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
+      expect(helpers.logError).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
     })
   })
 

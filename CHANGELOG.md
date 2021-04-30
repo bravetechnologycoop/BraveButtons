@@ -20,10 +20,11 @@ the code was deployed.
 - Improved some API error messages.
 - `heartbeat.py` extra delay in run loop now depends on run loop duration (CU-mrz5r1).
 - `heartbeat.py` now retries the heartbeat HTTP request once before turning off the Flic hub.
+- Sentry integration for tracking errors and outages (CU-32a5wb).
 
 ## [3.5.1] - 2021-04-19
 
-### Fixes
+### Fixed
 
 - Now always gets the most recent unresponded session (CU-tb9pvc).
 
