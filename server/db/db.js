@@ -27,7 +27,7 @@ function createSessionFromRow(r) {
 
 function createInstallationFromRow(r) {
   // prettier-ignore
-  return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.api_key)
+  return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.alert_api_key)
 }
 
 function createHubFromRow(r) {
@@ -493,7 +493,7 @@ async function clearButtons(clientParam) {
   }
 }
 
-async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, apiKey, clientParam) {
+async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
 
@@ -503,8 +503,8 @@ async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbe
     }
 
     await client.query(
-      'INSERT INTO installations (name, responder_phone_number, fall_back_phone_numbers, incident_categories, api_key) VALUES ($1, $2, $3, $4, $5)',
-      [name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, apiKey],
+      'INSERT INTO installations (name, responder_phone_number, fall_back_phone_numbers, incident_categories, alert_api_key) VALUES ($1, $2, $3, $4, $5)',
+      [name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey],
     )
   } catch (e) {
     helpers.log(`Error running the createInstallation query: ${e}`)
@@ -576,7 +576,7 @@ async function getInstallations(clientParam) {
   return []
 }
 
-async function getInstallationsWithApiKey(apiKey, clientParam) {
+async function getInstallationsWithAlertApiKey(alertApiKey, clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
 
@@ -585,7 +585,7 @@ async function getInstallationsWithApiKey(apiKey, clientParam) {
       client = await pool.connect()
     }
 
-    const { rows } = await client.query('SELECT * FROM installations WHERE api_key = $1', [apiKey])
+    const { rows } = await client.query('SELECT * FROM installations WHERE alert_api_key = $1', [alertApiKey])
 
     if (rows.length > 0) {
       return rows.map(createInstallationFromRow)
@@ -953,7 +953,7 @@ module.exports = {
   getHubs,
   getHubWithSystemId,
   getInstallations,
-  getInstallationsWithApiKey,
+  getInstallationsWithApiKey: getInstallationsWithAlertApiKey,
   getInstallationWithInstallationId,
   getInstallationWithSessionId,
   getMostRecentIncompleteSessionWithPhoneNumber,
