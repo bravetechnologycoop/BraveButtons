@@ -8,7 +8,7 @@ class BraveAlerterConfigurator {
       this.getAlertSession.bind(this),
       this.getAlertSessionByPhoneNumber.bind(this),
       this.alertSessionChangedCallback,
-      this.getLocationByApiKey.bind(this),
+      this.getLocationByAlertApiKey.bind(this),
       true,
       this.getReturnMessage.bind(this),
     )
@@ -118,8 +118,8 @@ class BraveAlerterConfigurator {
     }
   }
 
-  async getLocationByApiKey(apiKey) {
-    const installations = await db.getInstallationsWithApiKey(apiKey)
+  async getLocationByAlertApiKey(alertApiKey) {
+    const installations = await db.getInstallationsWithApiKey(alertApiKey)
 
     if (!Array.isArray(installations) || installations.length === 0) {
       return null
