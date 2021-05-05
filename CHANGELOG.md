@@ -15,6 +15,7 @@ the code was deployed.
 
 ### Fixes
 - Now always gets the most recent unresponded session (CU-tb9pvc).
+- Fixed built in documentation in add_hubs.sh script(CU-faxfbg)
 
 ## [3.5.0] - 2021-04-19
 

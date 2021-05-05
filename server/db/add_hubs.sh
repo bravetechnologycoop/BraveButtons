@@ -17,7 +17,6 @@ elif [[ ! -n "$2" ]]; then
     echo "The hubs CSV file"
     echo "MUST have the header 'system_id, system_name, heartbeat_alert_recipients'"
     echo "MUST use Unix line endings (LF)"
-    echo "MUST end with a newline, or else the last hub will be silently ignored"
     echo ""
     cd $original_dir
     exit 1
@@ -37,7 +36,7 @@ else
 
     while IFS=",", read -r system_id system_name heartbeat_alert_recipients; do
         if [[ "$system_id" != "system_id" && "$system_id" != "" ]]; then
-            echo "Adding button"
+            echo "Adding Hub"
             echo "  System Id: $system_id"
             echo "  System Name: $system_name"
             echo "  Heartbeat Alert Recipients: $heartbeat_alert_recipients"
