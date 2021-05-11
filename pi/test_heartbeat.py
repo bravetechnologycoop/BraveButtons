@@ -37,7 +37,7 @@ class Test__parse_flic_last_seen_from_darkstat_html(object):
     
     def test_log_last_seen_when_darkstat_html_contains_flic_mac_address(self):
         file_path = os.path.dirname(__file__) + '/test_files/sample_darkstat_html/log_last_seen.html'
-        with open(file_path, 'r') as html_file, unittest.mock.patch('heartbeat.logging') as mock_logging:
+        with open(file_path, 'r') as html_file, patch('heartbeat.logging') as mock_logging:
             html = html_file.read()
             heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02')
 
@@ -52,7 +52,7 @@ class Test__parse_flic_ip_from_darkstat_html(object):
 
     def test_log_ip_when_darkstat_html_contains_flic_mac_address(self):
         file_path = os.path.dirname(__file__) + '/test_files/sample_darkstat_html/log_ip.html'
-        with open(file_path, 'r') as html_file, unittest.mock.patch('heartbeat.logging') as mock_logging:
+        with open(file_path, 'r') as html_file, patch('heartbeat.logging') as mock_logging:
             html = html_file.read()
             heartbeat.parse_flic_ip_from_darkstat_html(html, '00:00:00:00:00:02')
 
@@ -61,47 +61,41 @@ class Test__parse_flic_ip_from_darkstat_html(object):
 class Test__parse_link_quality_from_iwconfig_output(object):
 
     def test_link_quality_1(self):
-        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/link_quality_1.txt', 'r') as iwconfig_output_file:
-            with unittest.mock.patch('heartbeat.logging') as mock_logging:
-                iwconfig_output = iwconfig_output_file.read()
-                heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
-                mock_logging.info.assert_called_once_with('wlan0 link quality is %f', 1.0)
+        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/link_quality_1.txt', 'r') as output_file, patch('heartbeat.logging') as mock_logging:
+            iwconfig_output = output_file.read()
+            heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+            mock_logging.info.assert_called_once_with('wlan0 link quality is %f', 1.0)
 
     def test_link_quality_half(self):
-        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/link_quality_half.txt', 'r') as iwconfig_output_file:
-            with unittest.mock.patch('heartbeat.logging') as mock_logging:
-                iwconfig_output = iwconfig_output_file.read()
-                heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
-                mock_logging.info.assert_called_once_with('wlan0 link quality is %f', 0.5)
+        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/link_quality_half.txt', 'r') as output_file, patch('heartbeat.logging') as mock_logging:
+            iwconfig_output = output_file.read()
+            heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+            mock_logging.info.assert_called_once_with('wlan0 link quality is %f', 0.5)
 
     def test_no_wlan0_in_output(self):
-        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/no_wlan0.txt', 'r') as iwconfig_output_file:
-            with unittest.mock.patch('heartbeat.logging') as mock_logging:
-                iwconfig_output = iwconfig_output_file.read()
-                heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
-                mock_logging.warning.assert_called_once_with('error parsing iwconfig output')
+        with open(os.path.dirname(__file__) + '/test_files/sample_iwconfig_output/no_wlan0.txt', 'r') as output_file, patch('heartbeat.logging') as mock_logging:
+            iwconfig_output = output_file.read()
+            heartbeat.parse_link_quality_from_iwconfig_output(iwconfig_output)
+            mock_logging.warning.assert_called_once_with('error parsing iwconfig output')
 
 class Test__ping(object):
 
     def test_localhost(self):
         assert heartbeat.ping('localhost')
-    
+
     def test_log_command(self):
-        with unittest.mock.patch('heartbeat.logging') as mock_logging:
+        with patch('heartbeat.logging') as mock_logging:
             heartbeat.ping('localhost')
-
             mock_logging.info.assert_any_call('running: [\'ping\', \'-c\', \'1\', \'localhost\']')
-    
-    def test_log_when_successful(self):
-        with unittest.mock.patch('heartbeat.logging') as mock_logging:
-            heartbeat.ping('localhost')
 
+    def test_log_when_successful(self):
+        with patch('heartbeat.logging') as mock_logging:
+            heartbeat.ping('localhost')
             mock_logging.info.assert_called_with('returned: 0')
 
     def test_log_when_errored(self):
-        with unittest.mock.patch('heartbeat.logging') as mock_logging:
+        with patch('heartbeat.logging') as mock_logging:
             heartbeat.ping('invalid-ip')
-
             mock_logging.info.assert_called_with('returned: 2')
 
 class Test__get_system_id_from_path(object):
@@ -124,54 +118,54 @@ class Test__get_system_id_from_path(object):
 class Test__send_heartbeat(object):
 
     def test_when_heartbeat_server_is_working(self):
-        with unittest.mock.patch('http.client.HTTPSConnection') as MockHTTPSConnection:
-                mock_connection = MockHTTPSConnection.return_value
-                mock_response = unittest.mock.MagicMock()
-                mock_response.status = 200
-                mock_connection.getresponse.return_value = mock_response
-                mock_connection.request = unittest.mock.MagicMock()
+        with patch('http.client.HTTPSConnection') as MockHTTPSConnection:
+            mock_connection = MockHTTPSConnection.return_value
+            mock_response = unittest.mock.MagicMock()
+            mock_response.status = 200
+            mock_connection.getresponse.return_value = mock_response
+            mock_connection.request = unittest.mock.MagicMock()
 
-                system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
-                flic_last_seen_secs = 5
-                flic_last_ping_secs = 3
-                success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
+            system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
+            flic_last_seen_secs = 5
+            flic_last_ping_secs = 3
+            success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
 
-                assert success == True
-                assert mock_connection.request.called
+            assert success == True
+            assert mock_connection.request.called
 
     def test_when_heartbeat_server_is_not_working(self):
-        with unittest.mock.patch('http.client.HTTPSConnection') as MockHTTPSConnection:
-                mock_connection = MockHTTPSConnection.return_value
-                mock_response = unittest.mock.MagicMock()
-                mock_response.status = 500
-                mock_connection.getresponse.return_value = mock_response
-                mock_connection.request = unittest.mock.MagicMock()
+        with patch('http.client.HTTPSConnection') as MockHTTPSConnection:
+            mock_connection = MockHTTPSConnection.return_value
+            mock_response = unittest.mock.MagicMock()
+            mock_response.status = 500
+            mock_connection.getresponse.return_value = mock_response
+            mock_connection.request = unittest.mock.MagicMock()
 
-                system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
-                flic_last_seen_secs = 5
-                flic_last_ping_secs = 3
-                success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
+            system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
+            flic_last_seen_secs = 5
+            flic_last_ping_secs = 3
+            success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
 
-                assert success == False
-                assert mock_connection.request.called
+            assert success == False
+            assert mock_connection.request.called
 
     def test_when_request_times_out(self):
-        with unittest.mock.patch('http.client.HTTPSConnection') as MockHTTPSConnection:
-                mock_connection = MockHTTPSConnection.return_value
-                mock_connection.request = unittest.mock.MagicMock(side_effect=socket.timeout())
+        with patch('http.client.HTTPSConnection') as MockHTTPSConnection:
+            mock_connection = MockHTTPSConnection.return_value
+            mock_connection.request = unittest.mock.MagicMock(side_effect=socket.timeout())
 
-                system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
-                flic_last_seen_secs = 5
-                flic_last_ping_secs = 3
-                success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
+            system_id = 'b90e1fc0-53d3-42ba-8bf6-83453e6af744'
+            flic_last_seen_secs = 5
+            flic_last_ping_secs = 3
+            success = heartbeat.send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id)
 
-                assert success == False
-                assert mock_connection.request.called
+            assert success == False
+            assert mock_connection.request.called
 
 class Test__get_darkstat_html(object):
 
     def test_return_value(self):
-        with unittest.mock.patch('http.client.HTTPConnection') as MockHTTPConnection:
+        with patch('http.client.HTTPConnection') as MockHTTPConnection:
             mock_connection = MockHTTPConnection.return_value
             mock_response = unittest.mock.MagicMock()
             mock_connection.getresponse.return_value = mock_response
@@ -181,7 +175,7 @@ class Test__get_darkstat_html(object):
             assert test_html == heartbeat.get_darkstat_html()
 
     def test_when_request_times_out(self):
-        with unittest.mock.patch('http.client.HTTPConnection') as MockHTTPConnection:
+        with patch('http.client.HTTPConnection') as MockHTTPConnection:
             mock_connection = MockHTTPConnection.return_value
             mock_connection.request = unittest.mock.MagicMock(side_effect=socket.timeout())
 
