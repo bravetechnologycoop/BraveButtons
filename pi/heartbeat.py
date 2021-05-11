@@ -147,6 +147,28 @@ def send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id):
         logging.warning("error sending heartbeat", exc_info=e)
         return False
 
+
+last_ping = datetime.datetime.now()
+
+def gather_stats():
+    html = get_darkstat_html()
+    ip = parse_flic_ip_from_darkstat_html(html, FLIC_MAC_ADDRESS)
+    if ping(ip):
+        last_ping = datetime.datetime.now()
+    num_secs_darkstat = parse_flic_last_seen_from_darkstat_html(html, FLIC_MAC_ADDRESS)
+    num_secs_ping = (datetime.datetime.now() - last_ping).total_seconds()
+    return (num_secs_darkstat, num_secs_ping)
+
+# run the loop at most once every N seconds (N = min_delay)
+# if the run loop takes longer then N seconds we don't need to sleep
+def run_loop_delay(min_delay, last_run_time):
+
+    run_loop_duration = (datetime.datetime.now() - last_run_time).total_seconds()
+    sleep_time = max(min_delay - run_loop_duration, 0.0)
+    time.sleep(sleep_time)
+
+run_loop_last_run_time = datetime.datetime.now()
+
 if __name__ == '__main__':
 
     # only import pi-specific libraries when running as a script
@@ -175,28 +197,19 @@ if __name__ == '__main__':
         led = gpiozero.OutputDevice(LED_PIN)
         led.on()
 
-        last_ping = datetime.datetime.now()
-
         system_ok = False
         system_id = get_system_id_from_path('/usr/local/brave/system_id')
-        flic_last_reboot = datetime.datetime.now()
-
-        run_loop_last_run_time = datetime.datetime.now()
 
         while True:
             try:
                 if NETWORK_INTERFACE == 'wlan0':
                     log_wifi_link_quality()
-                html = get_darkstat_html()
-                ip = parse_flic_ip_from_darkstat_html(html, FLIC_MAC_ADDRESS)
-                if ping(ip):
-                    last_ping = datetime.datetime.now()
-                num_secs_darkstat = parse_flic_last_seen_from_darkstat_html(html, FLIC_MAC_ADDRESS)
-                num_secs_ping = (datetime.datetime.now() - last_ping).total_seconds()
+                num_secs_darkstat, num_secs_ping = gather_stats()
                 system_ok = send_heartbeat(num_secs_darkstat, num_secs_ping, system_id)
                 if not system_ok:
                     # retry heartbeat request once
                     # if the issue was a timeout error and the retry works, this will avoid turning off the Flic hub
+                    num_secs_darkstat, num_secs_ping = gather_stats()
                     system_ok = send_heartbeat(num_secs_darkstat, num_secs_ping, system_id)
             except FlicNotFoundError as e:
                 # this means that the flic didn't show up in darkstat's list of hosts
@@ -214,9 +227,7 @@ if __name__ == '__main__':
                     relay.off()
                     led.off()
 
-                # run the loop at most once every 10 seconds
-                # if the run loop takes longer then 10 seconds we don't need to sleep (eg. if http requests time out)
-                run_loop_duration = (datetime.datetime.now() - run_loop_last_run_time).total_seconds()
-                sleep_time = max(10.0 - run_loop_duration, 0.0)
-                time.sleep(sleep_time)
+                # execute the run loop at most once every 10 seconds
+                run_loop_delay(10, run_loop_last_run_time)
                 run_loop_last_run_time = datetime.datetime.now()
+

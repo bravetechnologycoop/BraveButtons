@@ -3,6 +3,10 @@ import pytest
 import unittest.mock
 import socket
 import os
+import time
+import datetime
+
+patch = unittest.mock.patch
 
 class Test__parse_flic_last_seen_from_darkstat_html(object):
 
@@ -182,4 +186,22 @@ class Test__get_darkstat_html(object):
             mock_connection.request = unittest.mock.MagicMock(side_effect=socket.timeout())
 
             assert '' == heartbeat.get_darkstat_html()
+
+class Test__run_loop_delay(object):
+
+    def test_with_no_computation_time(self):
+        last_run_time = datetime.datetime.now()
+        with patch('time.sleep') as mock_sleep, patch('datetime.datetime') as mock_datetime:
+            # fictional run loop computation takes 0 time
+            mock_datetime.now.return_value = last_run_time
+            heartbeat.run_loop_delay(1.0, last_run_time)
+            mock_sleep.assert_called_once_with(1.0)
+
+    def test_with_computation_time(self):
+        last_run_time = datetime.datetime.now()
+        with patch('time.sleep') as mock_sleep, patch('datetime.datetime') as mock_datetime:
+            # simulate some computation that occurs before run_loop_delay() is called
+            mock_datetime.now.return_value = last_run_time + datetime.timedelta(seconds=0.5)
+            heartbeat.run_loop_delay(1.0, last_run_time)
+            mock_sleep.assert_called_once_with(0.5)
 
