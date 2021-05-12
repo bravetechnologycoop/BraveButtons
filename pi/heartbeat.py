@@ -162,7 +162,6 @@ def gather_stats():
 # run the loop at most once every N seconds (N = min_delay)
 # if the run loop takes longer then N seconds we don't need to sleep
 def run_loop_delay(min_delay, last_run_time):
-
     run_loop_duration = (datetime.datetime.now() - last_run_time).total_seconds()
     sleep_time = max(min_delay - run_loop_duration, 0.0)
     time.sleep(sleep_time)

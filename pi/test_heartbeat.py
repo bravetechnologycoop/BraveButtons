@@ -199,3 +199,18 @@ class Test__run_loop_delay(object):
             heartbeat.run_loop_delay(1.0, last_run_time)
             mock_sleep.assert_called_once_with(0.5)
 
+    def test_with_computation_time_equal_to_min_delay(self):
+        last_run_time = datetime.datetime.now()
+        with patch('time.sleep') as mock_sleep, patch('datetime.datetime') as mock_datetime:
+            # simulate some computation that takes exactly as long as the desired delay time
+            mock_datetime.now.return_value = last_run_time + datetime.timedelta(seconds=1.0)
+            heartbeat.run_loop_delay(1.0, last_run_time)
+            mock_sleep.assert_called_once_with(0.0)
+
+    def test_with_long_computation_time(self):
+        last_run_time = datetime.datetime.now()
+        with patch('time.sleep') as mock_sleep, patch('datetime.datetime') as mock_datetime:
+            # simulate some long-running computation that occurs before run_loop_delay() is called
+            mock_datetime.now.return_value = last_run_time + datetime.timedelta(seconds=10.0)
+            heartbeat.run_loop_delay(1.0, last_run_time)
+            mock_sleep.assert_called_once_with(0.0)
