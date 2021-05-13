@@ -211,6 +211,7 @@ if __name__ == '__main__':
                     # if the issue was a timeout error and the retry works, this will avoid turning off the Flic hub
                     num_secs_darkstat, num_secs_ping = gather_stats()
                     system_ok = send_heartbeat(num_secs_darkstat, num_secs_ping, system_id)
+                    logging.info('retried heartbeat request, system_ok is %s', system_ok)
             except FlicNotFoundError as e:
                 # this means that the flic didn't show up in darkstat's list of hosts
                 # typically this happens on startup for a few seconds until the flic becomes active on the network
