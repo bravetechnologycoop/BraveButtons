@@ -151,6 +151,7 @@ def send_heartbeat(flic_last_seen_secs, flic_last_ping_secs, system_id):
 last_ping = datetime.datetime.now()
 
 def gather_stats():
+    global last_ping
     html = get_darkstat_html()
     ip = parse_flic_ip_from_darkstat_html(html, FLIC_MAC_ADDRESS)
     if ping(ip):
