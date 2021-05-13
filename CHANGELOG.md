@@ -23,6 +23,10 @@ the code was deployed.
 
 - `POST /` endpoint (CU-fmunf5).
 
+### Security
+
+- Update lodash and hosted-git-info (CU-v36yrt).
+
 ## [3.7.0] - 2021-05-21
 
 ### Changed
