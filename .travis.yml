@@ -1,5 +1,5 @@
 # Travis only support v 3.7 on this distribution
-dist: xenial
+dist: focal
 
 matrix:
   include:
@@ -9,7 +9,7 @@ matrix:
 
       # install dependencies
       install:
-        - pip install -r requirements-test.txt
+        - pip3 install -r requirements-test.txt
 
       # run unit tests
       script:

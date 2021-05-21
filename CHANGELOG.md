@@ -9,7 +9,13 @@ Please note that the date associated with a release is the date the code
 was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
-## [Unreleased]
+## Unreleased
+
+## [3.7.0] - 2021-05-21
+
+### Changed
+
+- Updated setup script for Ubuntu 20.04 (CU-dgmug8).
 
 ## [3.6.0] - 2021-05-17
 
