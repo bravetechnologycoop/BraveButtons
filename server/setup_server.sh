@@ -39,7 +39,6 @@ else
 
     apt update
     apt install software-properties-common
-    add-apt-repository -y ppa:certbot/certbot
     apt update
     apt install -y nodejs npm certbot postgresql postgresql-contrib
     npm install -g pm2 n
