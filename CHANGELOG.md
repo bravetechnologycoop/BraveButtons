@@ -324,7 +324,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.6.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.7.0...HEAD
+[3.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.5.1...v3.6.0
 [3.5.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.5.0...v3.5.1
 [3.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.4.0...v3.5.0
