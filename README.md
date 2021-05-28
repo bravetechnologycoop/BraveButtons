@@ -1,6 +1,5 @@
 # BraveButtons [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=master)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
 
-
 # How to set up a local server dev environment
 
 1. clone this repository
@@ -24,7 +23,7 @@
 # How to run the linter
 
 1. cd into the `server` directory or the `pairing-tool` directory, depending
-on which you want to lint
+   on which you want to lint
 
 1. run `npm install`
 
@@ -120,39 +119,39 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 1. on your local machine, in the `BraveButtons` repository:
 
-    1. pull the latest code ready for release: `git checkout master && git pull origin master`
+   1. pull the latest code ready for release: `git checkout master && git pull origin master`
 
-    1. decide on an appropriate version number for the new version
+   1. decide on an appropriate version number for the new version
 
-    1. update CHANGELOG.md by moving everything in `Unreleased` to a section for the new version
+   1. update CHANGELOG.md by moving everything in `Unreleased` to a section for the new version
 
-    1. make a new commit directly on `master` which only updates the changelog
+   1. make a new commit directly on `master` which only updates the changelog
 
-    1. tag the new commit - for example, if the version number is v1.0.0, use `git tag v1.0.0`
+   1. tag the new commit - for example, if the version number is v1.0.0, use `git tag v1.0.0`
 
-    1. push the new version to GitHub: `git push origin master --tags`
+   1. push the new version to GitHub: `git push origin master --tags`
 
-    1. update the `production` branch: `git checkout production && git merge master && git push origin production`
+   1. update the `production` branch: `git checkout production && git merge master && git push origin production`
 
 1. on your local machine, in the `BraveButtonsConfig` repository:
 
-    1. ensure you have the latest version of the code: `git pull origin master`
+   1. ensure you have the latest version of the code: `git pull origin master`
 
-    1. tag the latest commit with the same version number used above, ie. `git tag v1.0.0`
+   1. tag the latest commit with the same version number used above, ie. `git tag v1.0.0`
 
-    1. update the `production` branch: `git checkout production && git merge master && git push origin production --tags`
+   1. update the `production` branch: `git checkout production && git merge master && git push origin production --tags`
 
 1. on the production Buttons server (access using ssh):
 
-    1. cd into the `BraveButtons/server` directory
+   1. cd into the `BraveButtons/server` directory
 
-    1. shut down the server process: `sudo pm2 stop BraveServer`
+   1. shut down the server process: `pm2 stop BraveServer`
 
-    1. update the RPi fleet as described above (in a separate ssh session)
+   1. update the RPi fleet as described above (in a separate ssh session)
 
-    1. pull the latest production code: `git checkout production && git pull origin production`
+   1. pull the latest production code: `git checkout production && git pull origin production`
 
-    1. run the server setup script: `sudo ./setup_server.sh ./.env`
+   1. run the server setup script: `sudo ./setup_server.sh ./.env`
 
 1. open the chatbot and heartbeat dashboards and confirm that everything appears to be working normally
 
@@ -160,21 +159,21 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 - To view the logs on the server, first SSH into the server.
 
-    - Run `sudo pm2 logs` to follow a tail of both console and error logs
+  - Run `pm2 logs` to follow a tail of both console and error logs
 
-    - Run `less ~/.pm2/logs/BraveServer-out.log` to view the console logs or `less ~/.pm2/logs/BraveServer-error.log` to view the error logs
+  - Run `less ~/.pm2/logs/BraveServer-out.log` to view the console logs or `less ~/.pm2/logs/BraveServer-error.log` to view the error logs
 
-    - Run `tail -f ~/.pm2/logs/BraveServer-out.log` to follow the tail of the console logs or `tail -f ~/.pm2/logs/BraveServer-error.log` to follow the tail of the error logs
+  - Run `tail -f ~/.pm2/logs/BraveServer-out.log` to follow the tail of the console logs or `tail -f ~/.pm2/logs/BraveServer-error.log` to follow the tail of the error logs
 
-    - Run `zcat ~/.pm2/logs/<filename.log.gz> | less` to view any of the archived logs in `~/.pm2/logs`
+  - Run `zcat ~/.pm2/logs/<filename.log.gz> | less` to view any of the archived logs in `~/.pm2/logs`
 
 - To view the logs on the Raspberry Pi, first SSH into the remote access server and then SSH into the pi
 
-    - Run `tail -f /var/log/brave/heartbeat.log` to follow the tail of the logs
+  - Run `tail -f /var/log/brave/heartbeat.log` to follow the tail of the logs
 
-    - Run `less /var/log/brave/<logfilename>` to view any of the logs in `/var/log/brave`
+  - Run `less /var/log/brave/<logfilename>` to view any of the logs in `/var/log/brave`
 
-# How to run tests for the raspberry pi code: 
+# How to run tests for the raspberry pi code:
 
 1. install pytest and pytest-cov (run `pip3 install pytest pytest-cov`)
 
@@ -182,10 +181,10 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 1. run `/home/pi/.local/bin/pytest --cov=heartbeat`
 
-# How to add a PostgreSQL migration script 
+# How to add a PostgreSQL migration script
 
 This strategy assumes that each migration script in the `db` directory has a unique positive integer migration ID,
-and that each script's migration ID is exactly one greater than the previous script's migration ID. 
+and that each script's migration ID is exactly one greater than the previous script's migration ID.
 Otherwise, the scripts will not run.
 
 1. Copy `db/000-template.sql` and name it with its migration ID (padded with zeros) followed by a short description of what it does
@@ -199,7 +198,6 @@ Otherwise, the scripts will not run.
 To access the remote database you'll first need to add the IP you're trying to access it form to the "trusted sources" section of the digital ocean database console located at https://cloud.digitalocean.com/databases/button-db
 
 To connect, use the connection details available from the connection pools page on Digital Ocean - there should be a pool for testing and one for production, and connection details will be available as individual parameters, a connection string, and as a psql command with the necessary flags filled in https://cloud.digitalocean.com/databases/button-db/pools
-
 
 `PGPASSWORD=<password> psql -U <user> -h <hostname>.com -p <port> -d <database> --set=sslmode=require`
 
@@ -257,7 +255,7 @@ If you're migrating from a local database to a remote database that has already 
 
 You can either pipe the output of pg_dump directly to the new database
 
- `pg_dump --data-only -O pg_brave | PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require`
+`pg_dump --data-only -O pg_brave | PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require`
 
 or save it to an intervening file, and then input this file to the database
 
@@ -269,7 +267,7 @@ When performing a migration, make sure to connect directly to the target databas
 
 # How to pair a button with the 'Internet Request' Flic action
 
-1. Once you've run the pairing tool and button registering scripts, pair the button and select 'Internet Request' from the list of Flic actions under "Click" (do not add anything under "Double Click" or "Hold"). NOTE: this method will *not work from a button that has been paired to a smartphone*. *A Flic hub is required to make this work*
+1. Once you've run the pairing tool and button registering scripts, pair the button and select 'Internet Request' from the list of Flic actions under "Click" (do not add anything under "Double Click" or "Hold"). NOTE: this method will _not work from a button that has been paired to a smartphone_. _A Flic hub is required to make this work_
 
 2. Select the POST request button, and input the url as follows:
-`https://chatbot.brave.coop/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
+   `https://chatbot.brave.coop/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
