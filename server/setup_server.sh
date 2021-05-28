@@ -3,7 +3,6 @@
 set -e
 original_dir=$(pwd)
 cd $(dirname "$0")
-export HOME=$(bash <<< "echo ~$SUDO_USER")
 
 if [[ $EUID > 0 ]]; then
     echo "this script needs sudo privelages to run correctly."
@@ -56,7 +55,7 @@ else
     # restart server weekly to ensure it uses the latest certificates (certbot renews them automatically)
     echo "
     PATH=/bin:/usr/bin:/usr/local/bin
-    @weekly env HOME=$HOME pm2 restart BraveServer
+    @weekly env pm2 restart BraveServer
     " | crontab -
 
     pm2 install pm2-logrotate

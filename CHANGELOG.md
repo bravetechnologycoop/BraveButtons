@@ -18,6 +18,7 @@ the code was deployed.
 ### Fixed
 
 - Error log for /alert/sms now has the correct route name.
+- Setup script (CU-w5g52f).
 
 ## [3.7.0] - 2021-05-21
 
