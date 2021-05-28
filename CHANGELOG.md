@@ -18,6 +18,7 @@ the code was deployed.
 ### Fixed
 
 - Error log for /alert/sms now has the correct route name.
+- Setup script for Ubuntu 20.04 (CU-w5g52f).
 
 ### Removed
 
