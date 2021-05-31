@@ -378,35 +378,6 @@ async function clearSessions(clientParam) {
   }
 }
 
-async function getButtonWithButtonId(buttonId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
-  try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const { rows } = await client.query('SELECT * FROM buttons WHERE button_id = $1', [buttonId])
-
-    if (rows.length > 0) {
-      return rows[0]
-    }
-  } catch (e) {
-    helpers.logError(`Error running the getButtonWithButtonId query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getButtonWithButtonId: Error releasing client: ${err}`)
-      }
-    }
-  }
-
-  return null
-}
-
 async function getButtonWithSerialNumber(serialNumber, clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
@@ -946,7 +917,6 @@ module.exports = {
   createSession,
   getAllSessions,
   getAllSessionsWithButtonId,
-  getButtonWithButtonId,
   getButtonWithSerialNumber,
   getCurrentTime,
   getDataForExport,

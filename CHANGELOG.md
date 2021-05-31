@@ -19,6 +19,10 @@ the code was deployed.
 
 - Error log for /alert/sms now has the correct route name.
 
+### Removed
+
+- `POST /` endpoint (CU-fmunf5).
+
 ## [3.7.0] - 2021-05-21
 
 ### Changed

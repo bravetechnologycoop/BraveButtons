@@ -32,26 +32,6 @@ describe('Chatbot server', () => {
   const installationFallbackPhoneNumbers = ['+12345678900']
   const installationIncidentCategories = ['Accidental', 'Safer Use', 'Overdose', 'Other']
 
-  const unit1FlicRequest_SingleClick = {
-    UUID: unit1UUID,
-    Type: 'click',
-  }
-
-  const unit1FlicRequest_DoubleClick = {
-    UUID: unit1UUID,
-    Type: 'double click',
-  }
-
-  const unit1FlicRequest_Hold = {
-    UUID: unit1UUID,
-    Type: 'hold',
-  }
-
-  const unit2FlicRequest_SingleClick = {
-    UUID: unit2UUID,
-    Type: 'click',
-  }
-
   const twilioMessageUnit1_InitialStaffResponse = {
     From: installationResponderPhoneNumber,
     Body: 'Ok',
@@ -69,148 +49,6 @@ describe('Chatbot server', () => {
     Body: 'Resident accidentally pressed button',
     To: unit1PhoneNumber,
   }
-
-  describe('POST request: power automate button press', () => {
-    beforeEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearInstallations()
-      await db.createInstallation(
-        'TestInstallation',
-        installationResponderPhoneNumber,
-        installationFallbackPhoneNumbers,
-        installationIncidentCategories,
-        null,
-      )
-      const installations = await db.getInstallations()
-      await db.createButton(unit1UUID, installations[0].id, '1', unit1PhoneNumber, unit1SerialNumber)
-      await db.createButton(unit2UUID, installations[0].id, '2', unit2PhoneNumber, unit2SerialNumber)
-    })
-
-    afterEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearInstallations()
-      helpers.log('\n')
-    })
-
-    it('should return 400 to a request with an empty body', async () => {
-      // Power Automate always sends two requests
-      let response = await chai.request(server).post('/').send({})
-      response = await chai.request(server).post('/').send({})
-
-      expect(response).to.have.status(400)
-    })
-
-    it('should return 400 to a request with an unregistered button', async () => {
-      // Power Automate always sends two requests
-      let response = await chai.request(server).post('/').send({ UUID: '666', Type: 'click' })
-      response = await chai.request(server).post('/').send({ UUID: '666', Type: 'click' })
-
-      expect(response).to.have.status(400)
-    })
-
-    it('should return 200 to a valid request', async () => {
-      // Power Automate always sends two requests
-      let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-      response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-
-      expect(response).to.have.status(200)
-    })
-
-    it('should be able to create a valid session state from valid request', async () => {
-      // Power Automate always sends two requests
-      let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-      response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-
-      expect(response).to.have.status(200)
-
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
-      expect(sessions.length).to.equal(1)
-
-      const session = sessions[0]
-      expect(session).to.not.be.null
-      expect(session).to.have.property('buttonId')
-      expect(session).to.have.property('unit')
-      expect(session).to.have.property('state')
-      expect(session).to.have.property('numPresses')
-      expect(session.buttonId).to.deep.equal(unit1UUID)
-      expect(session.unit).to.deep.equal('1')
-      expect(session.numPresses).to.deep.equal(1)
-    })
-
-    it('should not confuse button presses from different rooms', async () => {
-      // Power Automate always sends two requests
-      let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-      response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-
-      // Power Automate always sends two requests
-      response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick)
-      response = await chai.request(server).post('/').send(unit2FlicRequest_SingleClick)
-
-      expect(response).to.have.status(200)
-
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
-      expect(sessions.length).to.equal(1)
-
-      const session = sessions[0]
-      expect(session).to.not.be.null
-      expect(session).to.have.property('buttonId')
-      expect(session).to.have.property('unit')
-      expect(session).to.have.property('numPresses')
-      expect(session.buttonId).to.deep.equal(unit1UUID)
-      expect(session.unit).to.deep.equal('1')
-      expect(session.numPresses).to.deep.equal(1)
-    })
-
-    it('should only create one new session when receiving multiple presses from the same button', async () => {
-      await Promise.all([
-        // Power Automate always sends two requests
-        chai.request(server).post('/').send(unit1FlicRequest_SingleClick),
-        chai.request(server).post('/').send(unit1FlicRequest_SingleClick),
-
-        // Power Automate always sends two requests
-        chai.request(server).post('/').send(unit1FlicRequest_DoubleClick),
-        chai.request(server).post('/').send(unit1FlicRequest_DoubleClick),
-
-        // Power Automate always sends two requests
-        chai.request(server).post('/').send(unit1FlicRequest_Hold),
-        chai.request(server).post('/').send(unit1FlicRequest_Hold),
-      ])
-
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
-      expect(sessions.length).to.equal(1)
-    })
-
-    it('should count button presses accurately during an active session', async () => {
-      // Power Automate always sends two requests
-      let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-      response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-
-      // Power Automate always sends two requests
-      response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
-      response = await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
-
-      // Power Automate always sends two requests
-      response = await chai.request(server).post('/').send(unit1FlicRequest_Hold)
-      response = await chai.request(server).post('/').send(unit1FlicRequest_Hold)
-
-      expect(response).to.have.status(200)
-
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
-      expect(sessions.length).to.equal(1)
-
-      const session = sessions[0]
-      expect(session).to.not.be.null
-      expect(session).to.have.property('buttonId')
-      expect(session).to.have.property('unit')
-      expect(session).to.have.property('state')
-      expect(session).to.have.property('numPresses')
-      expect(session.buttonId).to.deep.equal(unit1UUID)
-      expect(session.unit).to.deep.equal('1')
-      expect(session.numPresses).to.deep.equal(4)
-    })
-  })
 
   describe('POST request: flic button press', () => {
     beforeEach(async () => {
@@ -248,12 +86,24 @@ describe('Chatbot server', () => {
     })
 
     it('should return 200 to a request with only button-serial-number', async () => {
-      const response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).send({})
+      // eslint-disable-next-line prettier/prettier
+      const response = await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send({})
+
       expect(response).to.have.status(200)
     })
 
     it('should return 400 to a request with only button-battery-level', async () => {
-      const responseNoSerialNumber = await chai.request(server).post('/flic_button_press').set('button-battery-level', '100').send({})
+      // eslint-disable-next-line prettier/prettier
+      const responseNoSerialNumber = await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-battery-level', '100')
+        .send({})
+
       expect(responseNoSerialNumber).to.have.status(400)
     })
 
@@ -349,7 +199,13 @@ describe('Chatbot server', () => {
         .send()
       response = await chai
         .request(server)
-        .post('/flic_button_press?presses=2')
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-battery-level', '100')
+        .send()
+      response = await chai
+        .request(server)
+        .post('/flic_button_press')
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -376,7 +232,12 @@ describe('Chatbot server', () => {
     })
 
     it('should leave battery level null if initial request do not provide button-battery-level', async () => {
-      const response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).send()
+      // eslint-disable-next-line prettier/prettier
+      const response = await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
 
       expect(response).to.have.status(200)
       const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -460,7 +321,13 @@ describe('Chatbot server', () => {
       let session = sessions[0]
       expect(session.buttonBatteryLevel).to.equal(fakeBatteryLevel)
 
-      response = await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).send()
+      // eslint-disable-next-line prettier/prettier
+      response = await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
+
       expect(response).to.have.status(200)
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       session = sessions[0]
@@ -491,7 +358,14 @@ describe('Chatbot server', () => {
 
     it('should log a valid request when not given an API key', async () => {
       const buttonName = 'fakeButtonName'
-      await chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-name', buttonName).send()
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-name', buttonName
+        ).send()
+
       expect(helpers.logError).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
     })
   })
@@ -538,29 +412,7 @@ describe('Chatbot server', () => {
       server.close()
     })
 
-    it('should send the initial text message after a valid single click request to /', async () => {
-      // Power Automate always sends two requests
-      await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-      await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-
-      expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
-    })
-
-    it('should send the initial and urgent text messages after a valid double click request to /', async () => {
-      // Power Automate always sends two requests
-      await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
-      await chai.request(server).post('/').send(unit1FlicRequest_DoubleClick)
-
-      expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
-
-      expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
-        sinon.match.any,
-        sinon.match.any,
-        'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
-      )
-    })
-
-    it('should send the initial text message after a valid single click request to /flic_button_press', async () => {
+    it('should send the initial text message after a valid request to /flic_button_press', async () => {
       // eslint-disable-next-line prettier/prettier
       await chai
         .request(server)
@@ -572,10 +424,19 @@ describe('Chatbot server', () => {
       expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
     })
 
-    it('should send the initial and urgent text messages after a valid double click request to /flic_button_press', async () => {
+    it('should send the initial and urgent text messages after two valid requests to /flic_button_press', async () => {
+      // eslint-disable-next-line prettier/prettier
       await chai
         .request(server)
-        .post('/flic_button_press?presses=2')
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-battery-level', '100')
+        .send()
+
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -607,20 +468,20 @@ describe('Chatbot server', () => {
           .returns(timeNowMs + delayMs)
 
         // eslint-disable-next-line prettier/prettier
-      await chai
-        .request(server)
-        .post('/flic_button_press')
-        .set('button-serial-number', unit1SerialNumber)
-        .send()
+        await chai
+          .request(server)
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .send()
 
         expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
         // eslint-disable-next-line prettier/prettier
-      await chai
-        .request(server)
-        .post('/flic_button_press')
-        .set('button-serial-number', unit1SerialNumber)
-        .send()
+        await chai
+          .request(server)
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .send()
 
         expect(imports.braveAlerter.startAlertSession).to.have.been.calledTwice
       })
@@ -638,22 +499,22 @@ describe('Chatbot server', () => {
           .returns(timeNowMs + delayMs)
 
         // eslint-disable-next-line prettier/prettier
-      await chai
-        .request(server)
-        .post('/flic_button_press')
-        .set('button-serial-number', unit1SerialNumber)
-        .set('button-battery-level', '100')
-        .send()
+        await chai
+          .request(server)
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .set('button-battery-level', '100')
+          .send()
 
         expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
         // eslint-disable-next-line prettier/prettier
-      await chai
-        .request(server)
-        .post('/flic_button_press')
-        .set('button-serial-number', unit1SerialNumber)
-        .set('button-battery-level', '100')
-        .send()
+        await chai
+          .request(server)
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .set('button-battery-level', '100')
+          .send()
 
         expect(imports.braveAlerter.startAlertSession).to.have.been.calledTwice
       })
@@ -671,11 +532,18 @@ describe('Chatbot server', () => {
           .returns(timeNowMs + delayMs)
 
         // eslint-disable-next-line prettier/prettier
-      await chai
-        .request(server)
-        .post('/flic_button_press?presses=2')
-        .set('button-serial-number', unit1SerialNumber)
-        .send()
+        await chai
+          .request(server)
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .send()
+
+        // eslint-disable-next-line prettier/prettier
+        await chai
+          .request(server)
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .send()
 
         expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
@@ -686,11 +554,11 @@ describe('Chatbot server', () => {
         )
 
         // eslint-disable-next-line prettier/prettier
-      await chai
-        .request(server)
-        .post('/flic_button_press')
-        .set('button-serial-number', unit1SerialNumber)
-        .send()
+        await chai
+          .request(server)
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .send()
 
         expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
           sinon.match.any,
@@ -713,9 +581,18 @@ describe('Chatbot server', () => {
           .onThirdCall()
           .returns(timeNowMs + delayMs)
 
+        // eslint-disable-next-line prettier/prettier
         await chai
           .request(server)
-          .post('/flic_button_press?presses=2')
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .set('button-battery-level', '100')
+          .send()
+
+        // eslint-disable-next-line prettier/prettier
+        await chai
+          .request(server)
+          .post('/flic_button_press')
           .set('button-serial-number', unit1SerialNumber)
           .set('button-battery-level', '100')
           .send()
@@ -729,12 +606,12 @@ describe('Chatbot server', () => {
         )
 
         // eslint-disable-next-line prettier/prettier
-      await chai
-        .request(server)
-        .post('/flic_button_press')
-        .set('button-serial-number', unit1SerialNumber)
-        .set('button-battery-level', '100')
-        .send()
+        await chai
+          .request(server)
+          .post('/flic_button_press')
+          .set('button-serial-number', unit1SerialNumber)
+          .set('button-battery-level', '100')
+          .send()
 
         expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
           sinon.match.any,
@@ -747,9 +624,12 @@ describe('Chatbot server', () => {
     })
 
     it('should return ok to a valid request', async () => {
-      // Power Automate always sends two requests
-      await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-      await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
 
       const response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_InitialStaffResponse)
       expect(response).to.have.status(200)
@@ -766,9 +646,12 @@ describe('Chatbot server', () => {
     })
 
     it('should return ok to a valid request and advance the session appropriately', async () => {
-      // Power Automate always sends two requests
-      await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-      await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
 
       let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
@@ -796,9 +679,12 @@ describe('Chatbot server', () => {
       expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(ALERT_STATE.COMPLETED)
 
       // now start a new session for a different unit
-      // Power Automate always sends two requests
-      await chai.request(server).post('/').send(unit2FlicRequest_SingleClick)
-      await chai.request(server).post('/').send(unit2FlicRequest_SingleClick)
+      // eslint-disable-next-line prettier/prettier
+      await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit2SerialNumber)
+        .send()
 
       sessions = await db.getAllSessionsWithButtonId(unit2UUID)
       expect(sessions.length).to.equal(1)
@@ -809,9 +695,12 @@ describe('Chatbot server', () => {
     })
 
     it('should send a message to the fallback phone number if enough time has passed without a response', async () => {
-      // Power Automate always sends two requests
-      let response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
-      response = await chai.request(server).post('/').send(unit1FlicRequest_SingleClick)
+      // eslint-disable-next-line prettier/prettier
+      const response = await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .send()
 
       expect(response).to.have.status(200)
       await sleep(4000)
