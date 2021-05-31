@@ -315,44 +315,10 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
       } else {
         await handleValidRequest(button, 1, batteryLevel)
 
-        // eslint-disable-next-line eqeqeq
-        if (req.query.presses == 2) {
-          await handleValidRequest(button, 1, batteryLevel)
-        }
-
         res.status(200).send()
       }
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
-      helpers.logError(errorMessage)
-      res.status(400).send(errorMessage)
-    }
-  } catch (err) {
-    helpers.logError(err)
-    res.status(500).send()
-  }
-})
-
-app.post('/', jsonBodyParser, async (req, res) => {
-  try {
-    const requiredBodyParams = ['UUID', 'Type']
-
-    if (helpers.isValidRequest(req, requiredBodyParams)) {
-      const button = await db.getButtonWithButtonId(req.body.UUID)
-      if (button === null) {
-        helpers.logError(`Bad request to /: UUID is not registered. UUID is ${req.body.UUID}`)
-        res.status(400).send('Bad request to /: UUID is not registered')
-      } else {
-        await handleValidRequest(button, 0.5)
-
-        if (req.body.Type.startsWith('double')) {
-          await handleValidRequest(button, 0.5)
-        }
-
-        res.status(200).send()
-      }
-    } else {
-      const errorMessage = 'Bad request to /: UUID or Type is missing'
       helpers.logError(errorMessage)
       res.status(400).send(errorMessage)
     }
