@@ -14,6 +14,8 @@ use(sinonChai)
 
 describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', () => {
   beforeEach(() => {
+    this.fakeCurrentTime = new Date('2020-12-25T10:09:08.000Z')
+    sinon.stub(db, 'getCurrentTime').returns(this.fakeCurrentTime)
     sinon.stub(db, 'beginTransaction')
     sinon.stub(db, 'getSessionWithSessionId').returns(createTestSessionState())
     sinon.stub(db, 'getInstallationWithSessionId').returns({
@@ -29,15 +31,66 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     db.getInstallationWithSessionId.restore()
     db.getSessionWithSessionId.restore()
     db.beginTransaction.restore()
+    db.getCurrentTime.restore()
   })
 
-  it('if given only alertState should update only alertState', async () => {
+  it('if given alertState STARTED should update only alertState', async () => {
+    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(this.fakeSessionId, ALERT_STATE.WAITING_FOR_REPLY))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.STARTED))
+
+    const expectedSession = createTestSessionState()
+    expectedSession.state = ALERT_STATE.STARTED
+
+    expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
+  })
+
+  it('if given alertState WAITING_FOR_REPLY should update only alertState', async () => {
+    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
+    const braveAlerterConfigurator = new BraveAlerterConfigurator()
+    const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.WAITING_FOR_REPLY))
 
     const expectedSession = createTestSessionState()
     expectedSession.state = ALERT_STATE.WAITING_FOR_REPLY
+
+    expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
+  })
+
+  it('if given alertState WAITING_FOR_CATEGORY should update alertState and respondedAt', async () => {
+    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
+    const braveAlerterConfigurator = new BraveAlerterConfigurator()
+    const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.WAITING_FOR_CATEGORY))
+
+    const expectedSession = createTestSessionState()
+    expectedSession.state = ALERT_STATE.WAITING_FOR_CATEGORY
+    expectedSession.respondedAt = this.fakeCurrentTime
+
+    expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
+  })
+
+  it('if given alertState WAITING_FOR_DETAILS should update only alertState', async () => {
+    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
+    const braveAlerterConfigurator = new BraveAlerterConfigurator()
+    const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.WAITING_FOR_DETAILS))
+
+    const expectedSession = createTestSessionState()
+    expectedSession.state = ALERT_STATE.WAITING_FOR_DETAILS
+
+    expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
+  })
+
+  it('if given alertState COMPLETED should update only alertState', async () => {
+    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
+    const braveAlerterConfigurator = new BraveAlerterConfigurator()
+    const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.COMPLETED))
+
+    const expectedSession = createTestSessionState()
+    expectedSession.state = ALERT_STATE.COMPLETED
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
   })

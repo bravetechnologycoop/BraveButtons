@@ -19,7 +19,6 @@ const db = require('./db/db.js')
 const FLIC_THRESHOLD_MILLIS = 210 * 1000
 const HEARTBEAT_THRESHOLD_MILLIS = 75 * 1000
 const PING_THRESHOLD_MILLIS = 320 * 1000
-const SESSION_RESET_TIMEOUT = 2 * 60 * 60 * 1000
 const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
 
 const app = express()
@@ -58,7 +57,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     const currentTime = await db.getCurrentTime(client)
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-      if (currentSession === null || currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT) {
+      if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
         currentSession = await db.createSession(
           button.installation_id,
           button.button_id,
@@ -66,6 +65,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
           button.phone_number,
           numPresses,
           batteryLevel,
+          null,
           client,
         )
       } else {
@@ -73,8 +73,17 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         currentSession.updateBatteryLevel(batteryLevel)
         await db.saveSession(currentSession, client)
       }
-    } else if (currentSession === null || currentTime - currentSession.updatedAt >= SESSION_RESET_TIMEOUT) {
-      currentSession = await db.createSession(button.installation_id, button.button_id, button.unit, button.phone_number, numPresses, null, client)
+    } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
+      currentSession = await db.createSession(
+        button.installation_id,
+        button.button_id,
+        button.unit,
+        button.phone_number,
+        numPresses,
+        null,
+        null,
+        client,
+      )
     } else {
       currentSession.incrementButtonPresses(numPresses)
       await db.saveSession(currentSession, client)
@@ -226,17 +235,22 @@ app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
     }
 
     for (const recentSession of recentSessions) {
-      const createdAt = moment(recentSession.createdAt, moment.ISO_8601)
-      const updatedAt = moment(recentSession.updatedAt, moment.ISO_8601)
+      const createdAt = moment(recentSession.createdAt, moment.ISO_8601).tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A')
+      const updatedAt = moment(recentSession.updatedAt, moment.ISO_8601).tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A')
+      const respondedAt =
+        recentSession.respondedAt !== null
+          ? moment(recentSession.respondedAt, moment.ISO_8601).tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A')
+          : ''
       viewParams.recentSessions.push({
         unit: recentSession.unit,
-        createdAt: createdAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
-        updatedAt: updatedAt.tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A'),
+        createdAt,
+        updatedAt,
         state: recentSession.state,
         numPresses: recentSession.numPresses.toString(),
         incidentType: recentSession.incidentType,
         notes: recentSession.notes,
         buttonBatteryLevel: recentSession.buttonBatteryLevel,
+        respondedAt,
       })
     }
 

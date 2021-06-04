@@ -62,6 +62,7 @@ matrix:
         - REMINDER_TIMEOUT_MS_TEST=1000
         - FALLBACK_TIMEOUT_MS_TEST=2000
         - FLIC_BUTTON_PRESS_API_KEY_TEST=testFlicApiKey
+        - SESSION_RESET_TIMEOUT_TEST=7200000
 
       # setup database
       before_script:
