@@ -52,8 +52,8 @@ describe('Chatbot server', () => {
 
   describe('POST request: flic button press', () => {
     beforeEach(async () => {
-      sinon.stub(helpers, 'log')
-      sinon.stub(helpers, 'logError')
+      sinon.spy(helpers, 'log')
+      sinon.spy(helpers, 'logError')
 
       await db.clearSessions()
       await db.clearButtons()

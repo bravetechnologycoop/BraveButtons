@@ -15,6 +15,7 @@ function createTestSessionState() {
     'fakeNotes',
     'fakeFallbackTwilioState',
     null,
+    new Date('2000-06-06T00:53:53.000Z'),
   )
 }
 

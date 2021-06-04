@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-const { BraveAlerter, AlertSession, ALERT_STATE, helpers, Location, SYSTEM } = require('brave-alert-lib')
+const { BraveAlerter, AlertSession, ALERT_TYPE, ALERT_STATE, helpers, Location, SYSTEM, HistoricAlert } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 class BraveAlerterConfigurator {
@@ -9,6 +9,7 @@ class BraveAlerterConfigurator {
       this.getAlertSessionByPhoneNumber.bind(this),
       this.alertSessionChangedCallback,
       this.getLocationByAlertApiKey.bind(this),
+      this.getHistoricAlertsByAlertApiKey.bind(this),
       true,
       this.getReturnMessage.bind(this),
     )
@@ -103,6 +104,10 @@ class BraveAlerterConfigurator {
           session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
         }
 
+        if (alertSession.alertState === ALERT_STATE.WAITING_FOR_CATEGORY) {
+          session.respondedAt = await db.getCurrentTime(client)
+        }
+
         await db.saveSession(session, client)
       }
 
@@ -128,6 +133,24 @@ class BraveAlerterConfigurator {
     // Even if there is more than one matching installation, we only return one and it will
     // be used by the Alert App to indentify this installation
     return new Location(installations[0].name, SYSTEM.BUTTONS)
+  }
+
+  createHistoricAlertFromRow(row) {
+    const alertType = row.num_presses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT
+    return new HistoricAlert(row.id, row.unit, row.incident_type, alertType, row.num_presses, row.created_at, row.responded_at)
+  }
+
+  // Historic Alerts are those with status "Completed" or that were last updated longer ago than the SESSION_RESET_TIMEOUT
+  async getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts) {
+    const maxTimeAgoInMillis = helpers.getEnvVar('SESSION_RESET_TIMEOUT')
+
+    const historicAlerts = await db.getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, maxTimeAgoInMillis)
+
+    if (!Array.isArray(historicAlerts)) {
+      return null
+    }
+
+    return historicAlerts.map(this.createHistoricAlertFromRow)
   }
 
   getReturnMessage(fromAlertState, toAlertState, incidentCategories) {

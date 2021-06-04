@@ -14,6 +14,8 @@ the code was deployed.
 ### Added
 
 - Mocha debugging configuration for `/server`.
+- `GET /alert/historicAlerts` endpoint (CU-hjwfx2).
+- Tracking of when sessions are first responded to (CU-hjwfx2).
 
 ## [4.0.0] - 2021-06-15
 

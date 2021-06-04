@@ -16,7 +16,7 @@ describe('DB', () => {
     describe('when not given a client', () => {
       describe('if an error is thrown while trying to get a DB client from the pool', () => {
         beforeEach(() => {
-          sinon.stub(helpers, 'logError')
+          sinon.spy(helpers, 'logError')
           this.pool = db.getPool()
           sinon.stub(this.pool, 'connect').rejects
         })
@@ -49,7 +49,7 @@ describe('DB', () => {
 
       describe('if an error is thrown during a database query', () => {
         beforeEach(() => {
-          sinon.stub(helpers, 'logError')
+          sinon.spy(helpers, 'logError')
           this.client = {
             query: sinon.stub().rejects,
             release: sinon.stub(),
@@ -86,7 +86,7 @@ describe('DB', () => {
 
       describe('if there is one unresponded session with the given buttonId', () => {
         beforeEach(() => {
-          sinon.stub(helpers, 'log')
+          sinon.spy(helpers, 'log')
           this.client = {
             query: sinon.stub().resolves({
               rows: [
@@ -104,6 +104,7 @@ describe('DB', () => {
                   notes: 'fakeNotes',
                   fallback_alert_twilio_status: 'fakeFallbackTwilioState',
                   button_battery_level: null,
+                  responded_at: new Date('2000-06-06T00:53:53.000Z'),
                 },
               ],
             }),
@@ -141,7 +142,7 @@ describe('DB', () => {
   describe('when given a client', () => {
     describe('if an error is thrown during a database query', () => {
       beforeEach(() => {
-        sinon.stub(helpers, 'logError')
+        sinon.spy(helpers, 'logError')
 
         this.pool = db.getPool()
         sinon.stub(this.pool, 'connect')
@@ -185,7 +186,7 @@ describe('DB', () => {
 
     describe('if there is one unresponded session with the given buttonId', () => {
       beforeEach(() => {
-        sinon.stub(helpers, 'log')
+        sinon.spy(helpers, 'log')
         this.client = {
           query: sinon.stub().resolves({
             rows: [
@@ -203,6 +204,7 @@ describe('DB', () => {
                 notes: 'fakeNotes',
                 fallback_alert_twilio_status: 'fakeFallbackTwilioState',
                 button_battery_level: null,
+                responded_at: new Date('2000-06-06T00:53:53.000Z'),
               },
             ],
           }),

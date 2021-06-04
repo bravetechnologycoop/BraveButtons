@@ -22,7 +22,7 @@ types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
 function createSessionFromRow(r) {
   // prettier-ignore
-  return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status, r.button_battery_level)
+  return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status, r.button_battery_level, r.responded_at)
 }
 
 function createInstallationFromRow(r) {
@@ -264,7 +264,7 @@ async function getAllSessions(clientParam) {
   return null
 }
 
-async function createSession(installationId, buttonId, unit, phoneNumber, numPresses, buttonBatteryLevel, clientParam) {
+async function createSession(installationId, buttonId, unit, phoneNumber, numPresses, buttonBatteryLevel, respondedAt, clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
 
@@ -273,9 +273,9 @@ async function createSession(installationId, buttonId, unit, phoneNumber, numPre
       client = await pool.connect()
     }
 
-    const values = [installationId, buttonId, unit, phoneNumber, ALERT_STATE.STARTED, numPresses, buttonBatteryLevel]
+    const values = [installationId, buttonId, unit, phoneNumber, ALERT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt]
     const { rows } = await client.query(
-      'INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses, button_battery_level) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      'INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       values,
     )
 
@@ -322,10 +322,11 @@ async function saveSession(session, clientParam) {
       session.notes,
       session.fallBackAlertTwilioStatus,
       session.buttonBatteryLevel,
+      session.respondedAt,
       session.id,
     ]
     await client.query(
-      'UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status =$9, button_battery_level=$10 WHERE id = $11',
+      'UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status = $9, button_battery_level = $10, responded_at = $11 WHERE id = $12',
       values,
     )
   } catch (e) {
@@ -636,6 +637,49 @@ async function getInstallationWithSessionId(sessionId, clientParam) {
   return null
 }
 
+async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, maxTimeAgoInMillis, clientParam) {
+  let client = clientParam
+  const transactionMode = typeof client !== 'undefined'
+
+  try {
+    if (!transactionMode) {
+      client = await pool.connect()
+    }
+
+    // Historic Alerts are those with status "Completed" or that were last updated longer ago than the SESSION_RESET_TIMEOUT
+    const { rows } = await client.query(
+      `
+      SELECT s.id, b.unit, s.incident_type, s.num_presses, s.created_at, s.responded_at
+      FROM sessions AS s
+      LEFT JOIN buttons AS b ON s.button_id = b.button_id
+      LEFT JOIN installations AS i ON s.installation_id = i.id
+      WHERE i.alert_api_key = $1
+      AND (
+        s.state = $2
+        OR s.updated_at < now() - $3 * INTERVAL '1 millisecond'
+      )
+      ORDER BY s.created_at DESC
+      LIMIT $4
+      `,
+      [alertApiKey, ALERT_STATE.COMPLETED, maxTimeAgoInMillis, maxHistoricAlerts],
+    )
+
+    return rows
+  } catch (e) {
+    helpers.log(`Error running the getHistoricAlertsByAlertApiKey query: ${e}`)
+  } finally {
+    if (!transactionMode) {
+      try {
+        client.release()
+      } catch (err) {
+        helpers.log(`getHistoricAlertsByAlertApiKey: Error releasing client: ${err}`)
+      }
+    }
+  }
+
+  return null
+}
+
 async function getHubs(clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
@@ -920,6 +964,7 @@ module.exports = {
   getButtonWithSerialNumber,
   getCurrentTime,
   getDataForExport,
+  getHistoricAlertsByAlertApiKey,
   getHubs,
   getHubWithSystemId,
   getInstallations,

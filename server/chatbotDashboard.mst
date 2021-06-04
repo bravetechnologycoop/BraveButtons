@@ -202,6 +202,7 @@
                                 <th scope="col">Notes</th>
                                 <th scope="col">Started At</th>
                                 <th scope="col">Updated At</th>
+                                <th scope="col">Responded At</th>
                                 <th scope="col">Battery Level</th>
                             </tr>
                         </thead>
@@ -215,6 +216,7 @@
                                     <td>{{notes}}</td>
                                     <td>{{createdAt}}</td>
                                     <td>{{updatedAt}}</td>
+                                    <td>{{respondedAt}}</td>
                                     <td>{{buttonBatteryLevel}}</td>
                                 </tr>
                             {{/recentSessions}}
