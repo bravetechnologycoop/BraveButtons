@@ -11,6 +11,10 @@ the code was deployed.
 
 ## Unreleased
 
+### Added
+
+- Mocha debugging configuration for `/server`.
+
 ## [4.0.0] - 2021-06-15
 
 ### Changed
