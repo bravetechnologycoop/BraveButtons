@@ -15,6 +15,7 @@ the code was deployed.
 
 - Mocha debugging configuration for `/server`.
 - `GET /alert/historicAlerts` endpoint (CU-hjwfx2).
+- `GET /alert/newNotificationsCount` endpoint (CU-hjwcwk).
 - Tracking of when sessions are first responded to (CU-hjwfx2).
 - Security audit to Travis.
 

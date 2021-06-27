@@ -18,6 +18,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
     this.installationIncidentCategories = ['Cat1', 'Cat2', 'Cat3']
 
     await db.clearSessions()
+    await db.clearNotifications()
     await db.clearInstallations()
     await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories, null)
     const installations = await db.getInstallations()

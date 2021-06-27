@@ -12,6 +12,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
 
       // Insert a single installation with a single button that has a single session that doesn't match the Alert API Key that we ask for
@@ -39,6 +40,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
 
       // Insert a single installation with a single button that has a single session that doesn't match the Alert API Key that we ask for
@@ -70,6 +72,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
 
       // Insert a single installation with a single button
@@ -131,6 +134,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
 
       // Insert a single installation with a two buttons and more than maxHistoricAlerts sessions
@@ -167,6 +171,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
 
       // Insert a single installation with a two buttons and maxHistoricAlerts sessions
@@ -205,6 +210,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
 
       // Insert a single installation with a one button and one session
