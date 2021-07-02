@@ -22,6 +22,10 @@ the code was deployed.
 
 - Updated deployment instructions (CU-wb8719).
 
+### Fixed
+
+- Time strings in CSV Export now have the correct hour and minute values (CU-zkkach).
+
 ## [4.0.0] - 2021-06-15
 
 ### Changed

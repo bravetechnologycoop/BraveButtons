@@ -898,7 +898,31 @@ async function getDataForExport(clientParam) {
     }
 
     const { rows } = await client.query(
-      `SELECT i.name AS "Installation Name", i.responder_phone_number AS "Responder Phone", i.fall_back_phone_numbers AS "Fallback Phones", TO_CHAR(i.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Date Installation Created", i.incident_categories AS "Incident Categories", i.is_active AS "Active?", s.unit AS "Unit", s.phone_number AS "Button Phone", s.state AS "Session State", s.num_presses AS "Number of Presses", TO_CHAR(s.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Session Start", TO_CHAR(s.updated_at, 'yyyy-MM-dd HH:mm:ss') AS "Last Session Activity", s.incident_type AS "Session Incident Type", s.notes as "Session Notes", s.fallback_alert_twilio_status AS "Fallback Alert Status (Twilio)", s.button_battery_level AS "Button Battery Level", TO_CHAR(r.created_at, 'yyyy-MM-dd HH:mm:ss') AS "Date Button Created", TO_CHAR(r.updated_at, 'yyyy-MM-dd HH:mm:ss') AS "Button Last Updated", r.button_serial_number AS "Button Serial Number" FROM sessions s JOIN buttons r ON s.button_id = r.button_id JOIN installations i ON i.id = s.installation_id`,
+      `
+      SELECT
+        i.name AS "Installation Name",
+        i.responder_phone_number AS "Responder Phone",
+        i.fall_back_phone_numbers AS "Fallback Phones",
+        TO_CHAR(i.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Installation Created",
+        i.incident_categories AS "Incident Categories",
+        i.is_active AS "Active?",
+        s.unit AS "Unit",
+        s.phone_number AS "Button Phone",
+        s.state AS "Session State",
+        s.num_presses AS "Number of Presses",
+        TO_CHAR(s.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Session Start",
+        TO_CHAR(s.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Last Session Activity",
+        s.incident_type AS "Session Incident Type",
+        s.notes as "Session Notes",
+        s.fallback_alert_twilio_status AS "Fallback Alert Status (Twilio)",
+        s.button_battery_level AS "Button Battery Level",
+        TO_CHAR(r.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Button Created",
+        TO_CHAR(r.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Button Last Updated",
+        r.button_serial_number AS "Button Serial Number"
+      FROM sessions s
+        JOIN buttons r ON s.button_id = r.button_id
+        JOIN installations i ON i.id = s.installation_id
+      `,
     )
 
     return rows
