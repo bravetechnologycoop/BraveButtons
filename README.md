@@ -117,6 +117,8 @@ to the config repo that do not change the schema (eg. adding a new hub, or chang
 then it is not necessary to create a new numbered version. In this case you can skip step 1 and skip
 making a new tag during step 2. This is essentially redeploying an older version with new config.
 
+1. check the deployment ClickUp Task for any comments or SubTasks that could affect these deployment steps.
+
 1. on your local machine, in the `BraveButtons` repository:
 
    1. pull the latest code ready for release: `git checkout master && git pull origin master`
@@ -141,6 +143,10 @@ making a new tag during step 2. This is essentially redeploying an older version
 
    1. update the `production` branch: `git checkout production && git merge master && git push origin production --tags`
 
+1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that you are doing a deployment and to expect some downtime.
+
+1. send a text message to all of the Responder phones letting them know that you are doing some routine maintenance, there will be downtime, and that you will notify them when everything is back to normal again. For example: "Notice: Your Brave Buttons System is down for maintenance. During this time, Button presses will not trigger an alert. You will receive another text message when everything is back online. Thank you for your patience. Have a nice day."
+
 1. on the production Buttons server (access using ssh):
 
    1. cd into the `BraveButtons/server` directory
@@ -154,6 +160,10 @@ making a new tag during step 2. This is essentially redeploying an older version
    1. run the server setup script: `sudo ./setup_server.sh ./.env`
 
 1. open the chatbot and heartbeat dashboards and confirm that everything appears to be working normally
+
+1. send a text message to all of the Responder phones letting them know that everything is back to normal. For example "Notice: Your Brave Buttons System is now back online and functioning normally. Thank you!"
+
+1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that the deployment is finished and list the changes in this deployment from the `CHANGELOG`
 
 # How to check the logs
 
