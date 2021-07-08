@@ -10,13 +10,10 @@ const SessionState = require('../../../SessionState.js')
 describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
   describe('if there are no installations with the given Alert API Key', () => {
     beforeEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
 
       // Insert a single installation with a single button that has a single session that doesn't match the Alert API Key that we ask for
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', 'alertApiKey')
+      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', 'alertApiKey', 'pushId')
       const installationId = (await db.getInstallations())[0].id
       const buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
       await db.createButton(buttonId, installationId, 'unit', 'phoneNumber', 'serialNumber')
@@ -24,10 +21,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
 
     afterEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
     })
 
     it('should return an empty array', async () => {
@@ -39,13 +33,10 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
   describe('if there are no sessions for the installation with the given Alert API Key', () => {
     beforeEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
 
       // Insert a single installation with a single button that has a single session that doesn't match the Alert API Key that we ask for
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', 'not our API key')
+      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', 'not our API key', 'pushId')
       const installationId = (await db.getInstallations())[0].id
       const buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
       await db.createButton(buttonId, installationId, 'unit', 'phoneNumber', 'serialNumber')
@@ -57,10 +48,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
 
     afterEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
     })
 
     it('should return an empty array', async () => {
@@ -72,14 +60,11 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
   describe('if there is one matching session', () => {
     beforeEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
 
       // Insert a single installation with a single button
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey)
+      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
       this.installationId = (await db.getInstallations())[0].id
       this.buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
       this.unit = 'unit1'
@@ -111,10 +96,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
 
     afterEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
     })
 
     it('should return an array with one object with the correct values in it', async () => {
@@ -135,14 +117,11 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
   describe('if there are more matching sessions than maxHistoricAlerts', () => {
     beforeEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
 
       // Insert a single installation with a two buttons and more than maxHistoricAlerts sessions
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey)
+      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
       const installationId = (await db.getInstallations())[0].id
       const buttonId1 = '51b8be5678bf5ade9bf6a5958b2a4a45'
       await db.createButton(buttonId1, installationId, 'unit1', 'phoneNumber1', 'serialNumber1')
@@ -156,10 +135,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
 
     afterEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
     })
 
     it('should return only the most recent maxHistoricAlerts of them', async () => {
@@ -173,14 +149,11 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
   describe('if there are fewer matching sessions than maxHistoricAlerts', () => {
     beforeEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
 
       // Insert a single installation with a two buttons and maxHistoricAlerts sessions
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey)
+      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
       const installationId = (await db.getInstallations())[0].id
       const buttonId1 = '51b8be5678bf5ade9bf6a5958b2a4a45'
       await db.createButton(buttonId1, installationId, 'unit1', 'phoneNumber1', 'serialNumber1')
@@ -195,10 +168,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
 
     afterEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
     })
 
     it('should return only the matches', async () => {
@@ -213,14 +183,11 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
   describe('if is a session more recent than maxTimeAgoInMillis', () => {
     beforeEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
 
       // Insert a single installation with a one button and one session
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey)
+      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
       const installationId = (await db.getInstallations())[0].id
       const buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
       const unit = 'unit1'
@@ -229,10 +196,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
 
     afterEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
+      await db.clearTables()
     })
 
     it('and it is COMPLETED, should return the Completed session', async () => {

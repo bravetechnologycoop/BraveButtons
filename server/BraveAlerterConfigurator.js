@@ -7,6 +7,7 @@ class BraveAlerterConfigurator {
     return new BraveAlerter(
       this.getAlertSession.bind(this),
       this.getAlertSessionByPhoneNumber.bind(this),
+      this.getAlertSessionBySessionIdAndAlertApiKey.bind(this),
       this.alertSessionChangedCallback,
       this.getLocationByAlertApiKey.bind(this),
       this.getHistoricAlertsByAlertApiKey.bind(this),
@@ -45,6 +46,23 @@ class BraveAlerterConfigurator {
     return alertSession
   }
 
+  async createAlertSessionFromSession(session) {
+    const installation = await db.getInstallationWithInstallationId(session.installationId)
+
+    const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
+
+    return new AlertSession(
+      session.id,
+      session.state,
+      session.incidentType,
+      session.notes,
+      `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
+      installation.responderPhoneNumber,
+      incidentCategoryKeys,
+      installation.incidentCategories,
+    )
+  }
+
   async getAlertSessionByPhoneNumber(toPhoneNumber) {
     let alertSession = null
 
@@ -54,22 +72,25 @@ class BraveAlerterConfigurator {
         return null
       }
 
-      const installation = await db.getInstallationWithInstallationId(session.installationId)
-
-      const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
-
-      alertSession = new AlertSession(
-        session.id,
-        session.state,
-        session.incidentType,
-        session.notes,
-        `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-        installation.responderPhoneNumber,
-        incidentCategoryKeys,
-        installation.incidentCategories,
-      )
+      alertSession = await this.createAlertSessionFromSession(session)
     } catch (e) {
-      helpers.logError(`getAlertSessionByPhoneNumber: failed to get and create a new alert session: ${JSON.stringify(e)}`)
+      helpers.logError(`getAlertSessionByPhoneNumber: failed to get and create a new alert session: ${e.toString()}`)
+    }
+
+    return alertSession
+  }
+
+  async getAlertSessionBySessionIdAndAlertApiKey(sessionId, alertApiKey) {
+    let alertSession = null
+    try {
+      const session = await db.getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey)
+      if (session === null) {
+        return null
+      }
+
+      alertSession = await this.createAlertSessionFromSession(session)
+    } catch (e) {
+      helpers.logError(`getAlertSessionBySessionIdAndAlertApiKey: failed to get and create a new alert session: ${e.toString()}`)
     }
 
     return alertSession
@@ -125,7 +146,7 @@ class BraveAlerterConfigurator {
   }
 
   async getLocationByAlertApiKey(alertApiKey) {
-    const installations = await db.getInstallationsWithApiKey(alertApiKey)
+    const installations = await db.getInstallationsWithAlertApiKey(alertApiKey)
 
     if (!Array.isArray(installations) || installations.length === 0) {
       return null

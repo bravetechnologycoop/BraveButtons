@@ -1,5 +1,5 @@
 class Installation {
-  constructor(id, name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, isActive, createdAt, alertApiKey) {
+  constructor(id, name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, isActive, createdAt, alertApiKey, responderPushId) {
     this.id = id
     this.name = name
     this.responderPhoneNumber = responderPhoneNumber
@@ -8,6 +8,7 @@ class Installation {
     this.isActive = isActive
     this.createdAt = createdAt
     this.alertApiKey = alertApiKey
+    this.responderPushId = responderPushId
   }
 }
 
