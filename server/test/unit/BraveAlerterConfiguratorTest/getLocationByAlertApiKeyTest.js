@@ -19,7 +19,7 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
   })
 
   afterEach(() => {
-    db.getInstallationsWithApiKey.restore()
+    db.getInstallationsWithAlertApiKey.restore()
   })
 
   it('if there is single installation with the given API key, returns a location with its display name and the Buttons system', async () => {
@@ -29,7 +29,7 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
     const installationToReturn = new Installation()
     installationToReturn.alertApiKey = alertApiKey
     installationToReturn.name = displayName
-    sinon.stub(db, 'getInstallationsWithApiKey').returns([installationToReturn])
+    sinon.stub(db, 'getInstallationsWithAlertApiKey').returns([installationToReturn])
 
     const expectedLocation = new Location(displayName, SYSTEM.BUTTONS)
 
@@ -49,7 +49,7 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
     const installation2 = new Installation()
     installation2.alertApiKey = alertApiKey
     installation2.name = 'aDifferentDisplayName'
-    sinon.stub(db, 'getInstallationsWithApiKey').returns([installation1, installation2])
+    sinon.stub(db, 'getInstallationsWithAlertApiKey').returns([installation1, installation2])
 
     const expectedLocation = new Location(displayName, SYSTEM.BUTTONS)
 
@@ -59,7 +59,7 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
   })
 
   it('if there no installations with the given API key, returns null', async () => {
-    sinon.stub(db, 'getInstallationsWithApiKey').returns([])
+    sinon.stub(db, 'getInstallationsWithAlertApiKey').returns([])
 
     const actualLocation = await this.braveAlerter.getLocationByAlertApiKey('alertApiKey')
 
@@ -67,7 +67,7 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
   })
 
   it('if db.getLocationByAlertApiKey returns a non-array, returns null', async () => {
-    sinon.stub(db, 'getInstallationsWithApiKey').returns()
+    sinon.stub(db, 'getInstallationsWithAlertApiKey').returns()
 
     const actualLocation = await this.braveAlerter.getLocationByAlertApiKey('alertApiKey')
 

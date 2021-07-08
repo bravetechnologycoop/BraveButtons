@@ -7,22 +7,22 @@ const { CHATBOT_STATE, AlertSession } = require('brave-alert-lib')
 const db = require('../../../db/db.js')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
 
-describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () => {
+describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessionidAndAlertApiKey', () => {
   beforeEach(async () => {
     this.sessionState = CHATBOT_STATE.WAITING_FOR_DETAILS
     this.sessionIncidentType = '2'
     this.sessionNotes = 'sessionNotes'
+    this.sessionToPhoneNumber = '+13335557777'
     this.message = 'message'
     this.installationResponderPhoneNumber = '+17775558888'
     this.installationIncidentCategories = ['Cat1', 'Cat2', 'Cat3']
+    this.alertApiKey = 'myApiKey'
 
     await db.clearTables()
 
-    await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories, null, null)
+    await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories, this.alertApiKey, null)
     const installations = await db.getInstallations()
-    await db.createSession(installations[0].id, '', '701', '', 1, null)
-    const sessions = await db.getAllSessions()
-    const session = sessions[0]
+    const session = await db.createSession(installations[0].id, '', '701', this.sessionToPhoneNumber, 1)
     this.sessionId = session.id
     session.state = this.sessionState
     session.incidentType = this.sessionIncidentType
@@ -37,7 +37,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
   it('should return an AlertSession with the values from the DB', async () => {
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    const alertSession = await braveAlerter.getAlertSession(this.sessionId)
+    const alertSession = await braveAlerter.getAlertSessionBySessionIdAndAlertApiKey(this.sessionId, this.alertApiKey)
 
     expect(alertSession).to.eql(
       new AlertSession(

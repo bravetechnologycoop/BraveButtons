@@ -27,7 +27,7 @@ function createSessionFromRow(r) {
 
 function createInstallationFromRow(r) {
   // prettier-ignore
-  return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.alert_api_key)
+  return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.alert_api_key, r.responder_push_id)
 }
 
 function createHubFromRow(r) {
@@ -148,6 +148,32 @@ async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, client
   }
 
   return null
+}
+
+async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, clientParam) {
+  try {
+    const results = await helpers.runQuery(
+      'getSessionWithSessionIdAndAlertApiKey',
+      `
+      SELECT s.*
+      FROM sessions AS s
+      LEFT JOIN installations AS i ON s.installation_id = i.id
+      WHERE s.id = $1
+      AND i.alert_api_key = $2
+      `,
+      [sessionId, alertApiKey],
+      pool,
+      clientParam,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    return createSessionFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
 }
 
 async function getAllSessionsWithButtonId(buttonId, clientParam) {
@@ -465,7 +491,7 @@ async function clearButtons(clientParam) {
   }
 }
 
-async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, clientParam) {
+async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, responderPushId, clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
 
@@ -475,8 +501,8 @@ async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbe
     }
 
     await client.query(
-      'INSERT INTO installations (name, responder_phone_number, fall_back_phone_numbers, incident_categories, alert_api_key) VALUES ($1, $2, $3, $4, $5)',
-      [name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey],
+      'INSERT INTO installations (name, responder_phone_number, fall_back_phone_numbers, incident_categories, alert_api_key, responder_push_id) VALUES ($1, $2, $3, $4, $5, $6)',
+      [name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, responderPushId],
     )
   } catch (e) {
     helpers.logError(`Error running the createInstallation query: ${e}`)
@@ -563,13 +589,13 @@ async function getInstallationsWithAlertApiKey(alertApiKey, clientParam) {
       return rows.map(createInstallationFromRow)
     }
   } catch (e) {
-    helpers.log(`Error running the getInstallationsWithApiKey query: ${e}`)
+    helpers.log(`Error running the getInstallationsWithAlertApiKey query: ${e}`)
   } finally {
     if (!transactionMode) {
       try {
         client.release()
       } catch (err) {
-        helpers.log(`getInstallationsWithApiKey: Error releasing client: ${err}`)
+        helpers.log(`getInstallationsWithAlertApiKey: Error releasing client: ${err}`)
       }
     }
   }
@@ -757,6 +783,18 @@ async function clearNotifications(clientParam) {
       }
     }
   }
+}
+
+async function clearTables(clientParam) {
+  if (!helpers.isTestEnvironment()) {
+    helpers.log('warning - tried to clear tables outside of a test environment!')
+    return
+  }
+
+  await clearSessions(clientParam)
+  await clearButtons(clientParam)
+  await clearNotifications(clientParam)
+  await clearInstallations(clientParam)
 }
 
 async function getHubs(clientParam) {
@@ -1058,6 +1096,7 @@ module.exports = {
   clearInstallations,
   clearNotifications,
   clearSessions,
+  clearTables,
   close,
   commitTransaction,
   createButton,
@@ -1073,7 +1112,7 @@ module.exports = {
   getHubs,
   getHubWithSystemId,
   getInstallations,
-  getInstallationsWithApiKey: getInstallationsWithAlertApiKey,
+  getInstallationsWithAlertApiKey,
   getInstallationWithInstallationId,
   getInstallationWithSessionId,
   getMostRecentIncompleteSessionWithPhoneNumber,
@@ -1081,6 +1120,7 @@ module.exports = {
   getPool,
   getRecentSessionsWithInstallationId,
   getSessionWithSessionId,
+  getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,
   rollbackTransaction,
   saveHeartbeat,

@@ -8,9 +8,7 @@ const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
 
 describe('BraveAlerterConfigurator.js integration tests: getNewNotificationsCountByAlertApiKey', () => {
   beforeEach(async () => {
-    await db.clearSessions()
-    await db.clearNotifications()
-    await db.clearInstallations()
+    await db.clearTables()
 
     this.alertApiKey = '00000000-000000000000001'
     await db.createInstallation('', '', '{}', '{}', this.alertApiKey)
@@ -28,9 +26,7 @@ describe('BraveAlerterConfigurator.js integration tests: getNewNotificationsCoun
   })
 
   afterEach(async () => {
-    await db.clearSessions()
-    await db.clearNotifications()
-    await db.clearInstallations()
+    await db.clearTables()
   })
 
   it('should properly count notifications that match the api key ', async () => {

@@ -11,7 +11,7 @@ const jsonBodyParser = bodyParser.json()
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const Mustache = require('mustache')
-const helpers = require('brave-alert-lib').helpers
+const { ALERT_TYPE, helpers } = require('brave-alert-lib')
 
 const BraveAlerterConfigurator = require('./BraveAlerterConfigurator.js')
 const db = require('./db/db.js')
@@ -96,6 +96,9 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         sessionId: currentSession.id,
         toPhoneNumber: installation.responderPhoneNumber,
         fromPhoneNumber: currentSession.phoneNumber,
+        responderPushId: installation.responderPushId,
+        deviceName: currentSession.unit,
+        alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
         message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
         reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
         fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
@@ -111,10 +114,13 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
       currentSession.numPresses === 2 ||
       currentTime - currentSession.updatedAt >= SUBSEQUENT_URGENT_MESSAGE_THRESHOLD
     ) {
-      braveAlerter.sendSingleAlert(
+      braveAlerter.sendAlertSessionUpdate(
+        currentSession.id,
+        installation.responderPushId,
         installation.responderPhoneNumber,
         currentSession.phoneNumber,
         `This in an urgent request. The button has been pressed ${currentSession.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
+        `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT)} Alert:\n${currentSession.unit.toString()}`,
       )
     } else {
       // no alert to be sent
