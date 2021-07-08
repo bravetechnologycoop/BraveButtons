@@ -16,8 +16,7 @@ const imports = require('../../server.js')
 const server = imports.server
 const db = imports.db
 
-// eslint-disable-next-line func-style
-const sleep = millis => new Promise(resolve => setTimeout(resolve, millis))
+const sandbox = sinon.createSandbox()
 
 const validApiKey = helpers.getEnvVar('FLIC_BUTTON_PRESS_API_KEY')
 
@@ -52,36 +51,32 @@ describe('Chatbot server', () => {
     To: unit1PhoneNumber,
   }
 
+  beforeEach(async () => {
+    sandbox.spy(helpers, 'log')
+    sandbox.spy(helpers, 'logError')
+
+    await db.clearTables()
+  })
+
+  afterEach(async () => {
+    sandbox.restore()
+
+    await db.clearTables()
+  })
+
   describe('POST request: flic button press', () => {
     beforeEach(async () => {
-      sinon.spy(helpers, 'log')
-      sinon.spy(helpers, 'logError')
-
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
       await db.createInstallation(
         'TestInstallation',
         installationResponderPhoneNumber,
         installationFallbackPhoneNumbers,
         installationIncidentCategories,
         null,
+        null,
       )
       const installations = await db.getInstallations()
       await db.createButton(unit1UUID, installations[0].id, '1', unit1PhoneNumber, unit1SerialNumber)
       await db.createButton(unit2UUID, installations[0].id, '2', unit2PhoneNumber, unit2SerialNumber)
-    })
-
-    afterEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
-
-      helpers.log.restore()
-      helpers.logError.restore()
-      helpers.log('\n')
     })
 
     it('should return 400 to a request with no headers', async () => {
@@ -403,43 +398,27 @@ describe('Chatbot server', () => {
 
   describe('POST request: twilio message', () => {
     beforeEach(async () => {
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
       await db.createInstallation(
         'TestInstallation',
         installationResponderPhoneNumber,
         installationFallbackPhoneNumbers,
         installationIncidentCategories,
         null,
+        null,
       )
       const installations = await db.getInstallations()
       await db.createButton(unit1UUID, installations[0].id, '1', unit1PhoneNumber, unit1SerialNumber)
       await db.createButton(unit2UUID, installations[0].id, '2', unit2PhoneNumber, unit2SerialNumber)
 
-      sinon.spy(imports.braveAlerter, 'startAlertSession')
-      sinon.spy(imports.braveAlerter, 'sendSingleAlert')
+      sandbox.spy(imports.braveAlerter, 'startAlertSession')
+      sandbox.spy(imports.braveAlerter, 'sendAlertSessionUpdate')
 
-      sinon.stub(twilio, 'validateExpressRequest').returns(true)
-    })
-
-    afterEach(async () => {
-      imports.braveAlerter.sendSingleAlert.restore()
-      imports.braveAlerter.startAlertSession.restore()
-
-      twilio.validateExpressRequest.restore()
-
-      await db.clearSessions()
-      await db.clearButtons()
-      await db.clearNotifications()
-      await db.clearInstallations()
-      helpers.log('\n')
+      sandbox.stub(twilio, 'validateExpressRequest').returns(true)
     })
 
     after(async () => {
       // wait for the staff reminder timers to finish
-      await sleep(3000)
+      await helpers.sleep(3000)
 
       await db.close()
       server.close()
@@ -473,24 +452,23 @@ describe('Chatbot server', () => {
 
       expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
-      expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
-        sinon.match.any,
-        sinon.match.any,
+      expect(imports.braveAlerter.sendAlertSessionUpdate).to.be.calledWith(
+        sandbox.match.any,
+        sandbox.match.any,
+        sandbox.match.any,
+        sandbox.match.any,
         'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+        'URGENT Button Press Alert:\n1',
       )
     })
 
     describe('updated button press handling', () => {
-      afterEach(async () => {
-        await db.getCurrentTime.restore()
-      })
-
       it('should start a new session if it has been >= 2 hours since last update of most recent open session, with no battery level sent', async () => {
         const delayMs = 2 * 60 * 60 * 1000 + 7 * 60 * 1000 // 2h, + 7 mins to compensate for reminder/fallback updates
         const timeNow = await db.getCurrentTime()
         const timeNowMs = Date.parse(timeNow)
 
-        sinon
+        sandbox
           .stub(db, 'getCurrentTime')
           .onFirstCall()
           .returns(timeNow)
@@ -521,7 +499,7 @@ describe('Chatbot server', () => {
         const timeNow = await db.getCurrentTime()
         const timeNowMs = Date.parse(timeNow)
 
-        sinon
+        sandbox
           .stub(db, 'getCurrentTime')
           .onFirstCall()
           .returns(timeNow)
@@ -552,7 +530,7 @@ describe('Chatbot server', () => {
         const timeNow = await db.getCurrentTime()
         const timeNowMs = Date.parse(timeNow)
 
-        sinon
+        sandbox
           .stub(db, 'getCurrentTime')
           .onFirstCall()
           .returns(timeNow)
@@ -575,10 +553,13 @@ describe('Chatbot server', () => {
 
         expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
-        expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
-          sinon.match.any,
-          sinon.match.any,
+        expect(imports.braveAlerter.sendAlertSessionUpdate).to.be.calledWith(
+          sandbox.match.any,
+          sandbox.match.any,
+          sandbox.match.any,
+          sandbox.match.any,
           'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+          'URGENT Button Press Alert:\n1',
         )
         // prettier-ignore
         await chai
@@ -587,13 +568,16 @@ describe('Chatbot server', () => {
           .set('button-serial-number', unit1SerialNumber)
           .send()
 
-        expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
-          sinon.match.any,
-          sinon.match.any,
+        expect(imports.braveAlerter.sendAlertSessionUpdate).to.be.calledWith(
+          sandbox.match.any,
+          sandbox.match.any,
+          sandbox.match.any,
+          sandbox.match.any,
           'This in an urgent request. The button has been pressed 3 times. Please respond "Ok" when you have followed up on the call.',
+          'URGENT Button Press Alert:\n1',
         )
 
-        expect(imports.braveAlerter.sendSingleAlert).to.have.been.calledTwice
+        expect(imports.braveAlerter.sendAlertSessionUpdate).to.have.been.calledTwice
       })
 
       it('should send an additional urgent message if it has been >= 2 minutes since last session update even for non-multiples of 5, with battery level sent', async () => {
@@ -601,7 +585,7 @@ describe('Chatbot server', () => {
         const timeNow = await db.getCurrentTime()
         const timeNowMs = Date.parse(timeNow)
 
-        sinon
+        sandbox
           .stub(db, 'getCurrentTime')
           .onFirstCall()
           .returns(timeNow)
@@ -624,10 +608,13 @@ describe('Chatbot server', () => {
 
         expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
-        expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
-          sinon.match.any,
-          sinon.match.any,
+        expect(imports.braveAlerter.sendAlertSessionUpdate).to.be.calledWith(
+          sandbox.match.any,
+          sandbox.match.any,
+          sandbox.match.any,
+          sandbox.match.any,
           'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
+          'URGENT Button Press Alert:\n1',
         )
 
         await chai
@@ -637,13 +624,16 @@ describe('Chatbot server', () => {
           .set('button-battery-level', '100')
           .send()
 
-        expect(imports.braveAlerter.sendSingleAlert).to.be.calledWith(
-          sinon.match.any,
-          sinon.match.any,
+        expect(imports.braveAlerter.sendAlertSessionUpdate).to.be.calledWith(
+          sandbox.match.any,
+          sandbox.match.any,
+          sandbox.match.any,
+          sandbox.match.any,
           'This in an urgent request. The button has been pressed 3 times. Please respond "Ok" when you have followed up on the call.',
+          'URGENT Button Press Alert:\n1',
         )
 
-        expect(imports.braveAlerter.sendSingleAlert).to.have.been.calledTwice
+        expect(imports.braveAlerter.sendAlertSessionUpdate).to.have.been.calledTwice
       })
     })
 
@@ -750,7 +740,7 @@ describe('Chatbot server', () => {
         .send()
 
       expect(response).to.have.status(200)
-      await sleep(4000)
+      await helpers.sleep(4000)
       const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(CHATBOT_STATE.WAITING_FOR_REPLY)

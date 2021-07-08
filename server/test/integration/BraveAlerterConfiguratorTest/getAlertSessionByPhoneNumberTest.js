@@ -17,14 +17,11 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
     this.installationResponderPhoneNumber = '+17775558888'
     this.installationIncidentCategories = ['Cat1', 'Cat2', 'Cat3']
 
-    await db.clearSessions()
-    await db.clearNotifications()
-    await db.clearInstallations()
-    await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories, null)
+    await db.clearTables()
+
+    await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories, null, null)
     const installations = await db.getInstallations()
-    await db.createSession(installations[0].id, '', '701', this.sessionToPhoneNumber, 1)
-    const sessions = await db.getAllSessions()
-    const session = sessions[0]
+    const session = await db.createSession(installations[0].id, '', '701', this.sessionToPhoneNumber, 1)
     this.sessionId = session.id
     session.state = this.sessionState
     session.incidentType = this.sessionIncidentType
@@ -33,9 +30,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
   })
 
   afterEach(async () => {
-    await db.clearSessions()
-    await db.clearNotifications()
-    await db.clearInstallations()
+    await db.clearTables()
   })
 
   it('should return an AlertSession with the values from the DB', async () => {

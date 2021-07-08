@@ -11,9 +11,16 @@ the code was deployed.
 
 ## Unreleased
 
+### Added
+
+- `responder_push_id` to the DB to store the Responder Device's Push Notification ID (CU-10xfkhr).
+- `POST /alert/acknowledgeAlertSession` to acknowledge an alert session through the Alert App (CU-10xfkhr).
+- `POST /alert/setIncidentCategory` to set the incident category for an alert session through the Alert App (CU-10xfkhr).
+
 ### Changed
 
 - Updated `ALERT_STATE` to `CHATBOT_STATE`.
+- `POST /alert/designatedevice` also logs the given Responder Push ID (CU-10xfkhr).
 
 ## [4.1.0] - 2021-07-26
 
