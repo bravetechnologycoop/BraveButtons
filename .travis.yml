@@ -68,8 +68,9 @@ matrix:
       before_script:
         - bash setup_postgresql_local_dev.sh
 
-      # run linter and unit tests
+      # run security audit, linter and unit tests
       script:
+        - if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then npx audit-ci --config ./audit-ci.json; fi
         - npm run lint
         - sudo env "PATH=$PATH" npm run test
 

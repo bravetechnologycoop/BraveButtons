@@ -16,6 +16,7 @@ the code was deployed.
 - Mocha debugging configuration for `/server`.
 - `GET /alert/historicAlerts` endpoint (CU-hjwfx2).
 - Tracking of when sessions are first responded to (CU-hjwfx2).
+- Security audit to Travis.
 
 ## [4.0.0] - 2021-06-15
 
