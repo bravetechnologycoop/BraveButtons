@@ -135,5 +135,10 @@ else
   systemctl enable darkstat
   systemctl enable dhcp-helper
 
+  # restart Pi daily to reduce the number of manual restarts we need to do
+  echo "
+  0 20 * * * /sbin/shutdown -r now
+  " | crontab -
+
   echo "setup complete - please reboot the RPi."
 fi

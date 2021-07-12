@@ -63,7 +63,7 @@
 
 1. cd into the `BraveButtons/pi` directory
 
-1. copy `template.pi_config.ini` to `pi_config.ini` and fill out variables appropriately for your local environment
+1. copy `example.pi_config.ini` to `pi_config.ini` and fill out variables appropriately for your local environment
 
 1. run `sudo ./setup_pi.sh pi_config.ini`
 

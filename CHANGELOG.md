@@ -17,6 +17,7 @@ the code was deployed.
 - `GET /alert/historicAlerts` endpoint (CU-hjwfx2).
 - Tracking of when sessions are first responded to (CU-hjwfx2).
 - Security audit to Travis.
+- Daily automatic restart of our Raspberry Pis (CU-yzf44q).
 
 ### Changed
 
