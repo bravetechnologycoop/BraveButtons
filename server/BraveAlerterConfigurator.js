@@ -10,6 +10,7 @@ class BraveAlerterConfigurator {
       this.alertSessionChangedCallback,
       this.getLocationByAlertApiKey.bind(this),
       this.getHistoricAlertsByAlertApiKey.bind(this),
+      this.getNewNotificationsCountByAlertApiKey.bind(this),
       true,
       this.getReturnMessage.bind(this),
     )
@@ -151,6 +152,11 @@ class BraveAlerterConfigurator {
     }
 
     return historicAlerts.map(this.createHistoricAlertFromRow)
+  }
+
+  async getNewNotificationsCountByAlertApiKey(alertApiKey) {
+    const count = await db.getNewNotificationsCountByAlertApiKey(alertApiKey)
+    return count
   }
 
   getReturnMessage(fromAlertState, toAlertState, incidentCategories) {

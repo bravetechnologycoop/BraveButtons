@@ -57,6 +57,7 @@ describe('Chatbot server', () => {
 
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
       await db.createInstallation(
         'TestInstallation',
@@ -73,6 +74,7 @@ describe('Chatbot server', () => {
     afterEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
 
       helpers.log.restore()
@@ -374,6 +376,7 @@ describe('Chatbot server', () => {
     beforeEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
       await db.createInstallation(
         'TestInstallation',
@@ -400,6 +403,7 @@ describe('Chatbot server', () => {
 
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
       helpers.log('\n')
     })

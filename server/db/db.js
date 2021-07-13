@@ -680,6 +680,85 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
   return null
 }
 
+async function getNewNotificationsCountByAlertApiKey(alertApiKey, clientParam) {
+  let client = clientParam
+  const transactionMode = typeof client !== 'undefined'
+
+  try {
+    if (!transactionMode) {
+      client = await pool.connect()
+    }
+
+    const query = `SELECT COUNT (*) FROM notifications n LEFT JOIN installations i ON n.installation_id = i.id WHERE i.alert_api_key = $1 AND NOT n.is_acknowledged`
+    const { rows } = await client.query(query, [alertApiKey])
+
+    return parseInt(rows[0].count, 10)
+  } catch (e) {
+    helpers.logError(`Error running the getNewNotificationsCountByAlertApiKey query: ${e}`)
+  } finally {
+    if (!transactionMode) {
+      try {
+        client.release()
+      } catch (err) {
+        helpers.logError(`getNewNotificationsCountByAlertApiKey: Error releasing client: ${err}`)
+      }
+    }
+  }
+  return 0
+}
+
+async function createNotification(installationId, subject, body, isAcknowledged, clientParam) {
+  let client = clientParam
+  const transactionMode = typeof client !== 'undefined'
+
+  try {
+    if (!transactionMode) {
+      client = await pool.connect()
+    }
+
+    const query = 'INSERT INTO notifications (installation_id, subject, body, is_acknowledged) VALUES ($1, $2, $3, $4)'
+    await client.query(query, [installationId, subject, body, isAcknowledged])
+  } catch (e) {
+    helpers.logError(`Error running the createNotification query: ${e}`)
+  } finally {
+    if (!transactionMode) {
+      try {
+        client.release()
+      } catch (err) {
+        helpers.logError(`createNotification: Error releasing client: ${err}`)
+      }
+    }
+  }
+}
+
+async function clearNotifications(clientParam) {
+  if (!helpers.isTestEnvironment()) {
+    helpers.log('warning - tried to clear notifications table outside of a test environment!')
+    return
+  }
+
+  let client = clientParam
+  const transactionMode = typeof client !== 'undefined'
+
+  try {
+    if (!transactionMode) {
+      client = await pool.connect()
+    }
+
+    await client.query('DELETE FROM notifications')
+  } catch (e) {
+    helpers.logError(`Error running the clearNotifications query: ${e}`)
+  } finally {
+    if (!transactionMode) {
+      try {
+        client.release()
+      } catch (err) {
+        helpers.logError(`clearNotifications: Error releasing client: ${err}`)
+      }
+    }
+  }
+}
+
 async function getHubs(clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
@@ -977,11 +1056,13 @@ module.exports = {
   beginTransaction,
   clearButtons,
   clearInstallations,
+  clearNotifications,
   clearSessions,
   close,
   commitTransaction,
   createButton,
   createInstallation,
+  createNotification,
   createSession,
   getAllSessions,
   getAllSessionsWithButtonId,
@@ -996,6 +1077,7 @@ module.exports = {
   getInstallationWithInstallationId,
   getInstallationWithSessionId,
   getMostRecentIncompleteSessionWithPhoneNumber,
+  getNewNotificationsCountByAlertApiKey,
   getPool,
   getRecentSessionsWithInstallationId,
   getSessionWithSessionId,
