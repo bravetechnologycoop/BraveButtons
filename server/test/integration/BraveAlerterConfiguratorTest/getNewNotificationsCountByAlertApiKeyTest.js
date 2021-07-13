@@ -28,6 +28,7 @@ describe('BraveAlerterConfigurator.js integration tests: getNewNotificationsCoun
   })
 
   afterEach(async () => {
+    await db.clearSessions()
     await db.clearNotifications()
     await db.clearInstallations()
   })

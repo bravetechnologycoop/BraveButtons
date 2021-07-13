@@ -33,6 +33,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
 
   afterEach(async () => {
     await db.clearSessions()
+    await db.clearNotifications()
     await db.clearInstallations()
   })
 

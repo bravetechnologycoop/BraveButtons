@@ -403,6 +403,7 @@ describe('Chatbot server', () => {
 
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
       helpers.log('\n')
     })

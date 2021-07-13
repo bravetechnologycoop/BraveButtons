@@ -34,6 +34,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
 
   afterEach(async () => {
     await db.clearSessions()
+    await db.clearNotifications()
     await db.clearInstallations()
   })
 

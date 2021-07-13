@@ -26,6 +26,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     afterEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
     })
 
@@ -58,6 +59,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     afterEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
     })
 
@@ -111,6 +113,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     afterEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
     })
 
@@ -155,6 +158,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     afterEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
     })
 
@@ -193,6 +197,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     afterEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
     })
 
@@ -226,6 +231,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     afterEach(async () => {
       await db.clearSessions()
       await db.clearButtons()
+      await db.clearNotifications()
       await db.clearInstallations()
     })
 
