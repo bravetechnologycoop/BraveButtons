@@ -19,6 +19,8 @@ const db = imports.db
 // eslint-disable-next-line func-style
 const sleep = millis => new Promise(resolve => setTimeout(resolve, millis))
 
+const validApiKey = helpers.getEnvVar('FLIC_BUTTON_PRESS_API_KEY')
+
 describe('Chatbot server', () => {
   const unit1UUID = '111'
   const unit1SerialNumber = 'AAAA-A0A0A0'
@@ -83,15 +85,18 @@ describe('Chatbot server', () => {
     })
 
     it('should return 400 to a request with no headers', async () => {
-      const response = await chai.request(server).post('/flic_button_press').send({})
+      // prettier-ignore
+      const response = await chai
+        .request(server)
+        .post(`/flic_button_press?apikey=${validApiKey}`)
+        .send({})
       expect(response).to.have.status(400)
     })
 
     it('should return 200 to a request with only button-serial-number', async () => {
-      // eslint-disable-next-line prettier/prettier
       const response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .send({})
 
@@ -99,10 +104,9 @@ describe('Chatbot server', () => {
     })
 
     it('should return 400 to a request with only button-battery-level', async () => {
-      // eslint-disable-next-line prettier/prettier
       const responseNoSerialNumber = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-battery-level', '100')
         .send({})
 
@@ -112,7 +116,7 @@ describe('Chatbot server', () => {
     it('should return 400 to a request with an unregistered button', async () => {
       const response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', 'CCCC-C0C0C0')
         .set('button-battery-level', '100')
         .send()
@@ -122,7 +126,7 @@ describe('Chatbot server', () => {
     it('should return 200 to a valid request', async () => {
       const response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -132,7 +136,7 @@ describe('Chatbot server', () => {
     it('should be able to create a valid session state from valid request', async () => {
       const response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -156,13 +160,13 @@ describe('Chatbot server', () => {
     it('should not confuse button presses from different rooms', async () => {
       let response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
       response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit2SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -183,9 +187,24 @@ describe('Chatbot server', () => {
 
     it('should only create one new session when receiving multiple presses from the same button', async () => {
       await Promise.all([
-        chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send(),
-        chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send(),
-        chai.request(server).post('/flic_button_press').set('button-serial-number', unit1SerialNumber).set('button-battery-level', '100').send(),
+        chai
+          .request(server)
+          .post(`/flic_button_press?apikey=${validApiKey}`)
+          .set('button-serial-number', unit1SerialNumber)
+          .set('button-battery-level', '100')
+          .send(),
+        chai
+          .request(server)
+          .post(`/flic_button_press?apikey=${validApiKey}`)
+          .set('button-serial-number', unit1SerialNumber)
+          .set('button-battery-level', '100')
+          .send(),
+        chai
+          .request(server)
+          .post(`/flic_button_press?apikey=${validApiKey}`)
+          .set('button-serial-number', unit1SerialNumber)
+          .set('button-battery-level', '100')
+          .send(),
       ])
 
       const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -195,25 +214,25 @@ describe('Chatbot server', () => {
     it('should count button presses accurately during an active session', async () => {
       let response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
       response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
       response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
       response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -234,10 +253,9 @@ describe('Chatbot server', () => {
     })
 
     it('should leave battery level null if initial request do not provide button-battery-level', async () => {
-      // eslint-disable-next-line prettier/prettier
       const response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .send()
 
@@ -250,7 +268,7 @@ describe('Chatbot server', () => {
     it('should leave battery level null if initial battery level is < 0', async () => {
       const response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '-1')
         .send()
@@ -264,7 +282,7 @@ describe('Chatbot server', () => {
     it('should leave battery level null if initial battery level is > 100', async () => {
       const response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '101')
         .send()
@@ -278,7 +296,7 @@ describe('Chatbot server', () => {
     it('should update battery level column with values from new requests', async () => {
       let response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -291,7 +309,7 @@ describe('Chatbot server', () => {
 
       response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '1')
         .send()
@@ -301,7 +319,7 @@ describe('Chatbot server', () => {
 
       response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '0')
         .send()
@@ -314,7 +332,7 @@ describe('Chatbot server', () => {
       const fakeBatteryLevel = 23
       let response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', fakeBatteryLevel.toString())
         .send()
@@ -323,10 +341,10 @@ describe('Chatbot server', () => {
       let session = sessions[0]
       expect(session.buttonBatteryLevel).to.equal(fakeBatteryLevel)
 
-      // eslint-disable-next-line prettier/prettier
+      // prettier-ignore
       response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .send()
 
@@ -336,15 +354,15 @@ describe('Chatbot server', () => {
       expect(session.buttonBatteryLevel).to.equal(fakeBatteryLevel)
     })
 
-    it('should log a valid request when given the correct API key', async () => {
+    it('should return 401 when given an incorrect API key', async () => {
       const buttonName = 'fakeButtonName'
-      await chai
+      const response = await chai
         .request(server)
-        .post('/flic_button_press?apikey=testFlicApiKey')
+        .post('/flic_button_press?apikey=NOTtestFlicApiKey')
         .set('button-serial-number', unit1SerialNumber)
         .set('button-name', buttonName)
         .send()
-      expect(helpers.log).to.have.been.calledWith(`VALID api key from '${buttonName}' (${unit1SerialNumber})`)
+      expect(response).to.have.status(401)
     })
 
     it('should log an invalid request when given an incorrect API key', async () => {
@@ -358,15 +376,26 @@ describe('Chatbot server', () => {
       expect(helpers.logError).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
     })
 
-    it('should log a valid request when not given an API key', async () => {
+    it('should return 401 when not given an API key', async () => {
       const buttonName = 'fakeButtonName'
-      // eslint-disable-next-line prettier/prettier
+      const response = await chai
+        .request(server)
+        .post('/flic_button_press')
+        .set('button-serial-number', unit1SerialNumber)
+        .set('button-name', buttonName)
+        .send()
+      expect(response).to.have.status(401)
+    })
+
+    it('should log a invalid request when not given an API key', async () => {
+      const buttonName = 'fakeButtonName'
+      // prettier-ignore
       await chai
         .request(server)
         .post('/flic_button_press')
         .set('button-serial-number', unit1SerialNumber)
-        .set('button-name', buttonName
-        ).send()
+        .set('button-name', buttonName)
+        .send()
 
       expect(helpers.logError).to.have.been.calledWith(`INVALID api key from '${buttonName}' (${unit1SerialNumber})`)
     })
@@ -417,10 +446,9 @@ describe('Chatbot server', () => {
     })
 
     it('should send the initial text message after a valid request to /flic_button_press', async () => {
-      // eslint-disable-next-line prettier/prettier
       await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -429,18 +457,16 @@ describe('Chatbot server', () => {
     })
 
     it('should send the initial and urgent text messages after two valid requests to /flic_button_press', async () => {
-      // eslint-disable-next-line prettier/prettier
       await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
 
-      // eslint-disable-next-line prettier/prettier
       await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '100')
         .send()
@@ -471,19 +497,19 @@ describe('Chatbot server', () => {
           .onSecondCall()
           .returns(timeNowMs + delayMs)
 
-        // eslint-disable-next-line prettier/prettier
+        // prettier-ignore
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .send()
 
         expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
-        // eslint-disable-next-line prettier/prettier
+        // prettier-ignore
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .send()
 
@@ -502,20 +528,18 @@ describe('Chatbot server', () => {
           .onSecondCall()
           .returns(timeNowMs + delayMs)
 
-        // eslint-disable-next-line prettier/prettier
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .set('button-battery-level', '100')
           .send()
 
         expect(imports.braveAlerter.startAlertSession).to.be.calledOnce
 
-        // eslint-disable-next-line prettier/prettier
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .set('button-battery-level', '100')
           .send()
@@ -535,17 +559,17 @@ describe('Chatbot server', () => {
           .onThirdCall()
           .returns(timeNowMs + delayMs)
 
-        // eslint-disable-next-line prettier/prettier
+        // prettier-ignore
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .send()
 
-        // eslint-disable-next-line prettier/prettier
+        // prettier-ignore
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .send()
 
@@ -556,11 +580,10 @@ describe('Chatbot server', () => {
           sinon.match.any,
           'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
         )
-
-        // eslint-disable-next-line prettier/prettier
+        // prettier-ignore
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .send()
 
@@ -585,18 +608,16 @@ describe('Chatbot server', () => {
           .onThirdCall()
           .returns(timeNowMs + delayMs)
 
-        // eslint-disable-next-line prettier/prettier
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .set('button-battery-level', '100')
           .send()
 
-        // eslint-disable-next-line prettier/prettier
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .set('button-battery-level', '100')
           .send()
@@ -609,10 +630,9 @@ describe('Chatbot server', () => {
           'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
         )
 
-        // eslint-disable-next-line prettier/prettier
         await chai
           .request(server)
-          .post('/flic_button_press')
+          .post(`/flic_button_press?apikey=${validApiKey}`)
           .set('button-serial-number', unit1SerialNumber)
           .set('button-battery-level', '100')
           .send()
@@ -628,32 +648,44 @@ describe('Chatbot server', () => {
     })
 
     it('should return ok to a valid request', async () => {
-      // eslint-disable-next-line prettier/prettier
+      // prettier-ignore
       await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .send()
 
-      const response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_InitialStaffResponse)
+      // prettier-ignore
+      const response = await chai
+        .request(server)
+        .post('/alert/sms')
+        .send(twilioMessageUnit1_InitialStaffResponse)
       expect(response).to.have.status(200)
     })
 
     it('should return 400 to a request with incomplete data', async () => {
-      const response = await chai.request(server).post('/alert/sms').send({ Body: 'hi' })
+      // prettier-ignore
+      const response = await chai
+        .request(server)
+        .post('/alert/sms')
+        .send({ Body: 'hi' })
       expect(response).to.have.status(400)
     })
 
     it('should return 400 to a request from an invalid phone number', async () => {
-      const response = await chai.request(server).post('/alert/sms').send({ Body: 'hi', From: '+16664206969' })
+      // prettier-ignore
+      const response = await chai
+        .request(server)
+        .post('/alert/sms')
+        .send({ Body: 'hi', From: '+16664206969' })
       expect(response).to.have.status(400)
     })
 
     it('should return ok to a valid request and advance the session appropriately', async () => {
-      // eslint-disable-next-line prettier/prettier
+      // prettier-ignore
       await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .send()
 
@@ -661,21 +693,33 @@ describe('Chatbot server', () => {
       expect(sessions.length).to.equal(1)
       expect(sessions[0].state, 'state after initial button press').to.deep.equal(ALERT_STATE.STARTED)
 
-      let response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_InitialStaffResponse)
+      // prettier-ignore
+      let response = await chai
+        .request(server)
+        .post('/alert/sms')
+        .send(twilioMessageUnit1_InitialStaffResponse)
       expect(response).to.have.status(200)
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].state, 'state after initial staff response').to.deep.equal(ALERT_STATE.WAITING_FOR_CATEGORY)
 
-      response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_IncidentCategoryResponse)
+      // prettier-ignore
+      response = await chai
+        .request(server)
+        .post('/alert/sms')
+        .send(twilioMessageUnit1_IncidentCategoryResponse)
       expect(response).to.have.status(200)
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(ALERT_STATE.WAITING_FOR_DETAILS)
 
-      response = await chai.request(server).post('/alert/sms').send(twilioMessageUnit1_IncidentNotesResponse)
+      // prettier-ignore
+      response = await chai
+        .request(server)
+        .post('/alert/sms')
+        .send(twilioMessageUnit1_IncidentNotesResponse)
       expect(response).to.have.status(200)
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
@@ -683,10 +727,10 @@ describe('Chatbot server', () => {
       expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(ALERT_STATE.COMPLETED)
 
       // now start a new session for a different unit
-      // eslint-disable-next-line prettier/prettier
+      // prettier-ignore
       await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit2SerialNumber)
         .send()
 
@@ -699,10 +743,9 @@ describe('Chatbot server', () => {
     })
 
     it('should send a message to the fallback phone number if enough time has passed without a response', async () => {
-      // eslint-disable-next-line prettier/prettier
       const response = await chai
         .request(server)
-        .post('/flic_button_press')
+        .post(`/flic_button_press?apikey=${validApiKey}`)
         .set('button-serial-number', unit1SerialNumber)
         .send()
 
