@@ -314,11 +314,10 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
       const apiKey = req.query.apikey
 
       // Log the vaiditiy of the API key
-      // TODO (CU-gwxnde) Replace this with a 401 unauthorized if invalid
       if (apiKey !== helpers.getEnvVar('FLIC_BUTTON_PRESS_API_KEY')) {
         helpers.logError(`INVALID api key from '${buttonName}' (${serialNumber})`)
-      } else {
-        helpers.log(`VALID api key from '${buttonName}' (${serialNumber})`)
+        res.status(401).send()
+        return
       }
 
       const button = await db.getButtonWithSerialNumber(serialNumber)

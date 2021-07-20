@@ -22,6 +22,7 @@ the code was deployed.
 ### Changed
 
 - Updated deployment instructions (CU-wb8719).
+- `POST /flic_button_press` returns 401 Unauthorized when given an invalid API key (CU-gwxnde).
 
 ### Fixed
 
