@@ -11,6 +11,8 @@ the code was deployed.
 
 ## Unreleased
 
+## [4.1.0] - 2021-07-26
+
 ### Added
 
 - Mocha debugging configuration for `/server`.
@@ -360,7 +362,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.0.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.7.0...v4.0.0
 [3.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.5.1...v3.6.0
