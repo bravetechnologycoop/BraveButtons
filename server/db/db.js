@@ -1,4 +1,4 @@
-const { ALERT_STATE, helpers } = require('brave-alert-lib')
+const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
 const { Pool, types } = require('pg')
 
 const Hub = require('../Hub.js')
@@ -98,7 +98,7 @@ async function getUnrespondedSessionWithButtonId(buttonId, clientParam) {
     }
 
     const query = 'SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4 ORDER BY created_at DESC LIMIT 1'
-    const values = [buttonId, ALERT_STATE.WAITING_FOR_CATEGORY, ALERT_STATE.WAITING_FOR_DETAILS, ALERT_STATE.COMPLETED]
+    const values = [buttonId, CHATBOT_STATE.WAITING_FOR_CATEGORY, CHATBOT_STATE.WAITING_FOR_DETAILS, CHATBOT_STATE.COMPLETED]
     const { rows } = await client.query(query, values)
 
     if (rows.length > 0) {
@@ -129,7 +129,7 @@ async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, client
     }
 
     const query = 'SELECT * FROM sessions WHERE phone_number = $1 AND state != $2 ORDER BY created_at DESC LIMIT 1'
-    const values = [phoneNumber, ALERT_STATE.COMPLETED]
+    const values = [phoneNumber, CHATBOT_STATE.COMPLETED]
     const { rows } = await client.query(query, values)
 
     if (rows.length > 0) {
@@ -273,7 +273,7 @@ async function createSession(installationId, buttonId, unit, phoneNumber, numPre
       client = await pool.connect()
     }
 
-    const values = [installationId, buttonId, unit, phoneNumber, ALERT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt]
+    const values = [installationId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt]
     const { rows } = await client.query(
       'INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       values,
@@ -661,7 +661,7 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
       ORDER BY s.created_at DESC
       LIMIT $4
       `,
-      [alertApiKey, ALERT_STATE.COMPLETED, maxTimeAgoInMillis, maxHistoricAlerts],
+      [alertApiKey, CHATBOT_STATE.COMPLETED, maxTimeAgoInMillis, maxHistoricAlerts],
     )
 
     return rows

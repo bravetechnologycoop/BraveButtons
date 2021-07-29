@@ -11,6 +11,10 @@ the code was deployed.
 
 ## Unreleased
 
+### Changed
+
+- Updated `ALERT_STATE` to `CHATBOT_STATE`.
+
 ## [4.1.0] - 2021-07-26
 
 ### Added

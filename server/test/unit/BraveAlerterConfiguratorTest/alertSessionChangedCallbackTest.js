@@ -4,7 +4,7 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 
-const { ALERT_STATE, AlertSession } = require('brave-alert-lib')
+const { CHATBOT_STATE, AlertSession } = require('brave-alert-lib')
 const db = require('../../../db/db.js')
 const { createTestSessionState } = require('../../testingHelpers.js')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
@@ -38,10 +38,10 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.STARTED))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.STARTED))
 
     const expectedSession = createTestSessionState()
-    expectedSession.state = ALERT_STATE.STARTED
+    expectedSession.state = CHATBOT_STATE.STARTED
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
   })
@@ -50,10 +50,10 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.WAITING_FOR_REPLY))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.WAITING_FOR_REPLY))
 
     const expectedSession = createTestSessionState()
-    expectedSession.state = ALERT_STATE.WAITING_FOR_REPLY
+    expectedSession.state = CHATBOT_STATE.WAITING_FOR_REPLY
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
   })
@@ -62,10 +62,10 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.WAITING_FOR_CATEGORY))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.WAITING_FOR_CATEGORY))
 
     const expectedSession = createTestSessionState()
-    expectedSession.state = ALERT_STATE.WAITING_FOR_CATEGORY
+    expectedSession.state = CHATBOT_STATE.WAITING_FOR_CATEGORY
     expectedSession.respondedAt = this.fakeCurrentTime
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
@@ -75,10 +75,10 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.WAITING_FOR_DETAILS))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.WAITING_FOR_DETAILS))
 
     const expectedSession = createTestSessionState()
-    expectedSession.state = ALERT_STATE.WAITING_FOR_DETAILS
+    expectedSession.state = CHATBOT_STATE.WAITING_FOR_DETAILS
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
   })
@@ -87,10 +87,10 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.COMPLETED))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.COMPLETED))
 
     const expectedSession = createTestSessionState()
-    expectedSession.state = ALERT_STATE.COMPLETED
+    expectedSession.state = CHATBOT_STATE.COMPLETED
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
   })
@@ -99,10 +99,10 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.WAITING_FOR_DETAILS, '0'))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.WAITING_FOR_DETAILS, '0'))
 
     const expectedSession = createTestSessionState()
-    expectedSession.state = ALERT_STATE.WAITING_FOR_DETAILS
+    expectedSession.state = CHATBOT_STATE.WAITING_FOR_DETAILS
     expectedSession.incidentType = 'Cat0'
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)
@@ -112,10 +112,10 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, ALERT_STATE.COMPLETED, undefined, 'fakeDetails'))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.COMPLETED, undefined, 'fakeDetails'))
 
     const expectedSession = createTestSessionState()
-    expectedSession.state = ALERT_STATE.COMPLETED
+    expectedSession.state = CHATBOT_STATE.COMPLETED
     expectedSession.notes = 'fakeDetails'
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sinon.any)

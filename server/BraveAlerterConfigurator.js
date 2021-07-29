@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-const { BraveAlerter, AlertSession, ALERT_TYPE, ALERT_STATE, helpers, Location, SYSTEM, HistoricAlert } = require('brave-alert-lib')
+const { BraveAlerter, AlertSession, ALERT_TYPE, CHATBOT_STATE, helpers, Location, SYSTEM, HistoricAlert } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 class BraveAlerterConfigurator {
@@ -105,7 +105,7 @@ class BraveAlerterConfigurator {
           session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
         }
 
-        if (alertSession.alertState === ALERT_STATE.WAITING_FOR_CATEGORY) {
+        if (alertSession.alertState === CHATBOT_STATE.WAITING_FOR_CATEGORY) {
           session.respondedAt = await db.getCurrentTime(client)
         }
 
@@ -163,24 +163,24 @@ class BraveAlerterConfigurator {
     let returnMessage
 
     switch (fromAlertState) {
-      case ALERT_STATE.STARTED:
-      case ALERT_STATE.WAITING_FOR_REPLY:
+      case CHATBOT_STATE.STARTED:
+      case CHATBOT_STATE.WAITING_FOR_REPLY:
         returnMessage = this.createResponseStringFromIncidentCategories(incidentCategories)
         break
 
-      case ALERT_STATE.WAITING_FOR_CATEGORY:
-        if (toAlertState === ALERT_STATE.WAITING_FOR_CATEGORY) {
+      case CHATBOT_STATE.WAITING_FOR_CATEGORY:
+        if (toAlertState === CHATBOT_STATE.WAITING_FOR_CATEGORY) {
           returnMessage = "Sorry, the incident type wasn't recognized. Please try again."
-        } else if (toAlertState === ALERT_STATE.WAITING_FOR_DETAILS) {
+        } else if (toAlertState === CHATBOT_STATE.WAITING_FOR_DETAILS) {
           returnMessage = 'Thank you. If you like, you can reply with any further details about the incident.'
         }
         break
 
-      case ALERT_STATE.WAITING_FOR_DETAILS:
+      case CHATBOT_STATE.WAITING_FOR_DETAILS:
         returnMessage = "Thank you. This session is now complete. (You don't need to respond to this message.)"
         break
 
-      case ALERT_STATE.COMPLETED:
+      case CHATBOT_STATE.COMPLETED:
         returnMessage = "There is no active session for this button. (You don't need to respond to this message.)"
         break
 
