@@ -1,7 +1,7 @@
 // Third-party dependencies
 const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
-const { ALERT_STATE, ALERT_TYPE, helpers } = require('brave-alert-lib')
+const { CHATBOT_STATE, ALERT_TYPE, helpers } = require('brave-alert-lib')
 
 // In-house dependencies
 const db = require('../../../db/db.js')
@@ -97,7 +97,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
           this.session.buttonId,
           this.session.unit,
           this.session.phoneNumber,
-          ALERT_STATE.WAITING_FOR_DETAILS,
+          CHATBOT_STATE.WAITING_FOR_DETAILS,
           this.numPresses,
           this.session.createdAt,
           new Date(),
@@ -238,7 +238,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is COMPLETED, should return the Completed session', async () => {
       // Update the session to COMPLETED
       const updatedSession = { ...this.session }
-      updatedSession.state = ALERT_STATE.COMPLETED
+      updatedSession.state = CHATBOT_STATE.COMPLETED
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -252,7 +252,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_DETAILS, should not return it', async () => {
       // Update the session to WAITING_FOR_DETAILS
       const updatedSession = { ...this.session }
-      updatedSession.state = ALERT_STATE.WAITING_FOR_DETAILS
+      updatedSession.state = CHATBOT_STATE.WAITING_FOR_DETAILS
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -266,7 +266,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_CATEGORY, should not return it', async () => {
       // Update the session to WAITING_FOR_CATEGORY
       const updatedSession = { ...this.session }
-      updatedSession.state = ALERT_STATE.WAITING_FOR_CATEGORY
+      updatedSession.state = CHATBOT_STATE.WAITING_FOR_CATEGORY
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -280,7 +280,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_REPLY, should not return it', async () => {
       // Update the session to WAITING_FOR_REPLY
       const updatedSession = { ...this.session }
-      updatedSession.state = ALERT_STATE.WAITING_FOR_REPLY
+      updatedSession.state = CHATBOT_STATE.WAITING_FOR_REPLY
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -294,7 +294,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is STARTED, should not return it', async () => {
       // Update the session to STARTED
       const updatedSession = { ...this.session }
-      updatedSession.state = ALERT_STATE.STARTED
+      updatedSession.state = CHATBOT_STATE.STARTED
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run

@@ -6,7 +6,7 @@ const { after, afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 const twilio = require('twilio')
-const { ALERT_STATE, helpers } = require('brave-alert-lib')
+const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
 
 chai.use(chaiHttp)
 chai.use(sinonChai)
@@ -691,7 +691,7 @@ describe('Chatbot server', () => {
 
       let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after initial button press').to.deep.equal(ALERT_STATE.STARTED)
+      expect(sessions[0].state, 'state after initial button press').to.deep.equal(CHATBOT_STATE.STARTED)
 
       // prettier-ignore
       let response = await chai
@@ -702,7 +702,7 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after initial staff response').to.deep.equal(ALERT_STATE.WAITING_FOR_CATEGORY)
+      expect(sessions[0].state, 'state after initial staff response').to.deep.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
 
       // prettier-ignore
       response = await chai
@@ -713,7 +713,7 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(ALERT_STATE.WAITING_FOR_DETAILS)
+      expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(CHATBOT_STATE.WAITING_FOR_DETAILS)
 
       // prettier-ignore
       response = await chai
@@ -724,7 +724,7 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(ALERT_STATE.COMPLETED)
+      expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(CHATBOT_STATE.COMPLETED)
 
       // now start a new session for a different unit
       // prettier-ignore
@@ -736,7 +736,7 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit2UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after new button press from a different unit').to.deep.equal(ALERT_STATE.STARTED)
+      expect(sessions[0].state, 'state after new button press from a different unit').to.deep.equal(CHATBOT_STATE.STARTED)
       expect(sessions[0].buttonId).to.deep.equal(unit2UUID)
       expect(sessions[0].unit).to.deep.equal('2')
       expect(sessions[0].numPresses).to.deep.equal(1)
@@ -753,7 +753,7 @@ describe('Chatbot server', () => {
       await sleep(4000)
       const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(ALERT_STATE.WAITING_FOR_REPLY)
+      expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(CHATBOT_STATE.WAITING_FOR_REPLY)
       expect(sessions[0].fallBackAlertTwilioStatus).to.not.be.null
       expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('failed, ')
       expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('undelivered, ')

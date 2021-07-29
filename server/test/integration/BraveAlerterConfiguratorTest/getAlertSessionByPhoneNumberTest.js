@@ -3,13 +3,13 @@ const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
 
 // In-house dependencies
-const { ALERT_STATE, AlertSession } = require('brave-alert-lib')
+const { CHATBOT_STATE, AlertSession } = require('brave-alert-lib')
 const db = require('../../../db/db.js')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
 
 describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneNumber', () => {
   beforeEach(async () => {
-    this.sessionState = ALERT_STATE.WAITING_FOR_DETAILS
+    this.sessionState = CHATBOT_STATE.WAITING_FOR_DETAILS
     this.sessionIncidentType = '2'
     this.sessionNotes = 'sessionNotes'
     this.sessionToPhoneNumber = '+13335557777'

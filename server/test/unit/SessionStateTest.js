@@ -4,7 +4,7 @@ const expect = chai.expect
 const beforeEach = require('mocha').beforeEach
 const describe = require('mocha').describe
 const it = require('mocha').it
-const ALERT_STATE = require('brave-alert-lib').ALERT_STATE
+const CHATBOT_STATE = require('brave-alert-lib').CHATBOT_STATE
 
 const SessionState = require('../../SessionState.js')
 
@@ -20,7 +20,7 @@ describe('SessionState class', () => {
   let state
 
   beforeEach(() => {
-    state = new SessionState(sessionId, installationId, buttonId, unit, phoneNumber, ALERT_STATE.STARTED, 1, createdAt, updatedAt, null, null)
+    state = new SessionState(sessionId, installationId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, 1, createdAt, updatedAt, null, null)
   })
 
   it('should start off with 1 button press', () => {
