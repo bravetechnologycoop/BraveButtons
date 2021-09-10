@@ -663,17 +663,37 @@ async function getInstallationWithSessionId(sessionId, clientParam) {
   return null
 }
 
-async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, maxTimeAgoInMillis, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, clientParam) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getActiveAlertsByAlertApiKey',
+      `
+      SELECT s.id, s.state, b.unit, s.num_presses, i.incident_categories, s.created_at
+      FROM sessions AS s
+      LEFT JOIN buttons AS b ON s.button_id = b.button_id
+      LEFT JOIN installations AS i ON s.installation_id = i.id
+      WHERE i.alert_api_key = $1
+      AND (
+        s.state != $2
+        AND s.updated_at >= now() - $3 * INTERVAL '1 millisecond'
+      )
+      ORDER BY s.created_at DESC
+      `,
+      [alertApiKey, CHATBOT_STATE.COMPLETED, maxTimeAgoInMillis],
+      pool,
+      clientParam,
+    )
 
-    // Historic Alerts are those with status "Completed" or that were last updated longer ago than the SESSION_RESET_TIMEOUT
-    const { rows } = await client.query(
+    return results.rows
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
+async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, maxTimeAgoInMillis, clientParam) {
+  try {
+    const results = await helpers.runQuery(
+      'getHistoricAlertsByAlertApiKey',
       `
       SELECT s.id, b.unit, s.incident_type, s.num_presses, s.created_at, s.responded_at
       FROM sessions AS s
@@ -688,22 +708,14 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
       LIMIT $4
       `,
       [alertApiKey, CHATBOT_STATE.COMPLETED, maxTimeAgoInMillis, maxHistoricAlerts],
+      pool,
+      clientParam,
     )
 
-    return rows
-  } catch (e) {
-    helpers.log(`Error running the getHistoricAlertsByAlertApiKey query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.log(`getHistoricAlertsByAlertApiKey: Error releasing client: ${err}`)
-      }
-    }
+    return results.rows
+  } catch (err) {
+    helpers.logError(err.toString())
   }
-
-  return null
 }
 
 async function getNewNotificationsCountByAlertApiKey(alertApiKey, clientParam) {
@@ -1103,6 +1115,7 @@ module.exports = {
   createInstallation,
   createNotification,
   createSession,
+  getActiveAlertsByAlertApiKey,
   getAllSessions,
   getAllSessionsWithButtonId,
   getButtonWithSerialNumber,
