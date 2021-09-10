@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-const { BraveAlerter, AlertSession, ALERT_TYPE, CHATBOT_STATE, helpers, Location, SYSTEM, HistoricAlert } = require('brave-alert-lib')
+const { BraveAlerter, AlertSession, ALERT_TYPE, CHATBOT_STATE, helpers, Location, SYSTEM, HistoricAlert, ActiveAlert } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 class BraveAlerterConfigurator {
@@ -10,6 +10,7 @@ class BraveAlerterConfigurator {
       this.getAlertSessionBySessionIdAndAlertApiKey.bind(this),
       this.alertSessionChangedCallback,
       this.getLocationByAlertApiKey.bind(this),
+      this.getActiveAlertsByAlertApiKey.bind(this),
       this.getHistoricAlertsByAlertApiKey.bind(this),
       this.getNewNotificationsCountByAlertApiKey.bind(this),
       true,
@@ -155,6 +156,24 @@ class BraveAlerterConfigurator {
     // Even if there is more than one matching installation, we only return one and it will
     // be used by the Alert App to indentify this installation
     return new Location(installations[0].name, SYSTEM.BUTTONS)
+  }
+
+  createActiveAlertFromRow(row) {
+    const alertType = row.num_presses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT
+    return new ActiveAlert(row.id, row.state, row.unit, alertType, row.incident_categories, row.created_at)
+  }
+
+  // Active Alerts are those with status that is not "Completed" and were last updated SESSION_RESET_TIMEOUT ago or more recently
+  async getActiveAlertsByAlertApiKey(alertApiKey) {
+    const maxTimeAgoInMillis = helpers.getEnvVar('SESSION_RESET_TIMEOUT')
+
+    const activeAlerts = await db.getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis)
+
+    if (!Array.isArray(activeAlerts)) {
+      return null
+    }
+
+    return activeAlerts.map(this.createActiveAlertFromRow)
   }
 
   createHistoricAlertFromRow(row) {
