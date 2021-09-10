@@ -11,18 +11,19 @@ const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
 // Configure Chai
 use(sinonChai)
 
+const sandbox = sinon.createSandbox()
+
 describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey and createHistoricAlertFromRow', () => {
   beforeEach(() => {
     this.maxTimeAgoInMillis = 60000
-    sinon.stub(helpers, 'getEnvVar').returns(this.maxTimeAgoInMillis)
+    sandbox.stub(helpers, 'getEnvVar').returns(this.maxTimeAgoInMillis)
 
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     this.braveAlerter = braveAlerterConfigurator.createBraveAlerter()
   })
 
   afterEach(() => {
-    helpers.getEnvVar.restore()
-    db.getHistoricAlertsByAlertApiKey.restore()
+    sandbox.restore()
   })
 
   it('if there is a single result from db.getHistoricAlertsByAlertApiKey with num_presses > 1, returns an array containing a single HistoricAlert object with the returned data and ALERT_TYPE.BUTTONS_URGENT', async () => {
@@ -34,7 +35,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
       created_at: new Date('2020-01-20T10:10:10.000Z'),
       responded_at: new Date('2020-01-20T10:12:40.000Z'),
     }
-    sinon.stub(db, 'getHistoricAlertsByAlertApiKey').returns([results])
+    sandbox.stub(db, 'getHistoricAlertsByAlertApiKey').returns([results])
 
     const historicAlerts = await this.braveAlerter.getHistoricAlertsByAlertApiKey('alertApiKey', 'maxHistoricAlerts')
 
@@ -60,7 +61,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
       created_at: new Date('2020-01-20T10:10:10.000Z'),
       responded_at: new Date('2020-01-20T10:12:40.000Z'),
     }
-    sinon.stub(db, 'getHistoricAlertsByAlertApiKey').returns([results])
+    sandbox.stub(db, 'getHistoricAlertsByAlertApiKey').returns([results])
 
     const historicAlerts = await this.braveAlerter.getHistoricAlertsByAlertApiKey('alertApiKey', 'maxHistoricAlerts')
 
@@ -94,7 +95,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
       created_at: new Date('2019-02-20T09:10:10.000Z'),
       responded_at: new Date('2019-02-20T09:12:40.000Z'),
     }
-    sinon.stub(db, 'getHistoricAlertsByAlertApiKey').returns([results1, results2])
+    sandbox.stub(db, 'getHistoricAlertsByAlertApiKey').returns([results1, results2])
 
     const historicAlerts = await this.braveAlerter.getHistoricAlertsByAlertApiKey('alertApiKey', 'maxHistoricAlerts')
 
@@ -121,7 +122,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
   })
 
   it('if there no results from db.getHistoricAlertsByAlertApiKey, returns an empty array', async () => {
-    sinon.stub(db, 'getHistoricAlertsByAlertApiKey').returns([])
+    sandbox.stub(db, 'getHistoricAlertsByAlertApiKey').returns([])
 
     const historicAlerts = await this.braveAlerter.getHistoricAlertsByAlertApiKey('alertApiKey', 'maxHistoricAlerts')
 
@@ -129,7 +130,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
   })
 
   it('if db.getHistoricAlertsByAlertApiKey returns a non-array, returns null', async () => {
-    sinon.stub(db, 'getHistoricAlertsByAlertApiKey').returns()
+    sandbox.stub(db, 'getHistoricAlertsByAlertApiKey').returns()
 
     const historicAlerts = await this.braveAlerter.getHistoricAlertsByAlertApiKey('alertApiKey', 'maxHistoricAlerts')
 
@@ -137,7 +138,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
   })
 
   it('db.getHistoricAlertsByAlertApiKey is called with the given alertApiKey, the given maxHistoricAlerts, and the SESSION_RESET_TIMEOUT from .env', async () => {
-    sinon.stub(db, 'getHistoricAlertsByAlertApiKey').returns()
+    sandbox.stub(db, 'getHistoricAlertsByAlertApiKey')
 
     const alertApiKey = 'alertApiKey'
     const maxHistoricAlerts = 'maxHistoricAlerts'
