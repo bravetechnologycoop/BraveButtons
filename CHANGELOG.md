@@ -24,6 +24,10 @@ the code was deployed.
 - Updated `ALERT_STATE` to `CHATBOT_STATE`.
 - `POST /alert/designatedevice` also logs the given Responder Push ID (CU-10xfkhr).
 
+### Fixed
+
+- No longer updates a session's Responded At time if given an invalid incident category (CU-1ae1j60).
+
 ## [4.1.0] - 2021-07-26
 
 ### Added
