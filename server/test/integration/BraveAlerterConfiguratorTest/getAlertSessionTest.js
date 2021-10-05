@@ -20,9 +20,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
 
     await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories, null, null)
     const installations = await db.getInstallations()
-    await db.createSession(installations[0].id, '', '701', '', 1, null)
-    const sessions = await db.getAllSessions()
-    const session = sessions[0]
+    const session = await db.createSession(installations[0].id, '', '701', '', 1, null)
     this.sessionId = session.id
     session.state = this.sessionState
     session.incidentType = this.sessionIncidentType
