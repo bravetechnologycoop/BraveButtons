@@ -120,31 +120,27 @@ async function getUnrespondedSessionWithButtonId(buttonId, clientParam) {
 }
 
 async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getMostRecentIncompleteSessionWithPhoneNumber',
+      `
+      SELECT *
+      FROM sessions
+      WHERE phone_number = $1
+      AND state != $2
+      ORDER BY created_at DESC
+      LIMIT 1
+      `,
+      [phoneNumber, CHATBOT_STATE.COMPLETED],
+      pool,
+      clientParam,
+    )
 
-    const query = 'SELECT * FROM sessions WHERE phone_number = $1 AND state != $2 ORDER BY created_at DESC LIMIT 1'
-    const values = [phoneNumber, CHATBOT_STATE.COMPLETED]
-    const { rows } = await client.query(query, values)
-
-    if (rows.length > 0) {
-      return createSessionFromRow(rows[0])
+    if (results.rows.length > 0) {
+      return createSessionFromRow(results.rows[0])
     }
-  } catch (e) {
-    helpers.logError(`Error running the getMostRecentIncompleteSessionWithPhoneNumber query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getMostRecentIncompleteSessionWithPhoneNumber: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
@@ -177,194 +173,147 @@ async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, cli
 }
 
 async function getAllSessionsWithButtonId(buttonId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getAllSessionsWithButtonId',
+      `
+      SELECT *
+      FROM sessions
+      WHERE button_id = $1
+      `,
+      [buttonId],
+      pool,
+      clientParam,
+    )
 
-    const { rows } = await client.query('SELECT * FROM sessions WHERE button_id = $1', [buttonId])
-
-    if (rows.length > 0) {
-      return rows.map(createSessionFromRow)
+    if (results.rows.length > 0) {
+      return results.rows.map(createSessionFromRow)
     }
-  } catch (e) {
-    helpers.logError(`Error running the getAllSessionsWithButtonId query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getAllSessionsWithButtonId: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return []
 }
 
 async function getRecentSessionsWithInstallationId(installationId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getRecentSessionsWithInstallationId',
+      `
+      SELECT *
+      FROM sessions
+      WHERE installation_id = $1
+      ORDER BY created_at DESC
+      LIMIT 40
+      `,
+      [installationId],
+      pool,
+      clientParam,
+    )
 
-    const { rows } = await client.query('SELECT * FROM sessions WHERE installation_id = $1 ORDER BY created_at DESC LIMIT 40', [installationId])
-
-    if (rows.length > 0) {
-      return rows.map(createSessionFromRow)
+    if (results.rows.length > 0) {
+      return results.rows.map(createSessionFromRow)
     }
-  } catch (e) {
-    helpers.logError(`Error running the getRecentSessionsWithInstallationId query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getRecentSessionsWithInstallationId: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return []
 }
 
 async function getSessionWithSessionId(sessionId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
+    const results = await helpers.runQuery(
+      'getSessionWithSessionId',
+      `
+      SELECT *
+      FROM sessions
+      WHERE id = $1
+      `,
+      [sessionId],
+      pool,
+      clientParam,
+    )
+
+    if (results.rows.length > 0) {
+      return createSessionFromRow(results.rows[0])
     }
-
-    const { rows } = await client.query('SELECT * FROM sessions WHERE id = $1', [sessionId])
-
-    if (rows.length > 0) {
-      return createSessionFromRow(rows[0])
-    }
-  } catch (e) {
-    helpers.logError(`Error running the getSessionWithSessionId query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getSessionWithSessionId: Error releasing client: ${err}`)
-      }
-    }
-  }
-
-  return null
-}
-
-async function getAllSessions(clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
-  try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const { rows } = await client.query('SELECT * FROM sessions')
-
-    return rows.map(createSessionFromRow)
-  } catch (e) {
-    helpers.logError(`Error running the getAllSessions query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getAllSessions: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
 }
 
 async function createSession(installationId, buttonId, unit, phoneNumber, numPresses, buttonBatteryLevel, respondedAt, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const values = [installationId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt]
-    const { rows } = await client.query(
-      'INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      values,
+    const results = await helpers.runQuery(
+      'createSession',
+      `
+      INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+      `,
+      [installationId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt],
+      pool,
+      clientParam,
     )
 
-    if (rows.length > 0) {
-      return createSessionFromRow(rows[0])
+    if (results.rows.length > 0) {
+      return createSessionFromRow(results.rows[0])
     }
-  } catch (e) {
-    helpers.logError(`Error running the createSession query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`createSession: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
 }
 
 async function saveSession(session, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const { rows } = await client.query('SELECT * FROM sessions WHERE id = $1 LIMIT 1', [session.id])
-    if (rows.length === 0) {
+    const results = await helpers.runQuery(
+      'saveSessionSelect',
+      `
+      SELECT *
+      FROM sessions
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [session.id],
+      pool,
+      clientParam,
+    )
+    if (results.rows.length === 0) {
       throw new Error("Tried to save a session that doesn't exist yet. Use createSession() instead.")
     }
 
-    const values = [
-      session.installationId,
-      session.buttonId,
-      session.unit,
-      session.phoneNumber,
-      session.state,
-      session.numPresses,
-      session.incidentType,
-      session.notes,
-      session.fallBackAlertTwilioStatus,
-      session.buttonBatteryLevel,
-      session.respondedAt,
-      session.id,
-    ]
-    await client.query(
-      'UPDATE sessions SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status = $9, button_battery_level = $10, responded_at = $11 WHERE id = $12',
-      values,
+    await helpers.runQuery(
+      'saveSessionUpdate',
+      `
+      UPDATE sessions
+      SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status = $9, button_battery_level = $10, responded_at = $11
+      WHERE id = $12
+      `,
+      [
+        session.installationId,
+        session.buttonId,
+        session.unit,
+        session.phoneNumber,
+        session.state,
+        session.numPresses,
+        session.incidentType,
+        session.notes,
+        session.fallBackAlertTwilioStatus,
+        session.buttonBatteryLevel,
+        session.respondedAt,
+        session.id,
+      ],
+      pool,
+      clientParam,
     )
-  } catch (e) {
-    helpers.logError(`Error running the saveSession query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`saveSession: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 }
 
@@ -383,25 +332,18 @@ async function clearSessions(clientParam) {
     return
   }
 
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    await client.query('DELETE FROM sessions')
-  } catch (e) {
-    helpers.logError(`Error running the clearSessions query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`clearSessions: Error releasing client: ${err}`)
-      }
-    }
+    await helpers.runQuery(
+      'clearSessions',
+      `
+      DELETE FROM sessions
+      `,
+      [],
+      pool,
+      clientParam,
+    )
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 }
 
@@ -1116,7 +1058,6 @@ module.exports = {
   createNotification,
   createSession,
   getActiveAlertsByAlertApiKey,
-  getAllSessions,
   getAllSessionsWithButtonId,
   getButtonWithSerialNumber,
   getCurrentTime,
