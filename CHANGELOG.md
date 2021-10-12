@@ -11,6 +11,10 @@ the code was deployed.
 
 ## Unreleased
 
+### Added
+
+- Sound effects to push notifications (CU-10xfkhr).
+
 ### Changed
 
 - Allow releaseinfo changes on RPis (CU-1kxmhta).
