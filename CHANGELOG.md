@@ -11,6 +11,8 @@ the code was deployed.
 
 ## Unreleased
 
+## [5.0.0] - 2021-10-18
+
 ### Added
 
 - `responder_push_id` to the DB to store the Responder Device's Push Notification ID (CU-10xfkhr).
@@ -379,7 +381,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.1.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v5.0.0...HEAD
+[5.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.7.0...v4.0.0
 [3.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v3.6.0...v3.7.0
