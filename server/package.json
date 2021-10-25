@@ -5,15 +5,15 @@
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v6.1.0",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v6.2.0",
     "cookie-parser": "^1.4.3",
+    "date-fns": "^2.26.0",
+    "date-fns-tz": "^1.1.6",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "express-validator": "^6.10.0",
     "json2csv": "^5.0.6",
     "lodash": "^4.17.21",
-    "moment": "^2.22.2",
-    "moment-timezone": "^0.5.33",
     "mustache": "^3.0.1",
     "pg": "^7.8.0"
   },
@@ -32,6 +32,7 @@
     "mocha": "^8.3.1",
     "nyc": "^15.1.0",
     "prettier": "^2.2.1",
+    "rewire": "^5.0.0",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.5.0",
     "twilio": "^3.57.0"

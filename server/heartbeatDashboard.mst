@@ -47,6 +47,7 @@ dt {
                 <th>Last Seen (Ping)</th>
                 <th>Last Seen (Heartbeat)</th>
                 <th>Muted?</th>
+                <th>Location Description</th>
             </tr>
             {{#systems}}
             <tr>
@@ -55,6 +56,7 @@ dt {
                 <td>{{flic_last_ping}}</td>
                 <td>{{heartbeat_last_seen}}</td>
                 <td>{{muted}}</td>
+                <td>{{location_description}}</td>
             </tr>
             {{/systems}}
         </table>

@@ -15,7 +15,7 @@ elif [[ ! -n "$2" ]]; then
     echo "Example: $0 ./../.env ./brave_hubs.csv.example"
     echo ""
     echo "The hubs CSV file"
-    echo "MUST have the header 'system_id, system_name, heartbeat_alert_recipients'"
+    echo "MUST have the header 'system_id,system_name,location_description,installation_id'"
     echo "MUST use Unix line endings (LF)"
     echo "MUST end with a newline, or else the last hub will be silently ignored"
     echo ""
@@ -35,14 +35,17 @@ else
     done < $1
 
 
-    while IFS=",", read -r system_id system_name heartbeat_alert_recipients; do
+    while IFS=",", read -r system_id system_name location_description installation_id; do
         if [[ "$system_id" != "system_id" && "$system_id" != "" ]]; then
-            echo "Adding button"
+            echo "Adding hub"
             echo "  System Id: $system_id"
             echo "  System Name: $system_name"
-            echo "  Heartbeat Alert Recipients: $heartbeat_alert_recipients"
+            echo "  Location Desription: $location_description"
+            echo "  Heartbeat Alert Recipients: {}"
+            echo "  Installation Id: $installation_id"
+            echo "  Muted: TRUE"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO hubs (system_id, system_name, heartbeat_alert_recipients) VALUES ('$system_id', '$system_name', $heartbeat_alert_recipients);"
+            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO hubs (system_id, system_name, heartbeat_alert_recipients, installation_id, muted, location_description) VALUES ('$system_id', '$system_name', '{}', '$installation_id', 't', '$location_description');"
         fi
     done < $2
 

@@ -9,7 +9,6 @@ Please note that the date associated with a release is the date the code
 was committed to the `master` branch. This is not necessarily the date that
 the code was deployed.
 
-
 ## [Unreleased]
 
 ### Added
@@ -17,16 +16,27 @@ the code was deployed.
 - Descriptions of the config repo and the pi template files to the README (CU-vf8v9x, CU-vf96g1).
 - Additional comments to `heartbeat.py` (CU-vf8v9x).
 - Instructions for using the `--limit` flag with `ansible-playbook` (CU-vf96g1).
+- Send outage notifications to responder phone along with instructions for power-cycling hubs (CU-vf8x83).
+- Send reminders about hub outages (CU-vf8x83).
 
 ### Changed
 
 - `setup_pi.sh` sets the hostname in a more robust way (CU-40tzeq).
+- Updated `add_hubs.sh` to include an installation id foreign key (CU-vf8x83).
+
+### Removed
+
+- Usage of deprecated `body-parser` module (CU-13kqxyt).
+- Usage of deprecated `moment` module for time-related code.
+
+### Fixed
+
+- Documentation in `add_hubs.sh` script (CU-faxfbg).
 
 ## [6.1.0] - 2021-11-29
 
 ### Changed
 
-- `setup_pi.yaml` no longer triggers `apt update` using the apt module since ansible doesn't support allowing releaseinfo changes.
 - Improved darkstat parsing to look at all entries, to skip null IP addresses, and convert day(s) to seconds (CU-1k0zhbg).
 
 ## [6.0.0] - 2021-11-29

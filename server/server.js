@@ -3,11 +3,10 @@ const fs = require('fs')
 const Validator = require('express-validator')
 const express = require('express')
 const https = require('https')
-const moment = require('moment-timezone')
-const bodyParser = require('body-parser')
 const { Parser } = require('json2csv')
+const { format, utcToZonedTime } = require('date-fns-tz')
 
-const jsonBodyParser = bodyParser.json()
+const jsonBodyParser = express.json()
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const Mustache = require('mustache')
@@ -15,11 +14,11 @@ const { ALERT_TYPE, helpers } = require('brave-alert-lib')
 
 const BraveAlerterConfigurator = require('./BraveAlerterConfigurator.js')
 const db = require('./db/db.js')
+const vitals = require('./vitals.js')
 
-const FLIC_THRESHOLD_MILLIS = 210 * 1000
-const HEARTBEAT_THRESHOLD_MILLIS = 75 * 1000
-const PING_THRESHOLD_MILLIS = 320 * 1000
 const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
+const DASHBOARD_TIMEZONE = 'America/Vancouver'
+const DASHBOARD_FORMAT = 'dd MMM Y, hh:mm:ss aaa zzz'
 
 const app = express()
 
@@ -29,10 +28,12 @@ const unrespondedSessionAlertTimeoutMillis = helpers.getEnvVar('FALLBACK_TIMEOUT
 const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/heartbeatDashboard.mst`, 'utf-8')
 const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/chatbotDashboard.mst`, 'utf-8')
 
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true }))
 
 // Configure BraveAlerter
 const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
+
+vitals.setupVitals(braveAlerter, heartbeatDashboardTemplate)
 
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
@@ -217,6 +218,10 @@ app.get('/dashboard', sessionChecker, async (req, res) => {
   }
 })
 
+function formatDateTimeForDashboard(date) {
+  return format(utcToZonedTime(date, DASHBOARD_TIMEZONE), DASHBOARD_FORMAT, { timeZone: DASHBOARD_TIMEZONE })
+}
+
 app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
   if (!req.session.user || !req.cookies.user_sid) {
     res.redirect('/login')
@@ -243,12 +248,9 @@ app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
     }
 
     for (const recentSession of recentSessions) {
-      const createdAt = moment(recentSession.createdAt, moment.ISO_8601).tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A')
-      const updatedAt = moment(recentSession.updatedAt, moment.ISO_8601).tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A')
-      const respondedAt =
-        recentSession.respondedAt !== null
-          ? moment(recentSession.respondedAt, moment.ISO_8601).tz('America/Vancouver').format('DD MMM Y, hh:mm:ss A')
-          : ''
+      const createdAt = formatDateTimeForDashboard(recentSession.createdAt)
+      const updatedAt = formatDateTimeForDashboard(recentSession.updatedAt)
+      const respondedAt = recentSession.respondedAt !== null ? formatDateTimeForDashboard(recentSession.respondedAt) : ''
       viewParams.recentSessions.push({
         unit: recentSession.unit,
         createdAt,
@@ -351,142 +353,12 @@ app.post('/flic_button_press', Validator.header(['button-serial-number']).exists
 })
 
 app.post('/heartbeat', jsonBodyParser, async (req, res) => {
-  try {
-    helpers.log(
-      `got a heartbeat from ${req.body.system_id}, flic_last_seen_secs is ${req.body.flic_last_seen_secs}, flic_last_ping_secs is ${req.body.flic_last_ping_secs}`,
-    )
-    const flicLastSeenTime = moment().subtract(req.body.flic_last_seen_secs, 'seconds').toISOString()
-    const flicLastPingTime = moment().subtract(req.body.flic_last_ping_secs, 'seconds').toISOString()
-    const heartbeatLastSeenTime = moment().toISOString()
-    await db.saveHeartbeat(req.body.system_id, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime)
-    res.status(200).send()
-  } catch (err) {
-    helpers.logError(err)
-    res.status(500).send()
-  }
+  vitals.handleHeartbeat(req, res)
 })
 
 app.get('/heartbeatDashboard', async (req, res) => {
-  let hubs = []
-  try {
-    hubs = await db.getHubs()
-  } catch (e) {
-    helpers.logError(`Failed to get hubs in /heartbeatDashboard: ${JSON.stringify(e)}`)
-  }
-
-  const viewParams = {
-    domain: helpers.getEnvVar('DOMAIN'),
-    dashboard_render_time: moment().toString(),
-    systems: [],
-  }
-
-  for (const hub of hubs) {
-    if (hub.hidden) {
-      continue
-    }
-
-    const flicLastSeenTime = moment(hub.flicLastSeenTime)
-    let flicLastSeenSecs = moment().diff(flicLastSeenTime) / 1000.0
-    flicLastSeenSecs = Math.round(flicLastSeenSecs)
-
-    const heartbeatLastSeenTime = moment(hub.heartbeatLastSeenTime)
-    let heartbeatLastSeenSecs = moment().diff(heartbeatLastSeenTime) / 1000.0
-    heartbeatLastSeenSecs = Math.round(heartbeatLastSeenSecs)
-
-    const flicLastPingTime = moment(hub.flicLastPingTime)
-    let flicLastPingSecs = moment().diff(flicLastPingTime) / 1000.0
-    flicLastPingSecs = Math.round(flicLastPingSecs)
-
-    viewParams.systems.push({
-      system_name: hub.systemName,
-      flic_last_seen: `${flicLastSeenSecs.toString()} seconds ago`,
-      flic_last_ping: `${flicLastPingSecs.toString()} seconds ago`,
-      heartbeat_last_seen: `${heartbeatLastSeenSecs.toString()} seconds ago`,
-      muted: hub.muted ? 'Y' : 'N',
-    })
-  }
-
-  const htmlString = Mustache.render(heartbeatDashboardTemplate, viewParams)
-  res.send(htmlString)
+  vitals.handleHeartbeatDashboard(req, res)
 })
-
-function sendAlerts(alertMessage, systemName, heartbeatAlertRecipients) {
-  for (let i = 0; i < heartbeatAlertRecipients.length; i += 1) {
-    braveAlerter.sendSingleAlert(
-      heartbeatAlertRecipients[i],
-      helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'),
-      `${alertMessage}, indicating the connection for ${systemName} has been lost.`,
-    )
-  }
-}
-
-function sendReconnectionMessage(systemName, heartbeatAlertRecipients) {
-  for (let i = 0; i < heartbeatAlertRecipients.length; i += 1) {
-    braveAlerter.sendSingleAlert(heartbeatAlertRecipients[i], helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER'), `${systemName} has reconnected.`)
-  }
-}
-
-async function updateSentAlerts(hubParam, sentAlerts) {
-  const hub = hubParam
-  try {
-    hub.sentAlerts = sentAlerts
-    await db.saveHubAlertStatus(hub)
-  } catch (e) {
-    helpers.logError(`updateSentAlerts: failed to save hub alert status: ${JSON.stringify(e)}`)
-  }
-}
-
-async function checkHeartbeat() {
-  try {
-    const hubs = await db.getHubs()
-    for (const hub of hubs) {
-      const currentTime = moment()
-      const flicLastSeenTime = moment(hub.flicLastSeenTime)
-      const flicDelayMillis = currentTime.diff(flicLastSeenTime)
-      const heartbeatLastSeenTime = moment(hub.heartbeatLastSeenTime)
-      const heartbeatDelayMillis = currentTime.diff(heartbeatLastSeenTime)
-      const pingLastSeenTime = moment(hub.flicLastPingTime)
-      const pingDelayMillis = currentTime.diff(pingLastSeenTime)
-
-      if (flicDelayMillis > FLIC_THRESHOLD_MILLIS && !hub.sentAlerts) {
-        helpers.logSentry(`flic threshold exceeded; flic delay is ${flicDelayMillis} ms. sending alerts for ${hub.systemName}`)
-        await updateSentAlerts(hub, 'true')
-        if (hub.muted) {
-          continue
-        }
-        sendAlerts('Darkstat has lost visibility of the Hub', hub.systemName, hub.heartbeatAlertRecipients)
-      } else if (pingDelayMillis > PING_THRESHOLD_MILLIS && !hub.sentAlerts) {
-        helpers.logSentry(`ping threshold exceeded; ping delay is ${pingDelayMillis} ms. sending alerts for ${hub.systemName}`)
-        await updateSentAlerts(hub, 'true')
-        if (hub.muted) {
-          continue
-        }
-        sendAlerts('Ping is unable to reach the Hub', hub.systemName, hub.heartbeatAlertRecipients)
-      } else if (heartbeatDelayMillis > HEARTBEAT_THRESHOLD_MILLIS && !hub.sentAlerts) {
-        helpers.logSentry(`heartbeat threshold exceeded; heartbeat delay is ${heartbeatDelayMillis} ms. sending alerts for ${hub.systemName}`)
-        await updateSentAlerts(hub, 'true')
-        if (hub.muted) {
-          continue
-        }
-        sendAlerts('Heartbeat messages have stopped', hub.systemName, hub.heartbeatAlertRecipients)
-      } else if (
-        flicDelayMillis < FLIC_THRESHOLD_MILLIS &&
-        heartbeatDelayMillis < HEARTBEAT_THRESHOLD_MILLIS &&
-        pingDelayMillis < PING_THRESHOLD_MILLIS &&
-        hub.sentAlerts
-      ) {
-        helpers.log(`${hub.systemName} has reconnected.`)
-        await updateSentAlerts(hub, 'false')
-        if (hub.muted) {
-          continue
-        }
-        sendReconnectionMessage(hub.systemName, hub.heartbeatAlertRecipients)
-      }
-    }
-  } catch (e) {
-    helpers.logError(`Failed to check heartbeat: ${JSON.stringify(e)}`)
-  }
-}
 
 let server
 
@@ -500,7 +372,7 @@ if (helpers.isTestEnvironment()) {
     cert: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/fullchain.pem`),
   }
   server = https.createServer(httpsOptions, app).listen(443)
-  setInterval(checkHeartbeat, 1000)
+  setInterval(vitals.checkHeartbeat, 1000)
   helpers.log('brave server listening on port 443')
 }
 
