@@ -30,11 +30,6 @@ function createInstallationFromRow(r) {
   return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.alert_api_key, r.responder_push_id)
 }
 
-function createHubFromRow(r) {
-  // prettier-ignore
-  return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_alerts, r.muted, r.heartbeat_alert_recipients)
-}
-
 async function beginTransaction() {
   let client = null
 
@@ -144,6 +139,29 @@ async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, client
   }
 
   return null
+}
+
+async function createHubFromRow(r, clientParam) {
+  try {
+    const results = await helpers.runQuery(
+      'createHubFromRow',
+      `
+      SELECT *
+      FROM installations
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [r.installation_id],
+      pool,
+      clientParam,
+    )
+    const installation = createInstallationFromRow(results.rows[0])
+
+    // prettier-ignore
+    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.heartbeat_alert_recipients, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, installation)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
 }
 
 async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, clientParam) {
@@ -314,6 +332,40 @@ async function saveSession(session, clientParam) {
     )
   } catch (err) {
     helpers.logError(err.toString())
+  }
+}
+
+async function updateSentInternalAlerts(hub, clientParam) {
+  try {
+    const results = await helpers.runQuery(
+      'updateSentInternalAlertsSelect',
+      `
+      SELECT *
+      FROM hubs
+      WHERE system_id = $1
+      LIMIT 1
+      `,
+      [hub.systemId],
+      pool,
+      clientParam,
+    )
+    if (results.rows.length === 0) {
+      throw new Error("Tried to update internal alert flags for a hub that doesn't exist.")
+    }
+
+    await helpers.runQuery(
+      'updateSentInternalAlertsUpdate',
+      `
+      UPDATE hubs
+      SET sent_internal_flic_alert = $1, sent_internal_ping_alert = $2, sent_internal_pi_alert = $3
+      WHERE system_id = $4
+      `,
+      [hub.sentInternalFlicAlert, hub.sentInternalPingAlert, hub.sentInternalPiAlert, hub.systemId],
+      pool,
+      clientParam,
+    )
+  } catch (e) {
+    helpers.logError(`Error running the updateSentInternalAlerts query: ${e}`)
   }
 }
 
@@ -752,32 +804,25 @@ async function clearTables(clientParam) {
 }
 
 async function getHubs(clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getHubs',
+      `
+      SELECT *
+      FROM hubs
+      ORDER BY system_name
+      `,
+      [],
+      pool,
+      clientParam,
+    )
 
-    const { rows } = await client.query('SELECT * FROM hubs order by system_name')
-
-    if (rows.length > 0) {
-      return rows.map(createHubFromRow)
+    if (results.rows.length > 0) {
+      return await Promise.all(results.rows.map(r => createHubFromRow(r, clientParam)))
     }
   } catch (e) {
     helpers.logError(`Error running the getHubs query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getHubs: Error releasing client: ${err}`)
-      }
-    }
   }
-
-  return []
 }
 
 async function getHubWithSystemId(systemId, clientParam) {
@@ -792,7 +837,7 @@ async function getHubWithSystemId(systemId, clientParam) {
     const { rows } = await client.query('SELECT * FROM hubs WHERE system_id = $1', [systemId])
 
     if (rows.length > 0) {
-      return createHubFromRow(rows[0])
+      return await createHubFromRow(rows[0], clientParam)
     }
   } catch (e) {
     helpers.logError(`Error running the getHubWithSystemId query: ${e}`)
@@ -841,33 +886,31 @@ async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heart
   }
 }
 
-async function saveHubAlertStatus(hub, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function updateSentAlerts(id, sentalerts, clientParam) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
+    const query = sentalerts
+      ? `
+        UPDATE hubs
+        SET sent_vitals_alert_at = NOW()
+        WHERE system_id = $1
+        RETURNING *
+      `
+      : `
+        UPDATE hubs
+        SET sent_vitals_alert_at = NULL
+        WHERE system_id = $1
+        RETURNING *
+      `
+
+    const results = await helpers.runQuery('updateSentAlerts', query, [id], pool, clientParam)
+
+    if (results === undefined) {
+      return null
     }
 
-    const { rows } = await client.query('SELECT * FROM hubs WHERE system_id = $1 LIMIT 1', [hub.systemId])
-    if (rows.length === 0) {
-      throw new Error("Tried to save alert sent status for a hub that doesn't exist yet.")
-    }
-
-    const query = 'UPDATE hubs SET sent_alerts = $1 WHERE system_id = $2'
-    const values = [hub.sentAlerts, hub.systemId]
-    await client.query(query, values)
+    return await createHubFromRow(results.rows[0], clientParam)
   } catch (e) {
-    helpers.logError(`Error running the saveHubAlertStatus query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`saveHubAlertStatus: Error releasing client: ${err}`)
-      }
-    }
+    helpers.logError(`Error running the updateSentAlerts query: ${e}`)
   }
 }
 
@@ -990,6 +1033,7 @@ module.exports = {
   getUnrespondedSessionWithButtonId,
   rollbackTransaction,
   saveHeartbeat,
-  saveHubAlertStatus,
   saveSession,
+  updateSentAlerts,
+  updateSentInternalAlerts,
 }
