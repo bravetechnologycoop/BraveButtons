@@ -841,94 +841,6 @@ async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heart
   }
 }
 
-async function saveHubRename(systemId, systemName, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
-  try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const { rows } = await client.query('SELECT * FROM hubs WHERE system_id = $1 LIMIT 1', [systemId])
-    if (rows.length === 0) {
-      throw new Error("Tried to rename a hub that doesn't exist yet.")
-    }
-
-    const values = [systemName, systemId]
-    await client.query('UPDATE hubs SET system_name = $1 WHERE system_id = $2', values)
-  } catch (e) {
-    helpers.logError(`Error running the saveHubRename query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`saveHubRename: Error releasing client: ${err}`)
-      }
-    }
-  }
-}
-
-async function saveHubMuteStatus(systemId, muted, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
-  try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const { rows } = await client.query('SELECT * FROM hubs WHERE system_id = $1 LIMIT 1', [systemId])
-    if (rows.length === 0) {
-      throw new Error("Tried to save mute status in a hub that doesn't exist yet.")
-    }
-    const query = 'UPDATE hubs SET muted = $1 WHERE system_id = $2'
-    const values = [muted, systemId]
-    await client.query(query, values)
-  } catch (e) {
-    helpers.logError(`Error running the saveHubMuteStatus query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`saveHubMuteStatus: Error releasing client: ${err}`)
-      }
-    }
-  }
-}
-
-async function saveHubHideStatus(systemId, hidden, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
-  try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const { rows } = await client.query('SELECT * FROM hubs WHERE system_id = $1 LIMIT 1', [systemId])
-    if (rows.length === 0) {
-      throw new Error("Tried to save hide status for a hub that doesn't exist yet.")
-    }
-
-    const query = 'UPDATE hubs SET hidden = $1 WHERE system_id = $2'
-    const values = [hidden, systemId]
-    await client.query(query, values)
-  } catch (e) {
-    helpers.logError(`Error running the saveHubHideStatus query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`saveHubHideStatus: Error releasing client: ${err}`)
-      }
-    }
-  }
-}
-
 async function saveHubAlertStatus(hub, clientParam) {
   let client = clientParam
   const transactionMode = typeof client !== 'undefined'
@@ -1079,8 +991,5 @@ module.exports = {
   rollbackTransaction,
   saveHeartbeat,
   saveHubAlertStatus,
-  saveHubHideStatus,
-  saveHubMuteStatus,
-  saveHubRename,
   saveSession,
 }
