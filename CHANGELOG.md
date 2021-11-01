@@ -11,6 +11,10 @@ the code was deployed.
 
 ## Unreleased
 
+### Changed
+
+- Allow releaseinfo changes on RPis (CU-1kxmhta).
+
 ## [5.0.0] - 2021-10-18
 
 ### Added
