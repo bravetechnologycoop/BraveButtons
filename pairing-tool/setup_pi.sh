@@ -6,7 +6,7 @@ if [[ $EUID > 0 ]]; then
   echo "this script needs sudo privelages to run correctly."
   exit 1
 else
-  apt update
+  apt update --allow-releaseinfo-change
   apt install -y vim nodejs npm
 
   # install stable version of node

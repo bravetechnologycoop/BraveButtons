@@ -42,7 +42,7 @@ else
   rfkill unblock wifi
 
   # install dependencies with apt and pip3
-  apt update
+  apt update --allow-releaseinfo-change
   apt install -y darkstat python3-gpiozero autossh ssh parprouted dhcp-helper avahi-daemon python3-pip
   pip3 install python-daemon
 
