@@ -15,6 +15,10 @@ the code was deployed.
 
 - Allow releaseinfo changes on RPis (CU-1kxmhta).
 
+### Removed
+
+- Hub modification endpoints (rename, mute, hide) (CU-dgm1bj).
+
 ## [5.0.0] - 2021-10-18
 
 ### Added

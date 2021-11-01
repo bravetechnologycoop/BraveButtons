@@ -7,51 +7,6 @@ matplotlib.use('Agg')
 import os
 from twilio.rest import Client as TwilioClient
 
-def send_hide_request(server_url, system_id):
-    payload = {"system_id": system_id}
-    try:
-        r = requests.post(server_url + r"/heartbeat/hide_system", json=payload)
-        print("response to hide request:", r.status_code, r.reason)
-    except Exception as e:
-        print("error sending hide request")
-        print(e)
-
-def send_unhide_request(server_url, system_id):
-    payload = {"system_id": system_id}
-    try:
-        r = requests.post(server_url + r"/heartbeat/unhide_system", json=payload)
-        print("response to unhide request:", r.status_code, r.reason)
-    except Exception as e:
-        print("error sending unhide request")
-        print(e)
-
-def send_rename_request(server_url, system_id, name):
-    payload = {"system_id": system_id, "system_name": name}
-    try:
-        r = requests.post(server_url + r"/heartbeat/rename_system", json=payload)
-        print("response to rename request:", r.status_code, r.reason)
-    except Exception as e:
-        print("error sending rename request")
-        print(e)
-
-def send_mute_request(server_url, system_id):
-    payload = {"system_id": system_id}
-    try:
-        r = requests.post(server_url + r"/heartbeat/mute_system", json=payload)
-        print("response to mute request:", r.status_code, r.reason)
-    except Exception as e:
-        print("error sending mute request")
-        print(e)
-
-def send_unmute_request(server_url, system_id):
-    payload = {"system_id": system_id}
-    try:
-        r = requests.post(server_url + r"/heartbeat/unmute_system", json=payload)
-        print("response to unmute request:", r.status_code, r.reason)
-    except Exception as e:
-        print("error sending unmute request")
-        print(e)
-
 def send_heartbeat(server_url, system_id, flic_last_seen_secs):
     payload = {"system_id": system_id, "flic_last_seen_secs": flic_last_seen_secs}
     try:

@@ -363,61 +363,6 @@ app.post('/heartbeat', jsonBodyParser, async (req, res) => {
   }
 })
 
-app.post('/heartbeat/rename_system', jsonBodyParser, async (req, res) => {
-  try {
-    helpers.log(`got a request to rename system ${req.body.system_id}`)
-    await db.saveHubRename(req.body.system_id, req.body.system_name)
-    res.status(200).send()
-  } catch (err) {
-    helpers.logError(err)
-    res.status(500).send()
-  }
-})
-
-app.post('/heartbeat/hide_system', jsonBodyParser, async (req, res) => {
-  try {
-    helpers.log(`got a request to hide system ${req.body.system_id}`)
-    await db.saveHubHideStatus(req.body.system_id, true)
-    res.status(200).send()
-  } catch (err) {
-    helpers.logError(err)
-    res.status(500).send()
-  }
-})
-
-app.post('/heartbeat/unhide_system', jsonBodyParser, async (req, res) => {
-  try {
-    helpers.log(`got a request to show system ${req.body.system_id}`)
-    await db.saveHubHideStatus(req.body.system_id, false)
-    res.status(200).send()
-  } catch (err) {
-    helpers.logError(err)
-    res.status(500).send()
-  }
-})
-
-app.post('/heartbeat/mute_system', jsonBodyParser, async (req, res) => {
-  try {
-    helpers.log(`got a request to unmute system ${req.body.system_id}`)
-    await db.saveHubMuteStatus(req.body.system_id, true)
-    res.status(200).send()
-  } catch (err) {
-    helpers.logError(err)
-    res.status(500).send()
-  }
-})
-
-app.post('/heartbeat/unmute_system', jsonBodyParser, async (req, res) => {
-  try {
-    helpers.log(`got a request to unmute system ${req.body.system_id}`)
-    await db.saveHubMuteStatus(req.body.system_id, false)
-    res.status(200).send()
-  } catch (err) {
-    helpers.logError(err)
-    res.status(500).send()
-  }
-})
-
 app.get('/heartbeatDashboard', async (req, res) => {
   let hubs = []
   try {
