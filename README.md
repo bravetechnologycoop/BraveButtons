@@ -79,6 +79,10 @@
 
 1. ensure that the new Brave Hub's password has been added to the appropriate `group_vars` file
 
+1. if you have not already used SSH to connect to the RPi from your local machine, manually attempt to do so. This will ensure that the RPi's SSH public key is accepted by your machine while programming is in progress.
+
+1. if your local machine is a Linux environment, install sshpass, which is used by ansible: `apt install sshpass`
+
 1. run `ssh-agent bash` to start a new `ssh-agent` shell
 
 1. run `ssh-add ~/.ssh/id_rsa` to add your ssh key to `ssh-agent` (for access to the remote access server)
@@ -92,6 +96,10 @@ ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
                  ./BraveButtons/ops/setup_pi.yaml \
                  --ask-vault-pass
 ```
+
+1. ssh into the RPi, copy the system_id from `\usr\local\brave\system_id` and add it to the Button Config Google Sheet
+
+1. add an entry for the new hub to the `hubs` table in the db
 
 # How to deploy updates to the RPi fleet using Ansible
 
