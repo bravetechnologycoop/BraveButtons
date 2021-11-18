@@ -48,6 +48,11 @@ class Test__parse_flic_last_seen_from_darkstat_html(object):
 
             mock_logging.info.assert_called_once_with('darkstat html contains flic last seen info:  <td><a href="./192.168.8.114/">192.168.8.114</a></td>  <td>flic</td>  <td><tt>00:00:00:00:00:02</tt></td>  <td class="num">1 hr, 3 mins, 26 secs</td></tr>')
 
+    def test_skips_null_ips_with_matching_mac_address(self):
+        with open(os.path.dirname(__file__) + '/test_files/sample_darkstat_html/null_ips.html', 'r') as html_file:
+            html = html_file.read()
+            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 59
+
 class Test__parse_flic_ip_from_darkstat_html(object):
 
     def test_valid_input(self):
@@ -62,6 +67,11 @@ class Test__parse_flic_ip_from_darkstat_html(object):
             heartbeat.parse_flic_ip_from_darkstat_html(html, '00:00:00:00:00:02')
 
             mock_logging.info.assert_called_once_with('darkstat html contained flic IPv4 address:  <td><a href="./192.168.8.114/">192.168.8.114</a></td>  <td>flic</td>  <td><tt>00:00:00:00:00:02</tt></td>  <td class="num">1 hr, 3 mins, 26 secs</td></tr>')
+
+    def test_skips_null_ip_addresses_with_matching_mac_address(self):
+        with open(os.path.dirname(__file__) + '/test_files/sample_darkstat_html/null_ips.html', 'r') as html_file:
+            html = html_file.read()
+            assert heartbeat.parse_flic_ip_from_darkstat_html(html, '00:00:00:00:00:02') == '192.168.8.114'
 
 class Test__parse_link_quality_from_iwconfig_output(object):
 

@@ -53,9 +53,10 @@ def parse_flic_last_seen_from_darkstat_html(html, flic_mac_address):
     lines = html.splitlines()
     last_seen_secs_list = []
     for i in range(0, len(lines)):
-        # match lines that contain an actual value for flic last seen
+        # match lines that contain an actual value for flic last seen and a non-null IPv4 ip address
         # sometimes darkstat gives '(never)' in place of a value
-        if (lines[i].count(flic_mac_address) > 0) and (lines[i+4].count('(never)') == 0):
+        # sometimes darkstat gives '0.0.0.0' or '::' in place of an IPv4 ip address
+        if (lines[i].count(flic_mac_address) > 0) and (lines[i+4].count('(never)') == 0) and (lines[i-2].count('>0.0.0.0<') == 0) and (lines[i-2].count('>::<') == 0):
             logging.info('darkstat html contains flic last seen info: {ip} {hostname} {mac} {lastseen}'.format(ip=lines[i-2], hostname=lines[i-1], mac=lines[i], lastseen=lines[i+4]))
 
             last_seen_string = lines[i+4]
