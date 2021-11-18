@@ -12,6 +12,11 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- `setup_pi.yaml` no longer triggers `apt update` using the apt module since ansible doesn't support allowing releaseinfo changes.
+- Improved darkstat parsing to look at all entries (CU-1k0zhbg).
+
 ## [6.0.0] - 2021-11-29
 
 ### Added
