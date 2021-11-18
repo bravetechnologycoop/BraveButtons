@@ -74,6 +74,8 @@ def parse_flic_last_seen_from_darkstat_html(html, flic_mac_address):
                     value = value * 60
                 elif units == 'hrs' or units == 'hr':
                     value = value * 3600
+                elif units == 'days' or units == 'day':
+                    value = value * 86400
                 last_seen_secs = last_seen_secs + value
 
             return last_seen_secs

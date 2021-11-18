@@ -25,6 +25,11 @@ class Test__parse_flic_last_seen_from_darkstat_html(object):
             html = html_file.read()
             assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 3806
 
+    def test_seconds_minutes_hours_days(self):
+        with open(os.path.dirname(__file__) + '/test_files/sample_darkstat_html/90206_secs.html', 'r') as html_file:
+            html = html_file.read()
+            assert heartbeat.parse_flic_last_seen_from_darkstat_html(html, '00:00:00:00:00:02') == 90206
+
     def test_empty_html(self):
         with pytest.raises(heartbeat.FlicNotFoundError):
             heartbeat.parse_flic_last_seen_from_darkstat_html('', '00:00:00:00:00:02')
