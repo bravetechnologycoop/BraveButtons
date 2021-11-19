@@ -25,6 +25,10 @@ the code was deployed.
 
 - Hub modification endpoints (rename, mute, hide) (CU-dgm1bj).
 
+### Security
+
+- Improved cookie/session handling.
+
 ## [5.0.0] - 2021-10-18
 
 ### Added
