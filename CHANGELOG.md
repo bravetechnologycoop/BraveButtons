@@ -14,7 +14,7 @@ the code was deployed.
 ### Added
 
 - Sound effects to push notifications (CU-10xfkhr).
-- Additional hub programming instructions to the README.
+- Additional hub programming instructions to the README (CU-vf96g1).
 
 ### Changed
 
