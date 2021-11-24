@@ -29,7 +29,7 @@
 
 1. run `npm run lint`
 
-# How to set up a generic Raspberry Pi environment (for a Brave Hub or the pairing tool):
+# How to set up a generic Raspberry Pi environment (for a development environment Brave Hub or the pairing tool):
 
 1. use either Balena Etcher or Raspberry Pi Imager to flash the SD card with Raspbian Buster
 
@@ -69,9 +69,15 @@
 
 # How to set up a Brave Hub using Ansible
 
-1. follow the generic RPi setup instructions above
+1. use either Balena Etcher or Raspberry Pi Imager to flash the SD card with Raspbian Buster
 
-1. install ansible (see https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+1. create a file named `ssh` in the boot partition of the SD card
+
+1. install the SD card into the raspberry pi, connect it to power and ethernet
+
+1. plug the RPi into a router that you have admin access to and determine its IP address
+
+1. on your local machine, install ansible (see https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
 1. on your local machine, ensure that this repo (BraveButtons) and the config repo (BraveButtonsConfig) are present
 
@@ -89,15 +95,17 @@
 
 1. run the following mega-command:
 
-```
-ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
+   ```
+   ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
                  -i '<local IP address of the RPi>,' \
                  -e 'target_alias=<alias of new RPi in inventory>' \
                  ./BraveButtons/ops/setup_pi.yaml \
                  --ask-vault-pass
-```
+   ```
 
-1. ssh into the RPi, copy the system_id from `\usr\local\brave\system_id` and add it to the Button Config Google Sheet
+1. ssh into the RPi and restart the RPi by running `sudo reboot now`
+
+1. ssh into the RPi and copy the system_id from `/usr/local/brave/system_id` and add it to the Button Config Google Sheet
 
 1. add an entry for the new hub to the `hubs` table in the db
 
