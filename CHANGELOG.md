@@ -19,7 +19,7 @@ the code was deployed.
 ### Changed
 
 - Allow releaseinfo changes on RPis (CU-1kxmhta).
-- `setup_pi.yaml` no longer triggers `apt update` using the apt module since ansible doesn't support allowing releaseinfo changes.
+- `setup_pi.yaml` triggers `apt update` in its own step because ansible's apt doesn't support allowing releaseinfo changes.
 
 ### Removed
 

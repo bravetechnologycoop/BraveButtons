@@ -40,6 +40,13 @@
         name: "OPENSSH_PUBLIC_KEY_HOLDER"
         public_key: "{{ OPENSSH_KEYPAIR_RETURN.public_key }}"
 
+    - name: update apt
+      become: yes
+      shell: apt update --allow-releaseinfo-change
+      args:
+        executable: /bin/bash
+        chdir: /home/pi
+
     # don't use update_cache here since there is no way to use --allow-releaseinfo-change in ansible
     # unless they merge this: https://github.com/ansible/ansible/pull/62824
     - name: install git
