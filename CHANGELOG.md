@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Please note that the date associated with a release is the date the code
-was committed to the `master` branch. This is not necessarily the date that
+was committed to the `main` branch. This is not necessarily the date that
 the code was deployed.
 
 ## [Unreleased]
@@ -24,6 +24,7 @@ the code was deployed.
 - `setup_pi.sh` sets the hostname in a more robust way (CU-40tzeq).
 - Updated `add_hubs.sh` to include an installation id foreign key (CU-vf8x83).
 - No longer required to type the certbot domain during deployment (CU-brhk3t).
+- Branching scheme (CU-mn5q4g).
 
 ### Removed
 

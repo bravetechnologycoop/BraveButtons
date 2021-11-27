@@ -1,4 +1,4 @@
-# BraveButtons [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=master)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
+# BraveButtons [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=main)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
 
 # How to set up a local server dev environment
 
@@ -187,27 +187,27 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 1. on your local machine, in the `BraveButtons` repository:
 
-   1. pull the latest code ready for release: `git checkout master && git pull origin master`
+   1. pull the latest code ready for release: `git checkout main && git pull origin main`
 
    1. decide on an appropriate version number for the new version
 
    1. update CHANGELOG.md by moving everything in `Unreleased` to a section for the new version
 
-   1. make a new commit directly on `master` which only updates the changelog
+   1. make a new commit directly on `main` which only updates the changelog
 
    1. tag the new commit - for example, if the version number is v1.0.0, use `git tag v1.0.0`
 
-   1. push the new version to GitHub: `git push origin master --tags`
+   1. push the new version to GitHub: `git push origin main --tags`
 
-   1. update the `production` branch: `git checkout production && git merge master && git push origin production`
+   1. update the `production` branch: `git checkout production && git merge main && git push origin production`
 
 1. on your local machine, in the `BraveButtonsConfig` repository:
 
-   1. ensure you have the latest version of the code: `git pull origin master`
+   1. ensure you have the latest version of the code: `git pull origin main`
 
    1. tag the latest commit with the same version number used above, ie. `git tag v1.0.0`
 
-   1. update the `production` branch: `git checkout production && git merge master && git push origin production --tags`
+   1. update the `production` branch: `git checkout production && git merge main && git push origin production --tags`
 
 1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that you are doing a deployment and to expect some downtime.
 
