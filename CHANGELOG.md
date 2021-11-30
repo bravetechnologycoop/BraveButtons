@@ -12,15 +12,15 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Descriptions of the config repo and the pi template files to the README (CU-vf8v9x, CU-vf96g1).
+- Additional comments to `heartbeat.py` (CU-vf8v9x).
+- Instructions for using the `--limit` flag with `ansible-playbook` (CU-vf96g1).
+
 ### Changed
 
 - `setup_pi.sh` sets the hostname in a more robust way (CU-40tzeq).
-
-### Added
-
-- descriptions of the config repo and the pi template files to the README (CU-vf8v9x, CU-vf96g1).
-- additional comments to `heartbeat.py` (CU-vf8v9x).
-- instructions for using the `--limit` flag with `ansible-playbook` (CU-vf96g1)
 
 ## [6.1.0] - 2021-11-29
 

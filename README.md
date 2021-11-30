@@ -94,16 +94,16 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
 The config repo stores many of the files used to configure the Button Hub fleet. It has the following directory structure:
 
-BraveButtonsConfig
-    ansible
-        group_vars
-        inventory-file.yaml
-    button_config
-        button-config-1.csv
-        button-config-2.csv
-    pi_config
-        pi-config-1.ini
-        pi-config-2.ini
+BraveButtonsConfig \
+    ansible \
+        group_vars \
+        inventory-file.yaml \
+    button_config \
+        button-config-1.csv \
+        button-config-2.csv \
+    pi_config \
+        pi-config-1.ini \
+        pi-config-2.ini \
 
 **ansible** contains files used by Ansible to identify and connect to the different devices that make up the Button Hub fleet.
 
@@ -113,7 +113,7 @@ BraveButtonsConfig
 
 **button_config** contains files generated during the Button pairing process. These files can be ingested by scripts located in `./server/db/` that add buttons to our database.
 
-**pi_config** contains INI files used by the `./pi/setup_pi.sh` script to configure the system. these INI files are also used by `./pi/heartbeat.py` as a source of config.
+**pi_config** contains INI files used by the `./pi/setup_pi.sh` script to configure the system. These INI files are also used by `./pi/heartbeat.py` as a source of config.
 
 # How to set up a Brave Hub using Ansible
 
