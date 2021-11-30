@@ -12,10 +12,13 @@ the code was deployed.
 
 ## [Unreleased]
 
-
 ### Changed
 
 - `setup_pi.sh` sets the hostname in a more robust way (CU-40tzeq).
+
+### Added
+
+- descriptions of the config repo and the pi template files to the README (CU-vf8v9x, CU-vf96g1).
 
 ## [6.1.0] - 2021-11-29
 
