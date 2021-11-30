@@ -12,6 +12,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [6.1.0] - 2021-11-29
+
 ### Changed
 
 - `setup_pi.yaml` no longer triggers `apt update` using the apt module since ansible doesn't support allowing releaseinfo changes.
@@ -407,7 +409,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.0.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.1.0...HEAD
+[6.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.0.0...v6.1.0
 [6.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v5.0.0...v6.0.0
 [5.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.0.0...v4.1.0
