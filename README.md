@@ -173,6 +173,8 @@ ansible-playbook -i ~/BraveButtonsConfig/ansible/<inventory file name> \
                  --ask-vault-pass
 ```
 
+Optionally, you can deploy to a subset of the fleet by adding `--limit <host or group name from inventory file>` to the `ansible-playbook` command.
+
 # How to release a new production version & update the entire Button system (server and RPi fleet)
 
 The following instructions apply if you are deploying a new version of the code, optionally including

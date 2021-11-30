@@ -20,6 +20,7 @@ the code was deployed.
 
 - descriptions of the config repo and the pi template files to the README (CU-vf8v9x, CU-vf96g1).
 - additional comments to `heartbeat.py` (CU-vf8v9x).
+- instructions for using the `--limit` flag with `ansible-playbook` (CU-vf96g1)
 
 ## [6.1.0] - 2021-11-29
 
