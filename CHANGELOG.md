@@ -19,6 +19,7 @@ the code was deployed.
 ### Added
 
 - descriptions of the config repo and the pi template files to the README (CU-vf8v9x, CU-vf96g1).
+- additional comments to `heartbeat.py` (CU-vf8v9x).
 
 ## [6.1.0] - 2021-11-29
 
