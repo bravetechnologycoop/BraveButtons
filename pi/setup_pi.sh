@@ -96,8 +96,9 @@ else
   chmod 700 /usr/local/brave
 
   # change the hostname according to the config
+  old_hostname=$(</etc/hostname)
   hosts_file=$(</etc/hosts)
-  hosts_file="${hosts_file//raspberrypi/$hostname}"
+  hosts_file="${hosts_file//$old_hostname/$hostname}"
   echo "$hosts_file" > /etc/hosts
   echo "$hostname" > /etc/hostname
 
