@@ -644,7 +644,7 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
       WHERE i.alert_api_key = $1
       AND (
         s.state = $2
-        OR s.updated_at < now() - $3 * INTERVAL '1 millisecond'
+        OR s.updated_at <= now() - $3 * INTERVAL '1 millisecond'
       )
       ORDER BY s.created_at DESC
       LIMIT $4
