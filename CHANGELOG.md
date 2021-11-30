@@ -12,6 +12,11 @@ the code was deployed.
 
 ## [Unreleased]
 
+
+### Changed
+
+- `setup_pi.sh` sets the hostname in a more robust way (CU-40tzeq).
+
 ## [6.1.0] - 2021-11-29
 
 ### Changed
