@@ -29,6 +29,29 @@
 
 1. run `npm run lint`
 
+# Description of the template files in `./pi/templates`
+
+Each of the files in `./pi/templates` is a template for a system configuration file on the RPi.
+These templates are read by `setup_pi.sh`, modified if needed using values from `pi_config.ini`, and copied to the appropriate location in the file system.
+
+Information about many of these config files can be found in the ARP proxy documentation here: https://wiki.debian.org/BridgeNetworkConnectionsProxyArp
+
+In all of these template files, strings that LOOK_LIKE_THIS will get replaced with values from `pi_config.ini` during the execution of the setup script.
+
+- **autossh_systemd_unit_file.txt** allows systemd to robustly run autossh as a background process. autossh provides our SSH access to the hubs via the remote access server.
+
+- **avahi_daemon.txt** is a configuration file for avahi-daemon, used to enable mDNS relaying (see the documentation linked above).
+
+- **darkstat_init.txt** is a configuration file which enables darkstat, sets the interface for it to listen on, and sets the port that the darkstat admin interface is served on.
+
+- **dhcp_helper.txt** is the configuration file for dhcp-helper, which allows DHCP to work over the network bridge that we create.
+
+- **heartbeat_systemd_unit_file.txt** allows systemd to robustly run our `heartbeat.py` script as a background process.
+
+- **interfaces.txt** is a template file for `/etc/network/interfaces`, the main system file for configuring networking interfaces (eg. the built in ethernet port).
+
+- **wpa_supplicant.txt** is a template file for `/etc/wpa_supplicant/wpa_supplicant.conf`, the main system file for configuring wireless internet access (ie. WiFi).
+
 # How to set up a generic Raspberry Pi environment (for a development environment Brave Hub or the pairing tool):
 
 1. use either Balena Etcher or Raspberry Pi Imager to flash the SD card with Raspbian Buster
@@ -66,6 +89,31 @@
 1. copy `template.pi_config.ini` to `pi_config.ini` and fill out variables appropriately for your local environment
 
 1. run `sudo ./setup_pi.sh pi_config.ini`
+
+# Description of the Brave Buttons config repo
+
+The config repo stores many of the files used to configure the Button Hub fleet. It has the following directory structure:
+
+- BraveButtonsConfig
+    - ansible
+        - group_vars
+        - inventory-file.yaml
+    - button_config
+        - button-config-1.csv
+        - button-config-2.csv
+    - pi_config
+        - pi-config-1.ini
+        - pi-config-2.ini
+
+**ansible** contains files used by Ansible to identify and connect to the different devices that make up the Button Hub fleet.
+
+- **group_vars** contains files that store passwords used to access the Raspberry Pi environment for each group of Button Hubs. These files are encrypted at rest using Ansible Vault.
+
+- **inventory-file.yaml** is an example of an inventory file that contains a formatted YAML object describing the different devices that Ansible can access.
+
+**button_config** contains files generated during the Button pairing process. These files can be ingested by scripts located in `./server/db/` that add buttons to our database.
+
+**pi_config** contains INI files used by the `./pi/setup_pi.sh` script to configure the system. These INI files are also used by `./pi/heartbeat.py` as a source of config.
 
 # How to set up a Brave Hub using Ansible
 
@@ -124,6 +172,8 @@ ansible-playbook -i ~/BraveButtonsConfig/ansible/<inventory file name> \
                  ~/BraveButtons/ops/update_pi_fleet.yaml \
                  --ask-vault-pass
 ```
+
+Optionally, you can deploy to a subset of the fleet by adding `--limit <host or group name from inventory file>` to the `ansible-playbook` command.
 
 # How to release a new production version & update the entire Button system (server and RPi fleet)
 

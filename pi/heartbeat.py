@@ -12,6 +12,10 @@ import pathlib
 import logging
 import logging.handlers
 
+# this file contains a number of functions that are factored out to improve testability & structure
+# at the end of the file, there is a block that only executes when this file is running as a script
+# this last block contains the run loop that implements the long-running behaviour of the heartbeat process
+
 config = configparser.ConfigParser()
 configPath = pathlib.Path(os.path.dirname(__file__)) / 'pi_config.ini'
 config.read(str(configPath))
@@ -25,8 +29,10 @@ LED_PIN = 9
 def get_system_id_from_path(path):
     with open(path, 'r+') as system_id_file:
         contents = system_id_file.read()
+        # check if an appropriately formatted system_id is present
         if len(contents) == 36:
             return contents
+        # if not, we need to create one
         else:
             system_id = str(uuid.uuid4())
             if len(system_id) != 36:
@@ -36,6 +42,7 @@ def get_system_id_from_path(path):
 
 def get_darkstat_html():
     try:
+        # darkstat is set to port 8888 in pi/templates/darkstat_init.txt
         conn = http.client.HTTPConnection('localhost:8888',timeout=10)
         conn.request('GET', r'/hosts/?full=yes&sort=lastseen')
         res = conn.getresponse()
@@ -172,6 +179,7 @@ def run_loop_delay(min_delay, last_run_time):
 
 run_loop_last_run_time = datetime.datetime.now()
 
+# this block executes when running as a script
 if __name__ == '__main__':
 
     # only import pi-specific libraries when running as a script
@@ -203,6 +211,7 @@ if __name__ == '__main__':
         system_ok = False
         system_id = get_system_id_from_path('/usr/local/brave/system_id')
 
+        # main run loop
         while True:
             try:
                 if NETWORK_INTERFACE == 'wlan0':
@@ -225,9 +234,11 @@ if __name__ == '__main__':
                 logging.warning('error in main loop', exc_info=e)
             finally:
                 if system_ok:
+                    # turn on Flic Hub power & status LED
                     relay.on()
                     led.on()
                 else:
+                    # turn off Flic Hub power & status LED
                     relay.off()
                     led.off()
 
