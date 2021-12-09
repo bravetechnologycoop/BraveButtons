@@ -1,18 +1,19 @@
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto"'
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/001-setup.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/002-addinstallations.sql -v installationName="'$1'" -v responderPhone="'$2'" -v fallbackPhone="'$3'"
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/003-setinstallationconstraints.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/004-addalertflag.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/005-addincidentcategories.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/006-addhubs.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/007-addbatterymonitoring.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/008-alternumpressestonumeric.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/009-addactiveflag.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/010-addbatteryleveltosessions.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/011-alterfallbackphonenumbertobeanarray.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/012-renameregistrytobuttons.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/013-addapikeytoinstallations.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/014-addrespondedattosessions.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/015-addnotifications.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/016-addresponderpushidtoinstallations.sql
-sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -f ./db/017-addinstallationforeignkeytohubs.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto"'
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/001-setup.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/002-addinstallations.sql -v installationName="'$1'" -v responderPhone="'$2'" -v fallbackPhone="'$3'"
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/003-setinstallationconstraints.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/004-addalertflag.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/005-addincidentcategories.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/006-addhubs.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/007-addbatterymonitoring.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/008-alternumpressestonumeric.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/009-addactiveflag.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/010-addbatteryleveltosessions.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/011-alterfallbackphonenumbertobeanarray.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/012-renameregistrytobuttons.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/013-addapikeytoinstallations.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/014-addrespondedattosessions.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/015-addnotifications.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/016-addresponderpushidtoinstallations.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/017-addinstallationforeignkeytohubs.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/018-notnullinstallationidandlocationdescription.sql
