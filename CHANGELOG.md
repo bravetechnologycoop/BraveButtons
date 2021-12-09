@@ -23,6 +23,7 @@ the code was deployed.
 
 - `setup_pi.sh` sets the hostname in a more robust way (CU-40tzeq).
 - Updated `add_hubs.sh` to include an installation id foreign key (CU-vf8x83).
+- No longer required to type the certbot domain during deployment (CU-brhk3t).
 
 ### Removed
 
