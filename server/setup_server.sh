@@ -22,6 +22,8 @@ else
             export PG_HOST="$value"
         elif [[ "$name" == "PG_PORT" ]]; then
             export PG_PORT="$value"
+        elif [[ "$name" == "DOMAIN" ]]; then
+            domain="$value"
         fi
     done < $1
 
@@ -50,7 +52,8 @@ else
     echo "NOTE that this will have no effect if this script has already been run"
     read installationName responderNumber fallbackNumber
 
-    certbot certonly --standalone
+    # Get the certbot certificate and choose option "1" to keep the existing certificate (as opposed option "2" to renew and replace it)
+    printf "1" | certbot certonly --standalone -d $domain
 
     # Allow brave user access to certificate even if these commands have already been run before
     # https://stackoverflow.com/questions/48078083/lets-encrypt-ssl-couldnt-start-by-error-eacces-permission-denied-open-et#answer-54903098
