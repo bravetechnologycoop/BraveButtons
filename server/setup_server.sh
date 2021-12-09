@@ -50,8 +50,6 @@ else
     echo "NOTE that this will have no effect if this script has already been run"
     read installationName responderNumber fallbackNumber
 
-    ./setup_postgresql.sh $installationName $responderNumber $fallbackNumber
-
     certbot certonly --standalone
 
     # Allow brave user access to certificate even if these commands have already been run before
@@ -81,8 +79,13 @@ else
     runuser -u brave -- pm2 set pm2-logrotate:rotateInterval '0 0 1 1 *'
     env PATH=$PATH:/usr/local/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u brave --hp /home/brave
 
-    # ensure that a new process is started or that a running process is restarted
+    # stop the process if it's running
     runuser -u brave -- pm2 stop ecosystem.config.js --env production
+
+    # update the database
+    ./setup_postgresql.sh $installationName $responderNumber $fallbackNumber
+
+    # start a new process is started
     runuser -u brave -- pm2 start ecosystem.config.js --env production
     
     cd $original_dir
