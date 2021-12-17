@@ -1,4 +1,4 @@
-# BraveButtons [![Build Status](https://travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=main)](https://travis-ci.com/bravetechnologycoop/BraveButtons)
+# BraveButtons [![Build Status](https://app.travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=main)](https://app.travis-ci.com/bravetechnologycoop/BraveButtons)
 
 # How to set up a local server dev environment
 
@@ -54,7 +54,7 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
 # How to set up a generic Raspberry Pi environment (for a development environment Brave Hub or the pairing tool):
 
-1. use either Balena Etcher or Raspberry Pi Imager to flash the SD card with Raspbian Buster
+1. use either Balena Etcher or Raspberry Pi Imager to flash the SD card with Raspbian Buster (Lite)
 
 1. create a file named `ssh` in the boot partition of the SD card
 
@@ -80,13 +80,13 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
 1. to start the pairing tool, run `npm start`
 
-# How to set up a Brave Hub
+# How to set up a Brave Hub without Ansible
 
 1. follow the generic RPi setup instructions above
 
 1. cd into the `BraveButtons/pi` directory
 
-1. copy `template.pi_config.ini` to `pi_config.ini` and fill out variables appropriately for your local environment
+1. copy `example.pi_config.ini` to `pi_config.ini` and fill out variables appropriately for your local environment
 
 1. run `sudo ./setup_pi.sh pi_config.ini`
 
@@ -117,7 +117,21 @@ The config repo stores many of the files used to configure the Button Hub fleet.
 
 # How to set up a Brave Hub using Ansible
 
-1. use either Balena Etcher or Raspberry Pi Imager to flash the SD card with Raspbian Buster
+1. on your local machine:
+
+   1. install the latest Balena Etcher or Raspberry Pi Imager
+
+   1. download the latest Raspbian **Buster Lite** image (do not use Bullseye)
+
+   1. install ansible (see https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
+   1. if your local machine is a Linux environment, install sshpass, which is used by ansible: `apt install sshpass`
+
+1. Copy the Serial Number and Factory Password from the back of the Flic Hub to the Buttons Config Google Sheet
+
+1. Plug the Flic Hub into a router that you had admin access to, determine its MAC address, and add it to the Buttons Config Google Sheet
+
+1. use either Balena Etcher or Raspberry Pi Imager to flash the SD card with Raspbian **Buster Lite**
 
 1. create a file named `ssh` in the boot partition of the SD card
 
@@ -125,23 +139,23 @@ The config repo stores many of the files used to configure the Button Hub fleet.
 
 1. plug the RPi into a router that you have admin access to and determine its IP address
 
-1. on your local machine, install ansible (see https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+1. on your local machine, ensure that this repo (BraveButtons) and the config repo (BraveButtonsConfig) are present and are on their latest `production` branches
 
-1. on your local machine, ensure that this repo (BraveButtons) and the config repo (BraveButtonsConfig) are present
+1. In BraveButtonsConfig:
 
-1. ensure that the new Brave Hub has been added to the appropriate inventory file
+   1. ensure that the new Brave Hub has been added to the appropriate inventory file in `BraveButtonsConfig/ansible`
 
-1. ensure that the new Brave Hub's password has been added to the appropriate `group_vars` file
+   1. ensure that the new Brave Hub's password has been added to the appropriate file in `BraveButtonsConfig/ansible/group_vars`
 
-1. if you have not already used SSH to connect to the RPi from your local machine, manually attempt to do so. This will ensure that the RPi's SSH public key is accepted by your machine while programming is in progress.
-
-1. if your local machine is a Linux environment, install sshpass, which is used by ansible: `apt install sshpass`
+   1. create the new Brave Hub's `.ini` file in `/pi_congfig` and fill in the appropriate values
 
 1. run `ssh-agent bash` to start a new `ssh-agent` shell
 
 1. run `ssh-add ~/.ssh/id_rsa` to add your ssh key to `ssh-agent` (for access to the remote access server)
 
-1. run the following mega-command:
+1. if you have not already used SSH to connect to the RPi from your local machine, manually attempt to do so with the default password. This will ensure that the RPi's SSH public key is accepted by your machine while programming is in progress.
+
+3. run the following mega-command:
 
    ```
    ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
@@ -151,11 +165,17 @@ The config repo stores many of the files used to configure the Button Hub fleet.
                  --ask-vault-pass
    ```
 
-1. ssh into the RPi and restart the RPi by running `sudo reboot now`
+1. ssh into the RPi with its new password and restart the RPi by running `sudo reboot now`
 
-1. ssh into the RPi and copy the system_id from `/usr/local/brave/system_id` and add it to the Button Config Google Sheet
+1. if the RPi is configured to use wifi, unplug it from the router
 
-1. add an entry for the new hub to the `hubs` table in the db
+1. ssh into the RPi through the remote access server and 
+
+   1. copy the system_id from `/usr/local/brave/system_id` and add it to the Button Config Google Sheet
+
+   1. if the RPi is configured to use wifi, copy the wlan0's ether MAC address from `ifconfig` and add it to the Buttons Config Google Sheet
+
+1. add an entry for the new hub to the `hubs` table in the db with the `system_id` from the previous step
 
 # How to deploy updates to the RPi fleet using Ansible
 
