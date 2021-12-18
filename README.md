@@ -74,7 +74,9 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
 1. cd into the `BraveButtons/pairing-tool` directory
 
-1. run `npm install`
+1. copy `.env.example` to `.env` and fill out variables appropriately for the environment where you want the Buttons to be paired into
+
+1. run `sudo ./setup_pi.sh`
 
 1. run `sudo ./start_flicd.sh`
 
@@ -95,15 +97,15 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 The config repo stores many of the files used to configure the Button Hub fleet. It has the following directory structure:
 
 - BraveButtonsConfig
-    - ansible
-        - group_vars
-        - inventory-file.yaml
-    - button_config
-        - button-config-1.csv
-        - button-config-2.csv
-    - pi_config
-        - pi-config-1.ini
-        - pi-config-2.ini
+  - ansible
+    - group_vars
+    - inventory-file.yaml
+  - button_config
+    - button-config-1.csv
+    - button-config-2.csv
+  - pi_config
+    - pi-config-1.ini
+    - pi-config-2.ini
 
 **ansible** contains files used by Ansible to identify and connect to the different devices that make up the Button Hub fleet.
 
@@ -155,7 +157,7 @@ The config repo stores many of the files used to configure the Button Hub fleet.
 
 1. if you have not already used SSH to connect to the RPi from your local machine, manually attempt to do so with the default password. This will ensure that the RPi's SSH public key is accepted by your machine while programming is in progress.
 
-3. run the following mega-command:
+1. run the following mega-command:
 
    ```
    ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
@@ -169,7 +171,7 @@ The config repo stores many of the files used to configure the Button Hub fleet.
 
 1. if the RPi is configured to use wifi, unplug it from the router
 
-1. ssh into the RPi through the remote access server and 
+1. ssh into the RPi through the remote access server and
 
    1. copy the system_id from `/usr/local/brave/system_id` and add it to the Button Config Google Sheet
 
