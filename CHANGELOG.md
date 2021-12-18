@@ -18,6 +18,7 @@ the code was deployed.
 - Instructions for using the `--limit` flag with `ansible-playbook` (CU-vf96g1).
 - Send outage notifications to responder phone along with instructions for power-cycling hubs (CU-vf8x83).
 - Send reminders about hub outages (CU-vf8x83).
+- Pairing tool can directly buy phone numbers from Twilio (CU-1tdma20).
 
 ### Changed
 
