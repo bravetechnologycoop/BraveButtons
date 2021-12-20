@@ -89,6 +89,7 @@ async function scanAndPairOneButton() {
                   e,
                 )
                 resolve()
+                return
               }
 
               try {

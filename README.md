@@ -68,19 +68,67 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
 1. clone this repository.
 
-# How to set up the pairing tool
+1. check out the latest production version `git checkout production && git pull origin production`
 
-1. follow the generic RPi setup instructions above
+# How to configure new Buttons
 
-1. cd into the `BraveButtons/pairing-tool` directory
+1. create a Button Config CSV
 
-1. copy `.env.example` to `.env` and fill out variables appropriately for the environment where you want the Buttons to be paired into
+   1. option 1: Use the Pairing Tool (recommended when pairing a lot of Buttons or when pairing Buttons that need a new phone number)
 
-1. run `sudo ./setup_pi.sh`
+      1. ssh into the RPi that is running the pairing tool
 
-1. run `sudo ./start_flicd.sh`
+      1. follow the generic RPi setup instructions above
 
-1. to start the pairing tool, run `npm start`
+      1. cd into the `BraveButtons/pairing-tool` directory
+
+      1. run `sudo ./setup_pi.sh`
+
+      1. copy `.env.example` to `.env` and fill out variables appropriately for the environment where you want the Buttons to be paired into, if not already done
+
+      1. run `sudo ./start_flicd.sh`
+
+      1. to start the pairing tool, run `npm start` and follow the on-screen prompts
+
+      1. copy the resulting `pairing-tool-output-*.csv` file to the `BraveButtonsConfig/button_config` folder your local machine
+
+   1. option 2: Use the Flic App (recommended when pairing a small number of replacement Buttons)
+
+      1. plug in a Flic Hub that you have access to
+
+      1. open the Flic App on a phone and pair the Button to the Hub
+
+      1. on the newly added Button add the "Internet Request" to `POST https://chatbot-dev.brave.coop/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
+
+      1. press the Button and see it jiggle in the Flic App
+
+      1. login to `chatbot-dev.brave.coop` and look at the logs using `pm2 logs`. You will see a line similar to
+
+         `Bad request to /flic_button_press: Serial Number is not registered. Serial Number for '416' is BA48-A35308`
+
+      1. on your local machine, create a CSV file in the `BraveButtonsConfig/button_config` folder that conforms to the rest of the CSV files in that folder, uses any unused GUID as the `button_id` and uses the `serial_number` from the log. Do this as many times as needed to make a line in the CSV for every Button you want to pair
+
+      1. **_IMPORTANT_** be sure to have a single blank line at the end of the CSV or else the last button will not end up in the database. Copy the other files to be sure that you do this correctly
+
+   1. rename it to be similar to the other `.csv` files in that folder
+
+   1. commit the file to the `BraveButtonsConfig` repo
+
+   1. scp the CSV file to the `chatbot` or `chatbot-dev` server depending on where you want to add the Buttons
+
+1. add the Buttons to the database
+
+   1. ssh onto the `chatbot` or `chatbot-dev` server depending on where you want to add the Buttons
+
+   1. run the `BraveButtons/server/db/add_buttons_to_installation.sh` script with the `BraveButtons/server/.env` file and the CSV file that you just SCP'ed here
+
+1. pair the Buttons to their real Hub
+
+   1. open the Flic App on a phone, connect to the Hub, and pair all the Buttons to it and name each Button its unit
+
+   1. configure a single Button's "Click" action (do not add anything under "Double Click" or "Hold") by adding an "Internet Request" to `POST https://chatbot-dev.brave.coop/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
+
+   1. to configure the rest of the Buttons in bulk, open the Button whose configuration you want to clone, go to "Settings" --> "Clone Config" --> "Select All"
 
 # How to set up a Brave Hub without Ansible
 
@@ -362,10 +410,3 @@ or save it to an intervening file, and then input this file to the database
 `PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require < bravedata.sql`
 
 When performing a migration, make sure to connect directly to the target database rather than through a connection pool.
-
-# How to pair a button with the 'Internet Request' Flic action
-
-1. Once you've run the pairing tool and button registering scripts, pair the button and select 'Internet Request' from the list of Flic actions under "Click" (do not add anything under "Double Click" or "Hold"). NOTE: this method will _not work from a button that has been paired to a smartphone_. _A Flic hub is required to make this work_
-
-2. Select the POST request button, and input the url as follows:
-   `https://chatbot.brave.coop/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
