@@ -32,7 +32,7 @@ else
     ufw allow ssh
     ufw allow http
     ufw allow https
-    ufw enable
+    ufw --force enable  # needed to add '--force' to avoid interactive confirmation (https://askubuntu.com/questions/611749/how-to-run-ufw-without-interactive-mode)
 
     apt update
     apt install software-properties-common
@@ -43,10 +43,6 @@ else
     PATH=$PATH        # needed to set the new path for this version of node
     setcap cap_net_bind_service=+ep /usr/local/bin/node   # allows non-root to use port 443
     npm ci
-
-    echo "Please enter in order the name and responder phone number and one fallback phone number for the first installation (separated by a space):" 
-    echo "NOTE that this will have no effect if this script has already been run"
-    read installationName responderNumber fallbackNumber
 
     # Get the certbot certificate and choose option "1" to keep the existing certificate (as opposed option "2" to renew and replace it)
     printf "1" | certbot certonly --standalone -d $domain
@@ -82,7 +78,7 @@ else
     runuser -u brave -- pm2 stop ecosystem.config.js --env production
 
     # update the database
-    ./setup_postgresql.sh $installationName $responderNumber $fallbackNumber
+    ./setup_postgresql.sh
 
     # start a new process is started
     runuser -u brave -- pm2 start ecosystem.config.js --env production
