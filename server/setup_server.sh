@@ -27,13 +27,9 @@ else
         fi
     done < $1
 
-    echo "please enter two IP addresses to allowlist for SSH (separated by a space):"
-    read firstIP secondIP
-
     ufw default deny incoming
     ufw default allow outgoing
-    ufw allow from $firstIP to any port 22
-    ufw allow from $secondIP to any port 22
+    ufw allow ssh
     ufw allow http
     ufw allow https
     ufw enable
