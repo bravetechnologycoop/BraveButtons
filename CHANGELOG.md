@@ -31,7 +31,8 @@ the code was deployed.
 
 - Usage of deprecated `body-parser` module (CU-13kqxyt).
 - Usage of deprecated `moment` module for time-related code.
-- IP-specific firewall rules (CU-brhk3t).
+- IP-specific firewall rules in the server setup script (CU-brhk3t).
+- Interactive DB configuration of the initial installation in the server setup script (CU-brhk3t).
 
 ### Fixed
 
