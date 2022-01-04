@@ -1,29 +1,25 @@
 /* eslint-disable no-continue */
 const fs = require('fs')
-const Validator = require('express-validator')
 const express = require('express')
 const https = require('https')
 const { Parser } = require('json2csv')
 const { format, utcToZonedTime } = require('date-fns-tz')
 
-const jsonBodyParser = express.json()
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const Mustache = require('mustache')
-const { ALERT_TYPE, helpers } = require('brave-alert-lib')
+const { helpers } = require('brave-alert-lib')
 
 const BraveAlerterConfigurator = require('./BraveAlerterConfigurator.js')
 const db = require('./db/db.js')
 const vitals = require('./vitals.js')
+const routes = require('./routes.js')
+const buttons = require('./buttons.js')
 
-const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
 const DASHBOARD_TIMEZONE = 'America/Vancouver'
 const DASHBOARD_FORMAT = 'dd MMM Y, hh:mm:ss aaa zzz'
 
 const app = express()
-
-const unrespondedSessionReminderTimeoutMillis = helpers.getEnvVar('REMINDER_TIMEOUT_MS')
-const unrespondedSessionAlertTimeoutMillis = helpers.getEnvVar('FALLBACK_TIMEOUT_MS')
 
 const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/heartbeatDashboard.mst`, 'utf-8')
 const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/chatbotDashboard.mst`, 'utf-8')
@@ -33,111 +29,15 @@ app.use(express.urlencoded({ extended: true }))
 // Configure BraveAlerter
 const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
 
-vitals.setupVitals(braveAlerter, heartbeatDashboardTemplate)
+vitals.setup(braveAlerter, heartbeatDashboardTemplate)
+
+buttons.setup(braveAlerter)
+
+// Add routes
+routes.configureRoutes(app)
 
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
-
-async function handleValidRequest(button, numPresses, batteryLevel) {
-  helpers.log(
-    `UUID: ${button.button_id.toString()} SerialNumber: ${
-      button.button_serial_number
-    } Unit: ${button.unit.toString()} Presses: ${numPresses.toString()} BatteryLevel: ${batteryLevel}`,
-  )
-
-  let client
-
-  try {
-    client = await db.beginTransaction()
-    if (client === null) {
-      helpers.logError(`handleValidRequest: Error starting transaction`)
-      return
-    }
-
-    let currentSession = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
-    const currentTime = await db.getCurrentTime(client)
-
-    if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-      if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-        currentSession = await db.createSession(
-          button.installation_id,
-          button.button_id,
-          button.unit,
-          button.phone_number,
-          numPresses,
-          batteryLevel,
-          null,
-          client,
-        )
-      } else {
-        currentSession.incrementButtonPresses(numPresses)
-        currentSession.updateBatteryLevel(batteryLevel)
-        await db.saveSession(currentSession, client)
-      }
-    } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(
-        button.installation_id,
-        button.button_id,
-        button.unit,
-        button.phone_number,
-        numPresses,
-        null,
-        null,
-        client,
-      )
-    } else {
-      currentSession.incrementButtonPresses(numPresses)
-      await db.saveSession(currentSession, client)
-    }
-
-    const installation = await db.getInstallationWithInstallationId(currentSession.installationId, client)
-
-    if (currentSession.numPresses === 1) {
-      const alertInfo = {
-        sessionId: currentSession.id,
-        toPhoneNumber: installation.responderPhoneNumber,
-        fromPhoneNumber: currentSession.phoneNumber,
-        responderPushId: installation.responderPushId,
-        deviceName: currentSession.unit,
-        alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
-        message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
-        reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
-        fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
-        reminderMessage:
-          'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
-        fallbackMessage: `There has been an unresponded request at ${installation.name} unit ${currentSession.unit.toString()}`,
-        fallbackToPhoneNumbers: installation.fallbackPhoneNumbers,
-        fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
-      }
-      braveAlerter.startAlertSession(alertInfo)
-    } else if (
-      currentSession.numPresses % 5 === 0 ||
-      currentSession.numPresses === 2 ||
-      currentTime - currentSession.updatedAt >= SUBSEQUENT_URGENT_MESSAGE_THRESHOLD
-    ) {
-      braveAlerter.sendAlertSessionUpdate(
-        currentSession.id,
-        installation.responderPushId,
-        installation.responderPhoneNumber,
-        currentSession.phoneNumber,
-        `This in an urgent request. The button has been pressed ${currentSession.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
-        `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT)} Alert:\n${currentSession.unit.toString()}`,
-      )
-    } else {
-      // no alert to be sent
-    }
-
-    await db.commitTransaction(client)
-  } catch (e) {
-    try {
-      await db.rollbackTransaction(client)
-      helpers.logError(`handleValidRequest: Rolled back transaction because of error: ${e}`)
-    } catch (error) {
-      // Do nothing
-      helpers.logError(`handleValidRequest: Error rolling back transaction: ${error} Rollback attempted because of error: ${e}`)
-    }
-  }
-}
 
 app.use(cookieParser())
 
@@ -312,52 +212,6 @@ app.get('/logout', (req, res) => {
   } else {
     res.redirect('/login')
   }
-})
-
-app.post('/flic_button_press', Validator.header(['button-serial-number']).exists(), async (req, res) => {
-  try {
-    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-    if (validationErrors.isEmpty()) {
-      const serialNumber = req.get('button-serial-number')
-      const batteryLevel = req.get('button-battery-level')
-      const buttonName = req.get('button-name')
-      const apiKey = req.query.apikey
-
-      // Log the vaiditiy of the API key
-      if (apiKey !== helpers.getEnvVar('FLIC_BUTTON_PRESS_API_KEY')) {
-        helpers.logError(`INVALID api key from '${buttonName}' (${serialNumber})`)
-        res.status(401).send()
-        return
-      }
-
-      const button = await db.getButtonWithSerialNumber(serialNumber)
-      if (button === null) {
-        const errorMessage = `Bad request to ${req.path}: Serial Number is not registered. Serial Number for '${buttonName}' is ${serialNumber}`
-        helpers.logError(errorMessage)
-        res.status(400).send(`Bad request to ${req.path}: Serial Number is not registered`)
-      } else {
-        await handleValidRequest(button, 1, batteryLevel)
-
-        res.status(200).send()
-      }
-    } else {
-      const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
-      helpers.logError(errorMessage)
-      res.status(400).send(errorMessage)
-    }
-  } catch (err) {
-    helpers.logError(err)
-    res.status(500).send()
-  }
-})
-
-app.post('/heartbeat', jsonBodyParser, async (req, res) => {
-  vitals.handleHeartbeat(req, res)
-})
-
-app.get('/heartbeatDashboard', async (req, res) => {
-  vitals.handleHeartbeatDashboard(req, res)
 })
 
 let server
