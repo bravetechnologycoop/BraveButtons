@@ -7,7 +7,7 @@ const db = require('./db/db.js')
 let braveAlerter
 let heartbeatDashboardTemplate
 
-function setupVitals(braveAlerterObj, heartbeatDashboardTemplateObj) {
+function setup(braveAlerterObj, heartbeatDashboardTemplateObj) {
   braveAlerter = braveAlerterObj
   heartbeatDashboardTemplate = heartbeatDashboardTemplateObj
 }
@@ -175,7 +175,7 @@ async function handleHeartbeat(req, res) {
 
 module.exports = {
   checkHeartbeat,
-  setupVitals,
   handleHeartbeat,
   handleHeartbeatDashboard,
+  setup,
 }
