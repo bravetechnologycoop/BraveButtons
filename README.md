@@ -1,5 +1,75 @@
 # BraveButtons [![Build Status](https://app.travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=main)](https://app.travis-ci.com/bravetechnologycoop/BraveButtons)
 
+# How to release a new production version & update the entire Button system (server and RPi fleet)
+
+The following instructions apply if you are deploying a new version of the code, optionally including
+updates to the config repo and/or changes to the config repo schema. If you are only deploying changes
+to the config repo that do not change the schema (eg. adding a new hub, or changing a WiFi password)
+then it is not necessary to create a new numbered version. In this case you can skip step 1 and skip
+making a new tag during step 2. This is essentially redeploying an older version with new config.
+
+1. check the deployment ClickUp Task for any comments or SubTasks that could affect these deployment steps.
+
+1. on your local machine, in the `BraveButtons` repository:
+
+   1. pull the latest code ready for release: `git checkout main && git pull origin main`
+
+   1. decide on an appropriate version number for the new version
+
+   1. update CHANGELOG.md by moving everything in `Unreleased` to a section for the new version
+
+   1. make a new commit directly on `main` which only updates the changelog
+
+   1. tag the new commit - for example, if the version number is v1.0.0, use `git tag v1.0.0`
+
+   1. push the new version to GitHub: `git push origin main --tags`
+
+   1. update the `production` branch: `git checkout production && git merge main && git push origin production`
+
+1. on your local machine, in the `BraveButtonsConfig` repository:
+
+   1. ensure you have the latest version of the code: `git pull origin main`
+
+   1. tag the latest commit with the same version number used above, ie. `git tag v1.0.0`
+
+   1. update the `production` branch: `git checkout production && git merge main && git push origin production --tags`
+
+1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that you are doing a deployment and to expect some downtime.
+
+1. send a text message to all of the Responder phones letting them know that you are doing some routine maintenance, there will be downtime, and that you will notify them when everything is back to normal again. For example: "Notice: Your Brave Buttons System is down for maintenance. During this time, Button presses will not trigger an alert. You will receive another text message when everything is back online. Thank you for your patience. Have a nice day."
+
+1. on the production Buttons server (access using ssh):
+
+   1. cd into the `BraveButtons/server` directory
+
+   1. shut down the server process and ensure that environment variables are not cached: `pm2 kill`
+
+1. on the production remote access server (access using ssh):
+
+   1. update the code: `cd ~/BraveButtons && git checkout production && git pull origin production`
+
+   1. update the config: `cd ~/BraveButtonsConfig && git checkout production && git pull origin production`
+
+   1. run the following command:
+
+      ```
+      ansible-playbook -i ~/BraveButtonsConfig/ansible/inventory-prod.yaml ~/BraveButtons/ops/update_pi_fleet.yaml --ask-vault-pass
+      ```
+
+   Optionally, you can deploy to a subset of the fleet by adding `--limit <host or group name from inventory file>` to the `ansible-playbook` command.
+
+1. back on the production Buttons server (access using ssh):
+
+   1. pull the latest production code: `git checkout production && git pull origin production`
+
+   1. run the server setup script: `sudo ./setup_server.sh ./.env`
+
+1. open the chatbot and heartbeat dashboards and confirm that everything appears to be working normally
+
+1. send a text message to all of the Responder phones letting them know that everything is back to normal. For example "Notice: Your Brave Buttons System is now back online and functioning normally. Thank you!"
+
+1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that the deployment is finished and list the changes in this deployment from the `CHANGELOG`
+
 # How to set up a local server dev environment
 
 1. clone this repository
@@ -226,80 +296,6 @@ The config repo stores many of the files used to configure the Button Hub fleet.
    1. if the RPi is configured to use wifi, copy the wlan0's ether MAC address from `ifconfig` and add it to the Buttons Config Google Sheet
 
 1. add an entry for the new hub to the `hubs` table in the db with the `system_id` from the previous step
-
-# How to deploy updates to the RPi fleet using Ansible
-
-1. ssh into the appropriate remote access server
-
-1. update the code: `cd ~/BraveButtons && git checkout production && git pull origin production`
-
-1. update the config: `cd ~/BraveButtonsConfig && git checkout production && git pull origin production`
-
-1. run the following command:
-
-```
-ansible-playbook -i ~/BraveButtonsConfig/ansible/<inventory file name> \
-                 ~/BraveButtons/ops/update_pi_fleet.yaml \
-                 --ask-vault-pass
-```
-
-Optionally, you can deploy to a subset of the fleet by adding `--limit <host or group name from inventory file>` to the `ansible-playbook` command.
-
-# How to release a new production version & update the entire Button system (server and RPi fleet)
-
-The following instructions apply if you are deploying a new version of the code, optionally including
-updates to the config repo and/or changes to the config repo schema. If you are only deploying changes
-to the config repo that do not change the schema (eg. adding a new hub, or changing a WiFi password)
-then it is not necessary to create a new numbered version. In this case you can skip step 1 and skip
-making a new tag during step 2. This is essentially redeploying an older version with new config.
-
-1. check the deployment ClickUp Task for any comments or SubTasks that could affect these deployment steps.
-
-1. on your local machine, in the `BraveButtons` repository:
-
-   1. pull the latest code ready for release: `git checkout main && git pull origin main`
-
-   1. decide on an appropriate version number for the new version
-
-   1. update CHANGELOG.md by moving everything in `Unreleased` to a section for the new version
-
-   1. make a new commit directly on `main` which only updates the changelog
-
-   1. tag the new commit - for example, if the version number is v1.0.0, use `git tag v1.0.0`
-
-   1. push the new version to GitHub: `git push origin main --tags`
-
-   1. update the `production` branch: `git checkout production && git merge main && git push origin production`
-
-1. on your local machine, in the `BraveButtonsConfig` repository:
-
-   1. ensure you have the latest version of the code: `git pull origin main`
-
-   1. tag the latest commit with the same version number used above, ie. `git tag v1.0.0`
-
-   1. update the `production` branch: `git checkout production && git merge main && git push origin production --tags`
-
-1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that you are doing a deployment and to expect some downtime.
-
-1. send a text message to all of the Responder phones letting them know that you are doing some routine maintenance, there will be downtime, and that you will notify them when everything is back to normal again. For example: "Notice: Your Brave Buttons System is down for maintenance. During this time, Button presses will not trigger an alert. You will receive another text message when everything is back online. Thank you for your patience. Have a nice day."
-
-1. on the production Buttons server (access using ssh):
-
-   1. cd into the `BraveButtons/server` directory
-
-   1. shut down the server process: `pm2 stop BraveServer`
-
-   1. update the RPi fleet as described above (in a separate ssh session)
-
-   1. pull the latest production code: `git checkout production && git pull origin production`
-
-   1. run the server setup script: `sudo ./setup_server.sh ./.env`
-
-1. open the chatbot and heartbeat dashboards and confirm that everything appears to be working normally
-
-1. send a text message to all of the Responder phones letting them know that everything is back to normal. For example "Notice: Your Brave Buttons System is now back online and functioning normally. Thank you!"
-
-1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that the deployment is finished and list the changes in this deployment from the `CHANGELOG`
 
 # How to check the logs
 
