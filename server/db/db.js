@@ -89,7 +89,7 @@ async function beginTransaction() {
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await client.query('LOCK TABLE sessions, buttons, installations, migrations')
+    await client.query('LOCK TABLE sessions, buttons, installations, migrations, hubs, notifications')
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
     if (client) {
