@@ -4,8 +4,9 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 const { CHATBOT_STATE, ALERT_TYPE } = require('brave-alert-lib')
 
 // In-house dependencies
-const db = require('../../../db/db.js')
-const SessionState = require('../../../SessionState.js')
+const db = require('../../../db/db')
+const SessionState = require('../../../SessionState')
+const { buttonDBFactory } = require('../../testingHelpers')
 
 describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
   describe('if there are no installations with the given Alert API Key', () => {
@@ -15,9 +16,11 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       // Insert a single installation with a single button that has a single session that doesn't match the Alert API Key that we ask for
       await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1","cat2"}', 'alertApiKey', 'pushId')
       const installationId = (await db.getInstallations())[0].id
-      const buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
-      await db.createButton(buttonId, installationId, 'unit', 'phoneNumber', 'serialNumber')
-      await db.createSession(installationId, buttonId, 'unit', 'phoneNumber', 5, 95, new Date())
+      const button = await buttonDBFactory(db, {
+        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
+        installationId,
+      })
+      await db.createSession(installationId, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date())
     })
 
     afterEach(async () => {
@@ -38,9 +41,11 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       // Insert a single installation with a single button that has a single session that doesn't match the Alert API Key that we ask for
       await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', 'not our API key', 'pushId')
       const installationId = (await db.getInstallations())[0].id
-      const buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
-      await db.createButton(buttonId, installationId, 'unit', 'phoneNumber', 'serialNumber')
-      await db.createSession(installationId, buttonId, 'unit', 'phoneNumber', 5, 95, new Date())
+      const button = await buttonDBFactory(db, {
+        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
+        installationId,
+      })
+      await db.createSession(installationId, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date())
 
       // Insert a single installation with no sessions that matches the Alert API Key that we ask for
       this.alertApiKey = 'alertApiKey'
@@ -66,15 +71,25 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       this.alertApiKey = 'alertApiKey'
       await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1","cat2"}', this.alertApiKey, 'pushId')
       this.installationId = (await db.getInstallations())[0].id
-      this.buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
-      this.unit = 'unit1'
-      await db.createButton(this.buttonId, this.installationId, this.unit, 'phoneNumber1', 'serialNumber1')
+      this.button = await buttonDBFactory(db, {
+        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
+        installationId: this.installationId,
+        unit: 'unit1',
+      })
 
       // Insert a single session for that API key
       this.incidentType = ALERT_TYPE.BUTTONS_URGENT
       this.numPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
-      this.session = await db.createSession(this.installationId, this.buttonId, this.unit, 'phoneNumber', this.numPresses, 95, this.respondedAt)
+      this.session = await db.createSession(
+        this.installationId,
+        this.button.buttonId,
+        this.button.unit,
+        'phoneNumber',
+        this.numPresses,
+        95,
+        this.respondedAt,
+      )
       await db.saveSession(
         new SessionState(
           this.session.id,
@@ -107,7 +122,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         {
           id: this.session.id,
           state: CHATBOT_STATE.WAITING_FOR_CATEGORY,
-          unit: this.unit,
+          unit: this.button.unit,
           num_presses: this.numPresses,
           incident_categories: ['cat1', 'cat2'],
           created_at: this.session.createdAt,
@@ -124,10 +139,20 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       this.alertApiKey = 'alertApiKey'
       await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
       const installationId = (await db.getInstallations())[0].id
-      const buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
-      const unit = 'unit1'
-      await db.createButton(buttonId, installationId, unit, 'phoneNumber1', 'serialNumber1')
-      this.session = await db.createSession(installationId, buttonId, unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
+      const button = await buttonDBFactory(db, {
+        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
+        installationId,
+        unit: 'unit1',
+      })
+      this.session = await db.createSession(
+        installationId,
+        button.buttonId,
+        button.unit,
+        'phoneNumber',
+        '1',
+        95,
+        new Date('2021-01-20T06:20:19.000Z'),
+      )
     })
 
     afterEach(async () => {
@@ -199,10 +224,20 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       this.alertApiKey = 'alertApiKey'
       await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
       const installationId = (await db.getInstallations())[0].id
-      const buttonId = '51b8be5678bf5ade9bf6a5958b2a4a45'
-      const unit = 'unit1'
-      await db.createButton(buttonId, installationId, unit, 'phoneNumber1', 'serialNumber1')
-      this.session = await db.createSession(installationId, buttonId, unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
+      const button = await buttonDBFactory(db, {
+        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
+        installationId,
+        unit: 'unit1',
+      })
+      this.session = await db.createSession(
+        installationId,
+        button.buttonId,
+        button.unit,
+        'phoneNumber',
+        '1',
+        95,
+        new Date('2021-01-20T06:20:19.000Z'),
+      )
     })
 
     afterEach(async () => {

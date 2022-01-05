@@ -1,6 +1,6 @@
-const SessionState = require('../SessionState.js')
-const Installation = require('../Installation.js')
-const Hub = require('../Hub.js')
+const SessionState = require('../SessionState')
+const Installation = require('../Installation')
+const Hub = require('../Hub')
 
 function createTestSessionState() {
   return new SessionState(
@@ -19,6 +19,18 @@ function createTestSessionState() {
     null,
     new Date('2000-06-06T00:53:53.000Z'),
   )
+}
+
+async function buttonDBFactory(db, overrides = {}) {
+  const button = await db.createButton(
+    overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
+    overrides.installationId !== undefined ? overrides.installationId : 'fakeInstallationId',
+    overrides.unit !== undefined ? overrides.unit : '305',
+    overrides.phoneNumber !== undefined ? overrides.phoneNumber : '+12223334444',
+    overrides.buttonSerialNumber !== undefined ? overrides.buttonSerialNumber : 'AB12-12345',
+  )
+
+  return button
 }
 
 function installationFactory(overrides = {}) {
@@ -56,6 +68,7 @@ function hubFactory(overrides = {}) {
 
 module.exports = {
   createTestSessionState,
+  buttonDBFactory,
   hubFactory,
   installationFactory,
 }
