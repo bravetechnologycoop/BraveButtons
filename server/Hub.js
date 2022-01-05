@@ -13,7 +13,7 @@ class Hub {
     sentInternalPingAlert,
     sentInternalPiAlert,
     locationDescription,
-    installation,
+    client,
   ) {
     this.systemId = systemId
     this.flicLastSeenTime = flicLastSeenTime
@@ -28,7 +28,8 @@ class Hub {
     this.sentInternalPingAlert = sentInternalPingAlert
     this.sentInternalPiAlert = sentInternalPiAlert
     this.locationDescription = locationDescription
-    this.installation = installation
+    this.client = client
   }
 }
+
 module.exports = Hub

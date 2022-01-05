@@ -50,8 +50,8 @@ async function checkHeartbeat() {
         continue
       }
 
-      const installation = hub.installation
-      const responderPhoneNumber = installation.responderPhoneNumber
+      const client = hub.client
+      const responderPhoneNumber = client.responderPhoneNumber
       const currentTime = await db.getCurrentTime()
       const flicDelayinSeconds = differenceInSeconds(currentTime, new Date(hub.flicLastSeenTime))
       const piDelayinSeconds = differenceInSeconds(currentTime, new Date(hub.heartbeatLastSeenTime))

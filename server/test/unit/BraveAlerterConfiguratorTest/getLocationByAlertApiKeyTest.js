@@ -5,9 +5,10 @@ const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 
 const { Location, SYSTEM } = require('brave-alert-lib')
-const db = require('../../../db/db.js')
-const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
-const Installation = require('../../../Installation.js')
+const db = require('../../../db/db')
+const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
+const Client = require('../../../Client')
+const { clientFactory } = require('../../testingHelpers')
 
 // Configure Chai
 use(sinonChai)
@@ -19,17 +20,17 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
   })
 
   afterEach(() => {
-    db.getInstallationsWithAlertApiKey.restore()
+    db.getClientsWithAlertApiKey.restore()
   })
 
-  it('if there is single installation with the given API key, returns a location with its display name and the Buttons system', async () => {
+  it('if there is single client with the given API key, returns a location with its display name and the Buttons system', async () => {
     const alertApiKey = 'fakeApiKey'
     const displayName = 'fakeDisplayName'
 
-    const installationToReturn = new Installation()
-    installationToReturn.alertApiKey = alertApiKey
-    installationToReturn.name = displayName
-    sinon.stub(db, 'getInstallationsWithAlertApiKey').returns([installationToReturn])
+    const clientToReturn = new Client()
+    clientToReturn.alertApiKey = alertApiKey
+    clientToReturn.displayName = displayName
+    sinon.stub(db, 'getClientsWithAlertApiKey').returns([clientToReturn])
 
     const expectedLocation = new Location(displayName, SYSTEM.BUTTONS)
 
@@ -38,18 +39,20 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
     expect(actualLocation).to.eql(expectedLocation)
   })
 
-  it("if there are multiple installations with the given API key, returns a location with the first installation's display name and the Buttons system", async () => {
+  it("if there are multiple clients with the given API key, returns a location with the first client's display name and the Buttons system", async () => {
     const alertApiKey = 'fakeApiKey'
     const displayName = 'fakeDisplayName'
 
-    const installation1 = new Installation()
-    installation1.alertApiKey = alertApiKey
-    installation1.name = displayName
+    const client1 = clientFactory({
+      alertApiKey,
+      displayName,
+    })
 
-    const installation2 = new Installation()
-    installation2.alertApiKey = alertApiKey
-    installation2.name = 'aDifferentDisplayName'
-    sinon.stub(db, 'getInstallationsWithAlertApiKey').returns([installation1, installation2])
+    const client2 = clientFactory({
+      alertApiKey,
+      displayName: 'aDifferentDisplayName',
+    })
+    sinon.stub(db, 'getClientsWithAlertApiKey').returns([client1, client2])
 
     const expectedLocation = new Location(displayName, SYSTEM.BUTTONS)
 
@@ -58,8 +61,8 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
     expect(actualLocation).to.eql(expectedLocation)
   })
 
-  it('if there no installations with the given API key, returns null', async () => {
-    sinon.stub(db, 'getInstallationsWithAlertApiKey').returns([])
+  it('if there no clients with the given API key, returns null', async () => {
+    sinon.stub(db, 'getClientsWithAlertApiKey').returns([])
 
     const actualLocation = await this.braveAlerter.getLocationByAlertApiKey('alertApiKey')
 
@@ -67,7 +70,7 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
   })
 
   it('if db.getLocationByAlertApiKey returns a non-array, returns null', async () => {
-    sinon.stub(db, 'getInstallationsWithAlertApiKey').returns()
+    sinon.stub(db, 'getClientsWithAlertApiKey').returns()
 
     const actualLocation = await this.braveAlerter.getLocationByAlertApiKey('alertApiKey')
 

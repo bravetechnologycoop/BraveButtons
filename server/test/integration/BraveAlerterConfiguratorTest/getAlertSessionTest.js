@@ -4,8 +4,9 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 
 // In-house dependencies
 const { CHATBOT_STATE, AlertSession } = require('brave-alert-lib')
-const db = require('../../../db/db.js')
-const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
+const db = require('../../../db/db')
+const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
+const { clientDBFactory } = require('../../testingHelpers')
 
 describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () => {
   beforeEach(async () => {
@@ -18,9 +19,15 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
 
     await db.clearTables()
 
-    await db.createInstallation('', this.installationResponderPhoneNumber, '{}', this.installationIncidentCategories, null, null)
-    const installations = await db.getInstallations()
-    const session = await db.createSession(installations[0].id, '', '701', '', 1, null)
+    const client = await clientDBFactory(db, {
+      displayName: '',
+      responderPhoneNumber: this.installationResponderPhoneNumber,
+      fallbackPhoneNumbers: '{}',
+      incidentCategories: this.installationIncidentCategories,
+      alertApiKey: null,
+      responderPushId: null,
+    })
+    const session = await db.createSession(client.id, '', '701', '', 1, null)
     this.sessionId = session.id
     session.state = this.sessionState
     session.incidentType = this.sessionIncidentType

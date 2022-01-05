@@ -5,7 +5,7 @@ const { Pool, types } = require('pg')
 const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
 const Button = require('../Button')
 const Hub = require('../Hub')
-const Installation = require('../Installation')
+const Client = require('../Client')
 const SessionState = require('../SessionState')
 
 const pool = new Pool({
@@ -25,145 +25,143 @@ types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
 function createSessionFromRow(r) {
   // prettier-ignore
-  return new SessionState(r.id, r.installation_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status, r.button_battery_level, r.responded_at)
+  return new SessionState(r.id, r.client_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status, r.button_battery_level, r.responded_at)
 }
 
-function createInstallationFromRow(r) {
+function createClientFromRow(r) {
   // prettier-ignore
-  return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.alert_api_key, r.responder_push_id)
+  return new Client(r.id, r.display_name, r.responder_phone_number, r.fallback_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.alert_api_key, r.responder_push_id, r.updated_at)
 }
 
-async function createButtonFromRow(r, clientParam) {
+async function createButtonFromRow(r, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createButtonFromRow',
       `
       SELECT *
-      FROM installations
+      FROM clients
       WHERE id = $1
       LIMIT 1
       `,
-      [r.installation_id],
+      [r.client_id],
       pool,
-      clientParam,
+      pgClient,
     )
-    const installation = createInstallationFromRow(results.rows[0])
+    const client = createClientFromRow(results.rows[0])
 
     // prettier-ignore
-    return new Button(r.id, r.button_id, r.unit, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, installation)
+    return new Button(r.id, r.button_id, r.unit, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, client)
   } catch (err) {
     helpers.logError(err.toString())
   }
 }
 
-async function createHubFromRow(r, clientParam) {
+async function createHubFromRow(r, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createHubFromRow',
       `
       SELECT *
-      FROM installations
+      FROM clients
       WHERE id = $1
       LIMIT 1
       `,
-      [r.installation_id],
+      [r.client_id],
       pool,
-      clientParam,
+      pgClient,
     )
-    const installation = createInstallationFromRow(results.rows[0])
+    const client = createClientFromRow(results.rows[0])
 
     // prettier-ignore
-    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.heartbeat_alert_recipients, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, installation)
+    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.heartbeat_alert_recipients, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
   } catch (err) {
     helpers.logError(err.toString())
   }
 }
 
 async function beginTransaction() {
-  let client = null
+  let pgClient = null
 
   try {
-    client = await pool.connect()
-    await client.query('BEGIN')
+    pgClient = await pool.connect()
+    await pgClient.query('BEGIN')
 
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await client.query('LOCK TABLE sessions, buttons, installations, migrations, hubs, notifications')
+    await pgClient.query('LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications')
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
-    if (client) {
+    if (pgClient) {
       try {
-        await this.rollbackTransaction(client)
+        await this.rollbackTransaction(pgClient)
       } catch (err) {
         helpers.logError(`beginTransaction: Error rolling back the errored transaction: ${err}`)
       }
     }
   }
 
-  return client
+  return pgClient
 }
 
-async function commitTransaction(client) {
+async function commitTransaction(pgClient) {
   try {
-    await client.query('COMMIT')
+    await pgClient.query('COMMIT')
   } catch (e) {
     helpers.logError(`Error running the commitTransaction query: ${e}`)
   } finally {
     try {
-      client.release()
+      pgClient.release()
     } catch (err) {
       helpers.logError(`commitTransaction: Error releasing client: ${err}`)
     }
   }
 }
 
-async function rollbackTransaction(client) {
+async function rollbackTransaction(pgClient) {
   try {
-    await client.query('ROLLBACK')
+    await pgClient.query('ROLLBACK')
   } catch (e) {
     helpers.logError(`Error running the rollbackTransaction query: ${e}`)
   } finally {
     try {
-      client.release()
+      pgClient.release()
     } catch (err) {
       helpers.logError(`rollbackTransaction: Error releasing client: ${err}`)
     }
   }
 }
 
-async function getUnrespondedSessionWithButtonId(buttonId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getUnrespondedSessionWithButtonId(buttonId, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getUnrespondedSessionWithButtonId',
+      `
+      SELECT *
+      FROM sessions
+      WHERE button_id = $1
+      AND state != $2
+      AND state != $3
+      AND state != $4
+      ORDER BY created_at
+      DESC LIMIT 1
+      `,
+      [buttonId, CHATBOT_STATE.WAITING_FOR_CATEGORY, CHATBOT_STATE.WAITING_FOR_DETAILS, CHATBOT_STATE.COMPLETED],
+      pool,
+      pgClient,
+    )
 
-    const query = 'SELECT * FROM sessions WHERE button_id = $1 AND state != $2 AND state != $3 AND state != $4 ORDER BY created_at DESC LIMIT 1'
-    const values = [buttonId, CHATBOT_STATE.WAITING_FOR_CATEGORY, CHATBOT_STATE.WAITING_FOR_DETAILS, CHATBOT_STATE.COMPLETED]
-    const { rows } = await client.query(query, values)
-
-    if (rows.length > 0) {
-      return createSessionFromRow(rows[0])
+    if (results.rows.length > 0) {
+      return createSessionFromRow(results.rows[0])
     }
-  } catch (e) {
-    helpers.logError(`Error running the getUnrespondedSessionWithButtonId query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getUnrespondedSessionWithButtonId: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
 }
 
-async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, clientParam) {
+async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getMostRecentIncompleteSessionWithPhoneNumber',
@@ -177,7 +175,7 @@ async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, client
       `,
       [phoneNumber, CHATBOT_STATE.COMPLETED],
       pool,
-      clientParam,
+      pgClient,
     )
 
     if (results.rows.length > 0) {
@@ -190,20 +188,20 @@ async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, client
   return null
 }
 
-async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, clientParam) {
+async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getSessionWithSessionIdAndAlertApiKey',
       `
       SELECT s.*
       FROM sessions AS s
-      LEFT JOIN installations AS i ON s.installation_id = i.id
+      LEFT JOIN clients AS i ON s.client_id = i.id
       WHERE s.id = $1
       AND i.alert_api_key = $2
       `,
       [sessionId, alertApiKey],
       pool,
-      clientParam,
+      pgClient,
     )
 
     if (results === undefined || results.rows.length === 0) {
@@ -216,7 +214,7 @@ async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, cli
   }
 }
 
-async function getAllSessionsWithButtonId(buttonId, clientParam) {
+async function getAllSessionsWithButtonId(buttonId, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getAllSessionsWithButtonId',
@@ -227,7 +225,7 @@ async function getAllSessionsWithButtonId(buttonId, clientParam) {
       `,
       [buttonId],
       pool,
-      clientParam,
+      pgClient,
     )
 
     if (results.rows.length > 0) {
@@ -240,20 +238,20 @@ async function getAllSessionsWithButtonId(buttonId, clientParam) {
   return []
 }
 
-async function getRecentSessionsWithInstallationId(installationId, clientParam) {
+async function getRecentSessionsWithClientId(clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getRecentSessionsWithInstallationId',
+      'getRecentSessionsWithClientId',
       `
       SELECT *
       FROM sessions
-      WHERE installation_id = $1
+      WHERE client_id = $1
       ORDER BY created_at DESC
       LIMIT 40
       `,
-      [installationId],
+      [clientId],
       pool,
-      clientParam,
+      pgClient,
     )
 
     if (results.rows.length > 0) {
@@ -266,7 +264,7 @@ async function getRecentSessionsWithInstallationId(installationId, clientParam) 
   return []
 }
 
-async function getSessionWithSessionId(sessionId, clientParam) {
+async function getSessionWithSessionId(sessionId, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getSessionWithSessionId',
@@ -277,7 +275,7 @@ async function getSessionWithSessionId(sessionId, clientParam) {
       `,
       [sessionId],
       pool,
-      clientParam,
+      pgClient,
     )
 
     if (results.rows.length > 0) {
@@ -290,18 +288,18 @@ async function getSessionWithSessionId(sessionId, clientParam) {
   return null
 }
 
-async function createSession(installationId, buttonId, unit, phoneNumber, numPresses, buttonBatteryLevel, respondedAt, clientParam) {
+async function createSession(clientId, buttonId, unit, phoneNumber, numPresses, buttonBatteryLevel, respondedAt, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createSession',
       `
-      INSERT INTO sessions (installation_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at) 
+      INSERT INTO sessions (client_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
       `,
-      [installationId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt],
+      [clientId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt],
       pool,
-      clientParam,
+      pgClient,
     )
 
     if (results.rows.length > 0) {
@@ -314,7 +312,7 @@ async function createSession(installationId, buttonId, unit, phoneNumber, numPre
   return null
 }
 
-async function saveSession(session, clientParam) {
+async function saveSession(session, pgClient) {
   try {
     const results = await helpers.runQuery(
       'saveSessionSelect',
@@ -326,9 +324,9 @@ async function saveSession(session, clientParam) {
       `,
       [session.id],
       pool,
-      clientParam,
+      pgClient,
     )
-    if (results.rows.length === 0) {
+    if (results === null || results.rows.length === 0) {
       throw new Error("Tried to save a session that doesn't exist yet. Use createSession() instead.")
     }
 
@@ -336,11 +334,11 @@ async function saveSession(session, clientParam) {
       'saveSessionUpdate',
       `
       UPDATE sessions
-      SET installation_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status = $9, button_battery_level = $10, responded_at = $11
+      SET client_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status = $9, button_battery_level = $10, responded_at = $11
       WHERE id = $12
       `,
       [
-        session.installationId,
+        session.clientId,
         session.buttonId,
         session.unit,
         session.phoneNumber,
@@ -354,14 +352,14 @@ async function saveSession(session, clientParam) {
         session.id,
       ],
       pool,
-      clientParam,
+      pgClient,
     )
   } catch (err) {
     helpers.logError(err.toString())
   }
 }
 
-async function updateSentInternalAlerts(hub, clientParam) {
+async function updateSentInternalAlerts(hub, pgClient) {
   try {
     const results = await helpers.runQuery(
       'updateSentInternalAlertsSelect',
@@ -373,9 +371,9 @@ async function updateSentInternalAlerts(hub, clientParam) {
       `,
       [hub.systemId],
       pool,
-      clientParam,
+      pgClient,
     )
-    if (results.rows.length === 0) {
+    if (results === null || results.rows.length === 0) {
       throw new Error("Tried to update internal alert flags for a hub that doesn't exist.")
     }
 
@@ -388,7 +386,7 @@ async function updateSentInternalAlerts(hub, clientParam) {
       `,
       [hub.sentInternalFlicAlert, hub.sentInternalPingAlert, hub.sentInternalPiAlert, hub.systemId],
       pool,
-      clientParam,
+      pgClient,
     )
   } catch (e) {
     helpers.logError(`Error running the updateSentInternalAlerts query: ${e}`)
@@ -404,7 +402,7 @@ function getPool() {
   return pool
 }
 
-async function clearSessions(clientParam) {
+async function clearSessions(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear sessions database outside of a test environment!')
     return
@@ -418,14 +416,14 @@ async function clearSessions(clientParam) {
       `,
       [],
       pool,
-      clientParam,
+      pgClient,
     )
   } catch (err) {
     helpers.logError(err.toString())
   }
 }
 
-async function getButtonWithSerialNumber(serialNumber, clientParam) {
+async function getButtonWithSerialNumber(serialNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getButtonWithSerialNumber',
@@ -436,11 +434,11 @@ async function getButtonWithSerialNumber(serialNumber, clientParam) {
       `,
       [serialNumber],
       pool,
-      clientParam,
+      pgClient,
     )
 
     if (results.rows.length > 0) {
-      return await createButtonFromRow(results.rows[0], clientParam)
+      return await createButtonFromRow(results.rows[0], pgClient)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -449,21 +447,21 @@ async function getButtonWithSerialNumber(serialNumber, clientParam) {
   return null
 }
 
-async function createButton(buttonId, installationId, unit, phoneNumber, button_serial_number, clientParam) {
+async function createButton(buttonId, clientId, unit, phoneNumber, button_serial_number, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createButton',
       `
-      INSERT INTO buttons (button_id, installation_id, unit, phone_number, button_serial_number)
+      INSERT INTO buttons (button_id, client_id, unit, phone_number, button_serial_number)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
       `,
-      [buttonId, installationId, unit, phoneNumber, button_serial_number],
+      [buttonId, clientId, unit, phoneNumber, button_serial_number],
       pool,
-      clientParam,
+      pgClient,
     )
 
-    return await createButtonFromRow(results.rows[0], clientParam)
+    return await createButtonFromRow(results.rows[0], pgClient)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -471,192 +469,164 @@ async function createButton(buttonId, installationId, unit, phoneNumber, button_
   return null
 }
 
-async function clearButtons(clientParam) {
+async function clearButtons(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear buttons database outside of a test environment!')
     return
   }
 
   try {
-    await helpers.runQuery('clearButtons', 'DELETE FROM buttons', [], pool, clientParam)
+    await helpers.runQuery(
+      'clearButtons',
+      `DELETE FROM buttons
+      `,
+      [],
+      pool,
+      pgClient,
+    )
   } catch (err) {
     helpers.log(err.toString())
   }
 }
 
-async function createInstallation(name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, responderPushId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function createClient(displayName, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, responderPushId, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    await client.query(
-      'INSERT INTO installations (name, responder_phone_number, fall_back_phone_numbers, incident_categories, alert_api_key, responder_push_id) VALUES ($1, $2, $3, $4, $5, $6)',
-      [name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, responderPushId],
+    const results = await helpers.runQuery(
+      'createClient',
+      `INSERT INTO clients (display_name, responder_phone_number, fallback_phone_numbers, incident_categories, alert_api_key, responder_push_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+      `,
+      [displayName, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, responderPushId],
+      pool,
+      pgClient,
     )
-  } catch (e) {
-    helpers.logError(`Error running the createInstallation query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`createInstallation: Error releasing client: ${err}`)
-      }
-    }
+
+    return createClientFromRow(results.rows[0])
+  } catch (err) {
+    helpers.log(err.toString())
   }
+
+  return null
 }
 
-async function clearInstallations(clientParam) {
+async function clearClients(pgClient) {
   if (!helpers.isTestEnvironment()) {
-    helpers.log('warning - tried to clear installations table outside of a test environment!')
+    helpers.log('warning - tried to clear clients table outside of a test environment!')
     return
   }
 
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    await client.query('DELETE FROM installations')
-  } catch (e) {
-    helpers.logError(`Error running the clearInstallations query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`clearInstallations: Error releasing client: ${err}`)
-      }
-    }
+    await helpers.runQuery(
+      'clearClients',
+      `
+      DELETE FROM clients
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+  } catch (err) {
+    helpers.log(err.toString())
   }
 }
 
-async function getInstallations(clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getClients(pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getClients',
+      `
+      SELECT *
+      FROM clients
+      `,
+      [],
+      pool,
+      pgClient,
+    )
 
-    const { rows } = await client.query('SELECT * FROM installations')
-
-    if (rows.length > 0) {
-      return rows.map(createInstallationFromRow)
+    if (results.rows.length > 0) {
+      return results.rows.map(createClientFromRow)
     }
-  } catch (e) {
-    helpers.logError(`Error running the getInstallations query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getInstallations: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return []
 }
 
-async function getInstallationsWithAlertApiKey(alertApiKey, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getClientsWithAlertApiKey(alertApiKey, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getClientsWithAlertApiKey',
+      `SELECT *
+      FROM clients
+      WHERE alert_api_key = $1
+      `,
+      [alertApiKey],
+      pool,
+      pgClient,
+    )
 
-    const { rows } = await client.query('SELECT * FROM installations WHERE alert_api_key = $1', [alertApiKey])
-
-    if (rows.length > 0) {
-      return rows.map(createInstallationFromRow)
+    if (results.rows.length > 0) {
+      return results.rows.map(createClientFromRow)
     }
-  } catch (e) {
-    helpers.log(`Error running the getInstallationsWithAlertApiKey query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.log(`getInstallationsWithAlertApiKey: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
 }
 
-async function getInstallationWithInstallationId(installationId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getClientWithId(id, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getClientWithId',
+      `
+      SELECT *
+      FROM clients
+      WHERE id = $1
+      `,
+      [id],
+      pool,
+      pgClient,
+    )
 
-    const { rows } = await client.query('SELECT * FROM installations WHERE id = $1', [installationId])
-
-    if (rows.length > 0) {
-      return createInstallationFromRow(rows[0])
+    if (results.rows.length > 0) {
+      return createClientFromRow(results.rows[0])
     }
-  } catch (e) {
-    helpers.logError(`Error running the getInstallationWithInstallationId query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getInstallationWithInstallationId: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
 }
 
-async function getInstallationWithSessionId(sessionId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getClientWithSessionId(sessionId, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getClientWithSessionId',
+      `
+      SELECT c.*
+      FROM sessions s
+      LEFT JOIN clients c ON s.client_id = c.id 
+      WHERE s.id = $1
+      `,
+      [sessionId],
+      pool,
+      pgClient,
+    )
 
-    const { rows } = await client.query('SELECT i.* FROM sessions s LEFT JOIN installations i ON s.installation_id = i.id WHERE s.id = $1', [
-      sessionId,
-    ])
-
-    if (rows.length > 0) {
-      return createInstallationFromRow(rows[0])
+    if (results.rows.length > 0) {
+      return createClientFromRow(results.rows[0])
     }
-  } catch (e) {
-    helpers.logError(`Error running the getInstallationWithSessionId query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getInstallationWithSessionId: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
 }
 
-async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, clientParam) {
+async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getActiveAlertsByAlertApiKey',
@@ -664,7 +634,7 @@ async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, cli
       SELECT s.id, s.state, b.unit, s.num_presses, i.incident_categories, s.created_at
       FROM sessions AS s
       LEFT JOIN buttons AS b ON s.button_id = b.button_id
-      LEFT JOIN installations AS i ON s.installation_id = i.id
+      LEFT JOIN clients AS i ON s.client_id = i.id
       WHERE i.alert_api_key = $1
       AND (
         s.state != $2
@@ -674,7 +644,7 @@ async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, cli
       `,
       [alertApiKey, CHATBOT_STATE.COMPLETED, maxTimeAgoInMillis],
       pool,
-      clientParam,
+      pgClient,
     )
 
     return results.rows
@@ -683,7 +653,7 @@ async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, cli
   }
 }
 
-async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, maxTimeAgoInMillis, clientParam) {
+async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, maxTimeAgoInMillis, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getHistoricAlertsByAlertApiKey',
@@ -691,7 +661,7 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
       SELECT s.id, b.unit, s.incident_type, s.num_presses, s.created_at, s.responded_at
       FROM sessions AS s
       LEFT JOIN buttons AS b ON s.button_id = b.button_id
-      LEFT JOIN installations AS i ON s.installation_id = i.id
+      LEFT JOIN clients AS i ON s.client_id = i.id
       WHERE i.alert_api_key = $1
       AND (
         s.state = $2
@@ -702,7 +672,7 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
       `,
       [alertApiKey, CHATBOT_STATE.COMPLETED, maxTimeAgoInMillis, maxHistoricAlerts],
       pool,
-      clientParam,
+      pgClient,
     )
 
     return results.rows
@@ -711,98 +681,81 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
   }
 }
 
-async function getNewNotificationsCountByAlertApiKey(alertApiKey, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getNewNotificationsCountByAlertApiKey(alertApiKey, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getNewNotificationsCountByAlertApiKey',
+      `
+      SELECT COUNT (*)
+      FROM notifications n
+      LEFT JOIN clients i ON n.client_id = i.id
+      WHERE i.alert_api_key = $1
+      AND NOT n.is_acknowledged
+      `,
+      [alertApiKey],
+      pool,
+      pgClient,
+    )
 
-    const query = `SELECT COUNT (*) FROM notifications n LEFT JOIN installations i ON n.installation_id = i.id WHERE i.alert_api_key = $1 AND NOT n.is_acknowledged`
-    const { rows } = await client.query(query, [alertApiKey])
-
-    return parseInt(rows[0].count, 10)
-  } catch (e) {
-    helpers.logError(`Error running the getNewNotificationsCountByAlertApiKey query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getNewNotificationsCountByAlertApiKey: Error releasing client: ${err}`)
-      }
-    }
+    return parseInt(results.rows[0].count, 10)
+  } catch (err) {
+    helpers.logError(err.toString())
   }
+
   return 0
 }
 
-async function createNotification(installationId, subject, body, isAcknowledged, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function createNotification(clientId, subject, body, isAcknowledged, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const query = 'INSERT INTO notifications (installation_id, subject, body, is_acknowledged) VALUES ($1, $2, $3, $4)'
-    await client.query(query, [installationId, subject, body, isAcknowledged])
-  } catch (e) {
-    helpers.logError(`Error running the createNotification query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`createNotification: Error releasing client: ${err}`)
-      }
-    }
+    await helpers.runQuery(
+      'createNotification',
+      `
+      INSERT INTO notifications (client_id, subject, body, is_acknowledged)
+      VALUES ($1, $2, $3, $4)
+      `,
+      [clientId, subject, body, isAcknowledged],
+      pool,
+      pgClient,
+    )
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 }
 
-async function clearNotifications(clientParam) {
+async function clearNotifications(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear notifications table outside of a test environment!')
     return
   }
 
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    await client.query('DELETE FROM notifications')
-  } catch (e) {
-    helpers.logError(`Error running the clearNotifications query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`clearNotifications: Error releasing client: ${err}`)
-      }
-    }
+    await helpers.runQuery(
+      'clearNotifications',
+      `
+      DELETE FROM notifications
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 }
 
-async function clearTables(clientParam) {
+async function clearTables(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear tables outside of a test environment!')
     return
   }
 
-  await clearSessions(clientParam)
-  await clearButtons(clientParam)
-  await clearNotifications(clientParam)
-  await clearInstallations(clientParam)
+  await clearSessions(pgClient)
+  await clearButtons(pgClient)
+  await clearNotifications(pgClient)
+  await clearClients(pgClient)
 }
 
-async function getHubs(clientParam) {
+async function getHubs(pgClient) {
   try {
     const results = await helpers.runQuery(
       'getHubs',
@@ -813,79 +766,78 @@ async function getHubs(clientParam) {
       `,
       [],
       pool,
-      clientParam,
+      pgClient,
     )
 
     if (results.rows.length > 0) {
-      return await Promise.all(results.rows.map(r => createHubFromRow(r, clientParam)))
+      return await Promise.all(results.rows.map(r => createHubFromRow(r, pgClient)))
     }
-  } catch (e) {
-    helpers.logError(`Error running the getHubs query: ${e}`)
+  } catch (err) {
+    helpers.logError(err.toString())
+
+    return []
   }
 }
 
-async function getHubWithSystemId(systemId, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getHubWithSystemId(systemId, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getHubWithSystemId',
+      `
+      SELECT *
+      FROM hubs
+      WHERE system_id = $1
+      `,
+      [systemId],
+      pool,
+      pgClient,
+    )
 
-    const { rows } = await client.query('SELECT * FROM hubs WHERE system_id = $1', [systemId])
-
-    if (rows.length > 0) {
-      return await createHubFromRow(rows[0], clientParam)
+    if (results.rows.length > 0) {
+      return await createHubFromRow(results.rows[0], pgClient)
     }
-  } catch (e) {
-    helpers.logError(`Error running the getHubWithSystemId query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getHubWithSystemId: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
 }
 
-async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const { rows } = await client.query('SELECT * FROM hubs WHERE system_id = $1 LIMIT 1', [systemId])
-    if (rows.length === 0) {
+    const results = await helpers.runQuery(
+      'saveHeartbeat select',
+      `
+      SELECT *
+      FROM hubs
+      WHERE system_id = $1
+      LIMIT 1
+      `,
+      [systemId],
+      pool,
+      pgClient,
+    )
+    if (results === null || results.rows.length === 0) {
       throw new Error("Tried to save a heartbeat for a hub that doesn't exist yet.")
     }
 
-    const values = [flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemId]
-    await client.query(
-      'UPDATE hubs SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3 WHERE system_id = $4',
-      values,
+    await helpers.runQuery(
+      'saveHeartbeat update',
+      `
+      UPDATE hubs
+      SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3
+      WHERE system_id = $4
+      `,
+      [flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemId],
+      pool,
+      pgClient,
     )
-  } catch (e) {
-    helpers.logError(`Error running the saveHeartbeat query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`saveHeartbeat: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 }
 
-async function updateSentAlerts(id, sentalerts, clientParam) {
+async function updateSentAlerts(id, sentalerts, pgClient) {
   try {
     const query = sentalerts
       ? `
@@ -901,33 +853,27 @@ async function updateSentAlerts(id, sentalerts, clientParam) {
         RETURNING *
       `
 
-    const results = await helpers.runQuery('updateSentAlerts', query, [id], pool, clientParam)
+    const results = await helpers.runQuery('updateSentAlerts', query, [id], pool, pgClient)
 
     if (results === undefined) {
       return null
     }
 
-    return await createHubFromRow(results.rows[0], clientParam)
-  } catch (e) {
-    helpers.logError(`Error running the updateSentAlerts query: ${e}`)
+    return await createHubFromRow(results.rows[0], pgClient)
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 }
 
-async function getDataForExport(clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getDataForExport(pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    const { rows } = await client.query(
+    const results = await helpers.runQuery(
+      'getDataForExport',
       `
       SELECT
-        i.name AS "Installation Name",
+        i.display_name AS "Installation Name",
         i.responder_phone_number AS "Responder Phone",
-        i.fall_back_phone_numbers AS "Fallback Phones",
+        i.fallback_phone_numbers AS "Fallback Phones",
         TO_CHAR(i.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Installation Created",
         i.incident_categories AS "Incident Categories",
         i.is_active AS "Active?",
@@ -946,47 +892,34 @@ async function getDataForExport(clientParam) {
         r.button_serial_number AS "Button Serial Number"
       FROM sessions s
         JOIN buttons r ON s.button_id = r.button_id
-        JOIN installations i ON i.id = s.installation_id
+        JOIN clients i ON i.id = s.client_id
       `,
+      [],
+      pool,
+      pgClient,
     )
 
-    return rows
-  } catch (e) {
-    helpers.logError(`Error running the getDataForExport query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getDataForExport: Error releasing client: ${err}`)
-      }
-    }
+    return results.rows
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 }
 
-async function getCurrentTime(clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
+async function getCurrentTime(pgClient) {
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getCurrentTime',
+      `
+      SELECT NOW()
+      `,
+      [],
+      pool,
+      pgClient,
+    )
 
-    const { rows } = await client.query('SELECT NOW()')
-    const time = rows[0].now
-
-    return time
-  } catch (e) {
-    helpers.logError(`Error running the getCurrentTime query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getCurrentTime: Error releasing client: ${err}`)
-      }
-    }
+    return results.rows[0].now
+  } catch (err) {
+    helpers.log(err.toString())
   }
 }
 
@@ -1001,14 +934,14 @@ async function close() {
 module.exports = {
   beginTransaction,
   clearButtons,
-  clearInstallations,
+  clearClients,
   clearNotifications,
   clearSessions,
   clearTables,
   close,
   commitTransaction,
   createButton,
-  createInstallation,
+  createClient,
   createNotification,
   createSession,
   getActiveAlertsByAlertApiKey,
@@ -1019,14 +952,14 @@ module.exports = {
   getHistoricAlertsByAlertApiKey,
   getHubs,
   getHubWithSystemId,
-  getInstallations,
-  getInstallationsWithAlertApiKey,
-  getInstallationWithInstallationId,
-  getInstallationWithSessionId,
+  getClients,
+  getClientsWithAlertApiKey,
+  getClientWithId,
+  getClientWithSessionId,
   getMostRecentIncompleteSessionWithPhoneNumber,
   getNewNotificationsCountByAlertApiKey,
   getPool,
-  getRecentSessionsWithInstallationId,
+  getRecentSessionsWithClientId,
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,

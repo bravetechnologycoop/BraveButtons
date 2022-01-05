@@ -11,7 +11,7 @@ const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
 chai.use(chaiHttp)
 chai.use(sinonChai)
 
-const { buttonDBFactory } = require('../testingHelpers')
+const { buttonDBFactory, clientDBFactory } = require('../testingHelpers')
 const imports = require('../../server.js')
 
 const server = imports.server
@@ -67,25 +67,24 @@ describe('Chatbot server', () => {
 
   describe('POST request: flic button press', () => {
     beforeEach(async () => {
-      await db.createInstallation(
-        'TestInstallation',
-        installationResponderPhoneNumber,
-        installationFallbackPhoneNumbers,
-        installationIncidentCategories,
-        null,
-        null,
-      )
-      const installations = await db.getInstallations()
+      const client = await clientDBFactory(db, {
+        displayName: 'TestInstallation',
+        responderPhoneNumber: installationResponderPhoneNumber,
+        fallbackPhoneNumbers: installationFallbackPhoneNumbers,
+        incidentCategories: installationIncidentCategories,
+        alertApiKey: null,
+        responderPushId: null,
+      })
       await buttonDBFactory(db, {
         buttonId: unit1UUID,
-        installationId: installations[0].id,
+        clientId: client.id,
         unit: '1',
         phoneNumber: unit1PhoneNumber,
         buttonSerialNumber: unit1SerialNumber,
       })
       await buttonDBFactory(db, {
         buttonId: unit2UUID,
-        installationId: installations[0].id,
+        clientId: client.id,
         unit: '2',
         phoneNumber: unit2PhoneNumber,
         buttonSerialNumber: unit2SerialNumber,
@@ -411,25 +410,24 @@ describe('Chatbot server', () => {
 
   describe('POST request: twilio message', () => {
     beforeEach(async () => {
-      await db.createInstallation(
-        'TestInstallation',
-        installationResponderPhoneNumber,
-        installationFallbackPhoneNumbers,
-        installationIncidentCategories,
-        null,
-        null,
-      )
-      const installations = await db.getInstallations()
+      const client = await clientDBFactory(db, {
+        displayName: 'TestInstallation',
+        responderPhoneNumber: installationResponderPhoneNumber,
+        fallbackPhoneNumbers: installationFallbackPhoneNumbers,
+        incidentCategories: installationIncidentCategories,
+        alertApiKey: null,
+        responderPushId: null,
+      })
       await buttonDBFactory(db, {
         buttonId: unit1UUID,
-        installationId: installations[0].id,
+        clientId: client.id,
         unit: '1',
         phoneNumber: unit1PhoneNumber,
         buttonSerialNumber: unit1SerialNumber,
       })
       await buttonDBFactory(db, {
         buttonId: unit2UUID,
-        installationId: installations[0].id,
+        clientId: client.id,
         unit: '2',
         phoneNumber: unit2PhoneNumber,
         buttonSerialNumber: unit2SerialNumber,

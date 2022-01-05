@@ -27,6 +27,7 @@ the code was deployed.
 - Updated `add_hubs.sh` to include an installation id foreign key (CU-vf8x83).
 - No longer required to type the certbot domain during deployment (CU-brhk3t).
 - Branching scheme (CU-mn5q4g).
+- Renamed `installations` to `clients`.
 
 ### Removed
 

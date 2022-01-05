@@ -6,21 +6,20 @@ const { CHATBOT_STATE, ALERT_TYPE, helpers } = require('brave-alert-lib')
 // In-house dependencies
 const db = require('../../../db/db')
 const SessionState = require('../../../SessionState')
-const { buttonDBFactory } = require('../../testingHelpers')
+const { buttonDBFactory, clientDBFactory } = require('../../testingHelpers')
 
 describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
-  describe('if there are no installations with the given Alert API Key', () => {
+  describe('if there are no clients with the given Alert API Key', () => {
     beforeEach(async () => {
       await db.clearTables()
 
-      // Insert a single installation with a single button that has a single session that doesn't match the Alert API Key that we ask for
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', 'alertApiKey', 'pushId')
-      const installationId = (await db.getInstallations())[0].id
+      // Insert a single client with a single button that has a single session that doesn't match the Alert API Key that we ask for
+      const client = await clientDBFactory(db)
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
-        installationId,
+        clientId: client.id,
       })
-      await db.createSession(installationId, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      await db.createSession(client.id, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
     })
 
     afterEach(async () => {
@@ -34,22 +33,25 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
   })
 
-  describe('if there are no sessions for the installation with the given Alert API Key', () => {
+  describe('if there are no sessions for the client with the given Alert API Key', () => {
     beforeEach(async () => {
       await db.clearTables()
 
-      // Insert a single installation with a single button that has a single session that doesn't match the Alert API Key that we ask for
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', 'not our API key', 'pushId')
-      const installationId = (await db.getInstallations())[0].id
+      // Insert a single client with a single button that has a single session that doesn't match the Alert API Key that we ask for
+      const client = await clientDBFactory(db, {
+        alertApiKey: 'not our API key',
+      })
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
-        installationId,
+        clientId: client.id,
       })
-      await db.createSession(installationId, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      await db.createSession(client.id, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
 
-      // Insert a single installation with no sessions that matches the Alert API Key that we ask for
+      // Insert a single client with no sessions that matches the Alert API Key that we ask for
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey)
+      await clientDBFactory(db, {
+        alertApiKey: this.alertApiKey,
+      })
     })
 
     afterEach(async () => {
@@ -67,14 +69,15 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearTables()
 
-      // Insert a single installation with a single button
+      // Insert a single client with a single button
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
-      this.installationId = (await db.getInstallations())[0].id
+      const client = await clientDBFactory(db, {
+        alertApiKey: this.alertApiKey,
+      })
       this.button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         unit: 'unit1',
-        installationId: this.installationId,
+        clientId: client.id,
         buttonSerialNumber: 'button1',
       })
 
@@ -82,19 +85,11 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       this.incidentType = ALERT_TYPE.BUTTONS_URGENT
       this.numPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
-      this.session = await db.createSession(
-        this.installationId,
-        this.button.buttonId,
-        this.button.unit,
-        'phoneNumber',
-        this.numPresses,
-        95,
-        this.respondedAt,
-      )
+      this.session = await db.createSession(client.id, this.button.buttonId, this.button.unit, 'phoneNumber', this.numPresses, 95, this.respondedAt)
       await db.saveSession(
         new SessionState(
           this.session.id,
-          this.session.installationId,
+          this.session.clientId,
           this.session.buttonId,
           this.session.unit,
           this.session.phoneNumber,
@@ -135,27 +130,28 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearTables()
 
-      // Insert a single installation with a two buttons and more than maxHistoricAlerts sessions
+      // Insert a single client with a two buttons and more than maxHistoricAlerts sessions
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
-      const installationId = (await db.getInstallations())[0].id
+      const client = await clientDBFactory(db, {
+        alertApiKey: this.alertApiKey,
+      })
       const button1 = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
-        installationId,
+        clientId: client.id,
         unit: 'unit1',
         buttonSerialNumber: 'button1',
       })
       const button2 = await buttonDBFactory(db, {
         buttonId: '1283be5678bf5ade9bf6a5958b2a4a45',
-        installationId,
+        clientId: client.id,
         unit: 'unit2',
         buttonSerialNumber: 'button2',
       })
-      this.session1 = await db.createSession(installationId, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session2 = await db.createSession(installationId, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session3 = await db.createSession(installationId, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session4 = await db.createSession(installationId, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session5 = await db.createSession(installationId, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session1 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session2 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session3 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session4 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session5 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
     })
 
     afterEach(async () => {
@@ -175,28 +171,29 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearTables()
 
-      // Insert a single installation with a two buttons and maxHistoricAlerts sessions
+      // Insert a single client with a two buttons and maxHistoricAlerts sessions
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
-      const installationId = (await db.getInstallations())[0].id
+      const client = await clientDBFactory(db, {
+        alertApiKey: this.alertApiKey,
+      })
       const button1 = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
-        installationId,
+        clientId: client.id,
         unit: 'unit1',
         buttonSerialNumber: 'button1',
       })
       const button2 = await buttonDBFactory(db, {
         buttonId: '1283be5678bf5ade9bf6a5958b2a4a45',
-        installationId,
+        clientId: client.id,
         unit: 'unit2',
         buttonSerialNumber: 'button2',
       })
-      this.session1 = await db.createSession(installationId, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session2 = await db.createSession(installationId, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session1 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session2 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
       await helpers.sleep(2000) // Couldn't get around doing this because there is a trigger on updated_at to keep it correct
-      this.session3 = await db.createSession(installationId, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session4 = await db.createSession(installationId, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session5 = await db.createSession(installationId, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session3 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session4 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session5 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
     })
 
     afterEach(async () => {
@@ -217,24 +214,17 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     beforeEach(async () => {
       await db.clearTables()
 
-      // Insert a single installation with a one button and one session
+      // Insert a single client with a one button and one session
       this.alertApiKey = 'alertApiKey'
-      await db.createInstallation('name', 'responderNumber', '{"fallbackNumber"}', '{"cat1"}', this.alertApiKey, 'pushId')
-      const installationId = (await db.getInstallations())[0].id
+      const client = await clientDBFactory(db, {
+        alertApiKey: this.alertApiKey,
+      })
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         unit: 'unit1',
-        installationId,
+        clientId: client.id,
       })
-      this.session = await db.createSession(
-        installationId,
-        button.buttonId,
-        button.unit,
-        'phoneNumber',
-        '1',
-        95,
-        new Date('2021-01-20T06:20:19.000Z'),
-      )
+      this.session = await db.createSession(client.id, button.buttonId, button.unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
     })
 
     afterEach(async () => {
