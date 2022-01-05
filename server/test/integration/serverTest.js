@@ -11,6 +11,7 @@ const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
 chai.use(chaiHttp)
 chai.use(sinonChai)
 
+const { buttonDBFactory } = require('../testingHelpers')
 const imports = require('../../server.js')
 
 const server = imports.server
@@ -75,8 +76,20 @@ describe('Chatbot server', () => {
         null,
       )
       const installations = await db.getInstallations()
-      await db.createButton(unit1UUID, installations[0].id, '1', unit1PhoneNumber, unit1SerialNumber)
-      await db.createButton(unit2UUID, installations[0].id, '2', unit2PhoneNumber, unit2SerialNumber)
+      await buttonDBFactory(db, {
+        buttonId: unit1UUID,
+        installationId: installations[0].id,
+        unit: '1',
+        phoneNumber: unit1PhoneNumber,
+        buttonSerialNumber: unit1SerialNumber,
+      })
+      await buttonDBFactory(db, {
+        buttonId: unit2UUID,
+        installationId: installations[0].id,
+        unit: '2',
+        phoneNumber: unit2PhoneNumber,
+        buttonSerialNumber: unit2SerialNumber,
+      })
     })
 
     it('should return 400 to a request with no headers', async () => {
@@ -407,8 +420,20 @@ describe('Chatbot server', () => {
         null,
       )
       const installations = await db.getInstallations()
-      await db.createButton(unit1UUID, installations[0].id, '1', unit1PhoneNumber, unit1SerialNumber)
-      await db.createButton(unit2UUID, installations[0].id, '2', unit2PhoneNumber, unit2SerialNumber)
+      await buttonDBFactory(db, {
+        buttonId: unit1UUID,
+        installationId: installations[0].id,
+        unit: '1',
+        phoneNumber: unit1PhoneNumber,
+        buttonSerialNumber: unit1SerialNumber,
+      })
+      await buttonDBFactory(db, {
+        buttonId: unit2UUID,
+        installationId: installations[0].id,
+        unit: '2',
+        phoneNumber: unit2PhoneNumber,
+        buttonSerialNumber: unit2SerialNumber,
+      })
 
       sandbox.spy(imports.braveAlerter, 'startAlertSession')
       sandbox.spy(imports.braveAlerter, 'sendAlertSessionUpdate')

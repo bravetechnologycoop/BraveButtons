@@ -1,9 +1,12 @@
-const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
+// Third-party dependencies
 const { Pool, types } = require('pg')
 
-const Hub = require('../Hub.js')
-const Installation = require('../Installation.js')
-const SessionState = require('../SessionState.js')
+// In-house dependencies
+const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
+const Button = require('../Button')
+const Hub = require('../Hub')
+const Installation = require('../Installation')
+const SessionState = require('../SessionState')
 
 const pool = new Pool({
   host: helpers.getEnvVar('PG_HOST'),
@@ -28,6 +31,52 @@ function createSessionFromRow(r) {
 function createInstallationFromRow(r) {
   // prettier-ignore
   return new Installation(r.id, r.name, r.responder_phone_number, r.fall_back_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.alert_api_key, r.responder_push_id)
+}
+
+async function createButtonFromRow(r, clientParam) {
+  try {
+    const results = await helpers.runQuery(
+      'createButtonFromRow',
+      `
+      SELECT *
+      FROM installations
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [r.installation_id],
+      pool,
+      clientParam,
+    )
+    const installation = createInstallationFromRow(results.rows[0])
+
+    // prettier-ignore
+    return new Button(r.id, r.button_id, r.unit, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, installation)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
+async function createHubFromRow(r, clientParam) {
+  try {
+    const results = await helpers.runQuery(
+      'createHubFromRow',
+      `
+      SELECT *
+      FROM installations
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [r.installation_id],
+      pool,
+      clientParam,
+    )
+    const installation = createInstallationFromRow(results.rows[0])
+
+    // prettier-ignore
+    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.heartbeat_alert_recipients, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, installation)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
 }
 
 async function beginTransaction() {
@@ -139,29 +188,6 @@ async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, client
   }
 
   return null
-}
-
-async function createHubFromRow(r, clientParam) {
-  try {
-    const results = await helpers.runQuery(
-      'createHubFromRow',
-      `
-      SELECT *
-      FROM installations
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [r.installation_id],
-      pool,
-      clientParam,
-    )
-    const installation = createInstallationFromRow(results.rows[0])
-
-    // prettier-ignore
-    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.heartbeat_alert_recipients, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, installation)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
 }
 
 async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, clientParam) {
@@ -400,61 +426,49 @@ async function clearSessions(clientParam) {
 }
 
 async function getButtonWithSerialNumber(serialNumber, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'getButtonWithSerialNumber',
+      `
+      SELECT *
+      FROM buttons
+      WHERE button_serial_number = $1
+      `,
+      [serialNumber],
+      pool,
+      clientParam,
+    )
 
-    const { rows } = await client.query('SELECT * FROM buttons WHERE button_serial_number = $1', [serialNumber])
-
-    if (rows.length > 0) {
-      return rows[0]
+    if (results.rows.length > 0) {
+      return await createButtonFromRow(results.rows[0], clientParam)
     }
-  } catch (e) {
-    helpers.logError(`Error running the getButtonWithSerialNumber query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`getButtonWithSerialNumber: Error releasing client: ${err}`)
-      }
-    }
+  } catch (err) {
+    helpers.logError(err.toString())
   }
 
   return null
 }
 
 async function createButton(buttonId, installationId, unit, phoneNumber, button_serial_number, clientParam) {
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
+    const results = await helpers.runQuery(
+      'createButton',
+      `
+      INSERT INTO buttons (button_id, installation_id, unit, phone_number, button_serial_number)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [buttonId, installationId, unit, phoneNumber, button_serial_number],
+      pool,
+      clientParam,
+    )
 
-    await client.query('INSERT INTO buttons (button_id, installation_id, unit, phone_number, button_serial_number) VALUES ($1, $2, $3, $4, $5)', [
-      buttonId,
-      installationId,
-      unit,
-      phoneNumber,
-      button_serial_number,
-    ])
-  } catch (e) {
-    helpers.logError(`Error running the createButton query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`createButton: Error releasing client: ${err}`)
-      }
-    }
+    return await createButtonFromRow(results.rows[0], clientParam)
+  } catch (err) {
+    helpers.logError(err.toString())
   }
+
+  return null
 }
 
 async function clearButtons(clientParam) {
@@ -463,25 +477,10 @@ async function clearButtons(clientParam) {
     return
   }
 
-  let client = clientParam
-  const transactionMode = typeof client !== 'undefined'
-
   try {
-    if (!transactionMode) {
-      client = await pool.connect()
-    }
-
-    await client.query('DELETE FROM buttons')
-  } catch (e) {
-    helpers.logError(`Error running the clearButtons query: ${e}`)
-  } finally {
-    if (!transactionMode) {
-      try {
-        client.release()
-      } catch (err) {
-        helpers.logError(`clearButtons: Error releasing client: ${err}`)
-      }
-    }
+    await helpers.runQuery('clearButtons', 'DELETE FROM buttons', [], pool, clientParam)
+  } catch (err) {
+    helpers.log(err.toString())
   }
 }
 

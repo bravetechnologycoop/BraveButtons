@@ -16,8 +16,8 @@ function setup(braveAlerterObj) {
 
 async function handleValidRequest(button, numPresses, batteryLevel) {
   helpers.log(
-    `UUID: ${button.button_id.toString()} SerialNumber: ${
-      button.button_serial_number
+    `UUID: ${button.buttonId.toString()} SerialNumber: ${
+      button.buttonSerialNumber
     } Unit: ${button.unit.toString()} Presses: ${numPresses.toString()} BatteryLevel: ${batteryLevel}`,
   )
 
@@ -30,16 +30,16 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
       return
     }
 
-    let currentSession = await db.getUnrespondedSessionWithButtonId(button.button_id, client)
+    let currentSession = await db.getUnrespondedSessionWithButtonId(button.buttonId, client)
     const currentTime = await db.getCurrentTime(client)
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
       if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
         currentSession = await db.createSession(
-          button.installation_id,
-          button.button_id,
+          button.installation.id,
+          button.buttonId,
           button.unit,
-          button.phone_number,
+          button.phoneNumber,
           numPresses,
           batteryLevel,
           null,
@@ -52,10 +52,10 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
       }
     } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
       currentSession = await db.createSession(
-        button.installation_id,
-        button.button_id,
+        button.installation.id,
+        button.buttonId,
         button.unit,
-        button.phone_number,
+        button.phoneNumber,
         numPresses,
         null,
         null,
