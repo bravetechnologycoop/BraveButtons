@@ -190,7 +190,7 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
    1. ssh onto the `chatbot` or `chatbot-dev` server depending on where you want to add the Buttons
 
-   1. run the `BraveButtons/server/db/add_buttons_to_installation.sh` script with the `BraveButtons/server/.env` file and the CSV file that you just SCP'ed here
+   1. run the `BraveButtons/server/db/add_buttons_to_client.sh` script with the `BraveButtons/server/.env` file and the CSV file that you just SCP'ed here
 
 1. pair the Buttons to their real Hub
 

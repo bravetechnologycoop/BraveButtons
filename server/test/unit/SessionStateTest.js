@@ -10,7 +10,7 @@ const SessionState = require('../../SessionState.js')
 
 describe('SessionState class', () => {
   const sessionId = '12345'
-  const installationId = '67890'
+  const clientId = '67890'
   const buttonId = '12345'
   const unit = '1'
   const phoneNumber = '+14206666969'
@@ -20,7 +20,7 @@ describe('SessionState class', () => {
   let state
 
   beforeEach(() => {
-    state = new SessionState(sessionId, installationId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, 1, createdAt, updatedAt, null, null)
+    state = new SessionState(sessionId, clientId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, 1, createdAt, updatedAt, null, null)
   })
 
   it('should start off with 1 button press', () => {

@@ -1,5 +1,5 @@
 class Button {
-  constructor(id, buttonId, unit, phoneNumber, createdAt, updatedAt, buttonSerialNumber, installation) {
+  constructor(id, buttonId, unit, phoneNumber, createdAt, updatedAt, buttonSerialNumber, client) {
     this.id = id
     this.buttonId = buttonId
     this.unit = unit
@@ -7,7 +7,7 @@ class Button {
     this.createdAt = createdAt
     this.updatedAt = updatedAt
     this.buttonSerialNumber = buttonSerialNumber
-    this.installation = installation
+    this.client = client
   }
 }
 module.exports = Button

@@ -17,3 +17,4 @@ sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USE
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/016-addresponderpushidtoinstallations.sql
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/017-addinstallationforeignkeytohubs.sql
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/018-notnullinstallationidandlocationdescription.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/019-refactorinstallationstable.sql

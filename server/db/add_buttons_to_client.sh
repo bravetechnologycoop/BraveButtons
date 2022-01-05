@@ -10,9 +10,9 @@ if [[ $EUID > 0 ]]; then
     exit 1
 elif [[ ! -n "$3" ]]; then
     echo ""
-    echo "Usage: $0 path_to_.env_file existing_installation_name path_to_buttons_csv"
+    echo "Usage: $0 path_to_.env_file existing_client_name path_to_buttons_csv"
     echo "" 
-    echo "Example: $0 ./../.env ExistingInstallation ./add_buttons.csv.example"
+    echo "Example: $0 ./../.env ExistingClient ./add_buttons.csv.example"
     echo ""
     echo "The buttons CSV file"
     echo "MUST have the header 'button_id,unit,phone_number,button_serial_number'"
@@ -34,10 +34,10 @@ else
         fi
     done < $1
 
-    installation_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM installations WHERE name = '$2';")
+    client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE display_name = '$2';")
 
-    if [[ -z "$installation_id" ]]; then
-        echo "couldn't find an installation with the given installation name $2"
+    if [[ -z "$client_id" ]]; then
+        echo "couldn't find a client with the given client name $2"
         exit 1
     fi
 
@@ -49,7 +49,7 @@ else
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
 
-        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_id, button_serial_number, unit, phone_number, installation_id) VALUES ('$button_id', '$button_serial_number', '$unit', '$phone_number', '$installation_id');"
+        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_id, button_serial_number, unit, phone_number, client_id) VALUES ('$button_id', '$button_serial_number', '$unit', '$phone_number', '$client_id');"
         fi
     done < $3
 

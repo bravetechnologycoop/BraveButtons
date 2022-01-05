@@ -19,7 +19,7 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     this.fakeCurrentTime = new Date('2020-12-25T10:09:08.000Z')
     sandbox.stub(db, 'getCurrentTime').returns(this.fakeCurrentTime)
     sandbox.stub(db, 'beginTransaction')
-    sandbox.stub(db, 'getInstallationWithSessionId').returns({
+    sandbox.stub(db, 'getClientWithSessionId').returns({
       incidentCategories: ['Cat0', 'Cat1', 'Cat2'],
     })
     sandbox.stub(db, 'saveSession')

@@ -26,9 +26,9 @@ class BraveAlerterConfigurator {
         return null
       }
 
-      const installation = await db.getInstallationWithInstallationId(session.installationId)
+      const client = await db.getClientWithId(session.clientId)
 
-      const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
+      const incidentCategoryKeys = this.createIncidentCategoryKeys(client.incidentCategories)
 
       alertSession = new AlertSession(
         session.id,
@@ -36,9 +36,9 @@ class BraveAlerterConfigurator {
         session.incidentType,
         session.notes,
         `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-        installation.responderPhoneNumber,
+        client.responderPhoneNumber,
         incidentCategoryKeys,
-        installation.incidentCategories,
+        client.incidentCategories,
       )
     } catch (e) {
       helpers.logError(`getAlertSession: failed to get and create a new alert session: ${JSON.stringify(e)}`)
@@ -48,9 +48,9 @@ class BraveAlerterConfigurator {
   }
 
   async createAlertSessionFromSession(session) {
-    const installation = await db.getInstallationWithInstallationId(session.installationId)
+    const client = await db.getClientWithId(session.clientId)
 
-    const incidentCategoryKeys = this.createIncidentCategoryKeys(installation.incidentCategories)
+    const incidentCategoryKeys = this.createIncidentCategoryKeys(client.incidentCategories)
 
     return new AlertSession(
       session.id,
@@ -58,9 +58,9 @@ class BraveAlerterConfigurator {
       session.incidentType,
       session.notes,
       `There has been a request for help from Unit ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-      installation.responderPhoneNumber,
+      client.responderPhoneNumber,
       incidentCategoryKeys,
-      installation.incidentCategories,
+      client.incidentCategories,
     )
   }
 
@@ -98,16 +98,16 @@ class BraveAlerterConfigurator {
   }
 
   async alertSessionChangedCallback(alertSession) {
-    let client
+    let pgClient
 
     try {
-      client = await db.beginTransaction()
-      if (client === null) {
+      pgClient = await db.beginTransaction()
+      if (pgClient === null) {
         helpers.logError(`alertSessionChangedCallback: Error starting transaction`)
         return
       }
 
-      const session = await db.getSessionWithSessionId(alertSession.sessionId, client)
+      const session = await db.getSessionWithSessionId(alertSession.sessionId, pgClient)
 
       if (session) {
         if (alertSession.alertState) {
@@ -115,8 +115,8 @@ class BraveAlerterConfigurator {
         }
 
         if (alertSession.incidentCategoryKey) {
-          const installation = await db.getInstallationWithSessionId(alertSession.sessionId, client)
-          session.incidentType = installation.incidentCategories[alertSession.incidentCategoryKey]
+          const client = await db.getClientWithSessionId(alertSession.sessionId, pgClient)
+          session.incidentType = client.incidentCategories[alertSession.incidentCategoryKey]
         }
 
         if (alertSession.details) {
@@ -128,16 +128,16 @@ class BraveAlerterConfigurator {
         }
 
         if (alertSession.alertState === CHATBOT_STATE.WAITING_FOR_CATEGORY && session.respondedAt === null) {
-          session.respondedAt = await db.getCurrentTime(client)
+          session.respondedAt = await db.getCurrentTime(pgClient)
         }
 
-        await db.saveSession(session, client)
+        await db.saveSession(session, pgClient)
       }
 
-      await db.commitTransaction(client)
+      await db.commitTransaction(pgClient)
     } catch (e) {
       try {
-        await db.rollbackTransaction(client)
+        await db.rollbackTransaction(pgClient)
         helpers.logError(`alertSessionChangedCallback: Rolled back transaction because of error: ${e}`)
       } catch (error) {
         // Do nothing
@@ -147,15 +147,15 @@ class BraveAlerterConfigurator {
   }
 
   async getLocationByAlertApiKey(alertApiKey) {
-    const installations = await db.getInstallationsWithAlertApiKey(alertApiKey)
+    const clients = await db.getClientsWithAlertApiKey(alertApiKey)
 
-    if (!Array.isArray(installations) || installations.length === 0) {
+    if (!Array.isArray(clients) || clients.length === 0) {
       return null
     }
 
-    // Even if there is more than one matching installation, we only return one and it will
-    // be used by the Alert App to indentify this installation
-    return new Location(installations[0].name, SYSTEM.BUTTONS)
+    // Even if there is more than one matching clients, we only return one and it will
+    // be used by the Alert App to indentify this client
+    return new Location(clients[0].displayName, SYSTEM.BUTTONS)
   }
 
   createActiveAlertFromRow(row) {

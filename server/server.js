@@ -102,14 +102,12 @@ app.get('/dashboard', sessionChecker, async (req, res) => {
   }
 
   try {
-    const allInstallations = await db.getInstallations()
+    const allClients = await db.getClients()
 
     const viewParams = {
-      installations: allInstallations
-        .filter(installation => installation.isActive)
-        .map(installation => ({ name: installation.name, id: installation.id })),
+      clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
     }
-    viewParams.viewMessage = allInstallations.length >= 1 ? 'Please select an installation' : 'No installations to display'
+    viewParams.viewMessage = allClients.length >= 1 ? 'Please select a client' : 'No clients to display'
 
     res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
   } catch (err) {
@@ -122,29 +120,27 @@ function formatDateTimeForDashboard(date) {
   return format(utcToZonedTime(date, DASHBOARD_TIMEZONE), DASHBOARD_FORMAT, { timeZone: DASHBOARD_TIMEZONE })
 }
 
-app.get('/dashboard/:installationId?', sessionChecker, async (req, res) => {
+app.get('/dashboard/:clientId?', sessionChecker, async (req, res) => {
   if (!req.session.user || !req.cookies.user_sid) {
     res.redirect('/login')
     return
   }
 
   try {
-    const allInstallations = await db.getInstallations()
+    const allClients = await db.getClients()
 
-    if (typeof req.params.installationId !== 'string') {
-      res.redirect(`/dashboard/${allInstallations[0].id}`)
+    if (typeof req.params.clientId !== 'string') {
+      res.redirect(`/dashboard/${allClients[0].id}`)
       return
     }
 
-    const recentSessions = await db.getRecentSessionsWithInstallationId(req.params.installationId)
-    const currentInstallation = await db.getInstallationWithInstallationId(req.params.installationId)
+    const recentSessions = await db.getRecentSessionsWithClientId(req.params.clientId)
+    const currentClient = await db.getClientWithId(req.params.clientId)
 
     const viewParams = {
       recentSessions: [],
-      currentInstallationName: currentInstallation.name,
-      installations: allInstallations
-        .filter(installation => installation.isActive)
-        .map(installation => ({ name: installation.name, id: installation.id })),
+      currentClientName: currentClient.displayName,
+      clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
     }
 
     for (const recentSession of recentSessions) {

@@ -1,8 +1,8 @@
 class SessionState {
   // prettier-ignore
-  constructor(id, installationId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus, buttonBatteryLevel, respondedAt) {
+  constructor(id, clientId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, notes, fallBackAlertTwilioStatus, buttonBatteryLevel, respondedAt) {
     this.id = id
-    this.installationId = installationId
+    this.clientId = clientId
     this.buttonId = buttonId
     this.unit = unit
     this.phoneNumber = phoneNumber

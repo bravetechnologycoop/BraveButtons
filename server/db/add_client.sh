@@ -10,9 +10,9 @@ if [[ $EUID > 0 ]]; then
     exit 1
 elif [[ ! -n "$5" ]]; then
     echo ""
-    echo "Usage: $0 path_to_.env_file new_installation_name responder_phone_number fallback_phone_numbers path_to_buttons_csv"
+    echo "Usage: $0 path_to_.env_file new_client_name responder_phone_number fallback_phone_numbers path_to_buttons_csv"
     echo "" 
-    echo "Example: $0 ./../.env NewInstallation +16041234567 '{\"+17781234567\",\"+17789876543\"}' ./add_buttons.csv.example"
+    echo "Example: $0 ./../.env NewClient +16041234567 '{\"+17781234567\",\"+17789876543\"}' ./add_buttons.csv.example"
     echo ""
     echo "The buttons CSV file"
     echo "MUST have the header 'button_id,unit,phone_number,button_serial_number'"
@@ -34,13 +34,13 @@ else
         fi
     done < $1
 
-    echo "Adding new installation"
+    echo "Adding new client"
     echo "  Name: $2"
     echo "  Responder Phone: $3"
     echo "  Fallback Phones: $4"
-    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO installations VALUES (DEFAULT, '$2', '$3', '$4');"
+    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO clients VALUES (DEFAULT, '$2', '$3', '$4');"
 
-    installation_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM installations WHERE created_at = (SELECT MAX(created_at) FROM installations);")
+    client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE created_at = (SELECT MAX(created_at) FROM clients);")
 
     while IFS=",", read -r button_id unit phone_number button_serial_number; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
@@ -50,7 +50,7 @@ else
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_id, button_serial_number, unit, phone_number, installation_id) VALUES ('$button_id', '$button_serial_number', '$unit', '$phone_number', '$installation_id');"
+            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_id, button_serial_number, unit, phone_number, client_id) VALUES ('$button_id', '$button_serial_number', '$unit', '$phone_number', '$client_id');"
         fi
     done < $5
 

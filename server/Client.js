@@ -1,7 +1,18 @@
-class Installation {
-  constructor(id, name, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, isActive, createdAt, alertApiKey, responderPushId) {
+class Client {
+  constructor(
+    id,
+    displayName,
+    responderPhoneNumber,
+    fallbackPhoneNumbers,
+    incidentCategories,
+    isActive,
+    createdAt,
+    alertApiKey,
+    responderPushId,
+    updatedAt,
+  ) {
     this.id = id
-    this.name = name
+    this.displayName = displayName
     this.responderPhoneNumber = responderPhoneNumber
     this.fallbackPhoneNumbers = fallbackPhoneNumbers
     this.incidentCategories = incidentCategories
@@ -9,7 +20,8 @@ class Installation {
     this.createdAt = createdAt
     this.alertApiKey = alertApiKey
     this.responderPushId = responderPushId
+    this.updatedAt = updatedAt
   }
 }
 
-module.exports = Installation
+module.exports = Client

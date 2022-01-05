@@ -1,3 +1,3 @@
-system_id,system_name,location_description,installation_id
+system_id,system_name,location_description,client_id
 abcbe4a4-0001-493a-b730-bef9b6bb1456,Test Hub Up,Upstairs,def94c52-7c27-4928-b912-723e4bcf1263
 abc1ac76-0000-4ac8-a1c1-6fc55d256123,Test Hub Down,Downstairs,def94c52-7c27-4928-b912-723e4bcf1263

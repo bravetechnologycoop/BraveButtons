@@ -21,59 +21,50 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     } Unit: ${button.unit.toString()} Presses: ${numPresses.toString()} BatteryLevel: ${batteryLevel}`,
   )
 
-  let client
+  let pgClient
 
   try {
-    client = await db.beginTransaction()
-    if (client === null) {
+    pgClient = await db.beginTransaction()
+    if (pgClient === null) {
       helpers.logError(`handleValidRequest: Error starting transaction`)
       return
     }
 
-    let currentSession = await db.getUnrespondedSessionWithButtonId(button.buttonId, client)
-    const currentTime = await db.getCurrentTime(client)
+    let currentSession = await db.getUnrespondedSessionWithButtonId(button.buttonId, pgClient)
+    const currentTime = await db.getCurrentTime(pgClient)
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
       if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
         currentSession = await db.createSession(
-          button.installation.id,
+          button.client.id,
           button.buttonId,
           button.unit,
           button.phoneNumber,
           numPresses,
           batteryLevel,
           null,
-          client,
+          pgClient,
         )
       } else {
         currentSession.incrementButtonPresses(numPresses)
         currentSession.updateBatteryLevel(batteryLevel)
-        await db.saveSession(currentSession, client)
+        await db.saveSession(currentSession, pgClient)
       }
     } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(
-        button.installation.id,
-        button.buttonId,
-        button.unit,
-        button.phoneNumber,
-        numPresses,
-        null,
-        null,
-        client,
-      )
+      currentSession = await db.createSession(button.client.id, button.buttonId, button.unit, button.phoneNumber, numPresses, null, null, pgClient)
     } else {
       currentSession.incrementButtonPresses(numPresses)
-      await db.saveSession(currentSession, client)
+      await db.saveSession(currentSession, pgClient)
     }
 
-    const installation = await db.getInstallationWithInstallationId(currentSession.installationId, client)
+    const client = await db.getClientWithId(currentSession.clientId, pgClient)
 
     if (currentSession.numPresses === 1) {
       const alertInfo = {
         sessionId: currentSession.id,
-        toPhoneNumber: installation.responderPhoneNumber,
+        toPhoneNumber: client.responderPhoneNumber,
         fromPhoneNumber: currentSession.phoneNumber,
-        responderPushId: installation.responderPushId,
+        responderPushId: client.responderPushId,
         deviceName: currentSession.unit,
         alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
         message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
@@ -81,8 +72,8 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
         reminderMessage:
           'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
-        fallbackMessage: `There has been an unresponded request at ${installation.name} unit ${currentSession.unit.toString()}`,
-        fallbackToPhoneNumbers: installation.fallbackPhoneNumbers,
+        fallbackMessage: `There has been an unresponded request at ${client.displayName} unit ${currentSession.unit.toString()}`,
+        fallbackToPhoneNumbers: client.fallbackPhoneNumbers,
         fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
       }
       braveAlerter.startAlertSession(alertInfo)
@@ -93,8 +84,8 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     ) {
       braveAlerter.sendAlertSessionUpdate(
         currentSession.id,
-        installation.responderPushId,
-        installation.responderPhoneNumber,
+        client.responderPushId,
+        client.responderPhoneNumber,
         currentSession.phoneNumber,
         `This in an urgent request. The button has been pressed ${currentSession.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
         `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT)} Alert:\n${currentSession.unit.toString()}`,
@@ -103,10 +94,10 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
       // no alert to be sent
     }
 
-    await db.commitTransaction(client)
+    await db.commitTransaction(pgClient)
   } catch (e) {
     try {
-      await db.rollbackTransaction(client)
+      await db.rollbackTransaction(pgClient)
       helpers.logError(`handleValidRequest: Rolled back transaction because of error: ${e}`)
     } catch (error) {
       // Do nothing

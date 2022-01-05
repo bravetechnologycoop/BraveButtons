@@ -3,23 +3,28 @@ const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
 
 // In-house dependencies
-const db = require('../../../db/db.js')
-const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
+const db = require('../../../db/db')
+const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
+const { clientDBFactory } = require('../../testingHelpers')
 
 describe('BraveAlerterConfigurator.js integration tests: getNewNotificationsCountByAlertApiKey', () => {
   beforeEach(async () => {
     await db.clearTables()
 
     this.alertApiKey = '00000000-000000000000001'
-    await db.createInstallation('', '', '{}', '{}', this.alertApiKey)
-    const installations = await db.getInstallations()
-    this.installationId = installations[0].id
+    const client = await clientDBFactory(db, {
+      displayName: '',
+      responderPhoneNumber: '',
+      fallbackPhoneNumbers: '{}',
+      incidentCategories: '{}',
+      alertApiKey: this.alertApiKey,
+    })
 
     // 3 new notifications and 1 acknowledged notification
-    await db.createNotification(this.installationId, 'subject', 'body', false)
-    await db.createNotification(this.installationId, 'subject', 'body', false)
-    await db.createNotification(this.installationId, 'subject', 'body', false)
-    await db.createNotification(this.installationId, 'subject', 'body', true)
+    await db.createNotification(client.id, 'subject', 'body', false)
+    await db.createNotification(client.id, 'subject', 'body', false)
+    await db.createNotification(client.id, 'subject', 'body', false)
+    await db.createNotification(client.id, 'subject', 'body', true)
 
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     this.braveAlerter = braveAlerterConfigurator.createBraveAlerter()
