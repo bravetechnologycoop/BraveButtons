@@ -1,8 +1,11 @@
+// Third-party dependencies
 /* eslint-disable no-continue */
 const Mustache = require('mustache')
 const { differenceInSeconds, sub } = require('date-fns')
+
+// In-house dependencies
 const { helpers } = require('brave-alert-lib')
-const db = require('./db/db.js')
+const db = require('./db/db')
 
 let braveAlerter
 let heartbeatDashboardTemplate

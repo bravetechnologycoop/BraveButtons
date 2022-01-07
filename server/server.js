@@ -10,11 +10,11 @@ const session = require('express-session')
 const Mustache = require('mustache')
 const { helpers } = require('brave-alert-lib')
 
-const BraveAlerterConfigurator = require('./BraveAlerterConfigurator.js')
-const db = require('./db/db.js')
-const vitals = require('./vitals.js')
-const routes = require('./routes.js')
-const buttons = require('./buttons.js')
+const BraveAlerterConfigurator = require('./BraveAlerterConfigurator')
+const db = require('./db/db')
+const vitals = require('./vitals')
+const routes = require('./routes')
+const buttonAlerts = require('./buttonAlerts')
 
 const DASHBOARD_TIMEZONE = 'America/Vancouver'
 const DASHBOARD_FORMAT = 'dd MMM Y, hh:mm:ss aaa zzz'
@@ -31,7 +31,7 @@ const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
 
 vitals.setup(braveAlerter, heartbeatDashboardTemplate)
 
-buttons.setup(braveAlerter)
+buttonAlerts.setup(braveAlerter)
 
 // Add routes
 routes.configureRoutes(app)

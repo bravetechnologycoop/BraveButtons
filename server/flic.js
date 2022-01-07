@@ -3,8 +3,8 @@ const Validator = require('express-validator')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
-const db = require('./db/db.js')
-const buttons = require('./buttons.js')
+const db = require('./db/db')
+const buttonAlerts = require('./buttonAlerts')
 
 const flicApiKey = helpers.getEnvVar('FLIC_BUTTON_PRESS_API_KEY')
 
@@ -33,7 +33,7 @@ async function handleButtonPress(req, res) {
         helpers.logError(errorMessage)
         res.status(400).send(`Bad request to ${req.path}: Serial Number is not registered`)
       } else {
-        await buttons.handleValidRequest(button, 1, batteryLevel)
+        await buttonAlerts.handleValidRequest(button, 1, batteryLevel)
 
         res.status(200).send()
       }
