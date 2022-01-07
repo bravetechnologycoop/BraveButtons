@@ -3,8 +3,8 @@ const Validator = require('express-validator')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
-const db = require('./db/db.js')
-const buttons = require('./buttons.js')
+const db = require('./db/db')
+const buttonAlerts = require('./buttonAlerts')
 
 const radioBridgeApiKeys = [helpers.getEnvVar('RADIO_BRIDGE_API_KEY_PRIMARY'), helpers.getEnvVar('RADIO_BRIDGE_API_KEY_SECONDARY')]
 
@@ -36,7 +36,7 @@ async function handleButtonPress(req, res) {
           helpers.logError(errorMessage)
           res.status(400).send(`Bad request to ${req.path}: Device ID is not registered`)
         } else {
-          await buttons.handleValidRequest(button, 1)
+          await buttonAlerts.handleValidRequest(button, 1)
 
           res.status(200).send()
         }
