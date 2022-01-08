@@ -54,19 +54,19 @@ function clientFactory(overrides = {}) {
     overrides.fallbackPhoneNumbers !== undefined ? overrides.fallbackPhoneNumbers : ['+13336669999'],
     overrides.incidentCategories !== undefined ? overrides.incidentCategories : ['Accidental', 'Safer Use', 'Unsafe Guest', 'Overdose', 'Other'],
     overrides.isActive !== undefined ? overrides.isActive : true,
-    overrides.createdAt !== undefined ? overrides.createdAt : '2021-11-04T22:28:28.0248Z',
+    overrides.createdAt !== undefined ? overrides.createdAt : new Date('2021-11-04T22:28:28.0248Z'),
     overrides.alertApiKey !== undefined ? overrides.alertApiKey : 'alertApiKey',
     overrides.responderPushId !== undefined ? overrides.responderPushId : 'myPushId',
-    overrides.updatedAt !== undefined ? overrides.updatedAt : '2021-11-05T02:02:22.234Z',
+    overrides.updatedAt !== undefined ? overrides.updatedAt : new Date('2021-11-05T02:02:22.234Z'),
   )
 }
 
 function hubFactory(overrides = {}) {
   return new Hub(
     overrides.systemId !== undefined ? overrides.systemId : 'fakeHubId',
-    overrides.flicLastSeenTime !== undefined ? overrides.flicLastSeenTime : '2021-11-04T22:28:28.0248Z',
-    overrides.flicLastPingTime !== undefined ? overrides.flicLastPingTime : '2021-11-04T22:28:28.0248Z',
-    overrides.heartbeatLastSeenTime !== undefined ? overrides.heartbeatLastSeenTime : '2021-11-04T22:28:28.0248Z',
+    overrides.flicLastSeenTime !== undefined ? overrides.flicLastSeenTime : new Date('2021-11-04T22:28:28.0248Z'),
+    overrides.flicLastPingTime !== undefined ? overrides.flicLastPingTime : new Date('2021-11-04T22:28:28.0248Z'),
+    overrides.heartbeatLastSeenTime !== undefined ? overrides.heartbeatLastSeenTime : new Date('2021-11-04T22:28:28.0248Z'),
     overrides.systemName !== undefined ? overrides.systemName : 'fakeHubName',
     overrides.hidden !== undefined ? overrides.hidden : false,
     overrides.sentVitalsAlertAt !== undefined ? overrides.sentVitalsAlertAt : null,

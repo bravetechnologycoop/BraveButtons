@@ -4,7 +4,7 @@ const { describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 const rewire = require('rewire')
-const { sub } = require('date-fns')
+const { DateTime } = require('luxon')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
@@ -25,11 +25,17 @@ const pingThreshold = 320
 const clientThreshold = 640
 const subsequentVitalsThreshold = 1000
 
-const exceededFlicTimestamp = sub(currentDBDate, { seconds: flicThreshold + 1 })
-const exceededPingTimestamp = sub(currentDBDate, { seconds: pingThreshold + 1 })
-const exceededPiTimestamp = sub(currentDBDate, { seconds: piThreshold + 1 })
-const exceededExternalTimestamp = sub(currentDBDate, { seconds: clientThreshold + 1 })
-const exceededReminderTimestamp = sub(currentDBDate, { seconds: subsequentVitalsThreshold + 1 })
+// Expects JS Date objects
+function subtractSeconds(date, seconds) {
+  const dateTime = DateTime.fromJSDate(date)
+  return dateTime.minus({ seconds }).toJSDate()
+}
+
+const exceededFlicTimestamp = subtractSeconds(currentDBDate, flicThreshold + 1) // sub(currentDBDate, { seconds: flicThreshold + 1 })
+const exceededPingTimestamp = subtractSeconds(currentDBDate, pingThreshold + 1) // sub(currentDBDate, { seconds: pingThreshold + 1 })
+const exceededPiTimestamp = subtractSeconds(currentDBDate, piThreshold + 1) // sub(currentDBDate, { seconds: piThreshold + 1 })
+const exceededExternalTimestamp = subtractSeconds(currentDBDate, clientThreshold + 1) // sub(currentDBDate, { seconds: clientThreshold + 1 })
+const exceededReminderTimestamp = subtractSeconds(currentDBDate, subsequentVitalsThreshold + 1) // sub(currentDBDate, { seconds: subsequentVitalsThreshold + 1 })
 
 describe('vitals.js unit tests: checkHeartbeat', () => {
   /* eslint-disable no-underscore-dangle */
