@@ -3,7 +3,7 @@ const fs = require('fs')
 const express = require('express')
 const https = require('https')
 const { Parser } = require('json2csv')
-const { format, utcToZonedTime } = require('date-fns-tz')
+const { DateTime } = require('luxon')
 
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
@@ -17,7 +17,7 @@ const routes = require('./routes')
 const buttonAlerts = require('./buttonAlerts')
 
 const DASHBOARD_TIMEZONE = 'America/Vancouver'
-const DASHBOARD_FORMAT = 'dd MMM Y, hh:mm:ss aaa zzz'
+const DASHBOARD_FORMAT = 'y MMM d, TTT'
 
 const app = express()
 
@@ -117,7 +117,7 @@ app.get('/dashboard', sessionChecker, async (req, res) => {
 })
 
 function formatDateTimeForDashboard(date) {
-  return format(utcToZonedTime(date, DASHBOARD_TIMEZONE), DASHBOARD_FORMAT, { timeZone: DASHBOARD_TIMEZONE })
+  return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(DASHBOARD_TIMEZONE).toFormat(DASHBOARD_FORMAT)
 }
 
 app.get('/dashboard/:clientId?', sessionChecker, async (req, res) => {
@@ -227,5 +227,6 @@ if (helpers.isTestEnvironment()) {
 }
 
 module.exports.braveAlerter = braveAlerter // for tests
+module.exports.formatDateTimeForDashboard = formatDateTimeForDashboard // for tests
 module.exports.server = server
 module.exports.db = db

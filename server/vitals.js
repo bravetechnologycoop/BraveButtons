@@ -1,7 +1,7 @@
 // Third-party dependencies
 /* eslint-disable no-continue */
 const Mustache = require('mustache')
-const { differenceInSeconds, sub } = require('date-fns')
+const { DateTime } = require('luxon')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
@@ -13,6 +13,19 @@ let heartbeatDashboardTemplate
 function setup(braveAlerterObj, heartbeatDashboardTemplateObj) {
   braveAlerter = braveAlerterObj
   heartbeatDashboardTemplate = heartbeatDashboardTemplateObj
+}
+
+// Expects a JS Date object and an integer and returns a JS Date object
+function subtractSeconds(date, seconds) {
+  const dateTime = DateTime.fromJSDate(date)
+  return dateTime.minus({ seconds }).toJSDate()
+}
+
+// Expects JS Date objects and returns an int
+function differenceInSeconds(date1, date2) {
+  const dateTime1 = DateTime.fromJSDate(date1)
+  const dateTime2 = DateTime.fromJSDate(date2)
+  return dateTime1.diff(dateTime2, 'seconds').seconds
 }
 
 function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumber) {
@@ -56,9 +69,9 @@ async function checkHeartbeat() {
       const client = hub.client
       const responderPhoneNumber = client.responderPhoneNumber
       const currentTime = await db.getCurrentTime()
-      const flicDelayinSeconds = differenceInSeconds(currentTime, new Date(hub.flicLastSeenTime))
-      const piDelayinSeconds = differenceInSeconds(currentTime, new Date(hub.heartbeatLastSeenTime))
-      const pingDelayinSeconds = differenceInSeconds(currentTime, new Date(hub.flicLastPingTime))
+      const flicDelayinSeconds = differenceInSeconds(currentTime, hub.flicLastSeenTime)
+      const piDelayinSeconds = differenceInSeconds(currentTime, hub.heartbeatLastSeenTime)
+      const pingDelayinSeconds = differenceInSeconds(currentTime, hub.flicLastPingTime)
       const externalThreshold = helpers.getEnvVar('VITALS_ALERT_THRESHOLD')
 
       const flicInternalHeartbeatExceeded = flicDelayinSeconds > helpers.getEnvVar('LAST_SEEN_FLIC_THRESHOLD')
@@ -165,8 +178,8 @@ async function handleHeartbeatDashboard(req, res) {
 async function handleHeartbeat(req, res) {
   try {
     const currentTime = new Date(await db.getCurrentTime())
-    const flicLastSeenTime = sub(currentTime, { seconds: req.body.flic_last_seen_secs })
-    const flicLastPingTime = sub(currentTime, { seconds: req.body.flic_last_ping_secs })
+    const flicLastSeenTime = subtractSeconds(currentTime, req.body.flic_last_seen_secs)
+    const flicLastPingTime = subtractSeconds(currentTime, req.body.flic_last_ping_secs)
     const heartbeatLastSeenTime = currentTime
     await db.saveHeartbeat(req.body.system_id, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime)
     res.status(200).send()
