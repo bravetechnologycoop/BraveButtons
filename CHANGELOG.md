@@ -40,6 +40,10 @@ the code was deployed.
 
 - Documentation in `add_hubs.sh` script (CU-faxfbg).
 
+### Security
+
+- Updated dependencies.
+
 ## [6.1.0] - 2021-11-29
 
 ### Changed
