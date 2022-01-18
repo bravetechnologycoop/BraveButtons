@@ -6,10 +6,10 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 
 // In-house dependencies
-const { helpers } = require('brave-alert-lib')
+const { helpers, factories } = require('brave-alert-lib')
 const buttonAlerts = require('../../../buttonAlerts')
 const db = require('../../../db/db')
-const { buttonDBFactory, clientDBFactory } = require('../../testingHelpers')
+const { buttonDBFactory } = require('../../testingHelpers')
 const { server } = require('../../../server')
 
 chai.use(chaiHttp)
@@ -147,7 +147,7 @@ describe('radiobridge.js integration tests: handleButtonpress', () => {
   describe('POST BUTTON_PRESS with primary API key for existing Button', () => {
     beforeEach(async () => {
       const buttonSerialNumber = '7bj2n3f7dsf23fad'
-      const client = await clientDBFactory(db)
+      const client = await factories.clientDBFactory(db)
       this.button = await buttonDBFactory(db, {
         clientId: client.id,
         buttonSerialNumber,
@@ -180,7 +180,7 @@ describe('radiobridge.js integration tests: handleButtonpress', () => {
   describe('POST BUTTON_PRESS with secondary API key for existing Button', () => {
     beforeEach(async () => {
       const buttonSerialNumber = '7bj2n3f7dsf23fad'
-      const client = await clientDBFactory(db)
+      const client = await factories.clientDBFactory(db)
       this.button = await buttonDBFactory(db, {
         clientId: client.id,
         buttonSerialNumber,

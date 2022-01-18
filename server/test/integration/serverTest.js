@@ -6,12 +6,12 @@ const { after, afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 const twilio = require('twilio')
-const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
+const { CHATBOT_STATE, factories, helpers } = require('brave-alert-lib')
 
 chai.use(chaiHttp)
 chai.use(sinonChai)
 
-const { buttonDBFactory, clientDBFactory } = require('../testingHelpers')
+const { buttonDBFactory } = require('../testingHelpers')
 const imports = require('../../server.js')
 
 const server = imports.server
@@ -67,13 +67,16 @@ describe('Chatbot server', () => {
 
   describe('POST request: flic button press', () => {
     beforeEach(async () => {
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         displayName: 'TestInstallation',
         responderPhoneNumber: installationResponderPhoneNumber,
         fallbackPhoneNumbers: installationFallbackPhoneNumbers,
         incidentCategories: installationIncidentCategories,
         alertApiKey: null,
         responderPushId: null,
+        reminderTimeout: 1,
+        fallbackTimeout: 2,
+        fromPhoneNumber: '+15005550006',
       })
       await buttonDBFactory(db, {
         buttonId: unit1UUID,
@@ -410,13 +413,16 @@ describe('Chatbot server', () => {
 
   describe('POST request: twilio message', () => {
     beforeEach(async () => {
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         displayName: 'TestInstallation',
         responderPhoneNumber: installationResponderPhoneNumber,
         fallbackPhoneNumbers: installationFallbackPhoneNumbers,
         incidentCategories: installationIncidentCategories,
         alertApiKey: null,
         responderPushId: null,
+        reminderTimeout: 1,
+        fallbackTimeout: 2,
+        fromPhoneNumber: '+15005550006',
       })
       await buttonDBFactory(db, {
         buttonId: unit1UUID,

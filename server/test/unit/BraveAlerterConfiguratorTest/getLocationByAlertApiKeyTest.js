@@ -4,11 +4,9 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 
-const { Location, SYSTEM } = require('brave-alert-lib')
+const { Client, factories, Location, SYSTEM } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
-const Client = require('../../../Client')
-const { clientFactory } = require('../../testingHelpers')
 
 // Configure Chai
 use(sinonChai)
@@ -43,12 +41,12 @@ describe('BraveAlerterConfigurator.js unit tests: getLocationByAlertApiKey', () 
     const alertApiKey = 'fakeApiKey'
     const displayName = 'fakeDisplayName'
 
-    const client1 = clientFactory({
+    const client1 = factories.clientFactory({
       alertApiKey,
       displayName,
     })
 
-    const client2 = clientFactory({
+    const client2 = factories.clientFactory({
       alertApiKey,
       displayName: 'aDifferentDisplayName',
     })

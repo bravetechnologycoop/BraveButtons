@@ -4,7 +4,7 @@
   "description": "server for Brave Buttons chatbot and heartbeat monitoring",
   "main": "server.js",
   "dependencies": {
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v6.4.0",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v6.5.0",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
@@ -26,7 +26,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "mocha": "^9.1.4",
+    "mocha": "^9.2.0",
     "nyc": "^15.1.0",
     "prettier": "^2.3.2",
     "rewire": "^6.0.0",

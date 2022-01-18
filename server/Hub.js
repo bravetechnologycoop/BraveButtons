@@ -8,7 +8,6 @@ class Hub {
     hidden,
     sentVitalsAlertAt,
     muted,
-    heartbeatAlertRecipients,
     sentInternalFlicAlert,
     sentInternalPingAlert,
     sentInternalPiAlert,
@@ -23,7 +22,6 @@ class Hub {
     this.hidden = hidden
     this.sentVitalsAlertAt = sentVitalsAlertAt
     this.muted = muted
-    this.heartbeatAlertRecipients = heartbeatAlertRecipients
     this.sentInternalFlicAlert = sentInternalFlicAlert
     this.sentInternalPingAlert = sentInternalPingAlert
     this.sentInternalPiAlert = sentInternalPiAlert

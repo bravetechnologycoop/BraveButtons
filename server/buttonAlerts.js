@@ -5,8 +5,6 @@ const { ALERT_TYPE, helpers } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
-const unrespondedSessionReminderTimeoutMillis = helpers.getEnvVar('REMINDER_TIMEOUT_MS')
-const unrespondedSessionAlertTimeoutMillis = helpers.getEnvVar('FALLBACK_TIMEOUT_MS')
 
 let braveAlerter
 
@@ -68,13 +66,13 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         deviceName: currentSession.unit,
         alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
         message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
-        reminderTimeoutMillis: unrespondedSessionReminderTimeoutMillis,
-        fallbackTimeoutMillis: unrespondedSessionAlertTimeoutMillis,
+        reminderTimeoutMillis: client.reminderTimeout * 1000,
+        fallbackTimeoutMillis: client.fallbackTimeout * 1000,
         reminderMessage:
           'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
         fallbackMessage: `There has been an unresponded request at ${client.displayName} unit ${currentSession.unit.toString()}`,
         fallbackToPhoneNumbers: client.fallbackPhoneNumbers,
-        fallbackFromPhoneNumber: helpers.getEnvVar('TWILIO_FALLBACK_FROM_NUMBER'),
+        fallbackFromPhoneNumber: client.fromPhoneNumber,
       }
       braveAlerter.startAlertSession(alertInfo)
     } else if (
