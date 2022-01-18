@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Added missing rows to the `clients` table and started using them.
+
 ## [7.0.0] - 2022-01-20
 
 ### Added

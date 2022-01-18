@@ -28,9 +28,8 @@ function differenceInSeconds(date1, date2) {
   return dateTime1.diff(dateTime2, 'seconds').seconds
 }
 
-function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumber) {
+function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumber, fromPhoneNumber) {
   const message = `The connection for ${locationDescription} Button Hub has been lost. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email contact@brave.coop for further support.`
-  const fromPhoneNumber = helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER')
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
@@ -38,9 +37,8 @@ function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients,
   braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
 }
 
-function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients, responderPhoneNumber) {
+function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients, responderPhoneNumber, fromPhoneNumber) {
   const message = `${locationDescription} Button Hub is still disconnected. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email contact@brave.coop for further support.`
-  const fromPhoneNumber = helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER')
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
@@ -48,9 +46,8 @@ function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients
   braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
 }
 
-function sendReconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumber) {
+function sendReconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumber, fromPhoneNumber) {
   const message = `${locationDescription} Button Hub has reconnected.`
-  const fromPhoneNumber = helpers.getEnvVar('TWILIO_HEARTBEAT_FROM_NUMBER')
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
@@ -114,14 +111,14 @@ async function checkHeartbeat() {
       if (externalHeartbeatExceeded) {
         if (hub.sentVitalsAlertAt === null) {
           await db.updateSentAlerts(hub.systemId, true)
-          sendDisconnectionMessage(hub.locationDescription, hub.heartbeatAlertRecipients, responderPhoneNumber)
+          sendDisconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumber, client.fromPhoneNumber)
         } else if (differenceInSeconds(currentTime, hub.sentVitalsAlertAt) > helpers.getEnvVar('SUBSEQUENT_VITALS_ALERT_THRESHOLD')) {
           await db.updateSentAlerts(hub.systemId, true)
-          sendDisconnectionReminder(hub.locationDescription, hub.heartbeatAlertRecipients, responderPhoneNumber)
+          sendDisconnectionReminder(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumber, client.fromPhoneNumber)
         }
       } else if (hub.sentVitalsAlertAt !== null) {
         await db.updateSentAlerts(hub.systemId, false)
-        sendReconnectionMessage(hub.locationDescription, hub.heartbeatAlertRecipients, responderPhoneNumber)
+        sendReconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumber, client.fromPhoneNumber)
       }
     }
   } catch (e) {

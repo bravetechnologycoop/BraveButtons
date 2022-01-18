@@ -1,12 +1,12 @@
 // Third-party dependencies
 const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
-const { CHATBOT_STATE, ALERT_TYPE, helpers } = require('brave-alert-lib')
 
 // In-house dependencies
+const { CHATBOT_STATE, ALERT_TYPE, factories, helpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const SessionState = require('../../../SessionState')
-const { buttonDBFactory, clientDBFactory } = require('../../testingHelpers')
+const { buttonDBFactory } = require('../../testingHelpers')
 
 describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
   describe('if there are no clients with the given Alert API Key', () => {
@@ -14,7 +14,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       await db.clearTables()
 
       // Insert a single client with a single button that has a single session that doesn't match the Alert API Key that we ask for
-      const client = await clientDBFactory(db)
+      const client = await factories.clientDBFactory(db)
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
@@ -38,7 +38,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       await db.clearTables()
 
       // Insert a single client with a single button that has a single session that doesn't match the Alert API Key that we ask for
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: 'not our API key',
       })
       const button = await buttonDBFactory(db, {
@@ -49,7 +49,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
       // Insert a single client with no sessions that matches the Alert API Key that we ask for
       this.alertApiKey = 'alertApiKey'
-      await clientDBFactory(db, {
+      await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
       })
     })
@@ -71,7 +71,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
       // Insert a single client with a single button
       this.alertApiKey = 'alertApiKey'
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
       })
       this.button = await buttonDBFactory(db, {
@@ -132,7 +132,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
       // Insert a single client with a two buttons and more than maxHistoricAlerts sessions
       this.alertApiKey = 'alertApiKey'
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
       })
       const button1 = await buttonDBFactory(db, {
@@ -173,7 +173,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
       // Insert a single client with a two buttons and maxHistoricAlerts sessions
       this.alertApiKey = 'alertApiKey'
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
       })
       const button1 = await buttonDBFactory(db, {
@@ -216,7 +216,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
 
       // Insert a single client with a one button and one session
       this.alertApiKey = 'alertApiKey'
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
       })
       const button = await buttonDBFactory(db, {

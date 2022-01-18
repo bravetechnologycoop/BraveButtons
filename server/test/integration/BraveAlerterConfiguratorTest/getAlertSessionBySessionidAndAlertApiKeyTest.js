@@ -3,10 +3,9 @@ const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
 
 // In-house dependencies
-const { CHATBOT_STATE, AlertSession } = require('brave-alert-lib')
+const { CHATBOT_STATE, AlertSession, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
-const { clientDBFactory } = require('../../testingHelpers')
 
 describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessionidAndAlertApiKey', () => {
   beforeEach(async () => {
@@ -21,7 +20,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessio
 
     await db.clearTables()
 
-    const client = await clientDBFactory(db, {
+    const client = await factories.clientDBFactory(db, {
       displayName: '',
       responderPhoneNumber: this.installationResponderPhoneNumber,
       fallbackPhoneNumbers: '{}',

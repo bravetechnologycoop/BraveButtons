@@ -2,10 +2,9 @@
 const { Pool, types } = require('pg')
 
 // In-house dependencies
-const { CHATBOT_STATE, helpers } = require('brave-alert-lib')
+const { CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
 const Button = require('../Button')
 const Hub = require('../Hub')
-const Client = require('../Client')
 const SessionState = require('../SessionState')
 
 const pool = new Pool({
@@ -30,7 +29,7 @@ function createSessionFromRow(r) {
 
 function createClientFromRow(r) {
   // prettier-ignore
-  return new Client(r.id, r.display_name, r.responder_phone_number, r.fallback_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.alert_api_key, r.responder_push_id, r.updated_at)
+  return new Client(r.id, r.display_name, r.responder_phone_number, r.responder_push_id, r.alert_api_key, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.updated_at)
 }
 
 async function createButtonFromRow(r, pgClient) {
@@ -73,7 +72,7 @@ async function createHubFromRow(r, pgClient) {
     const client = createClientFromRow(results.rows[0])
 
     // prettier-ignore
-    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.heartbeat_alert_recipients, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
+    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -489,15 +488,41 @@ async function clearButtons(pgClient) {
   }
 }
 
-async function createClient(displayName, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, responderPushId, pgClient) {
+async function createClient(
+  displayName,
+  responderPhoneNumber,
+  responderPushId,
+  alertApiKey,
+  reminderTimeout,
+  fallbackPhoneNumbers,
+  fromPhoneNumber,
+  fallbackTimeout,
+  heartbeatPhoneNumbers,
+  incidentCategories,
+  isActive,
+  pgClient,
+) {
   try {
     const results = await helpers.runQuery(
       'createClient',
-      `INSERT INTO clients (display_name, responder_phone_number, fallback_phone_numbers, incident_categories, alert_api_key, responder_push_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      `
+      INSERT INTO clients (display_name, responder_phone_number, responder_push_id, alert_api_key, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_active)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
       `,
-      [displayName, responderPhoneNumber, fallbackPhoneNumbers, incidentCategories, alertApiKey, responderPushId],
+      [
+        displayName,
+        responderPhoneNumber,
+        responderPushId,
+        alertApiKey,
+        reminderTimeout,
+        fallbackPhoneNumbers,
+        fromPhoneNumber,
+        fallbackTimeout,
+        heartbeatPhoneNumbers,
+        incidentCategories,
+        isActive,
+      ],
       pool,
       pgClient,
     )

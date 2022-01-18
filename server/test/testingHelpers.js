@@ -1,5 +1,6 @@
+// In-house dependencies
+const { factories } = require('brave-alert-lib')
 const SessionState = require('../SessionState')
-const Client = require('../Client')
 const Hub = require('../Hub')
 
 function createTestSessionState() {
@@ -33,34 +34,6 @@ async function buttonDBFactory(db, overrides = {}) {
   return button
 }
 
-async function clientDBFactory(db, overrides = {}) {
-  const client = await db.createClient(
-    overrides.displayName !== undefined ? overrides.displayName : 'fakeLocationName',
-    overrides.responderPhoneNumber !== undefined ? overrides.responderPhoneNumber : '+17781234567',
-    overrides.fallbackPhoneNumbers !== undefined ? overrides.fallbackPhoneNumbers : ['+13336669999'],
-    overrides.incidentCategories !== undefined ? overrides.incidentCategories : ['Accidental', 'Safer Use', 'Unsafe Guest', 'Overdose', 'Other'],
-    overrides.alertApiKey !== undefined ? overrides.alertApiKey : 'alertApiKey',
-    overrides.responderPushId !== undefined ? overrides.responderPushId : 'myPushId',
-  )
-
-  return client
-}
-
-function clientFactory(overrides = {}) {
-  return new Client(
-    overrides.id !== undefined ? overrides.id : 'fakeLocationid',
-    overrides.displayName !== undefined ? overrides.displayName : 'fakeLocationName',
-    overrides.responderPhoneNumber !== undefined ? overrides.responderPhoneNumber : '+17781234567',
-    overrides.fallbackPhoneNumbers !== undefined ? overrides.fallbackPhoneNumbers : ['+13336669999'],
-    overrides.incidentCategories !== undefined ? overrides.incidentCategories : ['Accidental', 'Safer Use', 'Unsafe Guest', 'Overdose', 'Other'],
-    overrides.isActive !== undefined ? overrides.isActive : true,
-    overrides.createdAt !== undefined ? overrides.createdAt : new Date('2021-11-04T22:28:28.0248Z'),
-    overrides.alertApiKey !== undefined ? overrides.alertApiKey : 'alertApiKey',
-    overrides.responderPushId !== undefined ? overrides.responderPushId : 'myPushId',
-    overrides.updatedAt !== undefined ? overrides.updatedAt : new Date('2021-11-05T02:02:22.234Z'),
-  )
-}
-
 function hubFactory(overrides = {}) {
   return new Hub(
     overrides.systemId !== undefined ? overrides.systemId : 'fakeHubId',
@@ -71,19 +44,16 @@ function hubFactory(overrides = {}) {
     overrides.hidden !== undefined ? overrides.hidden : false,
     overrides.sentVitalsAlertAt !== undefined ? overrides.sentVitalsAlertAt : null,
     overrides.muted !== undefined ? overrides.muted : false,
-    overrides.heartbeatAlertRecipients !== undefined ? overrides.heartbeatAlertRecipients : ['+16665552222'],
     overrides.sentInternalFlicAlert !== undefined ? overrides.sentInternalFlicAlert : false,
     overrides.sentInternalPingAlert !== undefined ? overrides.sentInternalPingAlert : false,
     overrides.sentInternalPiAlert !== undefined ? overrides.sentInternalPiAlert : false,
     overrides.locationDescription !== undefined ? overrides.locationDescription : 'fakeHubLocationDescription',
-    overrides.client !== undefined ? overrides.client : clientFactory(),
+    overrides.client !== undefined ? overrides.client : factories.clientFactory(),
   )
 }
 
 module.exports = {
   createTestSessionState,
   buttonDBFactory,
-  clientDBFactory,
-  clientFactory,
   hubFactory,
 }

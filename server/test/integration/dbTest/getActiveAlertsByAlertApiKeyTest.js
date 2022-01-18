@@ -1,12 +1,12 @@
 // Third-party dependencies
 const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
-const { CHATBOT_STATE, ALERT_TYPE } = require('brave-alert-lib')
 
 // In-house dependencies
+const { CHATBOT_STATE, ALERT_TYPE, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const SessionState = require('../../../SessionState')
-const { buttonDBFactory, clientDBFactory } = require('../../testingHelpers')
+const { buttonDBFactory } = require('../../testingHelpers')
 
 describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
   describe('if there are no clients with the given Alert API Key', () => {
@@ -14,7 +14,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       await db.clearTables()
 
       // Insert a single client with a single button that has a single session that doesn't match the Alert API Key that we ask for
-      const client = await clientDBFactory(db)
+      const client = await factories.clientDBFactory(db)
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
@@ -38,7 +38,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       await db.clearTables()
 
       // Insert a single client with a single button that has a single session that doesn't match the Alert API Key that we ask for
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: 'not our API key',
       })
       const button = await buttonDBFactory(db, {
@@ -49,7 +49,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
 
       // Insert a single client with no sessions that matches the Alert API Key that we ask for
       this.alertApiKey = 'alertApiKey'
-      await clientDBFactory(db, {
+      await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
       })
     })
@@ -71,7 +71,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
 
       // Insert a single client with a single button
       this.alertApiKey = 'alertApiKey'
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
         incidentCategories: '{"cat1","cat2"}',
       })
@@ -133,7 +133,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
 
       // Insert a single client with a one button and one session
       this.alertApiKey = 'alertApiKey'
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
       })
       const button = await buttonDBFactory(db, {
@@ -211,7 +211,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
 
       // Insert a single client with a one button and one session
       this.alertApiKey = 'alertApiKey'
-      const client = await clientDBFactory(db, {
+      const client = await factories.clientDBFactory(db, {
         alertApiKey: this.alertApiKey,
       })
       const button = await buttonDBFactory(db, {

@@ -48,8 +48,6 @@ matrix:
         - PG_HOST=localhost
         # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
         - RESPONDER_PHONE_TEST=+15005550006
-        - TWILIO_FALLBACK_FROM_NUMBER_TEST=+15005550006
-        - TWILIO_HEARTBEAT_FROM_NUMBER_TEST=+15005550006
         # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
         - STAFF_PHONE_TEST=+15005550006
         # TWILIO_SID_TEST (from https://www.twilio.com/console/voice/project/test-credentials)
@@ -58,8 +56,6 @@ matrix:
         - secure: 'xDH0U8Y9En68duGzZtVSTV8XDbUuu9ga0XEZUGQHLCki2mAYSVs+6O0iXz6o2FpiOq1VzP5mHzr+s5lfSM0dK2jQl7YapyDa9bWsMzdBYE9eubM2zD6DOx5oZEyfAMdyc+pEm53CUj++S62ut3YgKn/UoqiJwx/rm1Sjm2aDJ/rAQy+Pqzm+vEJiJVTIWsrawnQKCMqyKfQqYTGpAIli7TYiF217JRJi8b1i0PpV7BkhUaL8PO6ftmsZgwCoaEEr92HNi5JC0crDnrLKvgxao5Vt8IUJ06OZEVmnh/FpQDfbggJlFzplSQdPWlEY4lMyFp3KJRGJ88s3o/DMR14DrjHSUeB1rGztHlmXsIejb/rVBMEJBjQtJ0N9BvpUnu1a2Z/QP2v1JQOKDdGO4lzuq4ZIvEmKMm4LesJVDKnGiqK9TQJgRH2FSk+d+CFxIiXm3S1lzyceuHjs7NgTxjv33LmGJEKX8fkxp8ToP+SZGrnnLNPoTrfhSAHK37iJVmSYbPAv3by5f+n0IyqUrbhqUXgKx8GBBCLLXRnwAlohy5GBU/Uqj8pU2PHrKeQG8VCFsRYuLx5wqkFj2uJrODl5NB5U6zu6ynSPypGZct82vx9RpI0HWToZnFZf9ReXRaepYNfsH1SAo6br7oMZtI/MoSVVE3+jHuHsx1sUvfzMhTc='
         - PGVER=12
         - PGPORT=5433
-        - REMINDER_TIMEOUT_MS_TEST=1000
-        - FALLBACK_TIMEOUT_MS_TEST=2000
         - FLIC_BUTTON_PRESS_API_KEY_TEST=testFlicApiKey
         - SESSION_RESET_TIMEOUT_TEST=7200000
         - RADIO_BRIDGE_API_KEY_PRIMARY_TEST=primaryKey

@@ -3,16 +3,16 @@ const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
 
 // In-house dependencies
+const { factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
-const { clientDBFactory } = require('../../testingHelpers')
 
 describe('BraveAlerterConfigurator.js integration tests: getNewNotificationsCountByAlertApiKey', () => {
   beforeEach(async () => {
     await db.clearTables()
 
     this.alertApiKey = '00000000-000000000000001'
-    const client = await clientDBFactory(db, {
+    const client = await factories.clientDBFactory(db, {
       displayName: '',
       responderPhoneNumber: '',
       fallbackPhoneNumbers: '{}',
