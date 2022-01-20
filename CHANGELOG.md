@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [7.0.0] - 2022-01-20
+
 ### Added
 
 - Descriptions of the config repo and the pi template files to the README (CU-vf8v9x, CU-vf96g1).
@@ -440,7 +442,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.1.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.0.0...HEAD
+[7.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.1.0...v7.0.0
 [6.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.0.0...v6.1.0
 [6.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v5.0.0...v6.0.0
 [5.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v4.1.0...v5.0.0
