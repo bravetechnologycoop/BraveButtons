@@ -60,6 +60,8 @@ matrix:
         - SESSION_RESET_TIMEOUT_TEST=7200000
         - RADIO_BRIDGE_API_KEY_PRIMARY_TEST=primaryKey
         - RADIO_BRIDGE_API_KEY_SECONDARY_TEST=secondaryKey
+        - RAK_API_KEY_PRIMARY_TEST=rakKey1
+        - RAK_API_KEY_SECONDARY_TEST=rakKey2
 
       # setup database
       before_script:

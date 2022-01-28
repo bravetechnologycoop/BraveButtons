@@ -14,6 +14,7 @@ the code was deployed.
 ### Changed
 
 - Added missing rows to the `clients` table and started using them.
+- API endpoint for pressing a RAK LoRa button (CU-1xcw5vn).
 
 ## [7.0.0] - 2022-01-20
 
