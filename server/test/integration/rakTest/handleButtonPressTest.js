@@ -31,6 +31,8 @@ describe('rak.js integration tests: handleButtonpress', () => {
   })
 
   afterEach(async () => {
+    await db.clearTables()
+
     sandbox.restore()
   })
 
@@ -98,7 +100,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
     })
 
     it('should log the error', () => {
-      expect(helpers.logError).to.be.calledWithExactly(`INVALID RAK API key from 'myDevEui' for a QQ== payload`)
+      expect(helpers.logError).to.be.calledWithExactly(`INVALID RAK API key from 'myDevEui' for a QQ== payload (decoded: A)`)
     })
 
     it('should not handle the button press', () => {
@@ -106,7 +108,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
     })
   })
 
-  describe('POST QQ== with primary API key for non-existent Button', () => {
+  describe('POST QQ== (Button 1) with primary API key for non-existent Button', () => {
     beforeEach(async () => {
       this.response = await chai
         .request(server)
@@ -128,7 +130,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
     })
   })
 
-  describe('POST QQ== with primary API key for existing Button', () => {
+  describe('POST QQ== (Button 1) with primary API key for existing Button', () => {
     beforeEach(async () => {
       const buttonSerialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
@@ -161,7 +163,106 @@ describe('rak.js integration tests: handleButtonpress', () => {
     })
   })
 
-  describe('POST QQ== with secondary API key for existing Button', () => {
+  describe('POST Qg== (Button 2) with primary API key for existing Button', () => {
+    beforeEach(async () => {
+      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const client = await factories.clientDBFactory(db)
+      this.button = await buttonDBFactory(db, {
+        clientId: client.id,
+        buttonSerialNumber,
+      })
+
+      this.response = await chai
+        .request(server)
+        .post('/rak_button_press')
+        .set('authorization', rakApiKeyPrimary)
+        .send({ devEui: buttonSerialNumber, payload: 'Qg==' })
+    })
+
+    afterEach(async () => {
+      await db.clearTables()
+    })
+
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
+    })
+
+    it('should not log any errors', () => {
+      expect(helpers.logError).not.to.be.called
+    })
+
+    it('should handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+    })
+  })
+
+  describe('POST Qw== (Button 3) with primary API key for existing Button', () => {
+    beforeEach(async () => {
+      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const client = await factories.clientDBFactory(db)
+      this.button = await buttonDBFactory(db, {
+        clientId: client.id,
+        buttonSerialNumber,
+      })
+
+      this.response = await chai
+        .request(server)
+        .post('/rak_button_press')
+        .set('authorization', rakApiKeyPrimary)
+        .send({ devEui: buttonSerialNumber, payload: 'Qw==' })
+    })
+
+    afterEach(async () => {
+      await db.clearTables()
+    })
+
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
+    })
+
+    it('should not log any errors', () => {
+      expect(helpers.logError).not.to.be.called
+    })
+
+    it('should handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+    })
+  })
+
+  describe('POST RA== (Button 4) with primary API key for existing Button', () => {
+    beforeEach(async () => {
+      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const client = await factories.clientDBFactory(db)
+      this.button = await buttonDBFactory(db, {
+        clientId: client.id,
+        buttonSerialNumber,
+      })
+
+      this.response = await chai
+        .request(server)
+        .post('/rak_button_press')
+        .set('authorization', rakApiKeyPrimary)
+        .send({ devEui: buttonSerialNumber, payload: 'RA==' })
+    })
+
+    afterEach(async () => {
+      await db.clearTables()
+    })
+
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
+    })
+
+    it('should not log any errors', () => {
+      expect(helpers.logError).not.to.be.called
+    })
+
+    it('should handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+    })
+  })
+
+  describe('POST QQ== (Button 1) with secondary API key for existing Button', () => {
     beforeEach(async () => {
       const buttonSerialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
@@ -194,7 +295,66 @@ describe('rak.js integration tests: handleButtonpress', () => {
     })
   })
 
-  describe('POST non-QQ== with primary API key', () => {
+  describe('POST SFA= (Heartbeat with 80% battery) with primary API key for existing Button', () => {
+    beforeEach(async () => {
+      sandbox.spy(db, 'logButtonsVital')
+
+      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const client = await factories.clientDBFactory(db)
+      this.button = await buttonDBFactory(db, {
+        clientId: client.id,
+        buttonSerialNumber,
+      })
+
+      this.response = await chai
+        .request(server)
+        .post('/rak_button_press')
+        .set('authorization', rakApiKeyPrimary)
+        .send({ devEui: buttonSerialNumber, payload: 'SFA=' })
+    })
+
+    afterEach(async () => {
+      await db.clearTables()
+    })
+
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
+    })
+
+    it('should not log any errors', () => {
+      expect(helpers.logError).not.to.be.called
+    })
+
+    it('should log the heartbeat', () => {
+      expect(db.logButtonsVital).to.be.calledWithExactly(this.button.id, 80)
+    })
+  })
+
+  describe('POST SFA= (Heartbeat with 80% battery) with primary API key for non-existent Button', () => {
+    beforeEach(async () => {
+      sandbox.spy(db, 'logButtonsVital')
+
+      this.response = await chai
+        .request(server)
+        .post('/rak_button_press')
+        .set('authorization', rakApiKeyPrimary)
+        .send({ devEui: 'notMyDevEui', payload: 'SFA=' })
+    })
+
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
+    })
+
+    it('should not log the error', () => {
+      expect(helpers.logError).not.to.be.called
+    })
+
+    it('should not log the heartbeat', () => {
+      expect(db.logButtonsVital).not.to.be.called
+    })
+  })
+
+  describe('POST an unrecognize payload with primary API key', () => {
     beforeEach(async () => {
       this.response = await chai
         .request(server)
@@ -216,7 +376,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
     })
   })
 
-  describe('POST non-QQ== with secondary API key', () => {
+  describe('POST an unrecognized payload with secondary API key', () => {
     beforeEach(async () => {
       this.response = await chai
         .request(server)
