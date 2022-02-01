@@ -6,6 +6,7 @@ const { CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
 const Button = require('../Button')
 const Hub = require('../Hub')
 const SessionState = require('../SessionState')
+const ButtonsVital = require('../ButtonsVital')
 
 const pool = new Pool({
   host: helpers.getEnvVar('PG_HOST'),
@@ -55,6 +56,29 @@ async function createButtonFromRow(r, pgClient) {
   }
 }
 
+async function createButtonsVitalFromRow(r, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createButtonsVitalFromRow',
+      `
+      SELECT *
+      FROM buttons
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [r.button_id],
+      pool,
+      pgClient,
+    )
+    const button = await createButtonFromRow(results.rows[0])
+
+    // prettier-ignore
+    return new ButtonsVital(r.id, r.battery_level, r.created_at, button)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function createHubFromRow(r, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -88,7 +112,7 @@ async function beginTransaction() {
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await pgClient.query('LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications')
+    await pgClient.query('LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications, buttons_vitals')
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
     if (pgClient) {
@@ -768,12 +792,34 @@ async function clearNotifications(pgClient) {
   }
 }
 
+async function clearButtonsVitals(pgClient) {
+  if (!helpers.isTestEnvironment()) {
+    helpers.log('warning - tried to clear buttons vitals table outside of a test environment!')
+    return
+  }
+
+  try {
+    await helpers.runQuery(
+      'clearButtonsVitals',
+      `
+      DELETE FROM buttons_vitals
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function clearTables(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear tables outside of a test environment!')
     return
   }
 
+  await clearButtonsVitals(pgClient)
   await clearSessions(pgClient)
   await clearButtons(pgClient)
   await clearNotifications(pgClient)
@@ -930,6 +976,30 @@ async function getDataForExport(pgClient) {
   }
 }
 
+async function logButtonsVital(buttonId, batteryLevel, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'logButtonsVital',
+      `
+      INSERT INTO buttons_vitals (button_id, battery_level)
+      VALUES ($1, $2)
+      RETURNING *
+      `,
+      [buttonId, batteryLevel],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      return await createButtonsVitalFromRow(results.rows[0])
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
 async function getCurrentTime(pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -959,6 +1029,7 @@ async function close() {
 module.exports = {
   beginTransaction,
   clearButtons,
+  clearButtonsVitals,
   clearClients,
   clearNotifications,
   clearSessions,
@@ -988,6 +1059,7 @@ module.exports = {
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,
+  logButtonsVital,
   rollbackTransaction,
   saveHeartbeat,
   saveSession,

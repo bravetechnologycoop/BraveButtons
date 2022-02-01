@@ -9,7 +9,11 @@ const buttonAlerts = require('./buttonAlerts')
 const rakApiKeys = [helpers.getEnvVar('RAK_API_KEY_PRIMARY'), helpers.getEnvVar('RAK_API_KEY_SECONDARY')]
 
 const EVENT_TYPE = {
-  BUTTON_PRESS: 'QQ==',
+  BUTTON_PRESS_1: 65, // ASCII for 'A'
+  BUTTON_PRESS_2: 66, // ASCII for 'B'
+  BUTTON_PRESS_3: 67, // ASCII for 'C'
+  BUTTON_PRESS_4: 68, // ASCII for 'D'
+  HEARTBEAT: 72, // ASCII for 'H'
 }
 
 const validateButtonPress = [Validator.body(['devEui', 'payload']).notEmpty(), Validator.header(['authorization']).notEmpty()]
@@ -22,39 +26,51 @@ async function handleButtonPress(req, res) {
       const { devEui, payload } = req.body
       const { authorization } = req.headers
 
+      const event = Buffer.from(payload, 'base64')
+
       // TODO Remove this after we are done testing the RAK buttons
       helpers.log(JSON.stringify(req.body))
 
       if (!rakApiKeys.includes(authorization)) {
-        helpers.logError(`INVALID RAK API key from '${devEui}' for a ${payload} payload`)
+        helpers.logError(`INVALID RAK API key from '${devEui}' for a ${payload} payload (decoded: ${event})`)
         res.status(401).send()
         return
       }
 
-      if (payload === EVENT_TYPE.BUTTON_PRESS) {
-        const button = await db.getButtonWithSerialNumber(devEui)
+      const button = await db.getButtonWithSerialNumber(devEui)
+
+      if (event[0] === EVENT_TYPE.HEARTBEAT && button !== null) {
+        if (button !== null) {
+          await db.logButtonsVital(button.id, event[1])
+        }
+      } else if (
+        event[0] === EVENT_TYPE.BUTTON_PRESS_3 || // Button 3 is checked first because this is the most likely result
+        event[0] === EVENT_TYPE.BUTTON_PRESS_1 ||
+        event[0] === EVENT_TYPE.BUTTON_PRESS_2 ||
+        event[0] === EVENT_TYPE.BUTTON_PRESS_4
+      ) {
         if (button === null) {
           const errorMessage = `Bad request to ${req.path}: DevEui is not registered: '${devEui}'`
           helpers.logError(errorMessage)
           res.status(400).send(`Bad request to ${req.path}: DevEui is not registered`)
-        } else {
-          await buttonAlerts.handleValidRequest(button, 1)
-
-          res.status(200).send()
+          return
         }
-        // TODO } else if (eventType === EVENT_TYPE.HEARTBEAT) {
-      } else {
-        res.status(200).send()
+
+        await buttonAlerts.handleValidRequest(button, 1)
       }
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.logError(errorMessage)
       res.status(400).send(errorMessage)
+      return
     }
   } catch (err) {
     helpers.logError(err)
     res.status(500).send()
+    return
   }
+
+  res.status(200).send()
 }
 
 module.exports = {

@@ -14,11 +14,12 @@ the code was deployed.
 ### Added
 
 - AWS RAK LoRa lambda function and instructions on how to deploy it (CU-1yuq5ju).
+- API endpoint for pressing a RAK LoRa button (CU-1xcw5vn).
+- API endpoing for RAK LoRa button heartbeats (CU-1v85k0d).
 
 ### Changed
 
 - Added missing rows to the `clients` table and started using them.
-- API endpoint for pressing a RAK LoRa button (CU-1xcw5vn).
 
 ## [7.0.0] - 2022-01-20
 
