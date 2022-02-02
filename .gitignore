@@ -6,3 +6,5 @@ __pycache__
 .coverage
 *.pyc
 pi_config.ini
+lambda/buttons-lambda.zip
+lambda/package

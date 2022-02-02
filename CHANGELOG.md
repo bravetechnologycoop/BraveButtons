@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- AWS RAK LoRa lambda function and instructions on how to deploy it (CU-1yuq5ju).
+
 ### Changed
 
 - Added missing rows to the `clients` table and started using them.
