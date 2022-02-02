@@ -70,6 +70,22 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that the deployment is finished and list the changes in this deployment from the `CHANGELOG`
 
+# How to deploy a new version of the Lambda function
+
+1. cd into the `lambda` directory
+
+1. run `./setup_lambda.sh`
+
+1. login to the AWS account for the envrionment where you want to deploy the version
+
+1. navigate to Lambda --> Functions
+
+1. click on 'lora-parse'
+
+1. click on 'Upload from' --> .zip file
+
+1. upload the newly generated file `lambda/buttons_lambda.zip`
+
 # How to set up a local server dev environment
 
 1. clone this repository
