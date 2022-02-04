@@ -277,8 +277,38 @@ async function getRecentSessionsWithClientId(clientId, pgClient) {
       pgClient,
     )
 
-    if (results.rows.length > 0) {
+    if (results !== undefined && results.rows.length > 0) {
       return results.rows.map(createSessionFromRow)
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getRecentButtonsVitalsWithClientId',
+      `
+      SELECT a.*
+      FROM (
+        SELECT DISTINCT ON (b.unit) bv.*
+        FROM buttons_vitals AS bv
+        LEFT JOIN buttons AS b ON b.id = bv.button_id
+        WHERE b.client_id = $1
+        ORDER BY b.unit, bv.created_at DESC
+      ) AS a
+      ORDER BY a.created_at
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return await Promise.all(results.rows.map(r => createButtonsVitalFromRow(r, pgClient)))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1055,6 +1085,7 @@ module.exports = {
   getMostRecentIncompleteSessionWithPhoneNumber,
   getNewNotificationsCountByAlertApiKey,
   getPool,
+  getRecentButtonsVitalsWithClientId,
   getRecentSessionsWithClientId,
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,

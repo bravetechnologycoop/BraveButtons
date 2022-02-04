@@ -8,7 +8,7 @@ const { DateTime } = require('luxon')
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
 
-const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/heartbeatDashboard.mst`, 'utf-8')
+const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/mustache-templates/heartbeatDashboard.mst`, 'utf-8')
 
 let braveAlerter
 
