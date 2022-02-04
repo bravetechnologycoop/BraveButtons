@@ -3,9 +3,9 @@ const { expect } = require('chai')
 const { describe, it } = require('mocha')
 
 // In-house dependencies
-const { formatDateTimeForDashboard } = require('../../../server')
+const { formatDateTimeForDashboard } = require('../../../dashboard')
 
-describe('server.js unit tests: formatDateTimeForDashboard', () => {
+describe('dashboard.js unit tests: formatDateTimeForDashboard', () => {
   it('should ', () => {
     const actual = formatDateTimeForDashboard(new Date('2022-01-08T00:29:00.000Z'))
     expect(actual).to.equal('2022 Jan 7, 16:29:00 PST')

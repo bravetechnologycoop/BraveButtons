@@ -2,6 +2,7 @@
 const express = require('express')
 
 // In-house dependencies
+const dashboard = require('./dashboard')
 const flic = require('./flic')
 const radiobridge = require('./radiobridge')
 const rak = require('./rak.js')
@@ -10,14 +11,19 @@ const vitals = require('./vitals')
 const jsonBodyParser = express.json()
 
 function configureRoutes(app) {
+  app.get('/', dashboard.sessionChecker, dashboard.redirectToHomePage)
+  app.get('/dashboard', dashboard.sessionChecker, dashboard.renderDashboardPage)
+  app.get('/dashboard/:clientId?', dashboard.sessionChecker, dashboard.renderClientDetailsPage)
+  app.get('/export-data', dashboard.sessionChecker, dashboard.downloadCsv)
   app.get('/heartbeatDashboard', vitals.handleHeartbeatDashboard)
+  app.get('/login', dashboard.renderLoginPage)
+  app.get('/logout', dashboard.submitLogout)
 
   app.post('/flic_button_press', flic.validateButtonPress, flic.handleButtonPress)
   app.post('/heartbeat', jsonBodyParser, vitals.handleHeartbeat)
+  app.post('/login', dashboard.submitLogin)
   app.post('/radiobridge_button_press', jsonBodyParser, radiobridge.validateButtonPress, radiobridge.handleButtonPress)
   app.post('/rak_button_press', jsonBodyParser, rak.validateButtonPress, rak.handleButtonPress)
-
-  // TODO add the other routes
 }
 
 module.exports = {
