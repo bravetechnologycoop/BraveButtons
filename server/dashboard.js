@@ -13,7 +13,8 @@ const db = require('./db/db')
 const DASHBOARD_TIMEZONE = 'America/Vancouver'
 const DASHBOARD_FORMAT = 'y MMM d, TTT'
 
-const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/chatbotDashboard.mst`, 'utf-8')
+const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/mustache-templates/chatbotDashboard.mst`, 'utf-8')
+const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientVitals.mst`, 'utf-8')
 
 function formatDateTimeForDashboard(date) {
   return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(DASHBOARD_TIMEZONE).toFormat(DASHBOARD_FORMAT)
@@ -95,37 +96,81 @@ async function renderClientDetailsPage(req, res) {
     const allClients = await db.getClients()
 
     if (typeof req.params.clientId !== 'string') {
-      res.redirect(`/dashboard/${allClients[0].id}`)
+      res.redirect(`/clients/${allClients[0].id}`)
       return
     }
 
     const recentSessions = await db.getRecentSessionsWithClientId(req.params.clientId)
     const currentClient = await db.getClientWithId(req.params.clientId)
-
     const viewParams = {
       recentSessions: [],
-      currentClientName: currentClient.displayName,
       clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
     }
 
-    for (const recentSession of recentSessions) {
-      const createdAt = formatDateTimeForDashboard(recentSession.createdAt)
-      const updatedAt = formatDateTimeForDashboard(recentSession.updatedAt)
-      const respondedAt = recentSession.respondedAt !== null ? formatDateTimeForDashboard(recentSession.respondedAt) : ''
-      viewParams.recentSessions.push({
-        unit: recentSession.unit,
-        createdAt,
-        updatedAt,
-        state: recentSession.state,
-        numPresses: recentSession.numPresses.toString(),
-        incidentType: recentSession.incidentType,
-        notes: recentSession.notes,
-        buttonBatteryLevel: recentSession.buttonBatteryLevel,
-        respondedAt,
-      })
+    if (currentClient !== null) {
+      viewParams.currentClientId = currentClient.id
+      viewParams.currentClientName = currentClient.displayName
+
+      for (const recentSession of recentSessions) {
+        const createdAt = formatDateTimeForDashboard(recentSession.createdAt)
+        const updatedAt = formatDateTimeForDashboard(recentSession.updatedAt)
+        const respondedAt = recentSession.respondedAt !== null ? formatDateTimeForDashboard(recentSession.respondedAt) : ''
+        viewParams.recentSessions.push({
+          unit: recentSession.unit,
+          createdAt,
+          updatedAt,
+          state: recentSession.state,
+          numPresses: recentSession.numPresses.toString(),
+          incidentType: recentSession.incidentType,
+          notes: recentSession.notes,
+          buttonBatteryLevel: recentSession.buttonBatteryLevel,
+          respondedAt,
+        })
+      }
+    } else {
+      viewParams.viewMessage = 'No client to display'
     }
 
     res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
+  } catch (err) {
+    helpers.logError(err)
+    res.status(500).send()
+  }
+}
+
+async function renderClientVitalsPage(req, res) {
+  try {
+    const allClients = await db.getClients()
+
+    if (typeof req.params.clientId !== 'string') {
+      res.redirect(`/clients/${allClients[0].id}/vitals`)
+      return
+    }
+
+    const recentButtonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
+    const currentClient = await db.getClientWithId(req.params.clientId)
+    const viewParams = {
+      recentButtonsVitals: [],
+      clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
+    }
+
+    if (currentClient !== null) {
+      viewParams.currentClientName = currentClient.displayName
+      viewParams.currentClientId = currentClient.id
+
+      for (const recentButtonsVital of recentButtonsVitals) {
+        const createdAt = formatDateTimeForDashboard(recentButtonsVital.createdAt)
+        viewParams.recentButtonsVitals.push({
+          unit: recentButtonsVital.button.unit,
+          batteryLevel: recentButtonsVital.batteryLevel,
+          lastSeenAt: createdAt,
+        })
+      }
+    } else {
+      viewParams.viewMessage = 'No client to display'
+    }
+
+    res.send(Mustache.render(clientVitalsTemplate, viewParams))
   } catch (err) {
     helpers.logError(err)
     res.status(500).send()
@@ -182,6 +227,7 @@ module.exports = {
   formatDateTimeForDashboard,
   redirectToHomePage,
   renderClientDetailsPage,
+  renderClientVitalsPage,
   renderDashboardPage,
   renderLoginPage,
   sessionChecker,

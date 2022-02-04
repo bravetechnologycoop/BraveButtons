@@ -15,7 +15,8 @@ the code was deployed.
 
 - AWS RAK LoRa lambda function and instructions on how to deploy it (CU-1yuq5ju).
 - API endpoint for pressing a RAK LoRa button (CU-1xcw5vn).
-- API endpoing for RAK LoRa button heartbeats (CU-1v85k0d).
+- API endpoint for RAK LoRa button heartbeats (CU-1v85k0d).
+- Dashboard page to display RAK LoRa button heartbeats/battery levels (CU-1v85k0d).
 
 ### Changed
 
