@@ -1,18 +1,19 @@
 // Third-party dependencies
 /* eslint-disable no-continue */
 const Mustache = require('mustache')
+const fs = require('fs')
 const { DateTime } = require('luxon')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
 
-let braveAlerter
-let heartbeatDashboardTemplate
+const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/heartbeatDashboard.mst`, 'utf-8')
 
-function setup(braveAlerterObj, heartbeatDashboardTemplateObj) {
+let braveAlerter
+
+function setup(braveAlerterObj) {
   braveAlerter = braveAlerterObj
-  heartbeatDashboardTemplate = heartbeatDashboardTemplateObj
 }
 
 // Expects a JS Date object and an integer and returns a JS Date object
