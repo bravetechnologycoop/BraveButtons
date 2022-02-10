@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [7.1.0] - 2022-02-10
+
 ### Added
 
 - AWS RAK LoRa lambda function and instructions on how to deploy it (CU-1yuq5ju).
@@ -453,7 +455,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.0.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.1.0...HEAD
+[7.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.0.0...v7.1.0
 [7.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.1.0...v7.0.0
 [6.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.0.0...v6.1.0
 [6.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v5.0.0...v6.0.0
