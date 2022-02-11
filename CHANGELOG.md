@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- RAK LoRa Gateway status to the Buttons Vitals dashbaord pages (CU-1zhg9m7).
+
 ### Fixed
 
 - Number of DB connections needed to get the Buttons Vitals (CU-2b97ndm).

@@ -9,6 +9,7 @@ const { Parser } = require('json2csv')
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
+const aws = require('./aws')
 
 const DASHBOARD_TIMEZONE = 'America/Vancouver'
 const DASHBOARD_FORMAT = 'y MMM d, TTT'
@@ -151,6 +152,7 @@ async function renderClientVitalsPage(req, res) {
     const currentClient = await db.getClientWithId(req.params.clientId)
     const viewParams = {
       recentButtonsVitals: [],
+      recentGatewayVitals: [],
       clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
     }
 
@@ -164,6 +166,15 @@ async function renderClientVitalsPage(req, res) {
           unit: recentButtonsVital.button.unit,
           batteryLevel: recentButtonsVital.batteryLevel,
           lastSeenAt: createdAt,
+        })
+      }
+
+      const gatewayVitals = await aws.getGatewayVitalsWithClientId(currentClient.id)
+      for (const gatewayVital of gatewayVitals) {
+        const lastSeenAt = formatDateTimeForDashboard(new Date(gatewayVital.lastSeenAt))
+        viewParams.recentGatewayVitals.push({
+          gateway: gatewayVital.gateway,
+          lastSeenAt,
         })
       }
     } else {
