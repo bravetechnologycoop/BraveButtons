@@ -4,6 +4,7 @@ const { Pool, types } = require('pg')
 // In-house dependencies
 const { CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
 const Button = require('../Button')
+const Gateway = require('../Gateway')
 const Hub = require('../Hub')
 const SessionState = require('../SessionState')
 const ButtonsVital = require('../ButtonsVital')
@@ -97,6 +98,28 @@ async function createHubFromRow(r, pgClient) {
 
     // prettier-ignore
     return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
+async function createGatewayFromRow(r, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createGatewayFromRow',
+      `
+      SELECT *
+      FROM clients
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [r.client_id],
+      pool,
+      pgClient,
+    )
+    const client = createClientFromRow(results.rows[0])
+
+    return new Gateway(r.id, r.display_name, r.is_active, r.created_at, r.updated_at, client)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -1030,6 +1053,30 @@ async function logButtonsVital(buttonId, batteryLevel, pgClient) {
   return null
 }
 
+async function getGatewaysWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getGatewaysWithClientId',
+      `
+      SELECT *
+      FROM gateways
+      WHERE client_id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      return await Promise.all(results.rows.map(r => createGatewayFromRow(r, pgClient)))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+
+    return []
+  }
+}
+
 async function getCurrentTime(pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1082,6 +1129,7 @@ module.exports = {
   getClientsWithAlertApiKey,
   getClientWithId,
   getClientWithSessionId,
+  getGatewaysWithClientId,
   getMostRecentIncompleteSessionWithPhoneNumber,
   getNewNotificationsCountByAlertApiKey,
   getPool,

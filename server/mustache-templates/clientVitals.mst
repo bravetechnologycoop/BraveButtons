@@ -195,6 +195,31 @@
                 <br>
                 <br>
 
+                <h4>RAK Gateways</h4>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr class="table-header" scope="row">
+                                <th scope="col">AWS Gateway ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Last Seen</th>
+                                <th scope="col">Is Active?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#recentGatewayVitals}}
+                                <tr class="table-data">
+                                    <th scope="row">{{gateway.id}}</th>
+                                    <td>{{gateway.displayName}}</td>
+                                    <td>{{lastSeenAt}}</td>
+                                    <td>{{gateway.isActive}}</td>
+                                </tr>
+                            {{/recentGatewayVitals}}
+                        </tbody>
+                    </table>
+                </div>
+
                 <h4>RAK Buttons</h4>
 
                 <div class="table-responsive">
