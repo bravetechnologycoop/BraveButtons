@@ -70,7 +70,7 @@ async function createButtonsVitalFromRow(r, pgClient) {
       pool,
       pgClient,
     )
-    const button = await createButtonFromRow(results.rows[0])
+    const button = await createButtonFromRow(results.rows[0], pgClient)
 
     // prettier-ignore
     return new ButtonsVital(r.id, r.battery_level, r.created_at, button)
