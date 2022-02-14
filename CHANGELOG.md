@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Fixed
+
+- Number of DB connections needed to get the Buttons Vitals (CU-2b97ndm).
+
 ## [7.1.0] - 2022-02-10
 
 ### Added
