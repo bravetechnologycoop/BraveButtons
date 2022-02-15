@@ -9,7 +9,6 @@ const { Parser } = require('json2csv')
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
-const aws = require('./aws')
 
 const DASHBOARD_TIMEZONE = 'America/Vancouver'
 const DASHBOARD_FORMAT = 'y MMM d, TTT'
@@ -188,13 +187,13 @@ async function renderClientVitalsPage(req, res) {
         })
       }
 
-      const gatewaysVitals = await aws.getGatewayVitalsWithClientId(currentClient.id)
+      const gatewaysVitals = await db.getRecentGatewaysVitalsWithClientId(currentClient.id)
       for (const gatewaysVital of gatewaysVitals) {
         viewParams.gateways.push({
           id: gatewaysVital.gateway.id,
           name: gatewaysVital.gateway.displayName,
-          lastSeenAt: formatDateTimeForDashboard(new Date(gatewaysVital.lastSeenAt)),
-          lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(new Date(gatewaysVital.lastSeenAt), db),
+          lastSeenAt: formatDateTimeForDashboard(gatewaysVital.lastSeenAt),
+          lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db),
           isActive: gatewaysVital.gateway.isActive,
         })
       }

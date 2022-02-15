@@ -7,6 +7,7 @@ const { DateTime } = require('luxon')
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
+const aws = require('./aws')
 
 const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/mustache-templates/heartbeatDashboard.mst`, 'utf-8')
 
@@ -127,6 +128,21 @@ async function checkHeartbeat() {
   }
 }
 
+async function checkGatewayHeartbeat() {
+  try {
+    const gateways = await db.getGateways()
+    for (const gateway of gateways) {
+      const gatewayStats = await aws.getGatewayStats(gateway.id)
+
+      if (gatewayStats !== null) {
+        await db.logGatewaysVital(gateway.id, gatewayStats)
+      }
+    }
+  } catch (e) {
+    helpers.logError(`Failed to check gateway heartbeat: ${e}`)
+  }
+}
+
 async function handleHeartbeatDashboard(req, res) {
   let hubs = []
   try {
@@ -188,6 +204,7 @@ async function handleHeartbeat(req, res) {
 }
 
 module.exports = {
+  checkGatewayHeartbeat,
   checkHeartbeat,
   handleHeartbeat,
   handleHeartbeatDashboard,
