@@ -41,7 +41,6 @@ function hubFactory(overrides = {}) {
     overrides.flicLastPingTime !== undefined ? overrides.flicLastPingTime : new Date('2021-11-04T22:28:28.0248Z'),
     overrides.heartbeatLastSeenTime !== undefined ? overrides.heartbeatLastSeenTime : new Date('2021-11-04T22:28:28.0248Z'),
     overrides.systemName !== undefined ? overrides.systemName : 'fakeHubName',
-    overrides.hidden !== undefined ? overrides.hidden : false,
     overrides.sentVitalsAlertAt !== undefined ? overrides.sentVitalsAlertAt : null,
     overrides.muted !== undefined ? overrides.muted : false,
     overrides.sentInternalFlicAlert !== undefined ? overrides.sentInternalFlicAlert : false,

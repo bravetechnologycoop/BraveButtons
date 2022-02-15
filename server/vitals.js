@@ -1,15 +1,11 @@
 // Third-party dependencies
 /* eslint-disable no-continue */
-const Mustache = require('mustache')
-const fs = require('fs')
 const { DateTime } = require('luxon')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
 const aws = require('./aws')
-
-const heartbeatDashboardTemplate = fs.readFileSync(`${__dirname}/mustache-templates/heartbeatDashboard.mst`, 'utf-8')
 
 let braveAlerter
 
@@ -143,52 +139,6 @@ async function checkGatewayHeartbeat() {
   }
 }
 
-async function handleHeartbeatDashboard(req, res) {
-  let hubs = []
-  try {
-    hubs = await db.getHubs()
-  } catch (e) {
-    helpers.logError(`Failed to get hubs in /heartbeatDashboard: ${JSON.stringify(e)}`)
-  }
-
-  const viewParams = {
-    domain: helpers.getEnvVar('DOMAIN'),
-    dashboard_render_time: await db.getCurrentTime(),
-    systems: [],
-  }
-  const currentTime = await db.getCurrentTime()
-
-  for (const hub of hubs) {
-    if (hub.hidden) {
-      continue
-    }
-
-    const flicLastSeenTime = hub.flicLastSeenTime
-    let flicLastSeenSecs = (currentTime - flicLastSeenTime) / 1000.0
-    flicLastSeenSecs = Math.round(flicLastSeenSecs)
-
-    const heartbeatLastSeenTime = hub.heartbeatLastSeenTime
-    let heartbeatLastSeenSecs = (currentTime - heartbeatLastSeenTime) / 1000.0
-    heartbeatLastSeenSecs = Math.round(heartbeatLastSeenSecs)
-
-    const flicLastPingTime = hub.flicLastPingTime
-    let flicLastPingSecs = (currentTime - flicLastPingTime) / 1000.0
-    flicLastPingSecs = Math.round(flicLastPingSecs)
-
-    viewParams.systems.push({
-      system_name: hub.systemName,
-      location_description: hub.locationDescription,
-      flic_last_seen: `${flicLastSeenSecs.toString()} seconds ago`,
-      flic_last_ping: `${flicLastPingSecs.toString()} seconds ago`,
-      heartbeat_last_seen: `${heartbeatLastSeenSecs.toString()} seconds ago`,
-      muted: hub.muted ? 'Y' : 'N',
-    })
-  }
-
-  const htmlString = Mustache.render(heartbeatDashboardTemplate, viewParams)
-  res.send(htmlString)
-}
-
 async function handleHeartbeat(req, res) {
   try {
     const currentTime = new Date(await db.getCurrentTime())
@@ -207,6 +157,5 @@ module.exports = {
   checkGatewayHeartbeat,
   checkHeartbeat,
   handleHeartbeat,
-  handleHeartbeatDashboard,
   setup,
 }

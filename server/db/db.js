@@ -98,7 +98,7 @@ async function createHubFromRow(r, pgClient) {
     const client = createClientFromRow(results.rows[0])
 
     // prettier-ignore
-    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.hidden, r.sent_vitals_alert_at, r.muted, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
+    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.sent_vitals_alert_at, r.muted, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -334,6 +334,35 @@ async function getRecentSessionsWithClientId(clientId, pgClient) {
   return []
 }
 
+async function getRecentButtonsVitals(pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getRecentButtonsVitals',
+      `
+      SELECT a.*
+      FROM (
+        SELECT DISTINCT ON (b.unit) bv.*
+        FROM buttons_vitals AS bv
+        LEFT JOIN buttons AS b ON b.id = bv.button_id
+        ORDER BY b.unit, bv.created_at DESC
+      ) AS a
+      ORDER BY a.created_at
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return await Promise.all(results.rows.map(r => createButtonsVitalFromRow(r, pgClient)))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
 async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -356,6 +385,35 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
 
     if (results !== undefined && results.rows.length > 0) {
       return await Promise.all(results.rows.map(r => createButtonsVitalFromRow(r, pgClient)))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getRecentGatewaysVitals(pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getRecentGatewaysVitals',
+      `
+      SELECT a.*
+      FROM (
+        SELECT DISTINCT ON (g.id) gv.*
+        FROM gateways_vitals AS gv
+        LEFT JOIN gateways AS g ON g.id = gv.gateway_id
+        ORDER BY g.id, gv.created_at DESC
+      ) AS a
+      ORDER BY a.last_seen_at
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return await Promise.all(results.rows.map(r => createGatewaysVitalFromRow(r, pgClient)))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1236,7 +1294,9 @@ module.exports = {
   getMostRecentIncompleteSessionWithPhoneNumber,
   getNewNotificationsCountByAlertApiKey,
   getPool,
+  getRecentButtonsVitals,
   getRecentButtonsVitalsWithClientId,
+  getRecentGatewaysVitals,
   getRecentGatewaysVitalsWithClientId,
   getRecentSessionsWithClientId,
   getSessionWithSessionId,
