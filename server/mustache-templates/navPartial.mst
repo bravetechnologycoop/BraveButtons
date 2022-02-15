@@ -20,6 +20,11 @@
             </div>
         </li>
         <li class="nav-item">
+            <button class="btn btn-navbar">
+                <a href="/vitals" class="text-decoration-none">Vitals</a>
+            </button>
+        </li>
+        <li class="nav-item">
             <button class="btn btn-navbar" id="export-csv">
                 <a href="/export-data" class="text-decoration-none">Export CSV</a>
             </button>

@@ -5,7 +5,6 @@ class Hub {
     flicLastPingTime,
     heartbeatLastSeenTime,
     systemName,
-    hidden,
     sentVitalsAlertAt,
     muted,
     sentInternalFlicAlert,
@@ -19,7 +18,6 @@ class Hub {
     this.flicLastPingTime = flicLastPingTime
     this.heartbeatLastSeenTime = heartbeatLastSeenTime
     this.systemName = systemName
-    this.hidden = hidden
     this.sentVitalsAlertAt = sentVitalsAlertAt
     this.muted = muted
     this.sentInternalFlicAlert = sentInternalFlicAlert

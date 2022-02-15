@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Brave Chatbot Dashboard</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+   {{> css}}
+</head>
+
+<body>
+    {{> nav}}
+    <div class="content-area">
+        <div class="content-wrapper">
+            <h3>Vitals</h3>
+
+            <p>This page was last refreshed at {{currentDateTime}}</p>
+
+            <h4>Flic Hubs</h4>
+
+            <p>Ordered by name</p>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr class="table-header" scope="row">
+                            <th scope="col">Name</th>
+                            <th scope="col">Location Description</th>
+                            <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Flic Hub's MAC address did anything on the network (according to darkstat). This represents real activity from the Flic Hub.">Last Seen (Flic)</th>
+                            <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Raspberry Pi was able to ping the Flic Hub (using the IP address that darkstat says is associated with the Flic Hub's MAC address). This indicates that the Flic Hub is powered on and connected to the network.">Last Seen (Ping)</th>
+                            <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Last Seen (Flic) and Last Seen (Ping) values were updated (by the Raspberry Pi calling the /heartbeat endpoint on the Heartbeat Server with the newest values). This indicates that the Raspberry Pi is powered on and connected to the Internet.">Last Seen (Heartbeat)</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#hubs}}
+                            <tr class="table-data">
+                                <th scope="row">{{name}}</th>
+                                <td>{{locationDescription}}</td>
+                                <td data-toggle="tooltip" data-placement="top" title="{{flicLastSeenTime}}">{{flicLastSeenAgo}}</td>
+                                <td data-toggle="tooltip" data-placement="top" title="{{flicLastPingTime}}">{{flicLastPingAgo}}</td>
+                                <td data-toggle="tooltip" data-placement="top" title="{{heartbeatLastSeenTime}}">{{heartbeatLastSeenAgo}}</td>
+                                <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
+                            </tr>
+                        {{/hubs}}
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>RAK Gateways</h4>
+
+            <p>Ordered by last seen</p>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr class="table-header" scope="row">
+                            <th scope="col">Client</th>
+                            <th scope="col">AWS Gateway ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Last Seen</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#gateways}}
+                            <tr class="table-data">
+                                <th scope="row">{{clientName}}</th>
+                                <th scope="row">{{id}}</th>
+                                <td>{{name}}</td>
+                                <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
+                                <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
+                            </tr>
+                        {{/gateways}}
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>RAK Buttons</h4>
+
+            <p>Ordered by last seen</p>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr class="table-header" scope="row">
+                            <th scope="col">Client</th>
+                            <th scope="col">Unit</th>
+                            <th scope="col">Battery Level</th>
+                            <th scope="col">Last Seen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#buttons}}
+                            <tr class="table-data">
+                                <th scope="row">{{clientName}}</th>
+                                <th scope="row">{{unit}}</th>
+                                <td>{{batteryLevel}}</td>
+                                <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
+                            </tr>
+                        {{/buttons}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function reloadPage() {
+            location.reload(true)
+        }
+        setInterval(reloadPage, 30000)
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>

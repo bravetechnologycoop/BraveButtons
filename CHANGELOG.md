@@ -13,8 +13,13 @@ the code was deployed.
 
 ### Added
 
-- RAK LoRa Gateway status to the Buttons Vitals dashbaord pages (CU-1zhg9m7).
-- Flic Hub status to the Buttons Vitals dashboard pages.
+- RAK LoRa Gateway status to the Buttons Clients Vitals dashboard pages (CU-1zhg9m7).
+- Flic Hub status to the Buttons Clients Vitals dashboard pages.
+- Password-protected system-wide Buttons Vitals dashboard page within the Buttons Dashboard.
+
+### Removed
+
+- Heartbeat Dashboard.
 
 ### Fixed
 

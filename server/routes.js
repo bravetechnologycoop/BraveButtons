@@ -16,9 +16,9 @@ function configureRoutes(app) {
   app.get('/clients/:clientId?', dashboard.sessionChecker, dashboard.renderClientDetailsPage)
   app.get('/clients/:clientId/vitals', dashboard.sessionChecker, dashboard.renderClientVitalsPage)
   app.get('/export-data', dashboard.sessionChecker, dashboard.downloadCsv)
-  app.get('/heartbeatDashboard', vitals.handleHeartbeatDashboard)
   app.get('/login', dashboard.renderLoginPage)
   app.get('/logout', dashboard.submitLogout)
+  app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
 
   app.post('/flic_button_press', flic.validateButtonPress, flic.handleButtonPress)
   app.post('/heartbeat', jsonBodyParser, vitals.handleHeartbeat)

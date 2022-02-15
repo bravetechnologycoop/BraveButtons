@@ -18,6 +18,7 @@ const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/cl
 const landingCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/landingCSSPartial.mst`, 'utf-8')
 const landingPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/landingPage.mst`, 'utf-8')
 const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.mst`, 'utf-8')
+const vitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/vitals.mst`, 'utf-8')
 
 function formatDateTimeForDashboard(date) {
   return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(DASHBOARD_TIMEZONE).toFormat(DASHBOARD_FORMAT)
@@ -173,7 +174,7 @@ async function renderClientVitalsPage(req, res) {
           flicLastPingAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastPingTime, db),
           heartbeatLastSeenTime: formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
           heartbeatLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.heartbeatLastSeenTime, db),
-          isActive: !hubsVital.muted && !hubsVital.hidden,
+          isActive: !hubsVital.muted,
         })
       }
 
@@ -202,6 +203,63 @@ async function renderClientVitalsPage(req, res) {
     }
 
     res.send(Mustache.render(clientVitalsTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
+  } catch (err) {
+    helpers.logError(err)
+    res.status(500).send()
+  }
+}
+
+async function renderVitalsPage(req, res) {
+  try {
+    const allClients = await db.getClients()
+
+    const viewParams = {
+      buttons: [],
+      gateways: [],
+      hubs: [],
+      clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
+      currentDateTime: formatDateTimeForDashboard(await db.getCurrentTime()),
+    }
+
+    const hubsVitals = await db.getHubs(req.params.clientId)
+    for (const hubsVital of hubsVitals) {
+      viewParams.hubs.push({
+        name: hubsVital.systemName,
+        locationDescription: hubsVital.locationDescription,
+        flicLastSeenTime: formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
+        flicLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastSeenTime, db),
+        flicLastPingTime: formatDateTimeForDashboard(hubsVital.flicLastPingTime),
+        flicLastPingAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastPingTime, db),
+        heartbeatLastSeenTime: formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
+        heartbeatLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.heartbeatLastSeenTime, db),
+        isActive: !hubsVital.muted,
+      })
+    }
+
+    const buttonsVitals = await db.getRecentButtonsVitals()
+    for (const buttonsVital of buttonsVitals) {
+      viewParams.buttons.push({
+        clientName: buttonsVital.button.client.displayName,
+        unit: buttonsVital.button.unit,
+        batteryLevel: buttonsVital.batteryLevel,
+        lastSeenAt: formatDateTimeForDashboard(buttonsVital.createdAt),
+        lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db),
+      })
+    }
+
+    const gatewaysVitals = await db.getRecentGatewaysVitals()
+    for (const gatewaysVital of gatewaysVitals) {
+      viewParams.gateways.push({
+        clientName: gatewaysVital.gateway.client.displayName,
+        id: gatewaysVital.gateway.id,
+        name: gatewaysVital.gateway.displayName,
+        lastSeenAt: formatDateTimeForDashboard(gatewaysVital.lastSeenAt),
+        lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db),
+        isActive: gatewaysVital.gateway.isActive,
+      })
+    }
+
+    res.send(Mustache.render(vitalsTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
     helpers.logError(err)
     res.status(500).send()
@@ -261,6 +319,7 @@ module.exports = {
   renderClientVitalsPage,
   renderDashboardPage,
   renderLoginPage,
+  renderVitalsPage,
   sessionChecker,
   setupDashboardSessions,
   submitLogin,
