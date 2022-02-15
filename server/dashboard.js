@@ -14,8 +14,11 @@ const aws = require('./aws')
 const DASHBOARD_TIMEZONE = 'America/Vancouver'
 const DASHBOARD_FORMAT = 'y MMM d, TTT'
 
-const chatbotDashboardTemplate = fs.readFileSync(`${__dirname}/mustache-templates/chatbotDashboard.mst`, 'utf-8')
+const clientPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientPage.mst`, 'utf-8')
 const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientVitals.mst`, 'utf-8')
+const landingCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/landingCSSPartial.mst`, 'utf-8')
+const landingPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/landingPage.mst`, 'utf-8')
+const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.mst`, 'utf-8')
 
 function formatDateTimeForDashboard(date) {
   return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(DASHBOARD_TIMEZONE).toFormat(DASHBOARD_FORMAT)
@@ -85,7 +88,7 @@ async function renderDashboardPage(req, res) {
     }
     viewParams.viewMessage = allClients.length >= 1 ? 'Please select a client' : 'No clients to display'
 
-    res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
+    res.send(Mustache.render(landingPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
     helpers.logError(err)
     res.status(500).send()
@@ -132,7 +135,7 @@ async function renderClientDetailsPage(req, res) {
       viewParams.viewMessage = 'No client to display'
     }
 
-    res.send(Mustache.render(chatbotDashboardTemplate, viewParams))
+    res.send(Mustache.render(clientPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
     helpers.logError(err)
     res.status(500).send()
@@ -181,7 +184,7 @@ async function renderClientVitalsPage(req, res) {
       viewParams.viewMessage = 'No client to display'
     }
 
-    res.send(Mustache.render(clientVitalsTemplate, viewParams))
+    res.send(Mustache.render(clientVitalsTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
     helpers.logError(err)
     res.status(500).send()
