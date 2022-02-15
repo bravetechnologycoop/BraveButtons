@@ -43,9 +43,9 @@
                                 <tr class="table-data">
                                     <th scope="row">{{name}}</th>
                                     <td>{{locationDescription}}</td>
-                                    <td>{{flicLastSeenTime}}</td>
-                                    <td>{{flicLastPingTime}}</td>
-                                    <td>{{heartbeatLastSeenTime}}</td>
+                                    <td data-toggle="tooltip" data-placement="top" title="{{flicLastSeenTime}}">{{flicLastSeenAgo}}</td>
+                                    <td data-toggle="tooltip" data-placement="top" title="{{flicLastPingTime}}">{{flicLastPingAgo}}</td>
+                                    <td data-toggle="tooltip" data-placement="top" title="{{heartbeatLastSeenTime}}">{{heartbeatLastSeenAgo}}</td>
                                     <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
                                 </tr>
                             {{/hubs}}
@@ -70,7 +70,7 @@
                                 <tr class="table-data">
                                     <th scope="row">{{id}}</th>
                                     <td>{{name}}</td>
-                                    <td>{{lastSeenAt}}</td>
+                                    <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
                                     <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
                                 </tr>
                             {{/gateways}}
@@ -94,7 +94,7 @@
                                 <tr class="table-data">
                                     <th scope="row">{{unit}}</th>
                                     <td>{{batteryLevel}}</td>
-                                    <td>{{lastSeenAt}}</td>
+                                    <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
                                 </tr>
                             {{/buttons}}
                         </tbody>

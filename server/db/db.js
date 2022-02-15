@@ -1097,9 +1097,9 @@ async function getGatewaysWithClientId(clientId, pgClient) {
     }
   } catch (err) {
     helpers.logError(err.toString())
-
-    return []
   }
+
+  return []
 }
 
 async function getCurrentTime(pgClient) {
