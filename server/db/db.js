@@ -8,6 +8,7 @@ const Gateway = require('../Gateway')
 const Hub = require('../Hub')
 const SessionState = require('../SessionState')
 const ButtonsVital = require('../ButtonsVital')
+const GatewaysVital = require('../GatewaysVital')
 
 const pool = new Pool({
   host: helpers.getEnvVar('PG_HOST'),
@@ -120,6 +121,29 @@ async function createGatewayFromRow(r, pgClient) {
     const client = createClientFromRow(results.rows[0])
 
     return new Gateway(r.id, r.display_name, r.is_active, r.created_at, r.updated_at, client)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
+async function createGatewaysVitalFromRow(r, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createGatewaysVitalFromRow',
+      `
+      SELECT *
+      FROM gateways
+      WHERE id = $1
+      LIMIT 1
+      `,
+      [r.gateway_id],
+      pool,
+      pgClient,
+    )
+    const gateway = await createGatewayFromRow(results.rows[0], pgClient)
+
+    // prettier-ignore
+    return new GatewaysVital(r.id, r.last_seen_at, r.created_at, gateway)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -332,6 +356,36 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
 
     if (results !== undefined && results.rows.length > 0) {
       return await Promise.all(results.rows.map(r => createButtonsVitalFromRow(r, pgClient)))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getRecentGatewaysVitalsWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getRecentGatewaysVitalsWithClientId',
+      `
+      SELECT a.*
+      FROM (
+        SELECT DISTINCT ON (g.id) gv.*
+        FROM gateways_vitals AS gv
+        LEFT JOIN gateways AS g ON g.id = gv.gateway_id
+        WHERE g.client_id = $1
+        ORDER BY g.id, gv.created_at DESC
+      ) AS a
+      ORDER BY a.last_seen_at
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return await Promise.all(results.rows.map(r => createGatewaysVitalFromRow(r, pgClient)))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1078,16 +1132,39 @@ async function logButtonsVital(buttonId, batteryLevel, pgClient) {
   return null
 }
 
-async function getGatewaysWithClientId(clientId, pgClient) {
+async function logGatewaysVital(gatewayId, lastSeenAt, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getGatewaysWithClientId',
+      'logGatewaysVital',
+      `
+      INSERT INTO gateways_vitals (gateway_id, last_seen_at)
+      VALUES ($1, $2)
+      RETURNING *
+      `,
+      [gatewayId, lastSeenAt],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      return await createGatewaysVitalFromRow(results.rows[0])
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function getGateways(pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getGateways',
       `
       SELECT *
       FROM gateways
-      WHERE client_id = $1
       `,
-      [clientId],
+      [],
       pool,
       pgClient,
     )
@@ -1155,16 +1232,18 @@ module.exports = {
   getClientsWithAlertApiKey,
   getClientWithId,
   getClientWithSessionId,
-  getGatewaysWithClientId,
+  getGateways,
   getMostRecentIncompleteSessionWithPhoneNumber,
   getNewNotificationsCountByAlertApiKey,
   getPool,
   getRecentButtonsVitalsWithClientId,
+  getRecentGatewaysVitalsWithClientId,
   getRecentSessionsWithClientId,
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,
   logButtonsVital,
+  logGatewaysVital,
   rollbackTransaction,
   saveHeartbeat,
   saveSession,

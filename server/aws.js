@@ -2,35 +2,24 @@
 const { IoTWirelessClient, GetWirelessGatewayStatisticsCommand } = require('@aws-sdk/client-iot-wireless')
 const { helpers } = require('brave-alert-lib')
 
-// In-house dependencies
-const db = require('./db/db')
-
 const iotWirelessClient = new IoTWirelessClient({ region: helpers.getEnvVar('AWS_REGION') })
 
-async function getGatewayVitalsWithClientId(clientId) {
-  const gatewayVitals = []
-
+async function getGatewayStats(gatewayId) {
   try {
-    const gateways = await db.getGatewaysWithClientId(clientId)
-    for (let i = 0; i < gateways.length; i += 1) {
-      const stats = await iotWirelessClient.send(
-        new GetWirelessGatewayStatisticsCommand({
-          WirelessGatewayId: gateways[i].id,
-        }),
-      )
+    const stats = await iotWirelessClient.send(
+      new GetWirelessGatewayStatisticsCommand({
+        WirelessGatewayId: gatewayId,
+      }),
+    )
 
-      gatewayVitals.push({
-        gateway: gateways[i],
-        lastSeenAt: stats.LastUplinkReceivedAt,
-      })
-    }
+    return new Date(stats.LastUplinkReceivedAt)
   } catch (e) {
     helpers.logError(`Error getting gateways vitals: ${e}`)
   }
 
-  return gatewayVitals
+  return null
 }
 
 module.exports = {
-  getGatewayVitalsWithClientId,
+  getGatewayStats,
 }

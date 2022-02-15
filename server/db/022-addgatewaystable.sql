@@ -34,6 +34,14 @@ BEGIN
         BEFORE UPDATE ON gateways
         FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
 
+        -- Add table to track the gateway vitals
+        CREATE TABLE IF NOT EXISTS gateways_vitals (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            gateway_id uuid REFERENCES gateways (id) NOT NULL,
+            last_seen_at timestamptz NOT NULL,
+            created_at timestamptz NOT NULL DEFAULT NOW()
+        );
+
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
         INSERT INTO migrations (id)
         VALUES (migrationId);

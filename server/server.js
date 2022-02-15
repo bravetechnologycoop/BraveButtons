@@ -43,6 +43,7 @@ if (helpers.isTestEnvironment()) {
   }
   server = https.createServer(httpsOptions, app).listen(443)
   setInterval(vitals.checkHeartbeat, 1000)
+  setInterval(vitals.checkGatewayHeartbeat, 5 * 60 * 1000)
   helpers.log('brave server listening on port 443')
 }
 
