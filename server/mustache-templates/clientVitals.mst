@@ -24,6 +24,35 @@
                 <br>
                 <br>
 
+                <h4>Flic Hubs</h4>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr class="table-header" scope="row">
+                                <th scope="col">Name</th>
+                                <th scope="col">Location Description</th>
+                                <th scope="col">Last Seen (Flic)</th>
+                                <th scope="col">Last Seen (Ping)</th>
+                                <th scope="col">Last Seen (Heartbeat)</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#hubs}}
+                                <tr class="table-data">
+                                    <th scope="row">{{name}}</th>
+                                    <td>{{locationDescription}}</td>
+                                    <td>{{flicLastSeenTime}}</td>
+                                    <td>{{flicLastPingTime}}</td>
+                                    <td>{{heartbeatLastSeenTime}}</td>
+                                    <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
+                                </tr>
+                            {{/hubs}}
+                        </tbody>
+                    </table>
+                </div>
+
                 <h4>RAK Gateways</h4>
 
                 <div class="table-responsive">
@@ -37,14 +66,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{#recentGatewayVitals}}
+                            {{#gateways}}
                                 <tr class="table-data">
-                                    <th scope="row">{{gateway.id}}</th>
-                                    <td>{{gateway.displayName}}</td>
+                                    <th scope="row">{{id}}</th>
+                                    <td>{{name}}</td>
                                     <td>{{lastSeenAt}}</td>
-                                    <td>{{^gateway.isActive}}[INACTIVE]{{/gateway.isActive}}</td>
+                                    <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
                                 </tr>
-                            {{/recentGatewayVitals}}
+                            {{/gateways}}
                         </tbody>
                     </table>
                 </div>
@@ -61,13 +90,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{#recentButtonsVitals}}
+                            {{#buttons}}
                                 <tr class="table-data">
                                     <th scope="row">{{unit}}</th>
                                     <td>{{batteryLevel}}</td>
                                     <td>{{lastSeenAt}}</td>
                                 </tr>
-                            {{/recentButtonsVitals}}
+                            {{/buttons}}
                         </tbody>
                     </table>
                 </div>
