@@ -169,8 +169,11 @@ async function renderClientVitalsPage(req, res) {
           name: hubsVital.systemName,
           locationDescription: hubsVital.locationDescription,
           flicLastSeenTime: formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
+          flicLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastSeenTime, db),
           flicLastPingTime: formatDateTimeForDashboard(hubsVital.flicLastPingTime),
+          flicLastPingAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastPingTime, db),
           heartbeatLastSeenTime: formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
+          heartbeatLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.heartbeatLastSeenTime, db),
           isActive: !hubsVital.muted && !hubsVital.hidden,
         })
       }
@@ -181,6 +184,7 @@ async function renderClientVitalsPage(req, res) {
           unit: buttonsVital.button.unit,
           batteryLevel: buttonsVital.batteryLevel,
           lastSeenAt: formatDateTimeForDashboard(buttonsVital.createdAt),
+          lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db),
         })
       }
 
@@ -190,6 +194,7 @@ async function renderClientVitalsPage(req, res) {
           id: gatewaysVital.gateway.id,
           name: gatewaysVital.gateway.displayName,
           lastSeenAt: formatDateTimeForDashboard(new Date(gatewaysVital.lastSeenAt)),
+          lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(new Date(gatewaysVital.lastSeenAt), db),
           isActive: gatewaysVital.gateway.isActive,
         })
       }
