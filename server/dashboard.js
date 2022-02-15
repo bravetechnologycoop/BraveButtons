@@ -151,11 +151,11 @@ async function renderClientVitalsPage(req, res) {
       return
     }
 
-    const recentButtonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
     const currentClient = await db.getClientWithId(req.params.clientId)
     const viewParams = {
-      recentButtonsVitals: [],
-      recentGatewayVitals: [],
+      buttons: [],
+      gateways: [],
+      hubs: [],
       clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
     }
 
@@ -163,21 +163,34 @@ async function renderClientVitalsPage(req, res) {
       viewParams.currentClientName = currentClient.displayName
       viewParams.currentClientId = currentClient.id
 
-      for (const recentButtonsVital of recentButtonsVitals) {
-        const createdAt = formatDateTimeForDashboard(recentButtonsVital.createdAt)
-        viewParams.recentButtonsVitals.push({
-          unit: recentButtonsVital.button.unit,
-          batteryLevel: recentButtonsVital.batteryLevel,
-          lastSeenAt: createdAt,
+      const hubsVitals = await db.getHubsWithClientId(req.params.clientId)
+      for (const hubsVital of hubsVitals) {
+        viewParams.hubs.push({
+          name: hubsVital.systemName,
+          locationDescription: hubsVital.locationDescription,
+          flicLastSeenTime: formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
+          flicLastPingTime: formatDateTimeForDashboard(hubsVital.flicLastPingTime),
+          heartbeatLastSeenTime: formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
+          isActive: !hubsVital.muted && !hubsVital.hidden,
         })
       }
 
-      const gatewayVitals = await aws.getGatewayVitalsWithClientId(currentClient.id)
-      for (const gatewayVital of gatewayVitals) {
-        const lastSeenAt = formatDateTimeForDashboard(new Date(gatewayVital.lastSeenAt))
-        viewParams.recentGatewayVitals.push({
-          gateway: gatewayVital.gateway,
-          lastSeenAt,
+      const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
+      for (const buttonsVital of buttonsVitals) {
+        viewParams.buttons.push({
+          unit: buttonsVital.button.unit,
+          batteryLevel: buttonsVital.batteryLevel,
+          lastSeenAt: formatDateTimeForDashboard(buttonsVital.createdAt),
+        })
+      }
+
+      const gatewaysVitals = await aws.getGatewayVitalsWithClientId(currentClient.id)
+      for (const gatewaysVital of gatewaysVitals) {
+        viewParams.gateways.push({
+          id: gatewaysVital.gateway.id,
+          name: gatewaysVital.gateway.displayName,
+          lastSeenAt: formatDateTimeForDashboard(new Date(gatewaysVital.lastSeenAt)),
+          isActive: gatewaysVital.gateway.isActive,
         })
       }
     } else {

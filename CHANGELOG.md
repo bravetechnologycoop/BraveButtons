@@ -14,6 +14,7 @@ the code was deployed.
 ### Added
 
 - RAK LoRa Gateway status to the Buttons Vitals dashbaord pages (CU-1zhg9m7).
+- Flic Hub status to the Buttons Vitals dashboard pages.
 
 ### Fixed
 

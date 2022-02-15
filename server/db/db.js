@@ -927,6 +927,31 @@ async function getHubWithSystemId(systemId, pgClient) {
   return null
 }
 
+async function getHubsWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getHubsWithClientId',
+      `
+      SELECT *
+      FROM hubs
+      WHERE client_id = $1
+      ORDER BY system_name
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      return await Promise.all(results.rows.map(r => createHubFromRow(r, pgClient)))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
 async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1124,6 +1149,7 @@ module.exports = {
   getDataForExport,
   getHistoricAlertsByAlertApiKey,
   getHubs,
+  getHubsWithClientId,
   getHubWithSystemId,
   getClients,
   getClientsWithAlertApiKey,
