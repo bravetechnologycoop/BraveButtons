@@ -3,15 +3,11 @@ const fs = require('fs')
 const Mustache = require('mustache')
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
-const { DateTime } = require('luxon')
 const { Parser } = require('json2csv')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
-
-const DASHBOARD_TIMEZONE = 'America/Vancouver'
-const DASHBOARD_FORMAT = 'y MMM d, TTT'
 
 const clientPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientPage.mst`, 'utf-8')
 const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientVitals.mst`, 'utf-8')
@@ -19,10 +15,6 @@ const landingCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/landi
 const landingPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/landingPage.mst`, 'utf-8')
 const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.mst`, 'utf-8')
 const vitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/vitals.mst`, 'utf-8')
-
-function formatDateTimeForDashboard(date) {
-  return DateTime.fromJSDate(date, { zone: 'utc' }).setZone(DASHBOARD_TIMEZONE).toFormat(DASHBOARD_FORMAT)
-}
 
 function setupDashboardSessions(app) {
   app.use(cookieParser())
@@ -116,9 +108,9 @@ async function renderClientDetailsPage(req, res) {
       viewParams.currentClientName = currentClient.displayName
 
       for (const recentSession of recentSessions) {
-        const createdAt = formatDateTimeForDashboard(recentSession.createdAt)
-        const updatedAt = formatDateTimeForDashboard(recentSession.updatedAt)
-        const respondedAt = recentSession.respondedAt !== null ? formatDateTimeForDashboard(recentSession.respondedAt) : ''
+        const createdAt = helpers.formatDateTimeForDashboard(recentSession.createdAt)
+        const updatedAt = helpers.formatDateTimeForDashboard(recentSession.updatedAt)
+        const respondedAt = recentSession.respondedAt !== null ? helpers.formatDateTimeForDashboard(recentSession.respondedAt) : ''
         viewParams.recentSessions.push({
           unit: recentSession.unit,
           createdAt,
@@ -168,11 +160,11 @@ async function renderClientVitalsPage(req, res) {
         viewParams.hubs.push({
           name: hubsVital.systemName,
           locationDescription: hubsVital.locationDescription,
-          flicLastSeenTime: formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
+          flicLastSeenTime: helpers.formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
           flicLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastSeenTime, db),
-          flicLastPingTime: formatDateTimeForDashboard(hubsVital.flicLastPingTime),
+          flicLastPingTime: helpers.formatDateTimeForDashboard(hubsVital.flicLastPingTime),
           flicLastPingAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastPingTime, db),
-          heartbeatLastSeenTime: formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
+          heartbeatLastSeenTime: helpers.formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
           heartbeatLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.heartbeatLastSeenTime, db),
           isActive: !hubsVital.muted,
         })
@@ -183,7 +175,7 @@ async function renderClientVitalsPage(req, res) {
         viewParams.buttons.push({
           unit: buttonsVital.button.unit,
           batteryLevel: buttonsVital.batteryLevel,
-          lastSeenAt: formatDateTimeForDashboard(buttonsVital.createdAt),
+          lastSeenAt: helpers.formatDateTimeForDashboard(buttonsVital.createdAt),
           lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db),
         })
       }
@@ -193,7 +185,7 @@ async function renderClientVitalsPage(req, res) {
         viewParams.gateways.push({
           id: gatewaysVital.gateway.id,
           name: gatewaysVital.gateway.displayName,
-          lastSeenAt: formatDateTimeForDashboard(gatewaysVital.lastSeenAt),
+          lastSeenAt: helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt),
           lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db),
           isActive: gatewaysVital.gateway.isActive,
         })
@@ -218,7 +210,7 @@ async function renderVitalsPage(req, res) {
       gateways: [],
       hubs: [],
       clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
-      currentDateTime: formatDateTimeForDashboard(await db.getCurrentTime()),
+      currentDateTime: helpers.formatDateTimeForDashboard(await db.getCurrentTime()),
     }
 
     const hubsVitals = await db.getHubs(req.params.clientId)
@@ -226,11 +218,11 @@ async function renderVitalsPage(req, res) {
       viewParams.hubs.push({
         name: hubsVital.systemName,
         locationDescription: hubsVital.locationDescription,
-        flicLastSeenTime: formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
+        flicLastSeenTime: helpers.formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
         flicLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastSeenTime, db),
-        flicLastPingTime: formatDateTimeForDashboard(hubsVital.flicLastPingTime),
+        flicLastPingTime: helpers.formatDateTimeForDashboard(hubsVital.flicLastPingTime),
         flicLastPingAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastPingTime, db),
-        heartbeatLastSeenTime: formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
+        heartbeatLastSeenTime: helpers.formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
         heartbeatLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.heartbeatLastSeenTime, db),
         isActive: !hubsVital.muted,
       })
@@ -242,7 +234,7 @@ async function renderVitalsPage(req, res) {
         clientName: buttonsVital.button.client.displayName,
         unit: buttonsVital.button.unit,
         batteryLevel: buttonsVital.batteryLevel,
-        lastSeenAt: formatDateTimeForDashboard(buttonsVital.createdAt),
+        lastSeenAt: helpers.formatDateTimeForDashboard(buttonsVital.createdAt),
         lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db),
       })
     }
@@ -253,7 +245,7 @@ async function renderVitalsPage(req, res) {
         clientName: gatewaysVital.gateway.client.displayName,
         id: gatewaysVital.gateway.id,
         name: gatewaysVital.gateway.displayName,
-        lastSeenAt: formatDateTimeForDashboard(gatewaysVital.lastSeenAt),
+        lastSeenAt: helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt),
         lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db),
         isActive: gatewaysVital.gateway.isActive,
       })
@@ -313,7 +305,6 @@ async function submitLogin(req, res) {
 
 module.exports = {
   downloadCsv,
-  formatDateTimeForDashboard,
   redirectToHomePage,
   renderClientDetailsPage,
   renderClientVitalsPage,
