@@ -128,8 +128,11 @@ async function checkGatewayHeartbeat() {
   try {
     const gateways = await db.getGateways()
     for (const gateway of gateways) {
-      const gatewayStats = await aws.getGatewayStats(gateway.id)
+      if (!gateway.isActive) {
+        continue
+      }
 
+      const gatewayStats = await aws.getGatewayStats(gateway.id)
       if (gatewayStats !== null) {
         await db.logGatewaysVital(gateway.id, gatewayStats)
       }

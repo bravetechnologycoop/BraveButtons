@@ -159,7 +159,7 @@ async function beginTransaction() {
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await pgClient.query('LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications, buttons_vitals')
+    await pgClient.query('LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications, gateways')
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
     if (pgClient) {
@@ -978,13 +978,57 @@ async function clearButtonsVitals(pgClient) {
   }
 }
 
+async function clearGateways(pgClient) {
+  if (!helpers.isTestEnvironment()) {
+    helpers.log('warning - tried to clear gateways table outside of a test environment!')
+    return
+  }
+
+  try {
+    await helpers.runQuery(
+      'clearGateways',
+      `
+      DELETE FROM gateways
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
+async function clearGatewaysVitals(pgClient) {
+  if (!helpers.isTestEnvironment()) {
+    helpers.log('warning - tried to clear gateways vitals table outside of a test environment!')
+    return
+  }
+
+  try {
+    await helpers.runQuery(
+      'clearGatewaysVitals',
+      `
+      DELETE FROM gateways_vitals
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function clearTables(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear tables outside of a test environment!')
     return
   }
 
+  await clearGatewaysVitals(pgClient)
   await clearButtonsVitals(pgClient)
+  await clearGateways(pgClient)
   await clearSessions(pgClient)
   await clearButtons(pgClient)
   await clearNotifications(pgClient)
@@ -1010,9 +1054,9 @@ async function getHubs(pgClient) {
     }
   } catch (err) {
     helpers.logError(err.toString())
-
-    return []
   }
+
+  return []
 }
 
 async function getHubWithSystemId(systemId, pgClient) {
@@ -1181,7 +1225,7 @@ async function logButtonsVital(buttonId, batteryLevel, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return await createButtonsVitalFromRow(results.rows[0])
+      return await createButtonsVitalFromRow(results.rows[0], pgClient)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1205,7 +1249,7 @@ async function logGatewaysVital(gatewayId, lastSeenAt, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return await createGatewaysVitalFromRow(results.rows[0])
+      return await createGatewaysVitalFromRow(results.rows[0], pgClient)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1268,6 +1312,8 @@ module.exports = {
   clearButtons,
   clearButtonsVitals,
   clearClients,
+  clearGateways,
+  clearGatewaysVitals,
   clearNotifications,
   clearSessions,
   clearTables,
