@@ -149,6 +149,7 @@ async function renderClientVitalsPage(req, res) {
       gateways: [],
       hubs: [],
       clients: allClients.filter(client => client.isActive).map(client => ({ name: client.displayName, id: client.id })),
+      currentDateTime: helpers.formatDateTimeForDashboard(await db.getCurrentTime()),
     }
 
     if (currentClient !== null) {
