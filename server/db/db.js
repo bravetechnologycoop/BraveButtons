@@ -35,118 +35,38 @@ function createClientFromRow(r) {
   return new Client(r.id, r.display_name, r.responder_phone_number, r.responder_push_id, r.alert_api_key, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.updated_at)
 }
 
-async function createButtonFromRow(r, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'createButtonFromRow',
-      `
-      SELECT *
-      FROM clients
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [r.client_id],
-      pool,
-      pgClient,
-    )
-    const client = createClientFromRow(results.rows[0])
+function createButtonFromRow(r, allClients) {
+  const client = allClients.filter(c => c.id === r.client_id)[0]
 
-    // prettier-ignore
-    return new Button(r.id, r.button_id, r.unit, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, client)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
+  // prettier-ignore
+  return new Button(r.id, r.button_id, r.unit, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, client)
 }
 
-async function createButtonsVitalFromRow(r, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'createButtonsVitalFromRow',
-      `
-      SELECT *
-      FROM buttons
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [r.button_id],
-      pool,
-      pgClient,
-    )
-    const button = await createButtonFromRow(results.rows[0], pgClient)
+function createButtonsVitalFromRow(r, allButtons) {
+  const button = allButtons.filter(b => b.id === r.button_id)[0]
 
-    // prettier-ignore
-    return new ButtonsVital(r.id, r.battery_level, r.created_at, button)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
+  // prettier-ignore
+  return new ButtonsVital(r.id, r.battery_level, r.created_at, button)
 }
 
-async function createHubFromRow(r, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'createHubFromRow',
-      `
-      SELECT *
-      FROM clients
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [r.client_id],
-      pool,
-      pgClient,
-    )
-    const client = createClientFromRow(results.rows[0])
+function createHubFromRow(r, allClients) {
+  const client = allClients.filter(c => c.id === r.client_id)[0]
 
-    // prettier-ignore
-    return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.sent_vitals_alert_at, r.muted, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
+  // prettier-ignore
+  return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.sent_vitals_alert_at, r.muted, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
 }
 
-async function createGatewayFromRow(r, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'createGatewayFromRow',
-      `
-      SELECT *
-      FROM clients
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [r.client_id],
-      pool,
-      pgClient,
-    )
-    const client = createClientFromRow(results.rows[0])
+function createGatewayFromRow(r, allClients) {
+  const client = allClients.filter(c => c.id === r.client_id)[0]
 
-    return new Gateway(r.id, r.display_name, r.is_active, r.created_at, r.updated_at, client)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
+  return new Gateway(r.id, r.display_name, r.is_active, r.created_at, r.updated_at, client)
 }
 
-async function createGatewaysVitalFromRow(r, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'createGatewaysVitalFromRow',
-      `
-      SELECT *
-      FROM gateways
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [r.gateway_id],
-      pool,
-      pgClient,
-    )
-    const gateway = await createGatewayFromRow(results.rows[0], pgClient)
+function createGatewaysVitalFromRow(r, allGateways) {
+  const gateway = allGateways.filter(g => g.id === r.gateway_id)[0]
 
-    // prettier-ignore
-    return new GatewaysVital(r.id, r.last_seen_at, r.created_at, gateway)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
+  // prettier-ignore
+  return new GatewaysVital(r.id, r.last_seen_at, r.created_at, gateway)
 }
 
 async function beginTransaction() {
@@ -200,6 +120,103 @@ async function rollbackTransaction(pgClient) {
       helpers.logError(`rollbackTransaction: Error releasing client: ${err}`)
     }
   }
+}
+
+async function getClients(pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getClients',
+      `
+      SELECT *
+      FROM clients
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      return results.rows.map(createClientFromRow)
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getButtons(pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithSerialNumber',
+      `
+      SELECT *
+      FROM buttons
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      const allClients = await getClients(pgClient)
+      return results.rows.map(r => createButtonFromRow(r, allClients))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getGateways(pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getGateways',
+      `
+      SELECT *
+      FROM gateways
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      const allClients = await getClients(pgClient)
+      return results.rows.map(r => createGatewayFromRow(r, allClients))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getHubs(pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getHubs',
+      `
+      SELECT *
+      FROM hubs
+      ORDER BY system_name
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+
+    const allClients = await getClients(pgClient)
+
+    if (results.rows.length > 0) {
+      return results.rows.map(r => createHubFromRow(r, allClients))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
 }
 
 async function getUnrespondedSessionWithButtonId(buttonId, pgClient) {
@@ -354,7 +371,8 @@ async function getRecentButtonsVitals(pgClient) {
     )
 
     if (results !== undefined && results.rows.length > 0) {
-      return await Promise.all(results.rows.map(r => createButtonsVitalFromRow(r, pgClient)))
+      const allButtons = await getButtons(pgClient)
+      return results.rows.map(r => createButtonsVitalFromRow(r, allButtons))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -384,7 +402,8 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
     )
 
     if (results !== undefined && results.rows.length > 0) {
-      return await Promise.all(results.rows.map(r => createButtonsVitalFromRow(r, pgClient)))
+      const allButtons = await getButtons(pgClient)
+      return results.rows.map(r => createButtonsVitalFromRow(r, allButtons))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -413,7 +432,8 @@ async function getRecentGatewaysVitals(pgClient) {
     )
 
     if (results !== undefined && results.rows.length > 0) {
-      return await Promise.all(results.rows.map(r => createGatewaysVitalFromRow(r, pgClient)))
+      const allGateways = await getGateways(pgClient)
+      return results.rows.map(r => createGatewaysVitalFromRow(r, allGateways))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -443,7 +463,8 @@ async function getRecentGatewaysVitalsWithClientId(clientId, pgClient) {
     )
 
     if (results !== undefined && results.rows.length > 0) {
-      return await Promise.all(results.rows.map(r => createGatewaysVitalFromRow(r, pgClient)))
+      const allGateways = await getGateways(pgClient)
+      return results.rows.map(r => createGatewaysVitalFromRow(r, allGateways))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -626,7 +647,8 @@ async function getButtonWithSerialNumber(serialNumber, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return await createButtonFromRow(results.rows[0], pgClient)
+      const allClients = await getClients(pgClient)
+      return createButtonFromRow(results.rows[0], allClients)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -649,7 +671,8 @@ async function createButton(buttonId, clientId, unit, phoneNumber, button_serial
       pgClient,
     )
 
-    return await createButtonFromRow(results.rows[0], pgClient)
+    const allClients = await getClients(pgClient)
+    return createButtonFromRow(results.rows[0], allClients)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -743,29 +766,6 @@ async function clearClients(pgClient) {
   } catch (err) {
     helpers.log(err.toString())
   }
-}
-
-async function getClients(pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getClients',
-      `
-      SELECT *
-      FROM clients
-      `,
-      [],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      return results.rows.map(createClientFromRow)
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return []
 }
 
 async function getClientsWithAlertApiKey(alertApiKey, pgClient) {
@@ -1035,37 +1035,14 @@ async function clearTables(pgClient) {
   await clearClients(pgClient)
 }
 
-async function getHubs(pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getHubs',
-      `
-      SELECT *
-      FROM hubs
-      ORDER BY system_name
-      `,
-      [],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      return await Promise.all(results.rows.map(r => createHubFromRow(r, pgClient)))
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return []
-}
-
 async function getHubWithSystemId(systemId, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getHubWithSystemId',
       `
       SELECT *
-      FROM hubs
+      FROM hubs AS h
+      LEFT JOIN clients AS c ON h.client_id = c.id
       WHERE system_id = $1
       `,
       [systemId],
@@ -1074,7 +1051,8 @@ async function getHubWithSystemId(systemId, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return await createHubFromRow(results.rows[0], pgClient)
+      const allClients = await getClients(pgClient)
+      return createHubFromRow(results.rows[0], allClients)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1089,7 +1067,8 @@ async function getHubsWithClientId(clientId, pgClient) {
       'getHubsWithClientId',
       `
       SELECT *
-      FROM hubs
+      FROM hubs AS h
+      LEFT JOIN clients AS c ON h.client_id = c.id
       WHERE client_id = $1
       ORDER BY system_name
       `,
@@ -1099,7 +1078,8 @@ async function getHubsWithClientId(clientId, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return await Promise.all(results.rows.map(r => createHubFromRow(r, pgClient)))
+      const allClients = await getClients(pgClient)
+      return results.rows.map(r => createHubFromRow(r, allClients))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1149,22 +1129,14 @@ async function updateSentAlerts(id, sentalerts, pgClient) {
         UPDATE hubs
         SET sent_vitals_alert_at = NOW()
         WHERE system_id = $1
-        RETURNING *
       `
       : `
         UPDATE hubs
         SET sent_vitals_alert_at = NULL
         WHERE system_id = $1
-        RETURNING *
       `
 
-    const results = await helpers.runQuery('updateSentAlerts', query, [id], pool, pgClient)
-
-    if (results === undefined) {
-      return null
-    }
-
-    return await createHubFromRow(results.rows[0], pgClient)
+    await helpers.runQuery('updateSentAlerts', query, [id], pool, pgClient)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -1225,7 +1197,8 @@ async function logButtonsVital(buttonId, batteryLevel, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return await createButtonsVitalFromRow(results.rows[0], pgClient)
+      const allButtons = await getButtons(pgClient)
+      return createButtonsVitalFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1249,36 +1222,14 @@ async function logGatewaysVital(gatewayId, lastSeenAt, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return await createGatewaysVitalFromRow(results.rows[0], pgClient)
+      const allGateways = await getGateways(pgClient)
+      return createGatewaysVitalFromRow(results.rows[0], allGateways)
     }
   } catch (err) {
     helpers.logError(err.toString())
   }
 
   return null
-}
-
-async function getGateways(pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getGateways',
-      `
-      SELECT *
-      FROM gateways
-      `,
-      [],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      return await Promise.all(results.rows.map(r => createGatewayFromRow(r, pgClient)))
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return []
 }
 
 async function getCurrentTime(pgClient) {
@@ -1325,6 +1276,7 @@ module.exports = {
   createSession,
   getActiveAlertsByAlertApiKey,
   getAllSessionsWithButtonId,
+  getButtons,
   getButtonWithSerialNumber,
   getCurrentTime,
   getDataForExport,

@@ -214,7 +214,7 @@ async function renderVitalsPage(req, res) {
       currentDateTime: helpers.formatDateTimeForDashboard(await db.getCurrentTime()),
     }
 
-    const hubsVitals = await db.getHubs(req.params.clientId)
+    const hubsVitals = await db.getHubs()
     for (const hubsVital of hubsVitals) {
       viewParams.hubs.push({
         name: hubsVital.systemName,
