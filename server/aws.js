@@ -14,7 +14,7 @@ async function getGatewayStats(gatewayId) {
 
     return new Date(stats.LastUplinkReceivedAt)
   } catch (e) {
-    helpers.logError(`Error getting gateways vitals: ${e}`)
+    helpers.log(`Error getting gateways vitals for "${gatewayId}": ${e}`)
   }
 
   return null
