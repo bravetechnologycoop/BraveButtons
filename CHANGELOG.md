@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [8.0.0] - 2022-03-03
+
 ### Added
 
 - RAK LoRa Gateway status to the Buttons Clients Vitals dashboard pages (CU-1zhg9m7).
@@ -469,7 +471,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.1.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.0.0...HEAD
+[8.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.1.0...v8.0.0
 [7.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.0.0...v7.1.0
 [7.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.1.0...v7.0.0
 [6.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.0.0...v6.1.0
