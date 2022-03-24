@@ -38,7 +38,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
 
   describe('POST with empty devEui', () => {
     beforeEach(async () => {
-      this.response = await chai.request(server).post('/rak_button_press').set('authorization', rakApiKeyPrimary).send({ payload: 'QQ==' })
+      this.response = await chai.request(server).post('/rak_button_press').set('authorization', rakApiKeyPrimary).send({ payload: 'Qw==' })
     })
 
     it('should return 400', () => {
@@ -74,7 +74,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
 
   describe('POST with empty authorization', () => {
     beforeEach(async () => {
-      this.response = await chai.request(server).post('/rak_button_press').set('authorization', '').send({ devEui: 'myDevEui', payload: 'QQ==' })
+      this.response = await chai.request(server).post('/rak_button_press').set('authorization', '').send({ devEui: 'myDevEui', payload: 'Qw==' })
     })
 
     it('should return 400', () => {
@@ -92,7 +92,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
 
   describe('POST with invalid authorization', () => {
     beforeEach(async () => {
-      this.response = await chai.request(server).post('/rak_button_press').set('authorization', 'x').send({ devEui: 'myDevEui', payload: 'QQ==' })
+      this.response = await chai.request(server).post('/rak_button_press').set('authorization', 'x').send({ devEui: 'myDevEui', payload: 'Qw==' })
     })
 
     it('should return 401', () => {
@@ -100,7 +100,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
     })
 
     it('should log the error', () => {
-      expect(helpers.logError).to.be.calledWithExactly(`INVALID RAK API key from 'myDevEui' for a QQ== payload (decoded: A)`)
+      expect(helpers.logError).to.be.calledWithExactly(`INVALID RAK API key from 'myDevEui' for a Qw== payload (decoded: C)`)
     })
 
     it('should not handle the button press', () => {
@@ -117,12 +117,12 @@ describe('rak.js integration tests: handleButtonpress', () => {
         .send({ devEui: 'notMyDevEui', payload: 'QQ==' })
     })
 
-    it('should return 400', () => {
-      expect(this.response).to.have.status(400)
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
     })
 
-    it('should log the error', () => {
-      expect(helpers.logError).to.be.calledWithExactly(`Bad request to /rak_button_press: DevEui is not registered: 'notMyDevEui'`)
+    it('should not log an error', () => {
+      expect(helpers.logError).not.to.be.called
     })
 
     it('should not handle the button press', () => {
@@ -158,8 +158,8 @@ describe('rak.js integration tests: handleButtonpress', () => {
       expect(helpers.logError).not.to.be.called
     })
 
-    it('should handle the button press', () => {
-      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+    it('should not handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).not.to.be.called
     })
   })
 
@@ -187,12 +187,12 @@ describe('rak.js integration tests: handleButtonpress', () => {
       expect(this.response).to.have.status(200)
     })
 
-    it('should not log any errors', () => {
+    it('should not log an error', () => {
       expect(helpers.logError).not.to.be.called
     })
 
-    it('should handle the button press', () => {
-      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+    it('should not handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).not.to.be.called
     })
   })
 
@@ -253,16 +253,16 @@ describe('rak.js integration tests: handleButtonpress', () => {
       expect(this.response).to.have.status(200)
     })
 
-    it('should not log any errors', () => {
+    it('should not log an error', () => {
       expect(helpers.logError).not.to.be.called
     })
 
-    it('should handle the button press', () => {
-      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+    it('should not handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).not.to.be.called
     })
   })
 
-  describe('POST QQ== (Button 1) with secondary API key for existing Button', () => {
+  describe('POST Qw== (Button 3) with secondary API key for existing Button', () => {
     beforeEach(async () => {
       const buttonSerialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
@@ -275,7 +275,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeySecondary)
-        .send({ devEui: buttonSerialNumber, payload: 'QQ==' })
+        .send({ devEui: buttonSerialNumber, payload: 'Qw==' })
     })
 
     afterEach(async () => {
@@ -360,7 +360,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeyPrimary)
-        .send({ devEui: 'myDevEui', payload: 'not_QQ==' })
+        .send({ devEui: 'myDevEui', payload: 'not_Qw==' })
     })
 
     it('should return 200', () => {
@@ -382,7 +382,7 @@ describe('rak.js integration tests: handleButtonpress', () => {
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeySecondary)
-        .send({ devEui: 'myDevEui', payload: 'not_QQ==' })
+        .send({ devEui: 'myDevEui', payload: 'not_Qw==' })
     })
 
     it('should return 200', () => {
