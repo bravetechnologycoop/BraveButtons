@@ -99,7 +99,6 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
           new Date(),
           null,
           '',
-          '',
           this.session.buttonBatteryLevel,
           this.respondedAt,
         ),

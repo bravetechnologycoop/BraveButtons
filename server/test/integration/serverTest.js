@@ -760,23 +760,5 @@ describe('Chatbot server', () => {
       expect(sessions[0].unit).to.deep.equal('2')
       expect(sessions[0].numPresses).to.deep.equal(1)
     })
-
-    it('should send a message to the fallback phone number if enough time has passed without a response', async () => {
-      const response = await chai
-        .request(server)
-        .post(`/flic_button_press?apikey=${validApiKey}`)
-        .set('button-serial-number', unit1SerialNumber)
-        .send()
-
-      expect(response).to.have.status(200)
-      await helpers.sleep(4000)
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
-      expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(CHATBOT_STATE.WAITING_FOR_REPLY)
-      expect(sessions[0].fallBackAlertTwilioStatus).to.not.be.null
-      expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('failed, ')
-      expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('undelivered, ')
-      expect(sessions[0].fallBackAlertTwilioStatus).to.be.oneOf(['queued', 'sent', 'delivered'])
-    })
   })
 })

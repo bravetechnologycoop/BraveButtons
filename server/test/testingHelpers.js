@@ -3,22 +3,21 @@ const { factories } = require('brave-alert-lib')
 const SessionState = require('../SessionState')
 const Hub = require('../Hub')
 
-function createTestSessionState() {
+function sessionFactory(overrides = {}) {
   return new SessionState(
-    'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc',
-    'fakeClientId',
-    'fakeButtonId',
-    'fakeUnit',
-    'fakePhone',
-    'fakeState',
-    'fakeNumPresses',
-    'fakeCreatedAt',
-    'fakeUpdatedAt',
-    '1',
-    'fakeNotes',
-    'fakeFallbackTwilioState',
-    null,
-    new Date('2000-06-06T00:53:53.000Z'),
+    overrides.id !== undefined ? overrides.id : 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc',
+    overrides.clientId !== undefined ? overrides.clientId : 'fakeClientId',
+    overrides.buttonid !== undefined ? overrides.buttonId : 'fakeButtonId',
+    overrides.unit !== undefined ? overrides.unit : 'fakeUnit',
+    overrides.phoneNumber !== undefined ? overrides.phoneNumber : 'fakePhone',
+    overrides.state !== undefined ? overrides.state : 'fakeState',
+    overrides.numPresses !== undefined ? overrides.numPresses : 'fakeNumPresses',
+    overrides.createdAt !== undefined ? overrides.createdAt : 'fakeCreatedAt',
+    overrides.updatedAt !== undefined ? overrides.updatedAt : 'fakeUpdatedAt',
+    overrides.incidentType !== undefined ? overrides.incidentType : '1',
+    overrides.notes !== undefined ? overrides.notes : 'fakeNotes',
+    overrides.buttonBatteryLevel !== undefined ? overrides.buttonBatteryLevel : null,
+    overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
   )
 }
 
@@ -52,7 +51,7 @@ function hubFactory(overrides = {}) {
 }
 
 module.exports = {
-  createTestSessionState,
   buttonDBFactory,
   hubFactory,
+  sessionFactory,
 }

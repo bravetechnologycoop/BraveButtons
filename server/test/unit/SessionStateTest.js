@@ -1,37 +1,43 @@
 const chai = require('chai')
 
 const expect = chai.expect
-const beforeEach = require('mocha').beforeEach
 const describe = require('mocha').describe
 const it = require('mocha').it
-const CHATBOT_STATE = require('brave-alert-lib').CHATBOT_STATE
 
-const SessionState = require('../../SessionState.js')
+const { sessionFactory } = require('../testingHelpers.js')
 
-describe('SessionState class', () => {
-  const sessionId = '12345'
-  const clientId = '67890'
-  const buttonId = '12345'
-  const unit = '1'
-  const phoneNumber = '+14206666969'
-  const createdAt = Date()
-  const updatedAt = Date()
+describe('SessionState.js unit tests: ', () => {
+  describe('incrementButtonPresses', () => {
+    it('should increment the number of button presses by 1', () => {
+      const session = sessionFactory({
+        numPresses: 4,
+      })
 
-  let state
+      session.incrementButtonPresses(1)
 
-  beforeEach(() => {
-    state = new SessionState(sessionId, clientId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, 1, createdAt, updatedAt, null, null)
+      expect(session.numPresses).to.equal(4 + 1)
+    })
+
+    it('should increment the number of button presses by more than 1', () => {
+      const session = sessionFactory({
+        numPresses: 4,
+      })
+
+      session.incrementButtonPresses(3)
+
+      expect(session.numPresses).to.equal(4 + 3)
+    })
   })
 
-  it('should start off with 1 button press', () => {
-    expect(state).to.have.property('numPresses')
-    expect(state.numPresses).to.deep.equal(1)
-  })
+  describe('updateBatteryLevel', () => {
+    it('should update the button battery level', () => {
+      const session = sessionFactory({
+        buttonBatteryLevel: 20,
+      })
 
-  it('should increment properly', () => {
-    state.incrementButtonPresses(1)
-    expect(state.numPresses).to.deep.equal(2)
-    state.incrementButtonPresses(2)
-    expect(state.numPresses).to.deep.equal(4)
+      session.updateBatteryLevel(45)
+
+      expect(session.buttonBatteryLevel).to.equal(45)
+    })
   })
 })

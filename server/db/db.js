@@ -27,7 +27,7 @@ types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
 function createSessionFromRow(r) {
   // prettier-ignore
-  return new SessionState(r.id, r.client_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.fallback_alert_twilio_status, r.button_battery_level, r.responded_at)
+  return new SessionState(r.id, r.client_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.notes, r.button_battery_level, r.responded_at)
 }
 
 function createClientFromRow(r) {
@@ -543,8 +543,8 @@ async function saveSession(session, pgClient) {
       'saveSessionUpdate',
       `
       UPDATE sessions
-      SET client_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, fallback_alert_twilio_status = $9, button_battery_level = $10, responded_at = $11
-      WHERE id = $12
+      SET client_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, notes = $8, button_battery_level = $9, responded_at = $10
+      WHERE id = $11
       `,
       [
         session.clientId,
@@ -555,7 +555,6 @@ async function saveSession(session, pgClient) {
         session.numPresses,
         session.incidentType,
         session.notes,
-        session.fallBackAlertTwilioStatus,
         session.buttonBatteryLevel,
         session.respondedAt,
         session.id,
@@ -1162,7 +1161,7 @@ async function getDataForExport(pgClient) {
         TO_CHAR(s.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Last Session Activity",
         s.incident_type AS "Session Incident Type",
         s.notes as "Session Notes",
-        s.fallback_alert_twilio_status AS "Fallback Alert Status (Twilio)",
+        "No longer used" AS "Fallback Alert Status (Twilio)",
         s.button_battery_level AS "Button Battery Level",
         TO_CHAR(r.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Button Created",
         TO_CHAR(r.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Button Last Updated",

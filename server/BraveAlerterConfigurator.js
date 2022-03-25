@@ -123,10 +123,6 @@ class BraveAlerterConfigurator {
           session.notes = alertSession.details
         }
 
-        if (alertSession.fallbackReturnMessage) {
-          session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
-        }
-
         if (alertSession.alertState === CHATBOT_STATE.WAITING_FOR_CATEGORY && session.respondedAt === null) {
           session.respondedAt = await db.getCurrentTime(pgClient)
         }

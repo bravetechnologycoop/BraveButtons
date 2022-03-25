@@ -15,6 +15,10 @@ the code was deployed.
 
 - RAK Buttons 1, 2, and 4 no longer create a Button alert (CU-240e9z3).
 
+### Removed
+
+- Stop storing the fallback responses in the DB.
+
 ## [8.0.0] - 2022-03-03
 
 ### Added
