@@ -199,10 +199,21 @@ class BraveAlerterConfigurator {
     return count
   }
 
-  getReturnMessage(fromAlertState, toAlertState, incidentCategories) {
+  getReturnMessage(fromAlertState, toAlertState, incidentCategories, deviceName) {
     let returnMessage
 
     switch (fromAlertState) {
+      case CHATBOT_STATE.NAMING_STARTED:
+        if (toAlertState === CHATBOT_STATE.NAMING_POSTPONED) {
+          returnMessage = 'No problem. You will be asked to name this Brave Button again next time you press it.'
+        } else if (toAlertState === CHATBOT_STATE.NAMING_STARTED) {
+          returnMessage =
+            'Sorry, that name is invalid.\n\nTo give your Button a name now, please reply with the name.\nTo give your Button a name later, please reply with "Later".'
+        } else if (toAlertState === CHATBOT_STATE.NAMING_COMPLETED) {
+          returnMessage = `Great! This Brave Button is now called "${deviceName}".\n\nIf this is incorrect or if you want to change this name, please email clientsupport@brave.coop.`
+        }
+        break
+
       case CHATBOT_STATE.STARTED:
       case CHATBOT_STATE.WAITING_FOR_REPLY:
         returnMessage = this.createResponseStringFromIncidentCategories(incidentCategories)

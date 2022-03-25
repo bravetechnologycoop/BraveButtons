@@ -5,7 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "@aws-sdk/client-iot-wireless": "^3.50.0",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v6.6.0",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#td-add-naming-chatbot",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
