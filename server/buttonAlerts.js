@@ -31,27 +31,22 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     let currentSession = await db.getUnrespondedSessionWithButtonId(button.buttonId, pgClient)
     const currentTime = await db.getCurrentTime(pgClient)
 
-    if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-      if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-        currentSession = await db.createSession(
-          button.client.id,
-          button.buttonId,
-          button.unit,
-          button.phoneNumber,
-          numPresses,
-          batteryLevel,
-          null,
-          pgClient,
-        )
-      } else {
-        currentSession.incrementButtonPresses(numPresses)
-        currentSession.updateBatteryLevel(batteryLevel)
-        await db.saveSession(currentSession, pgClient)
-      }
-    } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(button.client.id, button.buttonId, button.unit, button.phoneNumber, numPresses, null, null, pgClient)
+    if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
+      currentSession = await db.createSession(
+        button.client.id,
+        button.buttonId,
+        button.unit,
+        button.phoneNumber,
+        numPresses,
+        batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100 ? batteryLevel : null,
+        null,
+        pgClient,
+      )
     } else {
       currentSession.incrementButtonPresses(numPresses)
+      if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
+        currentSession.updateBatteryLevel(batteryLevel)
+      }
       await db.saveSession(currentSession, pgClient)
     }
 
