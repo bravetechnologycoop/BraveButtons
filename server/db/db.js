@@ -497,16 +497,28 @@ async function getSessionWithSessionId(sessionId, pgClient) {
   return null
 }
 
-async function createSession(clientId, buttonId, unit, phoneNumber, numPresses, buttonBatteryLevel, respondedAt, pgClient) {
+async function createSession(
+  clientId,
+  buttonId,
+  unit,
+  phoneNumber,
+  numPresses,
+  buttonBatteryLevel,
+  respondedAt,
+  chatbotState,
+  incidentType,
+  notes,
+  pgClient,
+) {
   try {
     const results = await helpers.runQuery(
       'createSession',
       `
-      INSERT INTO sessions (client_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO sessions (client_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at, incident_type, notes) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
       `,
-      [clientId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt],
+      [clientId, buttonId, unit, phoneNumber, chatbotState, numPresses, buttonBatteryLevel, respondedAt, incidentType, notes],
       pool,
       pgClient,
     )

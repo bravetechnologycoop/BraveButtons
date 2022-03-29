@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Button Renaming chatbot workflow (CU-24bxdpq).
+
 ### Changed
 
 - RAK Buttons 1, 2, and 4 no longer create a Button alert (CU-240e9z3).

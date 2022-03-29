@@ -5,8 +5,7 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 // In-house dependencies
 const { CHATBOT_STATE, ALERT_TYPE, factories, helpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
-const SessionState = require('../../../SessionState')
-const { buttonDBFactory } = require('../../testingHelpers')
+const { buttonDBFactory, sessionDBFactory } = require('../../testingHelpers')
 
 describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
   describe('if there are no clients with the given Alert API Key', () => {
@@ -19,7 +18,12 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
       })
-      await db.createSession(client.id, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+
+      await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: button.buttonId,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
     })
 
     afterEach(async () => {
@@ -44,8 +48,13 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
+        chatbotState: CHATBOT_STATE.STARTED,
       })
-      await db.createSession(client.id, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+
+      await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: button.buttonId,
+      })
 
       // Insert a single client with no sessions that matches the Alert API Key that we ask for
       this.alertApiKey = 'alertApiKey'
@@ -85,24 +94,15 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       this.incidentType = ALERT_TYPE.BUTTONS_URGENT
       this.numPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
-      this.session = await db.createSession(client.id, this.button.buttonId, this.button.unit, 'phoneNumber', this.numPresses, 95, this.respondedAt)
-      await db.saveSession(
-        new SessionState(
-          this.session.id,
-          this.session.clientId,
-          this.session.buttonId,
-          this.session.unit,
-          this.session.phoneNumber,
-          CHATBOT_STATE.WAITING_FOR_DETAILS,
-          this.numPresses,
-          this.session.createdAt,
-          new Date(),
-          this.incidentType,
-          '',
-          this.session.buttonBatteryLevel,
-          this.respondedAt,
-        ),
-      )
+      this.session = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: this.button.buttonId,
+        unit: this.button.unit,
+        numPresses: this.numPresses,
+        respondedAt: this.respondedAt,
+        chatbotState: CHATBOT_STATE.WAITING_FOR_DETAILS,
+        incidentType: this.incidentType,
+      })
     })
 
     afterEach(async () => {
@@ -146,11 +146,31 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         unit: 'unit2',
         buttonSerialNumber: 'button2',
       })
-      this.session1 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session2 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session3 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session4 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session5 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session1 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button1.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
+      this.session2 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button2.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
+      this.session3 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button2.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
+      this.session4 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button1.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
+      this.session5 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button2.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
     })
 
     afterEach(async () => {
@@ -187,12 +207,32 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         unit: 'unit2',
         buttonSerialNumber: 'button2',
       })
-      this.session1 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session2 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session1 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button1.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
+      this.session2 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button2.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
       await helpers.sleep(2000) // Couldn't get around doing this because there is a trigger on updated_at to keep it correct
-      this.session3 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session4 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
-      this.session5 = await db.createSession(client.id, button2.id, 'unit2', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session3 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button2.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
+      this.session4 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button1.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
+      this.session5 = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonid: button2.id,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
     })
 
     afterEach(async () => {
@@ -223,7 +263,10 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         unit: 'unit1',
         clientId: client.id,
       })
-      this.session = await db.createSession(client.id, button.buttonId, button.unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: button.buttonId,
+      })
     })
 
     afterEach(async () => {

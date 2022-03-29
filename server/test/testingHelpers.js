@@ -1,7 +1,24 @@
 // In-house dependencies
-const { factories } = require('brave-alert-lib')
+const { factories, CHATBOT_STATE } = require('brave-alert-lib')
 const SessionState = require('../SessionState')
 const Hub = require('../Hub')
+
+async function sessionDBFactory(db, overrides = {}) {
+  const session = await db.createSession(
+    overrides.clientId !== undefined ? overrides.clientId : 'fakeClientId',
+    overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
+    overrides.unit !== undefined ? overrides.unit : '305',
+    overrides.phoneNumber !== undefined ? overrides.phoneNumber : '+12223334444',
+    overrides.numPresses !== undefined ? overrides.numPresses : 1,
+    overrides.buttonBatteryLevel !== undefined ? overrides.buttonBatteryLevel : 66,
+    overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2022-01-02T03:04:05.123Z'),
+    overrides.chatbotState !== undefined ? overrides.chatbotState : CHATBOT_STATE.COMPLETED,
+    overrides.incidentType !== undefined ? overrides.incidentType : 'Fake incident type',
+    overrides.notes !== undefined ? overrides.notes : 'Fake notes',
+  )
+
+  return session
+}
 
 function sessionFactory(overrides = {}) {
   return new SessionState(
@@ -53,5 +70,6 @@ function hubFactory(overrides = {}) {
 module.exports = {
   buttonDBFactory,
   hubFactory,
+  sessionDBFactory,
   sessionFactory,
 }

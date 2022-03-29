@@ -3,10 +3,9 @@ const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
 
 // In-house dependencies
-const { CHATBOT_STATE, ALERT_TYPE, factories } = require('brave-alert-lib')
+const { CHATBOT_STATE, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
-const SessionState = require('../../../SessionState')
-const { buttonDBFactory } = require('../../testingHelpers')
+const { buttonDBFactory, sessionDBFactory } = require('../../testingHelpers')
 
 describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
   describe('if there are no clients with the given Alert API Key', () => {
@@ -19,7 +18,11 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
       })
-      await db.createSession(client.id, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date())
+      await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: button.buttonId,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
     })
 
     afterEach(async () => {
@@ -45,7 +48,11 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
       })
-      await db.createSession(client.id, button.buttonId, 'unit', 'phoneNumber', 5, 95, new Date())
+      await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: button.buttonId,
+        chatbotState: CHATBOT_STATE.STARTED,
+      })
 
       // Insert a single client with no sessions that matches the Alert API Key that we ask for
       this.alertApiKey = 'alertApiKey'
@@ -82,27 +89,16 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       })
 
       // Insert a single session for that API key
-      this.incidentType = ALERT_TYPE.BUTTONS_URGENT
       this.numPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
-      this.session = await db.createSession(client.id, this.button.buttonId, this.button.unit, 'phoneNumber', this.numPresses, 95, this.respondedAt)
-      await db.saveSession(
-        new SessionState(
-          this.session.id,
-          this.session.clientId,
-          this.session.buttonId,
-          this.session.unit,
-          this.session.phoneNumber,
-          CHATBOT_STATE.WAITING_FOR_CATEGORY,
-          this.numPresses,
-          this.session.createdAt,
-          new Date(),
-          null,
-          '',
-          this.session.buttonBatteryLevel,
-          this.respondedAt,
-        ),
-      )
+      this.session = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: this.button.buttonId,
+        unit: this.button.unit,
+        numPresses: this.numPresses,
+        respondedAt: this.respondedAt,
+        chatbotState: CHATBOT_STATE.WAITING_FOR_CATEGORY,
+      })
     })
 
     afterEach(async () => {
@@ -140,7 +136,12 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         clientId: client.id,
         unit: 'unit1',
       })
-      this.session = await db.createSession(client.id, button.buttonId, button.unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: button.buttonId,
+        unit: button.unit,
+        respondedAt: new Date('2021-01-20T06:20:19.000Z'),
+      })
     })
 
     afterEach(async () => {
@@ -218,7 +219,12 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         clientId: client.id,
         unit: 'unit1',
       })
-      this.session = await db.createSession(client.id, button.buttonId, button.unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session = await sessionDBFactory(db, {
+        clientId: client.id,
+        buttonId: button.buttonId,
+        unit: button.unit,
+        respondedAt: new Date('2021-01-20T06:20:19.000Z'),
+      })
     })
 
     afterEach(async () => {

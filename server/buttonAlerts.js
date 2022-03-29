@@ -1,7 +1,7 @@
 // Third-party dependencies
 
 // In-house dependencies
-const { ALERT_TYPE, helpers } = require('brave-alert-lib')
+const { ALERT_TYPE, helpers, CHATBOT_STATE } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
@@ -28,6 +28,9 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
       return
     }
 
+    // Need to check the Button's name again inside the transaction to avoid a race condition
+    const buttonIsNotNamed = (await db.getButtonWithSerialNumber(button.buttonSerialNumber, pgClient)).unit === '_NEW'
+
     let currentSession = await db.getUnrespondedSessionWithButtonId(button.buttonId, pgClient)
     const currentTime = await db.getCurrentTime(pgClient)
 
@@ -39,6 +42,9 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         button.phoneNumber,
         numPresses,
         batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100 ? batteryLevel : null,
+        null,
+        buttonIsNotNamed ? CHATBOT_STATE.NAMING_STARTED : CHATBOT_STATE.STARTED,
+        null,
         null,
         pgClient,
       )
@@ -52,7 +58,18 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
 
     const client = await db.getClientWithId(currentSession.clientId, pgClient)
 
-    if (currentSession.numPresses === 1) {
+    if (buttonIsNotNamed) {
+      const alertInfo = {
+        sessionId: currentSession.id,
+        toPhoneNumber: client.responderPhoneNumber,
+        fromPhoneNumber: currentSession.phoneNumber,
+        responderPushId: client.responderPushId,
+        deviceName: button.buttonSerialNumber,
+        alertType: ALERT_TYPE.BUTTONS_NAMING,
+        message: `Hello!\n\nLet's set up your new Brave Button (Serial #: ${button.buttonSerialNumber}) by giving it a recognizable name (for example, "Room 205").\n\nTo give your Button a name now, please reply with the name.\nTo give your Button a name later, please reply with "Later".`,
+      }
+      braveAlerter.startAlertSession(alertInfo)
+    } else if (currentSession.numPresses === 1) {
       const alertInfo = {
         sessionId: currentSession.id,
         toPhoneNumber: client.responderPhoneNumber,
