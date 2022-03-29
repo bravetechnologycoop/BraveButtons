@@ -29,7 +29,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
     }
 
     // Need to check the Button's name again inside the transaction to avoid a race condition
-    const buttonIsNotNamed = (await db.getButtonWithSerialNumber(button.buttonSerialNumber, pgClient)).unit === '_NEW'
+    const isUnnamedDevice = helpers.isUnnamedDevice((await db.getButtonWithSerialNumber(button.buttonSerialNumber, pgClient)).unit)
 
     let currentSession = await db.getUnrespondedSessionWithButtonId(button.buttonId, pgClient)
     const currentTime = await db.getCurrentTime(pgClient)
@@ -43,7 +43,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         numPresses,
         batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100 ? batteryLevel : null,
         null,
-        buttonIsNotNamed ? CHATBOT_STATE.NAMING_STARTED : CHATBOT_STATE.STARTED,
+        isUnnamedDevice ? CHATBOT_STATE.NAMING_STARTED : CHATBOT_STATE.STARTED,
         null,
         null,
         pgClient,
@@ -58,7 +58,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
 
     const client = await db.getClientWithId(currentSession.clientId, pgClient)
 
-    if (buttonIsNotNamed) {
+    if (isUnnamedDevice) {
       const alertInfo = {
         sessionId: currentSession.id,
         toPhoneNumber: client.responderPhoneNumber,
