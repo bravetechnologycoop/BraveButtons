@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [8.1.0] - 2022-04-12
+
 ### Changed
 
 - RAK Buttons 1, 2, and 4 no longer create a Button alert (CU-240e9z3).
@@ -475,7 +477,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.0.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.1.0...HEAD
+[8.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.0.0...v8.1.0
 [8.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.1.0...v8.0.0
 [7.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.0.0...v7.1.0
 [7.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v6.1.0...v7.0.0
