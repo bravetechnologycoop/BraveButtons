@@ -2,8 +2,10 @@
 const express = require('express')
 
 // In-house dependencies
+const { clickUpHelpers } = require('brave-alert-lib')
 const dashboard = require('./dashboard')
 const flic = require('./flic')
+const pa = require('./pa')
 const radiobridge = require('./radiobridge')
 const rak = require('./rak.js')
 const vitals = require('./vitals')
@@ -23,6 +25,7 @@ function configureRoutes(app) {
   app.post('/flic_button_press', flic.validateButtonPress, flic.handleButtonPress)
   app.post('/heartbeat', jsonBodyParser, vitals.handleHeartbeat)
   app.post('/login', dashboard.submitLogin)
+  app.post('/pa/buttons-twilio-number', pa.validateButtonsTwilioNumber, clickUpHelpers.clickUpChecker, pa.handleButtonsTwilioNumber)
   app.post('/radiobridge_button_press', jsonBodyParser, radiobridge.validateButtonPress, radiobridge.handleButtonPress)
   app.post('/rak_button_press', jsonBodyParser, rak.validateButtonPress, rak.handleButtonPress)
 }
