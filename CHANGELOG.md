@@ -15,6 +15,10 @@ the code was deployed.
 
 - Endpoints for use by PA (CU-21ghk0x).
 
+### Security
+
+- Updated dependencies.
+
 ## [8.1.0] - 2022-04-12
 
 ### Changed
