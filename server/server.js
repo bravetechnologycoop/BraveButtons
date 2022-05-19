@@ -2,6 +2,7 @@
 const fs = require('fs')
 const express = require('express')
 const https = require('https')
+const cors = require('cors')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
@@ -18,6 +19,7 @@ const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
 // Start and configure Express App
 const app = express()
 app.use(express.urlencoded({ extended: true }))
+app.use(cors()) // Cors Middleware (Cross Origin Resource Sharing)
 dashboard.setupDashboardSessions(app)
 
 // Add routes
