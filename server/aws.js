@@ -44,6 +44,7 @@ async function createThing() {
     return createThingResponse
   } catch (e) {
     helpers.log(`Error creating an AWS Thing: ${e}`)
+    throw e
   }
 }
 
@@ -85,6 +86,8 @@ async function createDevice(name, eui) {
     return createThingResponse.Id
   } catch (e) {
     helpers.log(`Error creating an Device: ${e}`)
+
+    throw e
   }
 }
 
@@ -92,7 +95,7 @@ async function deleteDevice(id) {
   try {
     await iotWirelessClient.send(
       new DeleteWirelessDeviceCommand({
-        id,
+        Id: id,
       }),
     )
   } catch (e) {
@@ -112,6 +115,8 @@ async function associateDeviceWithThing(deviceId, thingArn) {
     )
   } catch (e) {
     helpers.log(`Error in associating device ${deviceId} with thing ${thingArn}: ${e}`)
+
+    throw e
   }
 
   return null

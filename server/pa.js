@@ -59,13 +59,13 @@ async function handleAwsDeviceRegistration(req, res) {
             res.status(200).send('Successfully registered to AWS')
           } catch (err) {
             try {
-              aws.deleteDevice(deviceID)
+              await aws.deleteDevice(deviceID)
             } catch (e) {
               // Do nothing
             }
 
             try {
-              aws.deleteThing(awsThing.thingName)
+              await aws.deleteThing(awsThing.thingName)
             } catch (e) {
               // Do nothing
             }
@@ -75,7 +75,7 @@ async function handleAwsDeviceRegistration(req, res) {
           }
         } catch (err) {
           try {
-            aws.deleteThing(awsThing.thingName)
+            await aws.deleteThing(awsThing.thingName)
           } catch (e) {
             // Do nothing
           }
