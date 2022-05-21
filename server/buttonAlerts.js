@@ -65,12 +65,12 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         responderPushId: client.responderPushId,
         deviceName: currentSession.unit,
         alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
-        message: `There has been a request for help from Unit ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
+        message: `There has been a request for help from ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
         reminderTimeoutMillis: client.reminderTimeout * 1000,
         fallbackTimeoutMillis: client.fallbackTimeout * 1000,
         reminderMessage:
           'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
-        fallbackMessage: `There has been an unresponded request at ${client.displayName} unit ${currentSession.unit.toString()}`,
+        fallbackMessage: `There has been an unresponded request at ${client.displayName} ${currentSession.unit.toString()}`,
         fallbackToPhoneNumbers: client.fallbackPhoneNumbers,
         fallbackFromPhoneNumber: client.fromPhoneNumber,
       }

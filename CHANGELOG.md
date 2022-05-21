@@ -14,6 +14,11 @@ the code was deployed.
 ### Added
 
 - Endpoints for use by PA (CU-21ghk0x).
+- Prepended "Unit " to all buttons in the DB (CU-271q69q).
+
+### Removed
+
+- "Unit" from chatbot text messages (CU-271q69q).
 
 ### Updated
 
