@@ -78,14 +78,22 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       this.button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
-        unit: 'unit1',
+        displayName: 'unit1',
       })
 
       // Insert a single session for that API key
       this.incidentType = ALERT_TYPE.BUTTONS_URGENT
       this.numPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
-      this.session = await db.createSession(client.id, this.button.buttonId, this.button.unit, 'phoneNumber', this.numPresses, 95, this.respondedAt)
+      this.session = await db.createSession(
+        client.id,
+        this.button.buttonId,
+        this.button.displayName,
+        'phoneNumber',
+        this.numPresses,
+        95,
+        this.respondedAt,
+      )
       await db.saveSession(
         new SessionState(
           this.session.id,
@@ -118,7 +126,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         {
           id: this.session.id,
           state: CHATBOT_STATE.WAITING_FOR_CATEGORY,
-          unit: this.button.unit,
+          display_name: this.button.displayName,
           num_presses: this.numPresses,
           incident_categories: ['cat1', 'cat2'],
           created_at: this.session.createdAt,
@@ -139,9 +147,17 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
-        unit: 'unit1',
+        displayName: 'unit1',
       })
-      this.session = await db.createSession(client.id, button.buttonId, button.unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session = await db.createSession(
+        client.id,
+        button.buttonId,
+        button.displayName,
+        'phoneNumber',
+        '1',
+        95,
+        new Date('2021-01-20T06:20:19.000Z'),
+      )
     })
 
     afterEach(async () => {
@@ -217,9 +233,17 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
-        unit: 'unit1',
+        displayName: 'unit1',
       })
-      this.session = await db.createSession(client.id, button.buttonId, button.unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session = await db.createSession(
+        client.id,
+        button.buttonId,
+        button.displayName,
+        'phoneNumber',
+        '1',
+        95,
+        new Date('2021-01-20T06:20:19.000Z'),
+      )
     })
 
     afterEach(async () => {

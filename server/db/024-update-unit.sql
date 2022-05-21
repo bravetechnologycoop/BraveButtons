@@ -16,6 +16,10 @@ BEGIN
         UPDATE buttons
         SET unit = 'Unit ' || unit;
 
+        -- Rename column to better match the shared DB schema
+        ALTER TABLE buttons
+        RENAME COLUMN unit TO display_name;
+
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
         INSERT INTO migrations (id)
         VALUES (migrationId);

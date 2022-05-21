@@ -232,7 +232,7 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
 1. pair the Buttons to their real Hub
 
-   1. open the Flic App on a phone, connect to the Hub, and pair all the Buttons to it and name each Button its unit
+   1. open the Flic App on a phone, connect to the Hub, and pair all the Buttons to it and name each Button
 
    1. configure a single Button's "Click" action (do not add anything under "Double Click" or "Hold") by adding an "Internet Request" to `POST https://chatbot-dev.brave.coop/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
 

@@ -26,7 +26,7 @@ async function buttonDBFactory(db, overrides = {}) {
   const button = await db.createButton(
     overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
     overrides.clientId !== undefined ? overrides.clientId : 'fakeClientId',
-    overrides.unit !== undefined ? overrides.unit : '305',
+    overrides.displayName !== undefined ? overrides.displayName : 'Unit 305',
     overrides.phoneNumber !== undefined ? overrides.phoneNumber : '+12223334444',
     overrides.buttonSerialNumber !== undefined ? overrides.buttonSerialNumber : 'AB12-12345',
   )

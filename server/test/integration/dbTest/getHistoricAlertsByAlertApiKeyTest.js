@@ -76,7 +76,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       })
       this.button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
-        unit: 'unit1',
+        displayName: 'unit1',
         clientId: client.id,
         buttonSerialNumber: 'button1',
       })
@@ -85,7 +85,15 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       this.incidentType = ALERT_TYPE.BUTTONS_URGENT
       this.numPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
-      this.session = await db.createSession(client.id, this.button.buttonId, this.button.unit, 'phoneNumber', this.numPresses, 95, this.respondedAt)
+      this.session = await db.createSession(
+        client.id,
+        this.button.buttonId,
+        this.button.displayName,
+        'phoneNumber',
+        this.numPresses,
+        95,
+        this.respondedAt,
+      )
       await db.saveSession(
         new SessionState(
           this.session.id,
@@ -116,7 +124,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       expect(rows).to.eql([
         {
           id: this.session.id,
-          unit: this.button.unit,
+          display_name: this.button.displayName,
           incident_type: this.incidentType,
           num_presses: this.numPresses,
           created_at: this.session.createdAt,
@@ -138,13 +146,13 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       const button1 = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
-        unit: 'unit1',
+        displayName: 'unit1',
         buttonSerialNumber: 'button1',
       })
       const button2 = await buttonDBFactory(db, {
         buttonId: '1283be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
-        unit: 'unit2',
+        displayName: 'unit2',
         buttonSerialNumber: 'button2',
       })
       this.session1 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
@@ -179,13 +187,13 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       const button1 = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
-        unit: 'unit1',
+        displayName: 'unit1',
         buttonSerialNumber: 'button1',
       })
       const button2 = await buttonDBFactory(db, {
         buttonId: '1283be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
-        unit: 'unit2',
+        displayName: 'unit2',
         buttonSerialNumber: 'button2',
       })
       this.session1 = await db.createSession(client.id, button1.id, 'unit1', 'phoneNumber', 5, 95, new Date('2021-01-20T06:20:19.000Z'))
@@ -221,10 +229,18 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       })
       const button = await buttonDBFactory(db, {
         buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
-        unit: 'unit1',
+        displayName: 'unit1',
         clientId: client.id,
       })
-      this.session = await db.createSession(client.id, button.buttonId, button.unit, 'phoneNumber', '1', 95, new Date('2021-01-20T06:20:19.000Z'))
+      this.session = await db.createSession(
+        client.id,
+        button.buttonId,
+        button.displayName,
+        'phoneNumber',
+        '1',
+        95,
+        new Date('2021-01-20T06:20:19.000Z'),
+      )
     })
 
     afterEach(async () => {

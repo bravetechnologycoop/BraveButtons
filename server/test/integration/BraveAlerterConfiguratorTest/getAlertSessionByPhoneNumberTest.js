@@ -50,7 +50,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
         this.sessionState,
         this.sessionIncidentType,
         this.sessionNotes,
-        'There has been a request for help from Unit 701 . Please respond "Ok" when you have followed up on the call.',
+        'There has been a request for help from 701 . Please respond "Ok" when you have followed up on the call.',
         this.installationResponderPhoneNumber,
         ['0', '1', '2'],
         this.installationIncidentCategories,

@@ -81,14 +81,14 @@ describe('Chatbot server', () => {
       await buttonDBFactory(db, {
         buttonId: unit1UUID,
         clientId: client.id,
-        unit: '1',
+        displayName: '1',
         phoneNumber: unit1PhoneNumber,
         buttonSerialNumber: unit1SerialNumber,
       })
       await buttonDBFactory(db, {
         buttonId: unit2UUID,
         clientId: client.id,
-        unit: '2',
+        displayName: '2',
         phoneNumber: unit2PhoneNumber,
         buttonSerialNumber: unit2SerialNumber,
       })
@@ -427,14 +427,14 @@ describe('Chatbot server', () => {
       await buttonDBFactory(db, {
         buttonId: unit1UUID,
         clientId: client.id,
-        unit: '1',
+        displayName: '1',
         phoneNumber: unit1PhoneNumber,
         buttonSerialNumber: unit1SerialNumber,
       })
       await buttonDBFactory(db, {
         buttonId: unit2UUID,
         clientId: client.id,
-        unit: '2',
+        displayName: '2',
         phoneNumber: unit2PhoneNumber,
         buttonSerialNumber: unit2SerialNumber,
       })

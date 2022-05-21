@@ -45,10 +45,10 @@ async function scanAndPairOneButton() {
           message: `What is this new button's client's name?`,
         }
 
-        const unitQuestion = {
+        const displayNameQuestion = {
           type: 'input',
-          name: 'unit',
-          message: 'What is the unit for this new button?',
+          name: 'displayName',
+          message: 'What is the display name for this new button?',
         }
 
         const phoneNumberQuestion = {
@@ -63,7 +63,7 @@ async function scanAndPairOneButton() {
           message: 'Create a button with the info above?',
         }
 
-        const response = await prompt([clientQuestion, unitQuestion, phoneNumberQuestion, confirmQuestion])
+        const response = await prompt([clientQuestion, displayNameQuestion, phoneNumberQuestion, confirmQuestion])
 
         if (response.confirmation) {
           // eslint-disable-next-line no-unused-vars -- these vars may be useful soon
@@ -78,7 +78,7 @@ async function scanAndPairOneButton() {
                   areaCode: phoneNumberOrAreaCode,
                   smsUrl: `https://${DOMAIN}/alert/sms`,
                   voiceUrl: 'https://demo.twilio.com/welcome/voice/',
-                  friendlyName: `${response.clientName.trim()} ${response.unit.trim()}`,
+                  friendlyName: `${response.clientName.trim()} ${response.displayName.trim()}`,
                 })
                 phoneNumber = incomingPhoneNumber.phoneNumber
                 phoneNumberSid = incomingPhoneNumber.sid
@@ -107,7 +107,7 @@ async function scanAndPairOneButton() {
             }
 
             // Write to CSV
-            csvWriter.write([uuid, response.unit, phoneNumber, serialNumber])
+            csvWriter.write([uuid, response.displayName, phoneNumber, serialNumber])
 
             resolve()
           })
