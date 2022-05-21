@@ -14,6 +14,7 @@ the code was deployed.
 ### Changed
 
 - Renamed buttons.unit column to buttons.display_name.
+- Email address to contact if the clients are having troubles reconnecting their Buttons.
 
 ### Added
 

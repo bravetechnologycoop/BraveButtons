@@ -27,7 +27,7 @@ function differenceInSeconds(date1, date2) {
 }
 
 function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumber, fromPhoneNumber) {
-  const message = `The connection for ${locationDescription} Button Hub has been lost. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email contact@brave.coop for further support.`
+  const message = `The connection for ${locationDescription} Button Hub has been lost. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email clientsupport@brave.coop for further support.`
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
@@ -36,7 +36,7 @@ function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients,
 }
 
 function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients, responderPhoneNumber, fromPhoneNumber) {
-  const message = `${locationDescription} Button Hub is still disconnected. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email contact@brave.coop for further support.`
+  const message = `${locationDescription} Button Hub is still disconnected. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email clientsupport@brave.coop for further support.`
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
