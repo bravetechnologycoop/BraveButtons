@@ -16,7 +16,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
   helpers.log(
     `UUID: ${button.buttonId.toString()} SerialNumber: ${
       button.buttonSerialNumber
-    } Unit: ${button.unit.toString()} Presses: ${numPresses.toString()} BatteryLevel: ${batteryLevel}`,
+    } Unit: ${button.displayName.toString()} Presses: ${numPresses.toString()} BatteryLevel: ${batteryLevel}`,
   )
 
   let pgClient
@@ -36,7 +36,7 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         currentSession = await db.createSession(
           button.client.id,
           button.buttonId,
-          button.unit,
+          button.displayName,
           button.phoneNumber,
           numPresses,
           batteryLevel,
@@ -49,7 +49,16 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         await db.saveSession(currentSession, pgClient)
       }
     } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(button.client.id, button.buttonId, button.unit, button.phoneNumber, numPresses, null, null, pgClient)
+      currentSession = await db.createSession(
+        button.client.id,
+        button.buttonId,
+        button.displayName,
+        button.phoneNumber,
+        numPresses,
+        null,
+        null,
+        pgClient,
+      )
     } else {
       currentSession.incrementButtonPresses(numPresses)
       await db.saveSession(currentSession, pgClient)

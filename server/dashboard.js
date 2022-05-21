@@ -174,7 +174,7 @@ async function renderClientVitalsPage(req, res) {
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
         viewParams.buttons.push({
-          unit: buttonsVital.button.unit,
+          unit: buttonsVital.button.displayName,
           batteryLevel: buttonsVital.batteryLevel,
           lastSeenAt: helpers.formatDateTimeForDashboard(buttonsVital.createdAt),
           lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db),
@@ -233,7 +233,7 @@ async function renderVitalsPage(req, res) {
     for (const buttonsVital of buttonsVitals) {
       viewParams.buttons.push({
         clientName: buttonsVital.button.client.displayName,
-        unit: buttonsVital.button.unit,
+        unit: buttonsVital.button.displayName,
         batteryLevel: buttonsVital.batteryLevel,
         lastSeenAt: helpers.formatDateTimeForDashboard(buttonsVital.createdAt),
         lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db),

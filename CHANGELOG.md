@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed buttons.unit column to buttons.display_name.
+
 ### Added
 
 - Endpoints for use by PA (CU-21ghk0x).

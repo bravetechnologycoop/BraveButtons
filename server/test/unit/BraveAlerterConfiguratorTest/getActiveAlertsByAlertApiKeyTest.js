@@ -30,7 +30,7 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     const results = {
       id: 'id',
       state: CHATBOT_STATE.STARTED,
-      unit: 'unit',
+      display_name: 'unit',
       num_presses: 2,
       incident_categories: ['Cat1', 'Cat2'],
       created_at: new Date(),
@@ -40,7 +40,7 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     const activeAlerts = await this.braveAlerter.getActiveAlertsByAlertApiKey('alertApiKey')
 
     expect(activeAlerts).to.eql([
-      new ActiveAlert(results.id, results.state, results.unit, ALERT_TYPE.BUTTONS_URGENT, results.incident_categories, results.created_at),
+      new ActiveAlert(results.id, results.state, results.display_name, ALERT_TYPE.BUTTONS_URGENT, results.incident_categories, results.created_at),
     ])
   })
 
@@ -48,7 +48,7 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     const results = {
       id: 'id',
       state: CHATBOT_STATE.STARTED,
-      unit: 'unit',
+      display_name: 'unit',
       num_presses: 1,
       incident_categories: ['Cat1', 'Cat2'],
       created_at: new Date(),
@@ -58,7 +58,14 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     const activeAlerts = await this.braveAlerter.getActiveAlertsByAlertApiKey('alertApiKey')
 
     expect(activeAlerts).to.eql([
-      new ActiveAlert(results.id, results.state, results.unit, ALERT_TYPE.BUTTONS_NOT_URGENT, results.incident_categories, results.created_at),
+      new ActiveAlert(
+        results.id,
+        results.state,
+        results.display_name,
+        ALERT_TYPE.BUTTONS_NOT_URGENT,
+        results.incident_categories,
+        results.created_at,
+      ),
     ])
   })
 
@@ -66,7 +73,7 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     const results1 = {
       id: 'id1',
       state: CHATBOT_STATE.STARTED,
-      unit: 'unit1',
+      display_name: 'unit1',
       num_presses: 1,
       incident_categories: ['Cat1', 'Cat2'],
       created_at: new Date(),
@@ -74,7 +81,7 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     const results2 = {
       id: 'id2',
       state: CHATBOT_STATE.STARTED,
-      unit: 'unit2',
+      display_name: 'unit2',
       num_presses: 2,
       incident_categories: ['Cat1', 'Cat2'],
       created_at: new Date(),
@@ -84,8 +91,22 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     const activeAlerts = await this.braveAlerter.getActiveAlertsByAlertApiKey('alertApiKey')
 
     expect(activeAlerts).to.eql([
-      new ActiveAlert(results1.id, results1.state, results1.unit, ALERT_TYPE.BUTTONS_NOT_URGENT, results1.incident_categories, results1.created_at),
-      new ActiveAlert(results2.id, results2.state, results2.unit, ALERT_TYPE.BUTTONS_URGENT, results2.incident_categories, results2.created_at),
+      new ActiveAlert(
+        results1.id,
+        results1.state,
+        results1.display_name,
+        ALERT_TYPE.BUTTONS_NOT_URGENT,
+        results1.incident_categories,
+        results1.created_at,
+      ),
+      new ActiveAlert(
+        results2.id,
+        results2.state,
+        results2.display_name,
+        ALERT_TYPE.BUTTONS_URGENT,
+        results2.incident_categories,
+        results2.created_at,
+      ),
     ])
   })
 

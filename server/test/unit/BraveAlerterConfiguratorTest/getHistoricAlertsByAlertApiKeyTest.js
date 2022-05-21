@@ -29,7 +29,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
   it('if there is a single result from db.getHistoricAlertsByAlertApiKey with num_presses > 1, returns an array containing a single HistoricAlert object with the returned data and ALERT_TYPE.BUTTONS_URGENT', async () => {
     const results = {
       id: 'id',
-      unit: 'unit',
+      display_name: 'unit',
       incident_type: 'incidentType',
       num_presses: 2,
       created_at: new Date('2020-01-20T10:10:10.000Z'),
@@ -42,7 +42,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
     expect(historicAlerts).to.eql([
       new HistoricAlert(
         results.id,
-        results.unit,
+        results.display_name,
         results.incident_type,
         ALERT_TYPE.BUTTONS_URGENT,
         results.num_presses,
@@ -55,7 +55,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
   it('if there is a single result from db.getHistoricAlertsByAlertApiKey with num_presses = 1, returns an array containing a single HistoricAlert object with the returned data and ALERT_TYPE.BUTTONS_NOT_URGENT', async () => {
     const results = {
       id: 'id',
-      unit: 'unit',
+      display_name: 'unit',
       incident_type: 'incidentType',
       num_presses: 1,
       created_at: new Date('2020-01-20T10:10:10.000Z'),
@@ -68,7 +68,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
     expect(historicAlerts).to.eql([
       new HistoricAlert(
         results.id,
-        results.unit,
+        results.display_name,
         results.incident_type,
         ALERT_TYPE.BUTTONS_NOT_URGENT,
         results.num_presses,
@@ -81,7 +81,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
   it('if there are multiple results from db.getHistoricAlertsByAlertApiKey, returns an array containing the HistoricAlert objects with the returned data', async () => {
     const results1 = {
       id: 'id1',
-      unit: 'unit1',
+      display_name: 'unit1',
       incident_type: 'incidentType1',
       num_presses: 1,
       created_at: new Date('2020-01-20T10:10:10.000Z'),
@@ -89,7 +89,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
     }
     const results2 = {
       id: 'id2',
-      unit: 'unit2',
+      display_name: 'unit2',
       incident_type: 'incidentType2',
       num_presses: 2,
       created_at: new Date('2019-02-20T09:10:10.000Z'),
@@ -102,7 +102,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
     expect(historicAlerts).to.eql([
       new HistoricAlert(
         results1.id,
-        results1.unit,
+        results1.display_name,
         results1.incident_type,
         ALERT_TYPE.BUTTONS_NOT_URGENT,
         results1.num_presses,
@@ -111,7 +111,7 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
       ),
       new HistoricAlert(
         results2.id,
-        results2.unit,
+        results2.display_name,
         results2.incident_type,
         ALERT_TYPE.BUTTONS_URGENT,
         results2.num_presses,

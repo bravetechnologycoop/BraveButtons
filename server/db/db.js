@@ -39,7 +39,7 @@ function createButtonFromRow(r, allClients) {
   const client = allClients.filter(c => c.id === r.client_id)[0]
 
   // prettier-ignore
-  return new Button(r.id, r.button_id, r.unit, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, client)
+  return new Button(r.id, r.button_id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, client)
 }
 
 function createButtonsVitalFromRow(r, allButtons) {
@@ -358,10 +358,10 @@ async function getRecentButtonsVitals(pgClient) {
       `
       SELECT a.*
       FROM (
-        SELECT DISTINCT ON (b.unit) bv.*
+        SELECT DISTINCT ON (b.display_name) bv.*
         FROM buttons_vitals AS bv
         LEFT JOIN buttons AS b ON b.id = bv.button_id
-        ORDER BY b.unit, bv.created_at DESC
+        ORDER BY b.display_name, bv.created_at DESC
       ) AS a
       ORDER BY a.created_at
       `,
@@ -388,11 +388,11 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
       `
       SELECT a.*
       FROM (
-        SELECT DISTINCT ON (b.unit) bv.*
+        SELECT DISTINCT ON (b.display_name) bv.*
         FROM buttons_vitals AS bv
         LEFT JOIN buttons AS b ON b.id = bv.button_id
         WHERE b.client_id = $1
-        ORDER BY b.unit, bv.created_at DESC
+        ORDER BY b.display_name, bv.created_at DESC
       ) AS a
       ORDER BY a.created_at
       `,
@@ -657,16 +657,16 @@ async function getButtonWithSerialNumber(serialNumber, pgClient) {
   return null
 }
 
-async function createButton(buttonId, clientId, unit, phoneNumber, button_serial_number, pgClient) {
+async function createButton(buttonId, clientId, displayName, phoneNumber, button_serial_number, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createButton',
       `
-      INSERT INTO buttons (button_id, client_id, unit, phone_number, button_serial_number)
+      INSERT INTO buttons (button_id, client_id, display_name, phone_number, button_serial_number)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
       `,
-      [buttonId, clientId, unit, phoneNumber, button_serial_number],
+      [buttonId, clientId, displayName, phoneNumber, button_serial_number],
       pool,
       pgClient,
     )
@@ -845,7 +845,7 @@ async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, pgC
     const results = await helpers.runQuery(
       'getActiveAlertsByAlertApiKey',
       `
-      SELECT s.id, s.state, b.unit, s.num_presses, i.incident_categories, s.created_at
+      SELECT s.id, s.state, b.display_name, s.num_presses, i.incident_categories, s.created_at
       FROM sessions AS s
       LEFT JOIN buttons AS b ON s.button_id = b.button_id
       LEFT JOIN clients AS i ON s.client_id = i.id
@@ -872,7 +872,7 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
     const results = await helpers.runQuery(
       'getHistoricAlertsByAlertApiKey',
       `
-      SELECT s.id, b.unit, s.incident_type, s.num_presses, s.created_at, s.responded_at
+      SELECT s.id, b.display_name, s.incident_type, s.num_presses, s.created_at, s.responded_at
       FROM sessions AS s
       LEFT JOIN buttons AS b ON s.button_id = b.button_id
       LEFT JOIN clients AS i ON s.client_id = i.id
@@ -1154,7 +1154,7 @@ async function getDataForExport(pgClient) {
         TO_CHAR(i.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Installation Created",
         i.incident_categories AS "Incident Categories",
         i.is_active AS "Active?",
-        s.unit AS "Unit",
+        r.display_name AS "Unit",
         s.phone_number AS "Button Phone",
         s.state AS "Session State",
         s.num_presses AS "Number of Presses",

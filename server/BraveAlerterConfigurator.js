@@ -160,7 +160,7 @@ class BraveAlerterConfigurator {
 
   createActiveAlertFromRow(row) {
     const alertType = row.num_presses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT
-    return new ActiveAlert(row.id, row.state, row.unit, alertType, row.incident_categories, row.created_at)
+    return new ActiveAlert(row.id, row.state, row.display_name, alertType, row.incident_categories, row.created_at)
   }
 
   // Active Alerts are those with status that is not "Completed" and were last updated SESSION_RESET_TIMEOUT ago or more recently
@@ -178,7 +178,7 @@ class BraveAlerterConfigurator {
 
   createHistoricAlertFromRow(row) {
     const alertType = row.num_presses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT
-    return new HistoricAlert(row.id, row.unit, row.incident_type, alertType, row.num_presses, row.created_at, row.responded_at)
+    return new HistoricAlert(row.id, row.display_name, row.incident_type, alertType, row.num_presses, row.created_at, row.responded_at)
   }
 
   // Historic Alerts are those with status "Completed" or that were last updated longer ago than the SESSION_RESET_TIMEOUT
