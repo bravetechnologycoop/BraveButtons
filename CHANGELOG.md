@@ -15,19 +15,17 @@ the code was deployed.
 
 - Renamed buttons.unit column to buttons.display_name.
 - Email address to contact if the clients are having troubles reconnecting their Buttons.
+- Updated instructions for sending deployment notifications to Responder phones (CU-2ajy0ec).
 
 ### Added
 
 - Endpoints for use by PA (CU-21ghk0x).
 - Prepended "Unit " to all buttons in the DB (CU-271q69q).
+- Default incident categories.
 
 ### Removed
 
 - "Unit" from chatbot text messages (CU-271q69q).
-
-### Updated
-
-- Instructions for sending deployment notifications to Responder phones (CU-2ajy0ec).
 
 ### Security
 
