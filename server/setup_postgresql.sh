@@ -23,3 +23,4 @@ sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USE
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/022-addgatewaystable.sql
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/023-removehubhidden.sql
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/024-update-unit.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/025-add-default-incident-categories.sql
