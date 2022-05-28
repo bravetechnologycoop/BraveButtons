@@ -36,7 +36,17 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that you are doing a deployment and to expect some downtime.
 
-1. send a text message to all of the Responder phones letting them know that you are doing some routine maintenance, there will be downtime, and that you will notify them when everything is back to normal again. For example: "Notice: Your Brave Buttons System is down for maintenance. During this time, Button presses will not trigger an alert. You will receive another text message when everything is back online. Thank you for your patience. Have a nice day."
+1. send a text message to all of the Responder phones letting them know that you are doing some routine maintenance, there will be downtime, and that you will notify them when everything is back to normal again.
+
+   1. verify that all the active Buttons clients are in the the Twilio Studio Flow "Buttons deployment started notification". Make any necessary updates and Publish
+
+   1. use the Flow by hitting the designated `POST` endpoint with
+
+      - Basic auth username = Twilio account SID
+      - Basic auth password = Twilio auth token
+      - form-data Body
+        - To: The phone number to send the final confirmation text to (i.e. your phone number)
+        - From: Any number in the format +12223334444 (we don't use this number for anything, but Twilio will complain if it's missing or incorrectly formatted)
 
 1. on the production Buttons server (access using ssh):
 
@@ -66,7 +76,19 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 1. open the chatbot and heartbeat dashboards and confirm that everything appears to be working normally
 
-1. send a text message to all of the Responder phones letting them know that everything is back to normal. For example "Notice: Your Brave Buttons System is now back online and functioning normally. Thank you!"
+1. the Twilio Studio Flow "Buttons deployment completed notification"
+
+1. send a text message to all of the Responder phones letting them know that everything is back to normal
+
+   1. verify that all the active Buttons clients are in the the Twilio Studio Flow "Buttons deployment completed notification". Make any necessary updates and Publish
+
+   1. use the Flow by hitting the designated `POST` endpoint with
+
+      - Basic auth username = Twilio account SID
+      - Basic auth password = Twilio auth token
+      - form-data Body
+        - To: The phone number to send the final confirmation text to (i.e. your phone number)
+        - From: Any number in the format +12223334444 (we don't use this number for anything, but Twilio will complain if it's missing or incorrectly formatted)
 
 1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that the deployment is finished and list the changes in this deployment from the `CHANGELOG`
 
