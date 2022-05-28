@@ -15,6 +15,10 @@ the code was deployed.
 
 - Endpoints for use by PA (CU-21ghk0x).
 
+### Updated
+
+- Instructions for sending deployment notifications to Responder phones (CU-2ajy0ec).
+
 ### Security
 
 - Updated dependencies.
