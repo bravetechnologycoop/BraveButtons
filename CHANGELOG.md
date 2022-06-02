@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [8.2.0] - 2022-06-02
+
 ### Changed
 
 - Renamed buttons.unit column to buttons.display_name.
@@ -497,7 +499,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.1.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.2.0...HEAD
+[8.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.1.0...v8.2.0
 [8.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.0.0...v8.1.0
 [8.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.1.0...v8.0.0
 [7.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.0.0...v7.1.0
