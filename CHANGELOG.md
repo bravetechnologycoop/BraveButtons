@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- If the Last Uplink for a gateway is undefined, return `null` (CU-2dm6j58).
+
 ## [8.2.0] - 2022-06-02
 
 ### Changed
