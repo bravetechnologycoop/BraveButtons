@@ -106,8 +106,6 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
           this.session.createdAt,
           new Date(),
           null,
-          '',
-          '',
           this.session.buttonBatteryLevel,
           this.respondedAt,
         ),

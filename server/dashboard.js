@@ -118,7 +118,6 @@ async function renderClientDetailsPage(req, res) {
           state: recentSession.state,
           numPresses: recentSession.numPresses.toString(),
           incidentType: recentSession.incidentType,
-          notes: recentSession.notes,
           buttonBatteryLevel: recentSession.buttonBatteryLevel,
           respondedAt,
         })
