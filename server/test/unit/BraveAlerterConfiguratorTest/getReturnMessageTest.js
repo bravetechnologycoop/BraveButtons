@@ -45,16 +45,8 @@ describe('BraveAlerterConfigurator.js unit tests: getReturnMessage', () => {
     expect(returnMessage).to.equal("Sorry, the incident type wasn't recognized. Please try again.")
   })
 
-  it('should get message when WAITING_FOR_CATEGORY => WAITING_FOR_DETAILS', () => {
-    const returnMessage = this.alertStateMachine.getReturnMessage(CHATBOT_STATE.WAITING_FOR_CATEGORY, CHATBOT_STATE.WAITING_FOR_DETAILS, [
-      'Cat0',
-      'Cat1',
-    ])
-    expect(returnMessage).to.equal('Thank you. If you like, you can reply with any further details about the incident.')
-  })
-
-  it('should get message when WAITING_FOR_DETAILS => COMPLETED', () => {
-    const returnMessage = this.alertStateMachine.getReturnMessage(CHATBOT_STATE.WAITING_FOR_DETAILS, CHATBOT_STATE.COMPLETED, ['Cat0', 'Cat1'])
+  it('should get message when WAITING_FOR_CATEGORY => COMPLETED', () => {
+    const returnMessage = this.alertStateMachine.getReturnMessage(CHATBOT_STATE.WAITING_FOR_CATEGORY, CHATBOT_STATE.COMPLETED, ['Cat0', 'Cat1'])
     expect(returnMessage).to.equal("Thank you. This session is now complete. (You don't need to respond to this message.)")
   })
 

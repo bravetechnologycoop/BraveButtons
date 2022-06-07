@@ -9,9 +9,8 @@ const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
 
 describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessionidAndAlertApiKey', () => {
   beforeEach(async () => {
-    this.sessionState = CHATBOT_STATE.WAITING_FOR_DETAILS
+    this.sessionState = CHATBOT_STATE.COMPLETED
     this.sessionIncidentType = '2'
-    this.sessionNotes = 'sessionNotes'
     this.sessionToPhoneNumber = '+13335557777'
     this.message = 'message'
     this.installationResponderPhoneNumber = '+17775558888'
@@ -32,7 +31,6 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessio
     this.sessionId = session.id
     session.state = this.sessionState
     session.incidentType = this.sessionIncidentType
-    session.notes = this.sessionNotes
     await db.saveSession(session)
   })
 
@@ -50,7 +48,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessio
         this.sessionId,
         this.sessionState,
         this.sessionIncidentType,
-        this.sessionNotes,
+        undefined,
         'There has been a request for help from 701 . Please respond "Ok" when you have followed up on the call.',
         this.installationResponderPhoneNumber,
         ['0', '1', '2'],

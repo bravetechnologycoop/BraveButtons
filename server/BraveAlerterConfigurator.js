@@ -13,7 +13,7 @@ class BraveAlerterConfigurator {
       this.getActiveAlertsByAlertApiKey.bind(this),
       this.getHistoricAlertsByAlertApiKey.bind(this),
       this.getNewNotificationsCountByAlertApiKey.bind(this),
-      true,
+      false,
       this.getReturnMessage.bind(this),
     )
   }
@@ -34,7 +34,7 @@ class BraveAlerterConfigurator {
         session.id,
         session.state,
         session.incidentType,
-        session.notes,
+        undefined,
         `There has been a request for help from ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
         client.responderPhoneNumber,
         incidentCategoryKeys,
@@ -56,7 +56,7 @@ class BraveAlerterConfigurator {
       session.id,
       session.state,
       session.incidentType,
-      session.notes,
+      undefined,
       `There has been a request for help from ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
       client.responderPhoneNumber,
       incidentCategoryKeys,
@@ -117,14 +117,6 @@ class BraveAlerterConfigurator {
         if (alertSession.incidentCategoryKey) {
           const client = await db.getClientWithSessionId(alertSession.sessionId, pgClient)
           session.incidentType = client.incidentCategories[alertSession.incidentCategoryKey]
-        }
-
-        if (alertSession.details) {
-          session.notes = alertSession.details
-        }
-
-        if (alertSession.fallbackReturnMessage) {
-          session.fallBackAlertTwilioStatus = alertSession.fallbackReturnMessage
         }
 
         if (alertSession.alertState === CHATBOT_STATE.WAITING_FOR_CATEGORY && session.respondedAt === null) {
@@ -211,13 +203,9 @@ class BraveAlerterConfigurator {
       case CHATBOT_STATE.WAITING_FOR_CATEGORY:
         if (toAlertState === CHATBOT_STATE.WAITING_FOR_CATEGORY) {
           returnMessage = "Sorry, the incident type wasn't recognized. Please try again."
-        } else if (toAlertState === CHATBOT_STATE.WAITING_FOR_DETAILS) {
-          returnMessage = 'Thank you. If you like, you can reply with any further details about the incident.'
+        } else if (toAlertState === CHATBOT_STATE.COMPLETED) {
+          returnMessage = "Thank you. This session is now complete. (You don't need to respond to this message.)"
         }
-        break
-
-      case CHATBOT_STATE.WAITING_FOR_DETAILS:
-        returnMessage = "Thank you. This session is now complete. (You don't need to respond to this message.)"
         break
 
       case CHATBOT_STATE.COMPLETED:

@@ -46,12 +46,6 @@ describe('Chatbot server', () => {
     To: unit1PhoneNumber,
   }
 
-  const twilioMessageUnit1_IncidentNotesResponse = {
-    From: installationResponderPhoneNumber,
-    Body: 'Resident accidentally pressed button',
-    To: unit1PhoneNumber,
-  }
-
   beforeEach(async () => {
     sandbox.spy(helpers, 'log')
     sandbox.spy(helpers, 'logError')
@@ -732,18 +726,7 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(CHATBOT_STATE.WAITING_FOR_DETAILS)
-
-      // prettier-ignore
-      response = await chai
-        .request(server)
-        .post('/alert/sms')
-        .send(twilioMessageUnit1_IncidentNotesResponse)
-      expect(response).to.have.status(200)
-
-      sessions = await db.getAllSessionsWithButtonId(unit1UUID)
-      expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after staff have provided incident notes').to.deep.equal(CHATBOT_STATE.COMPLETED)
+      expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(CHATBOT_STATE.COMPLETED)
 
       // now start a new session for a different unit
       // prettier-ignore
@@ -759,24 +742,6 @@ describe('Chatbot server', () => {
       expect(sessions[0].buttonId).to.deep.equal(unit2UUID)
       expect(sessions[0].unit).to.deep.equal('2')
       expect(sessions[0].numPresses).to.deep.equal(1)
-    })
-
-    it('should send a message to the fallback phone number if enough time has passed without a response', async () => {
-      const response = await chai
-        .request(server)
-        .post(`/flic_button_press?apikey=${validApiKey}`)
-        .set('button-serial-number', unit1SerialNumber)
-        .send()
-
-      expect(response).to.have.status(200)
-      await helpers.sleep(4000)
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
-      expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after reminder timeout has elapsed').to.deep.equal(CHATBOT_STATE.WAITING_FOR_REPLY)
-      expect(sessions[0].fallBackAlertTwilioStatus).to.not.be.null
-      expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('failed, ')
-      expect(sessions[0].fallBackAlertTwilioStatus).to.not.equal('undelivered, ')
-      expect(sessions[0].fallBackAlertTwilioStatus).to.be.oneOf(['queued', 'sent', 'delivered'])
     })
   })
 })

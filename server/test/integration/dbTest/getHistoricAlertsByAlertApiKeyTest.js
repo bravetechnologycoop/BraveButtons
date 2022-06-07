@@ -101,13 +101,11 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
           this.session.buttonId,
           this.session.unit,
           this.session.phoneNumber,
-          CHATBOT_STATE.WAITING_FOR_DETAILS,
+          CHATBOT_STATE.WAITING_FOR_CATEGORY,
           this.numPresses,
           this.session.createdAt,
           new Date(),
           this.incidentType,
-          '',
-          '',
           this.session.buttonBatteryLevel,
           this.respondedAt,
         ),
@@ -259,20 +257,6 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       const ids = rows.map(row => row.id)
 
       expect(ids).to.eql([this.session.id])
-    })
-
-    it('and it is WAITING_FOR_DETAILS, should not return it', async () => {
-      // Update the session to WAITING_FOR_DETAILS
-      const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.WAITING_FOR_DETAILS
-      await db.saveSession(updatedSession)
-
-      // maxTimeAgoInMillis is much greater than the time this test should take to run
-      const rows = await db.getHistoricAlertsByAlertApiKey(this.alertApiKey, 1, 120000)
-
-      const ids = rows.map(row => row.id)
-
-      expect(ids).to.eql([])
     })
 
     it('and it is WAITING_FOR_CATEGORY, should not return it', async () => {

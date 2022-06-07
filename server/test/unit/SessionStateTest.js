@@ -20,7 +20,7 @@ describe('SessionState class', () => {
   let state
 
   beforeEach(() => {
-    state = new SessionState(sessionId, clientId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, 1, createdAt, updatedAt, null, null)
+    state = new SessionState(sessionId, clientId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, 1, createdAt, updatedAt, null)
   })
 
   it('should start off with 1 button press', () => {
