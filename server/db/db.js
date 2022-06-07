@@ -248,19 +248,18 @@ async function getUnrespondedSessionWithButtonId(buttonId, pgClient) {
   return null
 }
 
-async function getMostRecentIncompleteSessionWithPhoneNumber(phoneNumber, pgClient) {
+async function getMostRecentSessionWithPhoneNumber(phoneNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getMostRecentIncompleteSessionWithPhoneNumber',
+      'getMostRecentSessionWithPhoneNumber',
       `
       SELECT *
       FROM sessions
       WHERE phone_number = $1
-      AND state != $2
       ORDER BY created_at DESC
       LIMIT 1
       `,
-      [phoneNumber, CHATBOT_STATE.COMPLETED],
+      [phoneNumber],
       pool,
       pgClient,
     )
@@ -1289,7 +1288,7 @@ module.exports = {
   getClientWithId,
   getClientWithSessionId,
   getGateways,
-  getMostRecentIncompleteSessionWithPhoneNumber,
+  getMostRecentSessionWithPhoneNumber,
   getNewNotificationsCountByAlertApiKey,
   getPool,
   getRecentButtonsVitals,

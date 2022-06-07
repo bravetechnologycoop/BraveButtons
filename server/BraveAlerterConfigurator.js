@@ -68,7 +68,7 @@ class BraveAlerterConfigurator {
     let alertSession = null
 
     try {
-      const session = await db.getMostRecentIncompleteSessionWithPhoneNumber(toPhoneNumber)
+      const session = await db.getMostRecentSessionWithPhoneNumber(toPhoneNumber)
       if (session === null) {
         return null
       }

@@ -15,6 +15,10 @@ the code was deployed.
 
 - If the Last Uplink for a gateway is undefined, return `null` (CU-2dm6j58).
 
+### Fixed
+
+- Text messages sent to the chatbot only interact with the most recent session (CU-q37bbk).
+
 ## [8.2.0] - 2022-06-02
 
 ### Changed
