@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [9.0.0] - 2022-06-16
+
 ### Changed
 
 - If the Last Uplink for a gateway is undefined, return `null` (CU-2dm6j58).
@@ -511,7 +513,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.2.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v9.0.0...HEAD
+[9.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.2.0...v9.0.0
 [8.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.1.0...v8.2.0
 [8.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.0.0...v8.1.0
 [8.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v7.1.0...v8.0.0
