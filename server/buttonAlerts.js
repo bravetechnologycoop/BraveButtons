@@ -1,7 +1,7 @@
 // Third-party dependencies
 
 // In-house dependencies
-const { ALERT_TYPE, helpers } = require('brave-alert-lib')
+const { ALERT_TYPE, helpers, CHATBOT_STATE } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
@@ -38,7 +38,9 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
           button.buttonId,
           button.displayName,
           button.phoneNumber,
+          CHATBOT_STATE.STARTED,
           numPresses,
+          null,
           batteryLevel,
           null,
           pgClient,
@@ -54,7 +56,9 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
         button.buttonId,
         button.displayName,
         button.phoneNumber,
+        CHATBOT_STATE.STARTED,
         numPresses,
+        null,
         null,
         null,
         pgClient,

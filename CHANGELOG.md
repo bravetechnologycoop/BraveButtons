@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Session factories.
+
 ## [9.0.0] - 2022-06-16
 
 ### Changed
