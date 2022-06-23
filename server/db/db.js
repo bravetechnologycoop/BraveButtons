@@ -6,7 +6,7 @@ const { CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
 const Button = require('../Button')
 const Gateway = require('../Gateway')
 const Hub = require('../Hub')
-const SessionState = require('../SessionState')
+const Session = require('../Session')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
 
@@ -27,7 +27,7 @@ types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
 function createSessionFromRow(r) {
   // prettier-ignore
-  return new SessionState(r.id, r.client_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.button_battery_level, r.responded_at)
+  return new Session(r.id, r.client_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.button_battery_level, r.responded_at)
 }
 
 function createClientFromRow(r) {
@@ -495,16 +495,16 @@ async function getSessionWithSessionId(sessionId, pgClient) {
   return null
 }
 
-async function createSession(clientId, buttonId, unit, phoneNumber, numPresses, buttonBatteryLevel, respondedAt, pgClient) {
+async function createSession(clientId, buttonId, unit, phoneNumber, state, numPresses, incidentType, buttonBatteryLevel, respondedAt, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createSession',
       `
-      INSERT INTO sessions (client_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO sessions (client_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at, incident_type) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
       `,
-      [clientId, buttonId, unit, phoneNumber, CHATBOT_STATE.STARTED, numPresses, buttonBatteryLevel, respondedAt],
+      [clientId, buttonId, unit, phoneNumber, state, numPresses, buttonBatteryLevel, respondedAt, incidentType],
       pool,
       pgClient,
     )

@@ -6,6 +6,7 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 const { CHATBOT_STATE, AlertSession, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
+const { sessionDBFactory } = require('../../testingHelpers')
 
 describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () => {
   beforeEach(async () => {
@@ -25,11 +26,14 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
       alertApiKey: null,
       responderPushId: null,
     })
-    const session = await db.createSession(client.id, '', '701', '', 1, null)
+    const session = await sessionDBFactory(db, {
+      clientId: client.id,
+      numPresses: 1,
+      state: this.sessionState,
+      incidentType: this.sessionIncidentType,
+      unit: '701',
+    })
     this.sessionId = session.id
-    session.state = this.sessionState
-    session.incidentType = this.sessionIncidentType
-    await db.saveSession(session)
   })
 
   afterEach(async () => {

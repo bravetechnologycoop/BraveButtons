@@ -1,4 +1,4 @@
-class SessionState {
+class Session {
   // prettier-ignore
   constructor(id, clientId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, buttonBatteryLevel, respondedAt) {
     this.id = id
@@ -24,4 +24,4 @@ class SessionState {
   }
 }
 
-module.exports = SessionState
+module.exports = Session
