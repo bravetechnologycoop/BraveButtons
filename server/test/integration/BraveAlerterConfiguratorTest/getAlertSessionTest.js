@@ -13,14 +13,14 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
     this.chatbotState = CHATBOT_STATE.COMPLETED
     this.sessionIncidentCategory = '2'
     this.message = 'message'
-    this.installationResponderPhoneNumber = '+17775558888'
+    this.installationResponderPhoneNumbers = ['+17775558888']
     this.installationIncidentCategories = ['Cat1', 'Cat2', 'Cat3']
 
     await db.clearTables()
 
     const client = await factories.clientDBFactory(db, {
       displayName: '',
-      responderPhoneNumber: this.installationResponderPhoneNumber,
+      responderPhoneNumbers: this.installationResponderPhoneNumbers,
       fallbackPhoneNumbers: '{}',
       incidentCategories: this.installationIncidentCategories,
       alertApiKey: null,
@@ -35,6 +35,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
       numButtonPresses: 1,
       chatbotState: this.chatbotState,
       incidentCategory: this.sessionIncidentCategory,
+      respondedByPhoneNumber: this.installationResponderPhoneNumbers[0],
     })
     this.sessionId = session.id
   })
@@ -52,10 +53,9 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
       new AlertSession(
         this.sessionId,
         this.chatbotState,
+        this.installationResponderPhoneNumbers[0],
         this.sessionIncidentCategory,
-        undefined,
-        'There has been a request for help from 701 . Please respond "Ok" when you have followed up on the call.',
-        this.installationResponderPhoneNumber,
+        this.installationResponderPhoneNumbers,
         ['0', '1', '2'],
         this.installationIncidentCategories,
       ),

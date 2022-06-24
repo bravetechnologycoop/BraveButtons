@@ -40,6 +40,7 @@ function sessionFactory(overrides = {}) {
     overrides.incidentCategory !== undefined ? overrides.incidentCategory : '1',
     overrides.buttonBatteryLevel !== undefined ? overrides.buttonBatteryLevel : 100,
     overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
+    overrides.respondedByPhoneNumber !== undefined ? overrides.respondedByPhoneNumber : '+19995554444',
     overrides.button !== undefined ? overrides.button : buttonFactory(),
   )
 }
@@ -52,6 +53,7 @@ async function sessionDBFactory(db, overrides = {}) {
     overrides.incidentCategory !== undefined ? overrides.incidentCategory : null,
     overrides.buttonBatteryLevel !== undefined ? overrides.buttonBatteryLevel : null,
     overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
+    overrides.respondedByPhoneNumber !== undefined ? overrides.respondedByPhoneNumber : '+14448885555',
   )
 
   return session

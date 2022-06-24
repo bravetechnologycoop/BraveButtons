@@ -26,31 +26,37 @@ function differenceInSeconds(date1, date2) {
   return dateTime1.diff(dateTime2, 'seconds').seconds
 }
 
-function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumber, fromPhoneNumber) {
+function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber) {
   const message = `The connection for ${locationDescription} Button Hub has been lost. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email clientsupport@brave.coop for further support.`
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
   })
-  braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
+  responderPhoneNumbers.forEach(responderPhoneNumber => {
+    braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
+  })
 }
 
-function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients, responderPhoneNumber, fromPhoneNumber) {
+function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber) {
   const message = `${locationDescription} Button Hub is still disconnected. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email clientsupport@brave.coop for further support.`
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
   })
-  braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
+  responderPhoneNumbers.forEach(responderPhoneNumber => {
+    braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
+  })
 }
 
-function sendReconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumber, fromPhoneNumber) {
+function sendReconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber) {
   const message = `${locationDescription} Button Hub has reconnected.`
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
   })
-  braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
+  responderPhoneNumbers.forEach(responderPhoneNumber => {
+    braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
+  })
 }
 
 async function checkHeartbeat() {
@@ -62,7 +68,7 @@ async function checkHeartbeat() {
       }
 
       const client = hub.client
-      const responderPhoneNumber = client.responderPhoneNumber
+      const responderPhoneNumbers = client.responderPhoneNumbers
       const currentTime = await db.getCurrentTime()
       const flicDelayinSeconds = differenceInSeconds(currentTime, hub.flicLastSeenTime)
       const piDelayinSeconds = differenceInSeconds(currentTime, hub.heartbeatLastSeenTime)
@@ -109,14 +115,14 @@ async function checkHeartbeat() {
       if (externalHeartbeatExceeded) {
         if (hub.sentVitalsAlertAt === null) {
           await db.updateSentAlerts(hub.systemId, true)
-          sendDisconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumber, client.fromPhoneNumber)
+          sendDisconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber)
         } else if (differenceInSeconds(currentTime, hub.sentVitalsAlertAt) > helpers.getEnvVar('SUBSEQUENT_VITALS_ALERT_THRESHOLD')) {
           await db.updateSentAlerts(hub.systemId, true)
-          sendDisconnectionReminder(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumber, client.fromPhoneNumber)
+          sendDisconnectionReminder(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber)
         }
       } else if (hub.sentVitalsAlertAt !== null) {
         await db.updateSentAlerts(hub.systemId, false)
-        sendReconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumber, client.fromPhoneNumber)
+        sendReconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber)
       }
     }
   } catch (e) {

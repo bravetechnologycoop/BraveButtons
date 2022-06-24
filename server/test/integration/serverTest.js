@@ -30,18 +30,24 @@ describe('Chatbot server', () => {
   const unit2SerialNumber = 'BBBB-B0B0B0'
   const unit2PhoneNumber = '+15005550006'
 
-  const installationResponderPhoneNumber = '+12345678900'
+  const installationResponderPhoneNumbers = ['+12345678900', '+18564520000']
   const installationFallbackPhoneNumbers = ['+12345678900']
   const installationIncidentCategories = ['Accidental', 'Safer Use', 'Overdose', 'Other']
 
   const twilioMessageUnit1_InitialStaffResponse = {
-    From: installationResponderPhoneNumber,
+    From: installationResponderPhoneNumbers[0],
     Body: 'Ok',
     To: unit1PhoneNumber,
   }
 
   const twilioMessageUnit1_IncidentCategoryResponse = {
-    From: installationResponderPhoneNumber,
+    From: installationResponderPhoneNumbers[0],
+    Body: '0',
+    To: unit1PhoneNumber,
+  }
+
+  const twilioMessageUnit1_IncidentCategoryResponseFromOtherResponderPhone = {
+    From: installationResponderPhoneNumbers[1],
     Body: '0',
     To: unit1PhoneNumber,
   }
@@ -63,7 +69,7 @@ describe('Chatbot server', () => {
     beforeEach(async () => {
       const client = await factories.clientDBFactory(db, {
         displayName: 'TestInstallation',
-        responderPhoneNumber: installationResponderPhoneNumber,
+        responderPhoneNumbers: installationResponderPhoneNumbers,
         fallbackPhoneNumbers: installationFallbackPhoneNumbers,
         incidentCategories: installationIncidentCategories,
         alertApiKey: null,
@@ -155,11 +161,13 @@ describe('Chatbot server', () => {
       expect(session).to.have.property('chatbotState')
       expect(session).to.have.property('numButtonPresses')
       expect(session).to.have.property('alertType')
+      expect(session).to.have.property('respondedByPhoneNumber')
       expect(session.button.buttonId).to.equal(unit1UUID)
       expect(session.button.displayName).to.equal('1')
       expect(session.numButtonPresses).to.equal(1)
       expect(session.buttonBatteryLevel).to.equal(100)
       expect(session.alertType).to.equal(ALERT_TYPE.BUTTONS_NOT_URGENT)
+      expect(session.respondedByPhoneNumber).to.equal(null)
     })
 
     it('should not confuse button presses from different rooms', async () => {
@@ -185,10 +193,12 @@ describe('Chatbot server', () => {
       expect(session).to.have.property('button')
       expect(session).to.have.property('numButtonPresses')
       expect(session).to.have.property('alertType')
+      expect(session).to.have.property('respondedByPhoneNumber')
       expect(session.button.buttonId).to.equal(unit1UUID)
       expect(session.button.displayName).to.equal('1')
       expect(session.numButtonPresses).to.equal(1)
       expect(session.alertType).to.equal(ALERT_TYPE.BUTTONS_NOT_URGENT)
+      expect(session.respondedByPhoneNumber).to.equal(null)
     })
 
     it('should only create one new session when receiving multiple presses from the same button', async () => {
@@ -253,10 +263,12 @@ describe('Chatbot server', () => {
       expect(session).to.have.property('chatbotState')
       expect(session).to.have.property('numButtonPresses')
       expect(session).to.have.property('alertType')
+      expect(session).to.have.property('respondedByPhoneNumber')
       expect(session.button.buttonId).to.equal(unit1UUID)
       expect(session.button.displayName).to.equal('1')
       expect(session.numButtonPresses).to.equal(4)
       expect(session.alertType).to.equal(ALERT_TYPE.BUTTONS_URGENT)
+      expect(session.respondedByPhoneNumber).to.equal(null)
     })
 
     it('should leave battery level null if initial request do not provide button-battery-level', async () => {
@@ -412,7 +424,7 @@ describe('Chatbot server', () => {
     beforeEach(async () => {
       const client = await factories.clientDBFactory(db, {
         displayName: 'TestInstallation',
-        responderPhoneNumber: installationResponderPhoneNumber,
+        responderPhoneNumbers: installationResponderPhoneNumbers,
         fallbackPhoneNumbers: installationFallbackPhoneNumbers,
         incidentCategories: installationIncidentCategories,
         alertApiKey: null,
@@ -707,7 +719,9 @@ describe('Chatbot server', () => {
 
       let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].chatbotState, 'state after initial button press').to.deep.equal(CHATBOT_STATE.STARTED)
+      expect(sessions[0].chatbotState, 'state after initial button press').to.equal(CHATBOT_STATE.STARTED)
+      expect(sessions[0].respondedByPhoneNumber).to.equal(null)
+      expect(sessions[0].respondedAt).to.equal(null)
 
       // prettier-ignore
       let response = await chai
@@ -718,7 +732,22 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].chatbotState, 'state after initial staff response').to.deep.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
+      expect(sessions[0].chatbotState, 'state after initial staff response').to.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
+      expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
+      expect(sessions[0].respondedAt).not.to.equal(null)
+
+      // prettier-ignore
+      response = await chai
+        .request(server)
+        .post('/alert/sms')
+        .send(twilioMessageUnit1_IncidentCategoryResponseFromOtherResponderPhone)
+      expect(response).to.have.status(200)
+
+      sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      expect(sessions.length).to.equal(1)
+      expect(sessions[0].chatbotState, 'state after one of the other responders sent a message').to.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
+      expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
+      expect(sessions[0].respondedAt).not.to.equal(null)
 
       // prettier-ignore
       response = await chai
@@ -729,7 +758,9 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].chatbotState, 'state after staff have categorized the incident').to.deep.equal(CHATBOT_STATE.COMPLETED)
+      expect(sessions[0].chatbotState, 'state after staff have categorized the incident').to.equal(CHATBOT_STATE.COMPLETED)
+      expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
+      expect(sessions[0].respondedAt).not.to.equal(null)
 
       // now start a new session for a different unit
       // prettier-ignore
@@ -741,9 +772,11 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit2UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].chatbotState, 'state after new button press from a different unit').to.deep.equal(CHATBOT_STATE.STARTED)
-      expect(sessions[0].button.buttonId).to.deep.equal(unit2UUID)
-      expect(sessions[0].numButtonPresses).to.deep.equal(1)
+      expect(sessions[0].chatbotState, 'state after new button press from a different unit').to.equal(CHATBOT_STATE.STARTED)
+      expect(sessions[0].button.buttonId).to.equal(unit2UUID)
+      expect(sessions[0].numButtonPresses).to.equal(1)
+      expect(sessions[0].respondedByPhoneNumber).to.equal(null)
+      expect(sessions[0].respondedAt).to.equal(null)
     })
   })
 })

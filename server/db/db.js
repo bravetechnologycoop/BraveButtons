@@ -29,12 +29,12 @@ function createSessionFromRow(r, allButtons) {
   const button = allButtons.filter(b => b.buttonId === r.button_id)[0]
 
   // prettier-ignore
-  return new Session(r.id, r.chatbot_state, r.alert_type, r.num_button_presses, r.created_at, r.updated_at, r.incident_category, r.button_battery_level, r.responded_at, button)
+  return new Session(r.id, r.chatbot_state, r.alert_type, r.num_button_presses, r.created_at, r.updated_at, r.incident_category, r.button_battery_level, r.responded_at, r.responded_by_phone_number, button)
 }
 
 function createClientFromRow(r) {
   // prettier-ignore
-  return new Client(r.id, r.display_name, r.responder_phone_number, r.responder_push_id, r.alert_api_key, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.updated_at)
+  return new Client(r.id, r.display_name, r.responder_phone_numbers, r.responder_push_id, r.alert_api_key, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_active, r.created_at, r.updated_at)
 }
 
 function createButtonFromRow(r, allClients) {
@@ -336,9 +336,10 @@ async function getRecentSessionsWithClientId(clientId, pgClient) {
     const results = await helpers.runQuery(
       'getRecentSessionsWithClientId',
       `
-      SELECT *
-      FROM sessions
-      WHERE client_id = $1
+      SELECT s.*
+      FROM sessions AS s
+      LEFT JOIN buttons AS b on s.button_id = b.button_id
+      WHERE b.client_id = $1
       ORDER BY created_at DESC
       LIMIT 40
       `,
@@ -505,13 +506,22 @@ async function getSessionWithSessionId(sessionId, pgClient) {
   return null
 }
 
-async function createSession(buttonId, chatbotState, numButtonPresses, incidentCategory, buttonBatteryLevel, respondedAt, pgClient) {
+async function createSession(
+  buttonId,
+  chatbotState,
+  numButtonPresses,
+  incidentCategory,
+  buttonBatteryLevel,
+  respondedAt,
+  respondedByPhoneNumber,
+  pgClient,
+) {
   try {
     const results = await helpers.runQuery(
       'createSession',
       `
-      INSERT INTO sessions (button_id, chatbot_state, alert_type, num_button_presses, button_battery_level, responded_at, incident_category) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO sessions (button_id, chatbot_state, alert_type, num_button_presses, button_battery_level, responded_at, incident_category, responded_by_phone_number) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
       `,
       [
@@ -522,6 +532,7 @@ async function createSession(buttonId, chatbotState, numButtonPresses, incidentC
         buttonBatteryLevel,
         respondedAt,
         incidentCategory,
+        respondedByPhoneNumber,
       ],
       pool,
       pgClient,
@@ -560,8 +571,8 @@ async function saveSession(session, pgClient) {
       'saveSessionUpdate',
       `
       UPDATE sessions
-      SET button_id = $1, chatbot_state = $2, alert_type=$3, num_button_presses = $4, incident_category = $5, button_battery_level = $6, responded_at = $7
-      WHERE id = $8
+      SET button_id = $1, chatbot_state = $2, alert_type=$3, num_button_presses = $4, incident_category = $5, button_battery_level = $6, responded_at = $7, responded_by_phone_number = $8
+      WHERE id = $9
       `,
       [
         session.button.buttonId,
@@ -571,6 +582,7 @@ async function saveSession(session, pgClient) {
         session.incidentCategory,
         session.buttonBatteryLevel,
         session.respondedAt,
+        session.respondedByPhoneNumber,
         session.id,
       ],
       pool,
@@ -715,7 +727,7 @@ async function clearButtons(pgClient) {
 
 async function createClient(
   displayName,
-  responderPhoneNumber,
+  responderPhoneNumbers,
   responderPushId,
   alertApiKey,
   reminderTimeout,
@@ -731,13 +743,13 @@ async function createClient(
     const results = await helpers.runQuery(
       'createClient',
       `
-      INSERT INTO clients (display_name, responder_phone_number, responder_push_id, alert_api_key, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_active)
+      INSERT INTO clients (display_name, responder_phone_numbers, responder_push_id, alert_api_key, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_active)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
       `,
       [
         displayName,
-        responderPhoneNumber,
+        responderPhoneNumbers,
         responderPushId,
         alertApiKey,
         reminderTimeout,
@@ -1162,13 +1174,13 @@ async function getDataForExport(pgClient) {
       'getDataForExport',
       `
       SELECT
-        i.display_name AS "Installation Name",
-        i.responder_phone_number AS "Responder Phone",
-        i.fallback_phone_numbers AS "Fallback Phones",
-        TO_CHAR(i.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Installation Created",
-        i.incident_categories AS "Incident Categories",
-        i.is_active AS "Active?",
-        r.display_name AS "Unit",
+        c.display_name AS "Installation Name",
+        c.responder_phone_numbers AS "Responder Phone",
+        c.fallback_phone_numbers AS "Fallback Phones",
+        TO_CHAR(c.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Installation Created",
+        c.incident_categories AS "Incident Categories",
+        c.is_active AS "Active?",
+        b.display_name AS "Unit",
         b.phone_number AS "Button Phone",
         s.chatbot_state AS "Session State",
         s.num_button_presses AS "Number of Presses",
@@ -1178,12 +1190,13 @@ async function getDataForExport(pgClient) {
         '' AS "Session Notes",
         '' AS "Fallback Alert Status (Twilio)",
         s.button_battery_level AS "Button Battery Level",
-        TO_CHAR(r.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Button Created",
-        TO_CHAR(r.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Button Last Updated",
-        r.button_serial_number AS "Button Serial Number"
-      FROM sessions s
-        JOIN buttons r ON s.button_id = r.button_id
-        JOIN clients i ON i.id = b.client_id
+        TO_CHAR(b.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Button Created",
+        TO_CHAR(b.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Button Last Updated",
+        b.button_serial_number AS "Button Serial Number",
+        s.responded_by_phone_number AS "Session Responded By"
+      FROM sessions AS s
+        LEFT JOIN buttons AS b ON s.button_id = b.button_id
+        LEFT JOIN clients AS c ON c.id = b.client_id
       `,
       [],
       pool,
