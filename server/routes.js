@@ -6,7 +6,6 @@ const { clickUpHelpers } = require('brave-alert-lib')
 const dashboard = require('./dashboard')
 const flic = require('./flic')
 const pa = require('./pa')
-const radiobridge = require('./radiobridge')
 const rak = require('./rak.js')
 const vitals = require('./vitals')
 
@@ -33,7 +32,6 @@ function configureRoutes(app) {
     pa.handleAwsDeviceRegistration,
   )
   app.post('/pa/buttons-twilio-number', jsonBodyParser, pa.validateButtonsTwilioNumber, clickUpHelpers.clickUpChecker, pa.handleButtonsTwilioNumber)
-  app.post('/radiobridge_button_press', jsonBodyParser, radiobridge.validateButtonPress, radiobridge.handleButtonPress)
   app.post('/rak_button_press', jsonBodyParser, rak.validateButtonPress, rak.handleButtonPress)
 }
 

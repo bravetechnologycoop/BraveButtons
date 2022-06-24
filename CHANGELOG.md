@@ -19,6 +19,10 @@ the code was deployed.
 
 - Session and Buttons factories.
 
+### Revmoed
+
+- API endpoint for pressing a Radio Bridge LoRa button (CU-2fk4arw).
+
 ## [9.0.0] - 2022-06-16
 
 ### Changed
