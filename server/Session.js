@@ -2,7 +2,7 @@ const { ALERT_TYPE } = require('brave-alert-lib')
 
 class Session {
   // prettier-ignore
-  constructor(id, chatbotState, alertType, numButtonPresses, createdAt, updatedAt, incidentCategory, buttonBatteryLevel, respondedAt, button) {
+  constructor(id, chatbotState, alertType, numButtonPresses, createdAt, updatedAt, incidentCategory, buttonBatteryLevel, respondedAt, respondedByPhoneNumber, button) {
     this.id = id
     this.chatbotState = chatbotState
     this.alertType = alertType
@@ -12,6 +12,7 @@ class Session {
     this.incidentCategory = incidentCategory
     this.buttonBatteryLevel = buttonBatteryLevel
     this.respondedAt = respondedAt
+    this.respondedByPhoneNumber = respondedByPhoneNumber
     this.button = button
   }
 

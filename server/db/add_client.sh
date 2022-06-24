@@ -10,9 +10,9 @@ if [[ $EUID > 0 ]]; then
     exit 1
 elif [[ ! -n "$6" ]]; then
     echo ""
-    echo "Usage: $0 path_to_.env_file new_client_name responder_phone_number fallback_phone_numbers from_phone_number path_to_buttons_csv"
+    echo "Usage: $0 path_to_.env_file new_client_name responder_phone_numbers fallback_phone_numbers from_phone_number path_to_buttons_csv"
     echo "" 
-    echo "Example: $0 ./../.env NewClient +16041234567 '{+17781234567,+17789876543}' +18881112222 ./add_buttons.csv.example"
+    echo "Example: $0 ./../.env NewClient '{+16041234567,+16049876541}' '{+17781234567,+17789876543}' +18881112222 ./add_buttons.csv.example"
     echo ""
     echo "The buttons CSV file"
     echo "MUST have the header 'button_id,unit,phone_number,button_serial_number'"
@@ -36,10 +36,10 @@ else
 
     echo "Adding new client"
     echo "  Name: $2"
-    echo "  Responder Phone: $3"
+    echo "  Responder Phones: $3"
     echo "  Fallback Phones: $4"
     echo "  From Phone: $5"
-    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO clients (display_name, responder_phone_number, fallback_phone_numbers, from_phone_number, is_active) VALUES ('$2', '$3', '$4', '$5', 't');"
+    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO clients (display_name, responder_phone_numbers, fallback_phone_numbers, from_phone_number, is_active) VALUES ('$2', '$3', '$4', '$5', 't');"
 
     client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE created_at = (SELECT MAX(created_at) FROM clients);")
 

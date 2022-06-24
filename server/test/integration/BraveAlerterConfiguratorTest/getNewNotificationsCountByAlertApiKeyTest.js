@@ -14,7 +14,7 @@ describe('BraveAlerterConfigurator.js integration tests: getNewNotificationsCoun
     this.alertApiKey = '00000000-000000000000001'
     const client = await factories.clientDBFactory(db, {
       displayName: '',
-      responderPhoneNumber: '',
+      responderPhoneNumbers: '{}',
       fallbackPhoneNumbers: '{}',
       incidentCategories: '{}',
       alertApiKey: this.alertApiKey,

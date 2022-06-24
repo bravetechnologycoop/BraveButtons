@@ -112,7 +112,7 @@ async function renderClientDetailsPage(req, res) {
         const updatedAt = helpers.formatDateTimeForDashboard(recentSession.updatedAt)
         const respondedAt = recentSession.respondedAt !== null ? helpers.formatDateTimeForDashboard(recentSession.respondedAt) : ''
         viewParams.recentSessions.push({
-          unit: recentSession.unit,
+          unit: recentSession.button.displayName,
           createdAt,
           updatedAt,
           chatbotState: recentSession.chatbotState,
@@ -120,6 +120,7 @@ async function renderClientDetailsPage(req, res) {
           incidentCategory: recentSession.incidentCategory,
           buttonBatteryLevel: recentSession.buttonBatteryLevel,
           respondedAt,
+          respondedByPhoneNumber: recentSession.respondedByPhoneNumber,
         })
       }
     } else {
@@ -280,6 +281,7 @@ async function downloadCsv(req, res) {
     'Date Button Created',
     'Button Last Updated',
     'Button Serial Number',
+    'Session Responded By',
   ]
 
   const csvParser = new Parser({ fields })

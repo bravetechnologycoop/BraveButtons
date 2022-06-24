@@ -14,12 +14,14 @@ the code was deployed.
 ### Changed
 
 - Session schema to better match the desired shared schema.
+- Allow multiple Responder Phones per Client (CU-2dm6x2j).
 
 ### Added
 
 - Session and Buttons factories.
+- Track the responsible Responder Phone for each session (CU-2dm6x2j).
 
-### Revmoed
+### Removed
 
 - API endpoint for pressing a Radio Bridge LoRa button (CU-2fk4arw).
 

@@ -33,14 +33,14 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
       if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-        currentSession = await db.createSession(button.buttonId, CHATBOT_STATE.STARTED, numButtonPresses, null, batteryLevel, null, pgClient)
+        currentSession = await db.createSession(button.buttonId, CHATBOT_STATE.STARTED, numButtonPresses, null, batteryLevel, null, null, pgClient)
       } else {
         currentSession.incrementButtonPresses(numButtonPresses)
         currentSession.updateBatteryLevel(batteryLevel)
         await db.saveSession(currentSession, pgClient)
       }
     } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(button.buttonId, CHATBOT_STATE.STARTED, numButtonPresses, null, null, null, pgClient)
+      currentSession = await db.createSession(button.buttonId, CHATBOT_STATE.STARTED, numButtonPresses, null, null, null, null, pgClient)
     } else {
       currentSession.incrementButtonPresses(numButtonPresses)
       await db.saveSession(currentSession, pgClient)
@@ -49,7 +49,7 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
     if (currentSession.numButtonPresses === 1) {
       const alertInfo = {
         sessionId: currentSession.id,
-        toPhoneNumber: button.client.responderPhoneNumber,
+        toPhoneNumbers: button.client.responderPhoneNumbers,
         fromPhoneNumber: button.phoneNumber,
         responderPushId: button.client.responderPushId,
         deviceName: button.displayName,
@@ -72,7 +72,7 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
       braveAlerter.sendAlertSessionUpdate(
         currentSession.id,
         button.client.responderPushId,
-        button.client.responderPhoneNumber,
+        button.client.responderPhoneNumbers,
         button.phoneNumber,
         `This in an urgent request. The button has been pressed ${currentSession.numButtonPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
         `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT)} Alert:\n${button.displayName.toString()}`,
