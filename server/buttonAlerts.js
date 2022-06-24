@@ -12,11 +12,11 @@ function setup(braveAlerterObj) {
   braveAlerter = braveAlerterObj
 }
 
-async function handleValidRequest(button, numPresses, batteryLevel) {
+async function handleValidRequest(button, numButtonPresses, batteryLevel) {
   helpers.log(
     `UUID: ${button.buttonId.toString()} SerialNumber: ${
       button.buttonSerialNumber
-    } Unit: ${button.displayName.toString()} Presses: ${numPresses.toString()} BatteryLevel: ${batteryLevel}`,
+    } Unit: ${button.displayName.toString()} Presses: ${numButtonPresses.toString()} BatteryLevel: ${batteryLevel}`,
   )
 
   let pgClient
@@ -33,73 +33,49 @@ async function handleValidRequest(button, numPresses, batteryLevel) {
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
       if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-        currentSession = await db.createSession(
-          button.client.id,
-          button.buttonId,
-          button.displayName,
-          button.phoneNumber,
-          CHATBOT_STATE.STARTED,
-          numPresses,
-          null,
-          batteryLevel,
-          null,
-          pgClient,
-        )
+        currentSession = await db.createSession(button.buttonId, CHATBOT_STATE.STARTED, numButtonPresses, null, batteryLevel, null, pgClient)
       } else {
-        currentSession.incrementButtonPresses(numPresses)
+        currentSession.incrementButtonPresses(numButtonPresses)
         currentSession.updateBatteryLevel(batteryLevel)
         await db.saveSession(currentSession, pgClient)
       }
     } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(
-        button.client.id,
-        button.buttonId,
-        button.displayName,
-        button.phoneNumber,
-        CHATBOT_STATE.STARTED,
-        numPresses,
-        null,
-        null,
-        null,
-        pgClient,
-      )
+      currentSession = await db.createSession(button.buttonId, CHATBOT_STATE.STARTED, numButtonPresses, null, null, null, pgClient)
     } else {
-      currentSession.incrementButtonPresses(numPresses)
+      currentSession.incrementButtonPresses(numButtonPresses)
       await db.saveSession(currentSession, pgClient)
     }
 
-    const client = await db.getClientWithId(currentSession.clientId, pgClient)
-
-    if (currentSession.numPresses === 1) {
+    if (currentSession.numButtonPresses === 1) {
       const alertInfo = {
         sessionId: currentSession.id,
-        toPhoneNumber: client.responderPhoneNumber,
-        fromPhoneNumber: currentSession.phoneNumber,
-        responderPushId: client.responderPushId,
-        deviceName: currentSession.unit,
+        toPhoneNumber: button.client.responderPhoneNumber,
+        fromPhoneNumber: button.phoneNumber,
+        responderPushId: button.client.responderPushId,
+        deviceName: button.displayName,
         alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
-        message: `There has been a request for help from ${currentSession.unit.toString()} . Please respond "Ok" when you have followed up on the call.`,
-        reminderTimeoutMillis: client.reminderTimeout * 1000,
-        fallbackTimeoutMillis: client.fallbackTimeout * 1000,
+        message: `There has been a request for help from ${button.displayName.toString()} . Please respond "Ok" when you have followed up on the call.`,
+        reminderTimeoutMillis: button.client.reminderTimeout * 1000,
+        fallbackTimeoutMillis: button.client.fallbackTimeout * 1000,
         reminderMessage:
           'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
-        fallbackMessage: `There has been an unresponded request at ${client.displayName} ${currentSession.unit.toString()}`,
-        fallbackToPhoneNumbers: client.fallbackPhoneNumbers,
-        fallbackFromPhoneNumber: client.fromPhoneNumber,
+        fallbackMessage: `There has been an unresponded request at ${button.client.displayName} ${button.displayName.toString()}`,
+        fallbackToPhoneNumbers: button.client.fallbackPhoneNumbers,
+        fallbackFromPhoneNumber: button.client.fromPhoneNumber,
       }
       braveAlerter.startAlertSession(alertInfo)
     } else if (
-      currentSession.numPresses % 5 === 0 ||
-      currentSession.numPresses === 2 ||
+      currentSession.numButtonPresses % 5 === 0 ||
+      currentSession.numButtonPresses === 2 ||
       currentTime - currentSession.updatedAt >= SUBSEQUENT_URGENT_MESSAGE_THRESHOLD
     ) {
       braveAlerter.sendAlertSessionUpdate(
         currentSession.id,
-        client.responderPushId,
-        client.responderPhoneNumber,
-        currentSession.phoneNumber,
-        `This in an urgent request. The button has been pressed ${currentSession.numPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
-        `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT)} Alert:\n${currentSession.unit.toString()}`,
+        button.client.responderPushId,
+        button.client.responderPhoneNumber,
+        button.phoneNumber,
+        `This in an urgent request. The button has been pressed ${currentSession.numButtonPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
+        `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT)} Alert:\n${button.displayName.toString()}`,
       )
     } else {
       // no alert to be sent

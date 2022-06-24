@@ -30,94 +30,84 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
     sandbox.restore()
   })
 
-  it('if given alertState STARTED should update only alertState', async () => {
-    sandbox.stub(db, 'getSessionWithSessionId').returns(sessionFactory())
-
-    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
-    const braveAlerterConfigurator = new BraveAlerterConfigurator()
-    const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.STARTED))
-
-    const expectedSession = sessionFactory()
-    expectedSession.state = CHATBOT_STATE.STARTED
-
-    expect(db.saveSession).to.be.calledWith(expectedSession, sandbox.any)
-  })
-
-  it('if given alertState WAITING_FOR_REPLY should update only alertState', async () => {
-    sandbox.stub(db, 'getSessionWithSessionId').returns(sessionFactory())
-
-    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
-    const braveAlerterConfigurator = new BraveAlerterConfigurator()
-    const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.WAITING_FOR_REPLY))
-
-    const expectedSession = sessionFactory()
-    expectedSession.state = CHATBOT_STATE.WAITING_FOR_REPLY
-
-    expect(db.saveSession).to.be.calledWith(expectedSession, sandbox.any)
-  })
-
-  it('if given alertState WAITING_FOR_CATEGORY and it has not already been responded to should update alertState and respondedAt', async () => {
+  it('if given chatbotState STARTED should update only chatbotState', async () => {
     const testSession = sessionFactory()
-    testSession.respondedAt = null
     sandbox.stub(db, 'getSessionWithSessionId').returns(testSession)
 
-    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.WAITING_FOR_CATEGORY))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.STARTED))
 
-    const expectedSession = sessionFactory()
-    expectedSession.state = CHATBOT_STATE.WAITING_FOR_CATEGORY
-    expectedSession.respondedAt = this.fakeCurrentTime
+    const expectedSession = sessionFactory({ ...testSession, chatbotState: CHATBOT_STATE.STARTED })
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sandbox.any)
   })
 
-  it('if given alertState WAITING_FOR_CATEGORY and it has already been responded to should update alertState', async () => {
+  it('if given chatbotState WAITING_FOR_REPLY should update only chatbotState', async () => {
     const testSession = sessionFactory()
-    const testRespondedAtTime = new Date('2010-06-06T06:06:06.000Z')
-    testSession.respondedAt = testRespondedAtTime
     sandbox.stub(db, 'getSessionWithSessionId').returns(testSession)
 
-    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.WAITING_FOR_CATEGORY))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.WAITING_FOR_REPLY))
 
-    const expectedSession = sessionFactory()
-    expectedSession.state = CHATBOT_STATE.WAITING_FOR_CATEGORY
-    expectedSession.respondedAt = testRespondedAtTime
+    const expectedSession = sessionFactory({ ...testSession, chatbotState: CHATBOT_STATE.WAITING_FOR_REPLY })
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sandbox.any)
   })
 
-  it('if given alertState COMPLETED should update only alertState', async () => {
-    sandbox.stub(db, 'getSessionWithSessionId').returns(sessionFactory())
+  it('if given chatbotState WAITING_FOR_CATEGORY and it has not already been responded to should update chatbotState and respondedAt', async () => {
+    const testSession = sessionFactory({
+      respondedAt: null,
+    })
+    sandbox.stub(db, 'getSessionWithSessionId').returns(testSession)
 
-    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.COMPLETED))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.WAITING_FOR_CATEGORY))
 
-    const expectedSession = sessionFactory()
-    expectedSession.state = CHATBOT_STATE.COMPLETED
+    const expectedSession = sessionFactory({ ...testSession, chatbotState: CHATBOT_STATE.WAITING_FOR_CATEGORY, respondedAt: this.fakeCurrentTime })
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sandbox.any)
   })
 
-  it('if given alertState and categoryKey should update alertState and category', async () => {
-    sandbox.stub(db, 'getSessionWithSessionId').returns(sessionFactory())
+  it('if given chatbotState WAITING_FOR_CATEGORY and it has already been responded to should update chatbotState', async () => {
+    const testSession = sessionFactory({
+      respondedAt: new Date('2010-06-06T06:06:06.000Z'),
+    })
+    sandbox.stub(db, 'getSessionWithSessionId').returns(testSession)
 
-    const sessionId = 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc'
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(sessionId, CHATBOT_STATE.COMPLETED, '0'))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.WAITING_FOR_CATEGORY))
 
-    const expectedSession = sessionFactory()
-    expectedSession.state = CHATBOT_STATE.COMPLETED
-    expectedSession.incidentType = 'Cat0'
+    const expectedSession = sessionFactory({ ...testSession, chatbotState: CHATBOT_STATE.WAITING_FOR_CATEGORY })
+
+    expect(db.saveSession).to.be.calledWith(expectedSession, sandbox.any)
+  })
+
+  it('if given chatbotState COMPLETED should update only chatbotState', async () => {
+    const testSession = sessionFactory()
+    sandbox.stub(db, 'getSessionWithSessionId').returns(testSession)
+
+    const braveAlerterConfigurator = new BraveAlerterConfigurator()
+    const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.COMPLETED))
+
+    const expectedSession = sessionFactory({ ...testSession, chatbotState: CHATBOT_STATE.COMPLETED })
+
+    expect(db.saveSession).to.be.calledWith(expectedSession, sandbox.any)
+  })
+
+  it('if given chatbotState and categoryKey should update chatbotState and category', async () => {
+    const testSession = sessionFactory()
+    sandbox.stub(db, 'getSessionWithSessionId').returns(testSession)
+
+    const braveAlerterConfigurator = new BraveAlerterConfigurator()
+    const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.COMPLETED, '0'))
+
+    const expectedSession = sessionFactory({ ...testSession, chatbotState: CHATBOT_STATE.COMPLETED, incidentCategory: 'Cat0' })
 
     expect(db.saveSession).to.be.calledWith(expectedSession, sandbox.any)
   })

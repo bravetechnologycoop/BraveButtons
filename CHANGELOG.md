@@ -11,9 +11,13 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Session schema to better match the desired shared schema.
+
 ### Added
 
-- Session factories.
+- Session and Buttons factories.
 
 ## [9.0.0] - 2022-06-16
 

@@ -26,30 +26,13 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     sandbox.restore()
   })
 
-  it('if there is a single result from db.getActiveAlertsByAlertApiKey with num_presses > 1, returns an array containing a single ActiveAlert object with the returned data and ALERT_TYPE.BUTTONS_URGENT', async () => {
+  it('if there is a single result from db.getActiveAlertsByAlertApiKey with num_button_presses > 1, returns an array containing a single ActiveAlert object with the returned data and ALERT_TYPE.BUTTONS_URGENT', async () => {
     const results = {
       id: 'id',
-      state: CHATBOT_STATE.STARTED,
+      chatbot_state: CHATBOT_STATE.STARTED,
+      alert_type: ALERT_TYPE.BUTTONS_URGENT,
       display_name: 'unit',
-      num_presses: 2,
-      incident_categories: ['Cat1', 'Cat2'],
-      created_at: new Date(),
-    }
-    sandbox.stub(db, 'getActiveAlertsByAlertApiKey').returns([results])
-
-    const activeAlerts = await this.braveAlerter.getActiveAlertsByAlertApiKey('alertApiKey')
-
-    expect(activeAlerts).to.eql([
-      new ActiveAlert(results.id, results.state, results.display_name, ALERT_TYPE.BUTTONS_URGENT, results.incident_categories, results.created_at),
-    ])
-  })
-
-  it('if there is a single result from db.getActiveAlertsByAlertApiKey with num_presses = 1, returns an array containing a single ActiveAlert object with the returned data and ALERT_TYPE.BUTTONS_NOT_URGENT', async () => {
-    const results = {
-      id: 'id',
-      state: CHATBOT_STATE.STARTED,
-      display_name: 'unit',
-      num_presses: 1,
+      num_button_presses: 2,
       incident_categories: ['Cat1', 'Cat2'],
       created_at: new Date(),
     }
@@ -60,7 +43,33 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     expect(activeAlerts).to.eql([
       new ActiveAlert(
         results.id,
-        results.state,
+        results.chatbot_state,
+        results.display_name,
+        ALERT_TYPE.BUTTONS_URGENT,
+        results.incident_categories,
+        results.created_at,
+      ),
+    ])
+  })
+
+  it('if there is a single result from db.getActiveAlertsByAlertApiKey with num_button_presses = 1, returns an array containing a single ActiveAlert object with the returned data and ALERT_TYPE.BUTTONS_NOT_URGENT', async () => {
+    const results = {
+      id: 'id',
+      chatbot_state: CHATBOT_STATE.STARTED,
+      alert_type: ALERT_TYPE.BUTTONS_NOT_URGENT,
+      display_name: 'unit',
+      num_button_presses: 1,
+      incident_categories: ['Cat1', 'Cat2'],
+      created_at: new Date(),
+    }
+    sandbox.stub(db, 'getActiveAlertsByAlertApiKey').returns([results])
+
+    const activeAlerts = await this.braveAlerter.getActiveAlertsByAlertApiKey('alertApiKey')
+
+    expect(activeAlerts).to.eql([
+      new ActiveAlert(
+        results.id,
+        results.chatbot_state,
         results.display_name,
         ALERT_TYPE.BUTTONS_NOT_URGENT,
         results.incident_categories,
@@ -72,17 +81,19 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
   it('if there is a multiple results from db.getActiveAlertsByAlertApiKey, returns an array containing the ActiveAlert objects with the returned data', async () => {
     const results1 = {
       id: 'id1',
-      state: CHATBOT_STATE.STARTED,
+      chatbot_state: CHATBOT_STATE.STARTED,
+      alert_type: ALERT_TYPE.BUTTONS_NOT_URGENT,
       display_name: 'unit1',
-      num_presses: 1,
+      num_button_presses: 1,
       incident_categories: ['Cat1', 'Cat2'],
       created_at: new Date(),
     }
     const results2 = {
       id: 'id2',
-      state: CHATBOT_STATE.STARTED,
+      chatbot_state: CHATBOT_STATE.STARTED,
+      alert_type: ALERT_TYPE.BUTTONS_URGENT,
       display_name: 'unit2',
-      num_presses: 2,
+      num_button_presses: 2,
       incident_categories: ['Cat1', 'Cat2'],
       created_at: new Date(),
     }
@@ -93,7 +104,7 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
     expect(activeAlerts).to.eql([
       new ActiveAlert(
         results1.id,
-        results1.state,
+        results1.chatbot_state,
         results1.display_name,
         ALERT_TYPE.BUTTONS_NOT_URGENT,
         results1.incident_categories,
@@ -101,7 +112,7 @@ describe('BraveAlerterConfigurator.js unit tests: getActiveAlertsByAlertApiKey a
       ),
       new ActiveAlert(
         results2.id,
-        results2.state,
+        results2.chatbot_state,
         results2.display_name,
         ALERT_TYPE.BUTTONS_URGENT,
         results2.incident_categories,

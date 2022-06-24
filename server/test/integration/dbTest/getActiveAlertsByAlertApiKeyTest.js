@@ -19,7 +19,6 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         clientId: client.id,
       })
       await sessionDBFactory(db, {
-        clientId: client.id,
         buttonId: button.buttonId,
       })
     })
@@ -48,7 +47,6 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         clientId: client.id,
       })
       await sessionDBFactory(db, {
-        clientId: client.id,
         buttonId: button.buttonId,
       })
 
@@ -88,15 +86,13 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
 
       // Insert a single session for that API key
       this.alertType = ALERT_TYPE.BUTTONS_URGENT
-      this.numPresses = 6
+      this.numButtonPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
       this.session = await sessionDBFactory(db, {
-        clientId: client.id,
         buttonId: this.button.buttonId,
-        unit: this.button.displayName,
-        numPresses: this.numPresses,
+        numButtonPresses: this.numButtonPresses,
         respondedAt: this.respondedAt,
-        state: CHATBOT_STATE.WAITING_FOR_CATEGORY,
+        chatbotState: CHATBOT_STATE.WAITING_FOR_CATEGORY,
       })
     })
 
@@ -111,9 +107,10 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       expect(rows).to.eql([
         {
           id: this.session.id,
-          state: CHATBOT_STATE.WAITING_FOR_CATEGORY,
+          chatbot_state: CHATBOT_STATE.WAITING_FOR_CATEGORY,
           display_name: this.button.displayName,
-          num_presses: this.numPresses,
+          num_button_presses: this.numButtonPresses,
+          alert_type: ALERT_TYPE.BUTTONS_URGENT,
           incident_categories: ['cat1', 'cat2'],
           created_at: this.session.createdAt,
         },
@@ -136,10 +133,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         displayName: 'unit1',
       })
       this.session = await sessionDBFactory(db, {
-        clientId: client.id,
-
         buttonId: button.buttonId,
-        unit: button.displayName,
         respondedAt: new Date('2021-01-20T06:20:19.000Z'),
       })
     })
@@ -151,7 +145,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
     it('and it is COMPLETED, should not return it', async () => {
       // Update the session to COMPLETED
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.COMPLETED
+      updatedSession.chatbotState = CHATBOT_STATE.COMPLETED
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -165,7 +159,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_CATEGORY, should return the session', async () => {
       // Update the session to WAITING_FOR_CATEGORY
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.WAITING_FOR_CATEGORY
+      updatedSession.chatbotState = CHATBOT_STATE.WAITING_FOR_CATEGORY
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -179,7 +173,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_REPLY, should return the session', async () => {
       // Update the session to WAITING_FOR_REPLY
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.WAITING_FOR_REPLY
+      updatedSession.chatbotState = CHATBOT_STATE.WAITING_FOR_REPLY
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -193,7 +187,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
     it('and it is STARTED, should return the session', async () => {
       // Update the session to STARTED
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.STARTED
+      updatedSession.chatbotState = CHATBOT_STATE.STARTED
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -220,9 +214,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         displayName: 'unit1',
       })
       this.session = await sessionDBFactory(db, {
-        clientId: client.id,
         buttonId: button.buttonId,
-        unit: button.displayName,
         respondedAt: new Date('2021-01-20T06:20:19.000Z'),
       })
     })
@@ -234,7 +226,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
     it('and it is COMPLETED, should not return it', async () => {
       // Update the session to COMPLETED
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.COMPLETED
+      updatedSession.chatbotState = CHATBOT_STATE.COMPLETED
       await db.saveSession(updatedSession)
 
       const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 1)
@@ -247,7 +239,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_CATEGORY, should not return it', async () => {
       // Update the session to WAITING_FOR_CATEGORY
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.WAITING_FOR_CATEGORY
+      updatedSession.chatbotState = CHATBOT_STATE.WAITING_FOR_CATEGORY
       await db.saveSession(updatedSession)
 
       const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 1)
@@ -260,7 +252,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_REPLY, should not return it', async () => {
       // Update the session to WAITING_FOR_REPLY
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.WAITING_FOR_REPLY
+      updatedSession.chatbotState = CHATBOT_STATE.WAITING_FOR_REPLY
       await db.saveSession(updatedSession)
 
       const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 1)
@@ -273,7 +265,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
     it('and it is STARTED, should not return it', async () => {
       // Update the session to STARTED
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.STARTED
+      updatedSession.chatbotState = CHATBOT_STATE.STARTED
       await db.saveSession(updatedSession)
 
       const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 1)

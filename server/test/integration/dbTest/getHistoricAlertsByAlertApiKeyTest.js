@@ -3,7 +3,7 @@ const { expect } = require('chai')
 const { afterEach, beforeEach, describe, it } = require('mocha')
 
 // In-house dependencies
-const { CHATBOT_STATE, factories, helpers } = require('brave-alert-lib')
+const { CHATBOT_STATE, factories, helpers, ALERT_TYPE } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { buttonDBFactory, sessionDBFactory } = require('../../testingHelpers')
 
@@ -19,7 +19,6 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         clientId: client.id,
       })
       await sessionDBFactory(db, {
-        clientId: client.id,
         buttonId: button.buttonId,
       })
     })
@@ -48,7 +47,6 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         clientId: client.id,
       })
       await sessionDBFactory(db, {
-        clientId: client.id,
         buttonId: button.buttonId,
       })
 
@@ -87,17 +85,16 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       })
 
       // Insert a single session for that API key
-      this.incidentType = 'Cat 0'
-      this.numPresses = 6
+      this.incidentCategory = 'Cat 0'
+      this.numButtonPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
       this.session = await sessionDBFactory(db, {
-        clientId: client.id,
         buttonId: this.button.buttonId,
-        unit: this.button.displayName,
-        numPresses: this.numPresses,
+        numButtonPresses: this.numButtonPresses,
+        alertType: ALERT_TYPE.BUTTONS_URGENT,
         respondedAt: this.respondedAt,
-        state: CHATBOT_STATE.WAITING_FOR_CATEGORY,
-        incidentType: this.incidentType,
+        chatbotState: CHATBOT_STATE.WAITING_FOR_CATEGORY,
+        incidentCategory: this.incidentCategory,
       })
     })
 
@@ -112,8 +109,9 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         {
           id: this.session.id,
           display_name: this.button.displayName,
-          incident_type: this.incidentType,
-          num_presses: this.numPresses,
+          incident_category: this.incidentCategory,
+          num_button_presses: this.numButtonPresses,
+          alert_type: ALERT_TYPE.BUTTONS_URGENT,
           created_at: this.session.createdAt,
           responded_at: this.respondedAt,
         },
@@ -142,11 +140,11 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         displayName: 'unit2',
         buttonSerialNumber: 'button2',
       })
-      this.session1 = await sessionDBFactory(db, { clientId: client.id, buttonId: button1.id })
-      this.session2 = await sessionDBFactory(db, { clientId: client.id, buttonId: button2.id })
-      this.session3 = await sessionDBFactory(db, { clientId: client.id, buttonId: button2.id })
-      this.session4 = await sessionDBFactory(db, { clientId: client.id, buttonId: button1.id })
-      this.session5 = await sessionDBFactory(db, { clientId: client.id, buttonId: button2.id })
+      this.session1 = await sessionDBFactory(db, { buttonId: button1.buttonId })
+      this.session2 = await sessionDBFactory(db, { buttonId: button2.buttonId })
+      this.session3 = await sessionDBFactory(db, { buttonId: button2.buttonId })
+      this.session4 = await sessionDBFactory(db, { buttonId: button1.buttonId })
+      this.session5 = await sessionDBFactory(db, { buttonId: button2.buttonId })
     })
 
     afterEach(async () => {
@@ -183,12 +181,12 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         displayName: 'unit2',
         buttonSerialNumber: 'button2',
       })
-      this.session1 = await sessionDBFactory(db, { clientId: client.id, buttonId: button1.id })
-      this.session2 = await sessionDBFactory(db, { clientId: client.id, buttonId: button2.id })
+      this.session1 = await sessionDBFactory(db, { buttonId: button1.buttonId })
+      this.session2 = await sessionDBFactory(db, { buttonId: button2.buttonId })
       await helpers.sleep(2000) // Couldn't get around doing this because there is a trigger on updated_at to keep it correct
-      this.session3 = await sessionDBFactory(db, { clientId: client.id, buttonId: button2.id })
-      this.session4 = await sessionDBFactory(db, { clientId: client.id, buttonId: button1.id })
-      this.session5 = await sessionDBFactory(db, { clientId: client.id, buttonId: button2.id })
+      this.session3 = await sessionDBFactory(db, { buttonId: button2.buttonId })
+      this.session4 = await sessionDBFactory(db, { buttonId: button1.buttonId })
+      this.session5 = await sessionDBFactory(db, { buttonId: button2.buttonId })
     })
 
     afterEach(async () => {
@@ -220,9 +218,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         clientId: client.id,
       })
       this.session = await sessionDBFactory(db, {
-        clientId: client.id,
         buttonId: button.buttonId,
-        unit: button.displayName,
       })
     })
 
@@ -233,7 +229,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is COMPLETED, should return the Completed session', async () => {
       // Update the session to COMPLETED
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.COMPLETED
+      updatedSession.chatbotState = CHATBOT_STATE.COMPLETED
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -247,7 +243,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_CATEGORY, should not return it', async () => {
       // Update the session to WAITING_FOR_CATEGORY
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.WAITING_FOR_CATEGORY
+      updatedSession.chatbotState = CHATBOT_STATE.WAITING_FOR_CATEGORY
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -261,7 +257,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is WAITING_FOR_REPLY, should not return it', async () => {
       // Update the session to WAITING_FOR_REPLY
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.WAITING_FOR_REPLY
+      updatedSession.chatbotState = CHATBOT_STATE.WAITING_FOR_REPLY
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
@@ -275,7 +271,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     it('and it is STARTED, should not return it', async () => {
       // Update the session to STARTED
       const updatedSession = { ...this.session }
-      updatedSession.state = CHATBOT_STATE.STARTED
+      updatedSession.chatbotState = CHATBOT_STATE.STARTED
       await db.saveSession(updatedSession)
 
       // maxTimeAgoInMillis is much greater than the time this test should take to run
