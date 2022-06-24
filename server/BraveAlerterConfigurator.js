@@ -13,7 +13,6 @@ class BraveAlerterConfigurator {
       this.getActiveAlertsByAlertApiKey.bind(this),
       this.getHistoricAlertsByAlertApiKey.bind(this),
       this.getNewNotificationsCountByAlertApiKey.bind(this),
-      false,
       this.getReturnMessage.bind(this),
     )
   }
