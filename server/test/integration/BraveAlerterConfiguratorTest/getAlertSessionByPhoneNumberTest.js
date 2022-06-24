@@ -6,12 +6,12 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 const { CHATBOT_STATE, AlertSession, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
-const { sessionDBFactory } = require('../../testingHelpers')
+const { sessionDBFactory, buttonDBFactory } = require('../../testingHelpers')
 
 describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneNumber', () => {
   beforeEach(async () => {
-    this.sessionState = CHATBOT_STATE.WAITING_FOR_CATEGORY
-    this.sessionIncidentType = '2'
+    this.chatbotState = CHATBOT_STATE.WAITING_FOR_CATEGORY
+    this.sessionIncidentCategory = '2'
     this.sessionToPhoneNumber = '+13335557777'
     this.installationResponderPhoneNumber = '+17775558888'
     this.installationIncidentCategories = ['Cat1', 'Cat2', 'Cat3']
@@ -26,13 +26,16 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
       alertApiKey: null,
       responderPushId: null,
     })
-    const session = await sessionDBFactory(db, {
+    const button = await buttonDBFactory(db, {
       clientId: client.id,
+      displayName: '701',
       phoneNumber: this.sessionToPhoneNumber,
-      unit: '701',
-      numPresses: 1,
-      state: this.sessionState,
-      incidentType: this.sessionIncidentType,
+    })
+    const session = await sessionDBFactory(db, {
+      buttonId: button.button_id,
+      numButtonPresses: 1,
+      chatbotState: this.chatbotState,
+      incidentCategory: this.sessionIncidentCategory,
     })
     this.sessionId = session.id
   })
@@ -49,8 +52,8 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
     expect(alertSession).to.eql(
       new AlertSession(
         this.sessionId,
-        this.sessionState,
-        this.sessionIncidentType,
+        this.chatbotState,
+        this.sessionIncidentCategory,
         undefined,
         'There has been a request for help from 701 . Please respond "Ok" when you have followed up on the call.',
         this.installationResponderPhoneNumber,

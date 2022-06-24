@@ -115,9 +115,9 @@ async function renderClientDetailsPage(req, res) {
           unit: recentSession.unit,
           createdAt,
           updatedAt,
-          state: recentSession.state,
-          numPresses: recentSession.numPresses.toString(),
-          incidentType: recentSession.incidentType,
+          chatbotState: recentSession.chatbotState,
+          numButtonPresses: recentSession.numButtonPresses.toString(),
+          incidentCategory: recentSession.incidentCategory,
           buttonBatteryLevel: recentSession.buttonBatteryLevel,
           respondedAt,
         })

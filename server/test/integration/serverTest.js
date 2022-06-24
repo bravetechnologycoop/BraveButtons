@@ -6,7 +6,7 @@ const { after, afterEach, beforeEach, describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 const twilio = require('twilio')
-const { CHATBOT_STATE, factories, helpers } = require('brave-alert-lib')
+const { CHATBOT_STATE, factories, helpers, ALERT_TYPE } = require('brave-alert-lib')
 
 chai.use(chaiHttp)
 chai.use(sinonChai)
@@ -151,14 +151,15 @@ describe('Chatbot server', () => {
 
       const session = sessions[0]
       expect(session).to.not.be.null
-      expect(session).to.have.property('buttonId')
-      expect(session).to.have.property('unit')
-      expect(session).to.have.property('state')
-      expect(session).to.have.property('numPresses')
-      expect(session.buttonId).to.equal(unit1UUID)
-      expect(session.unit).to.equal('1')
-      expect(session.numPresses).to.equal(1)
+      expect(session).to.have.property('button')
+      expect(session).to.have.property('chatbotState')
+      expect(session).to.have.property('numButtonPresses')
+      expect(session).to.have.property('alertType')
+      expect(session.button.buttonId).to.equal(unit1UUID)
+      expect(session.button.displayName).to.equal('1')
+      expect(session.numButtonPresses).to.equal(1)
       expect(session.buttonBatteryLevel).to.equal(100)
+      expect(session.alertType).to.equal(ALERT_TYPE.BUTTONS_NOT_URGENT)
     })
 
     it('should not confuse button presses from different rooms', async () => {
@@ -181,12 +182,13 @@ describe('Chatbot server', () => {
 
       const session = sessions[0]
       expect(session).to.not.be.null
-      expect(session).to.have.property('buttonId')
-      expect(session).to.have.property('unit')
-      expect(session).to.have.property('numPresses')
-      expect(session.buttonId).to.equal(unit1UUID)
-      expect(session.unit).to.equal('1')
-      expect(session.numPresses).to.equal(1)
+      expect(session).to.have.property('button')
+      expect(session).to.have.property('numButtonPresses')
+      expect(session).to.have.property('alertType')
+      expect(session.button.buttonId).to.equal(unit1UUID)
+      expect(session.button.displayName).to.equal('1')
+      expect(session.numButtonPresses).to.equal(1)
+      expect(session.alertType).to.equal(ALERT_TYPE.BUTTONS_NOT_URGENT)
     })
 
     it('should only create one new session when receiving multiple presses from the same button', async () => {
@@ -247,13 +249,14 @@ describe('Chatbot server', () => {
 
       const session = sessions[0]
       expect(session).to.not.be.null
-      expect(session).to.have.property('buttonId')
-      expect(session).to.have.property('unit')
-      expect(session).to.have.property('state')
-      expect(session).to.have.property('numPresses')
-      expect(session.buttonId).to.equal(unit1UUID)
-      expect(session.unit).to.equal('1')
-      expect(session.numPresses).to.equal(4)
+      expect(session).to.have.property('button')
+      expect(session).to.have.property('chatbotState')
+      expect(session).to.have.property('numButtonPresses')
+      expect(session).to.have.property('alertType')
+      expect(session.button.buttonId).to.equal(unit1UUID)
+      expect(session.button.displayName).to.equal('1')
+      expect(session.numButtonPresses).to.equal(4)
+      expect(session.alertType).to.equal(ALERT_TYPE.BUTTONS_URGENT)
     })
 
     it('should leave battery level null if initial request do not provide button-battery-level', async () => {
@@ -704,7 +707,7 @@ describe('Chatbot server', () => {
 
       let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after initial button press').to.deep.equal(CHATBOT_STATE.STARTED)
+      expect(sessions[0].chatbotState, 'state after initial button press').to.deep.equal(CHATBOT_STATE.STARTED)
 
       // prettier-ignore
       let response = await chai
@@ -715,7 +718,7 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after initial staff response').to.deep.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
+      expect(sessions[0].chatbotState, 'state after initial staff response').to.deep.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
 
       // prettier-ignore
       response = await chai
@@ -726,7 +729,7 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit1UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after staff have categorized the incident').to.deep.equal(CHATBOT_STATE.COMPLETED)
+      expect(sessions[0].chatbotState, 'state after staff have categorized the incident').to.deep.equal(CHATBOT_STATE.COMPLETED)
 
       // now start a new session for a different unit
       // prettier-ignore
@@ -738,10 +741,9 @@ describe('Chatbot server', () => {
 
       sessions = await db.getAllSessionsWithButtonId(unit2UUID)
       expect(sessions.length).to.equal(1)
-      expect(sessions[0].state, 'state after new button press from a different unit').to.deep.equal(CHATBOT_STATE.STARTED)
-      expect(sessions[0].buttonId).to.deep.equal(unit2UUID)
-      expect(sessions[0].unit).to.deep.equal('2')
-      expect(sessions[0].numPresses).to.deep.equal(1)
+      expect(sessions[0].chatbotState, 'state after new button press from a different unit').to.deep.equal(CHATBOT_STATE.STARTED)
+      expect(sessions[0].button.buttonId).to.deep.equal(unit2UUID)
+      expect(sessions[0].numButtonPresses).to.deep.equal(1)
     })
   })
 })

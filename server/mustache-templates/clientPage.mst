@@ -41,9 +41,9 @@
                             {{#recentSessions}}
                                 <tr class="table-data">
                                     <th scope="row">{{unit}}</th>
-                                    <td>{{numPresses}}</td>
-                                    <td>{{state}}</td>
-                                    <td>{{incidentType}}</td>
+                                    <td>{{numButtonPresses}}</td>
+                                    <td>{{chatbotState}}</td>
+                                    <td>{{incidentCategory}}</td>
                                     <td>{{createdAt}}</td>
                                     <td>{{updatedAt}}</td>
                                     <td>{{respondedAt}}</td>

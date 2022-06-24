@@ -1,22 +1,23 @@
+const { ALERT_TYPE } = require('brave-alert-lib')
+
 class Session {
   // prettier-ignore
-  constructor(id, clientId, buttonId, unit, phoneNumber, state, numPresses, createdAt, updatedAt, incidentType, buttonBatteryLevel, respondedAt) {
+  constructor(id, chatbotState, alertType, numButtonPresses, createdAt, updatedAt, incidentCategory, buttonBatteryLevel, respondedAt, button) {
     this.id = id
-    this.clientId = clientId
-    this.buttonId = buttonId
-    this.unit = unit
-    this.phoneNumber = phoneNumber
-    this.state = state
-    this.numPresses = numPresses
+    this.chatbotState = chatbotState
+    this.alertType = alertType
+    this.numButtonPresses = numButtonPresses
     this.createdAt = createdAt
     this.updatedAt = updatedAt
-    this.incidentType = incidentType
+    this.incidentCategory = incidentCategory
     this.buttonBatteryLevel = buttonBatteryLevel
     this.respondedAt = respondedAt
+    this.button = button
   }
 
-  incrementButtonPresses(numPresses) {
-    this.numPresses += numPresses
+  incrementButtonPresses(numButtonPresses) {
+    this.numButtonPresses += numButtonPresses
+    this.alertType = ALERT_TYPE.BUTTONS_URGENT
   }
 
   updateBatteryLevel(buttonBatteryLevel) {

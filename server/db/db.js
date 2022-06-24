@@ -2,7 +2,7 @@
 const { Pool, types } = require('pg')
 
 // In-house dependencies
-const { CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
+const { ALERT_TYPE, CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
 const Button = require('../Button')
 const Gateway = require('../Gateway')
 const Hub = require('../Hub')
@@ -25,9 +25,11 @@ pool.on('error', err => {
 
 types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
-function createSessionFromRow(r) {
+function createSessionFromRow(r, allButtons) {
+  const button = allButtons.filter(b => b.buttonId === r.button_id)[0]
+
   // prettier-ignore
-  return new Session(r.id, r.client_id, r.button_id, r.unit, r.phone_number, r.state, r.num_presses, r.created_at, r.updated_at, r.incident_type, r.button_battery_level, r.responded_at)
+  return new Session(r.id, r.chatbot_state, r.alert_type, r.num_button_presses, r.created_at, r.updated_at, r.incident_category, r.button_battery_level, r.responded_at, button)
 }
 
 function createClientFromRow(r) {
@@ -227,8 +229,8 @@ async function getUnrespondedSessionWithButtonId(buttonId, pgClient) {
       SELECT *
       FROM sessions
       WHERE button_id = $1
-      AND state != $2
-      AND state != $3
+      AND chatbot_state != $2
+      AND chatbot_state != $3
       ORDER BY created_at
       DESC LIMIT 1
       `,
@@ -238,7 +240,8 @@ async function getUnrespondedSessionWithButtonId(buttonId, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return createSessionFromRow(results.rows[0])
+      const allButtons = await getButtons(pgClient)
+      return createSessionFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -252,9 +255,10 @@ async function getMostRecentSessionWithPhoneNumber(phoneNumber, pgClient) {
     const results = await helpers.runQuery(
       'getMostRecentSessionWithPhoneNumber',
       `
-      SELECT *
-      FROM sessions
-      WHERE phone_number = $1
+      SELECT s.*
+      FROM sessions AS s
+      LEFT JOIN buttons AS b ON s.button_id = b.button_id
+      WHERE b.phone_number = $1
       ORDER BY created_at DESC
       LIMIT 1
       `,
@@ -264,7 +268,8 @@ async function getMostRecentSessionWithPhoneNumber(phoneNumber, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return createSessionFromRow(results.rows[0])
+      const allButtons = await getButtons(pgClient)
+      return createSessionFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -280,9 +285,10 @@ async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, pgC
       `
       SELECT s.*
       FROM sessions AS s
-      LEFT JOIN clients AS i ON s.client_id = i.id
+      LEFT JOIN buttons AS b on s.button_id = b.button_id
+      LEFT JOIN clients AS c ON b.client_id = c.id
       WHERE s.id = $1
-      AND i.alert_api_key = $2
+      AND c.alert_api_key = $2
       `,
       [sessionId, alertApiKey],
       pool,
@@ -293,7 +299,8 @@ async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, pgC
       return null
     }
 
-    return createSessionFromRow(results.rows[0])
+    const allButtons = await getButtons(pgClient)
+    return createSessionFromRow(results.rows[0], allButtons)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -314,7 +321,8 @@ async function getAllSessionsWithButtonId(buttonId, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return results.rows.map(createSessionFromRow)
+      const allButtons = await getButtons(pgClient)
+      return results.rows.map(r => createSessionFromRow(r, allButtons))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -340,7 +348,8 @@ async function getRecentSessionsWithClientId(clientId, pgClient) {
     )
 
     if (results !== undefined && results.rows.length > 0) {
-      return results.rows.map(createSessionFromRow)
+      const allButtons = await getButtons(pgClient)
+      return results.rows.map(r => createSessionFromRow(r, allButtons))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -486,7 +495,8 @@ async function getSessionWithSessionId(sessionId, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return createSessionFromRow(results.rows[0])
+      const allButtons = await getButtons(pgClient)
+      return createSessionFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -495,22 +505,31 @@ async function getSessionWithSessionId(sessionId, pgClient) {
   return null
 }
 
-async function createSession(clientId, buttonId, unit, phoneNumber, state, numPresses, incidentType, buttonBatteryLevel, respondedAt, pgClient) {
+async function createSession(buttonId, chatbotState, numButtonPresses, incidentCategory, buttonBatteryLevel, respondedAt, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createSession',
       `
-      INSERT INTO sessions (client_id, button_id, unit, phone_number, state, num_presses, button_battery_level, responded_at, incident_type) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      INSERT INTO sessions (button_id, chatbot_state, alert_type, num_button_presses, button_battery_level, responded_at, incident_category) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
       `,
-      [clientId, buttonId, unit, phoneNumber, state, numPresses, buttonBatteryLevel, respondedAt, incidentType],
+      [
+        buttonId,
+        chatbotState,
+        numButtonPresses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT,
+        numButtonPresses,
+        buttonBatteryLevel,
+        respondedAt,
+        incidentCategory,
+      ],
       pool,
       pgClient,
     )
 
     if (results.rows.length > 0) {
-      return createSessionFromRow(results.rows[0])
+      const allButtons = await getButtons(pgClient)
+      return createSessionFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -541,17 +560,15 @@ async function saveSession(session, pgClient) {
       'saveSessionUpdate',
       `
       UPDATE sessions
-      SET client_id = $1, button_id = $2, unit = $3, phone_number = $4, state = $5, num_presses = $6, incident_type = $7, button_battery_level = $8, responded_at = $9
-      WHERE id = $10
+      SET button_id = $1, chatbot_state = $2, alert_type=$3, num_button_presses = $4, incident_category = $5, button_battery_level = $6, responded_at = $7
+      WHERE id = $8
       `,
       [
-        session.clientId,
-        session.buttonId,
-        session.unit,
-        session.phoneNumber,
-        session.state,
-        session.numPresses,
-        session.incidentType,
+        session.button.buttonId,
+        session.chatbotState,
+        session.alertType,
+        session.numButtonPresses,
+        session.incidentCategory,
         session.buttonBatteryLevel,
         session.respondedAt,
         session.id,
@@ -817,8 +834,9 @@ async function getClientWithSessionId(sessionId, pgClient) {
       'getClientWithSessionId',
       `
       SELECT c.*
-      FROM sessions s
-      LEFT JOIN clients c ON s.client_id = c.id 
+      FROM sessions AS s
+      LEFT JOIN buttons AS b ON s.button_id = b.button_id
+      LEFT JOIN clients AS c ON b.client_id = c.id 
       WHERE s.id = $1
       `,
       [sessionId],
@@ -841,13 +859,13 @@ async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, pgC
     const results = await helpers.runQuery(
       'getActiveAlertsByAlertApiKey',
       `
-      SELECT s.id, s.state, b.display_name, s.num_presses, i.incident_categories, s.created_at
+      SELECT s.id, s.chatbot_state, s.alert_type, b.display_name, s.num_button_presses, i.incident_categories, s.created_at
       FROM sessions AS s
       LEFT JOIN buttons AS b ON s.button_id = b.button_id
-      LEFT JOIN clients AS i ON s.client_id = i.id
+      LEFT JOIN clients AS i ON b.client_id = i.id
       WHERE i.alert_api_key = $1
       AND (
-        s.state != $2
+        s.chatbot_state != $2
         AND s.updated_at >= now() - $3 * INTERVAL '1 millisecond'
       )
       ORDER BY s.created_at DESC
@@ -868,13 +886,13 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
     const results = await helpers.runQuery(
       'getHistoricAlertsByAlertApiKey',
       `
-      SELECT s.id, b.display_name, s.incident_type, s.num_presses, s.created_at, s.responded_at
+      SELECT s.id, s.alert_type, b.display_name, s.incident_category, s.num_button_presses, s.created_at, s.responded_at
       FROM sessions AS s
       LEFT JOIN buttons AS b ON s.button_id = b.button_id
-      LEFT JOIN clients AS i ON s.client_id = i.id
+      LEFT JOIN clients AS i ON b.client_id = i.id
       WHERE i.alert_api_key = $1
       AND (
-        s.state = $2
+        s.chatbot_state = $2
         OR s.updated_at <= now() - $3 * INTERVAL '1 millisecond'
       )
       ORDER BY s.created_at DESC
@@ -1151,12 +1169,12 @@ async function getDataForExport(pgClient) {
         i.incident_categories AS "Incident Categories",
         i.is_active AS "Active?",
         r.display_name AS "Unit",
-        s.phone_number AS "Button Phone",
-        s.state AS "Session State",
-        s.num_presses AS "Number of Presses",
+        b.phone_number AS "Button Phone",
+        s.chatbot_state AS "Session State",
+        s.num_button_presses AS "Number of Presses",
         TO_CHAR(s.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Session Start",
         TO_CHAR(s.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Last Session Activity",
-        s.incident_type AS "Session Incident Type",
+        s.incident_category AS "Session Incident Type",
         '' AS "Session Notes",
         '' AS "Fallback Alert Status (Twilio)",
         s.button_battery_level AS "Button Battery Level",
@@ -1165,7 +1183,7 @@ async function getDataForExport(pgClient) {
         r.button_serial_number AS "Button Serial Number"
       FROM sessions s
         JOIN buttons r ON s.button_id = r.button_id
-        JOIN clients i ON i.id = s.client_id
+        JOIN clients i ON i.id = b.client_id
       `,
       [],
       pool,

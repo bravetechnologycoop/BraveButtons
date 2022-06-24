@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-const { BraveAlerter, AlertSession, ALERT_TYPE, CHATBOT_STATE, helpers, Location, SYSTEM, HistoricAlert, ActiveAlert } = require('brave-alert-lib')
+const { BraveAlerter, AlertSession, CHATBOT_STATE, helpers, Location, SYSTEM, HistoricAlert, ActiveAlert } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
 class BraveAlerterConfigurator {
@@ -26,19 +26,17 @@ class BraveAlerterConfigurator {
         return null
       }
 
-      const client = await db.getClientWithId(session.clientId)
-
-      const incidentCategoryKeys = this.createIncidentCategoryKeys(client.incidentCategories)
+      const incidentCategoryKeys = this.createIncidentCategoryKeys(session.button.client.incidentCategories)
 
       alertSession = new AlertSession(
         session.id,
-        session.state,
-        session.incidentType,
+        session.chatbotState,
+        session.incidentCategory,
         undefined,
-        `There has been a request for help from ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-        client.responderPhoneNumber,
+        `There has been a request for help from ${session.button.displayName} . Please respond "Ok" when you have followed up on the call.`,
+        session.button.client.responderPhoneNumber,
         incidentCategoryKeys,
-        client.incidentCategories,
+        session.button.client.incidentCategories,
       )
     } catch (e) {
       helpers.logError(`getAlertSession: failed to get and create a new alert session: ${JSON.stringify(e)}`)
@@ -48,19 +46,17 @@ class BraveAlerterConfigurator {
   }
 
   async createAlertSessionFromSession(session) {
-    const client = await db.getClientWithId(session.clientId)
-
-    const incidentCategoryKeys = this.createIncidentCategoryKeys(client.incidentCategories)
+    const incidentCategoryKeys = this.createIncidentCategoryKeys(session.button.client.incidentCategories)
 
     return new AlertSession(
       session.id,
-      session.state,
-      session.incidentType,
+      session.chatbotState,
+      session.incidentCategory,
       undefined,
-      `There has been a request for help from ${session.unit} . Please respond "Ok" when you have followed up on the call.`,
-      client.responderPhoneNumber,
+      `There has been a request for help from ${session.button.displayName} . Please respond "Ok" when you have followed up on the call.`,
+      session.button.client.responderPhoneNumber,
       incidentCategoryKeys,
-      client.incidentCategories,
+      session.button.client.incidentCategories,
     )
   }
 
@@ -111,12 +107,12 @@ class BraveAlerterConfigurator {
 
       if (session) {
         if (alertSession.alertState) {
-          session.state = alertSession.alertState
+          session.chatbotState = alertSession.alertState
         }
 
         if (alertSession.incidentCategoryKey) {
           const client = await db.getClientWithSessionId(alertSession.sessionId, pgClient)
-          session.incidentType = client.incidentCategories[alertSession.incidentCategoryKey]
+          session.incidentCategory = client.incidentCategories[alertSession.incidentCategoryKey]
         }
 
         if (alertSession.alertState === CHATBOT_STATE.WAITING_FOR_CATEGORY && session.respondedAt === null) {
@@ -151,8 +147,7 @@ class BraveAlerterConfigurator {
   }
 
   createActiveAlertFromRow(row) {
-    const alertType = row.num_presses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT
-    return new ActiveAlert(row.id, row.state, row.display_name, alertType, row.incident_categories, row.created_at)
+    return new ActiveAlert(row.id, row.chatbot_state, row.display_name, row.alert_type, row.incident_categories, row.created_at)
   }
 
   // Active Alerts are those with status that is not "Completed" and were last updated SESSION_RESET_TIMEOUT ago or more recently
@@ -169,8 +164,15 @@ class BraveAlerterConfigurator {
   }
 
   createHistoricAlertFromRow(row) {
-    const alertType = row.num_presses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT
-    return new HistoricAlert(row.id, row.display_name, row.incident_type, alertType, row.num_presses, row.created_at, row.responded_at)
+    return new HistoricAlert(
+      row.id,
+      row.display_name,
+      row.incident_category,
+      row.alert_type,
+      row.num_button_presses,
+      row.created_at,
+      row.responded_at,
+    )
   }
 
   // Historic Alerts are those with status "Completed" or that were last updated longer ago than the SESSION_RESET_TIMEOUT

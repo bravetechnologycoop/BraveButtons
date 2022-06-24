@@ -26,12 +26,13 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
     sandbox.restore()
   })
 
-  it('if there is a single result from db.getHistoricAlertsByAlertApiKey with num_presses > 1, returns an array containing a single HistoricAlert object with the returned data and ALERT_TYPE.BUTTONS_URGENT', async () => {
+  it('if there is a single result from db.getHistoricAlertsByAlertApiKey with num_button_presses > 1, returns an array containing a single HistoricAlert object with the returned data and ALERT_TYPE.BUTTONS_URGENT', async () => {
     const results = {
       id: 'id',
+      alert_type: ALERT_TYPE.BUTTONS_URGENT,
       display_name: 'unit',
-      incident_type: 'incidentType',
-      num_presses: 2,
+      incident_category: 'incidentCategory',
+      num_button_presses: 2,
       created_at: new Date('2020-01-20T10:10:10.000Z'),
       responded_at: new Date('2020-01-20T10:12:40.000Z'),
     }
@@ -43,21 +44,22 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
       new HistoricAlert(
         results.id,
         results.display_name,
-        results.incident_type,
+        results.incident_category,
         ALERT_TYPE.BUTTONS_URGENT,
-        results.num_presses,
+        results.num_button_presses,
         results.created_at,
         results.responded_at,
       ),
     ])
   })
 
-  it('if there is a single result from db.getHistoricAlertsByAlertApiKey with num_presses = 1, returns an array containing a single HistoricAlert object with the returned data and ALERT_TYPE.BUTTONS_NOT_URGENT', async () => {
+  it('if there is a single result from db.getHistoricAlertsByAlertApiKey with num_button_presses = 1, returns an array containing a single HistoricAlert object with the returned data and ALERT_TYPE.BUTTONS_NOT_URGENT', async () => {
     const results = {
       id: 'id',
+      alert_type: ALERT_TYPE.BUTTONS_NOT_URGENT,
       display_name: 'unit',
-      incident_type: 'incidentType',
-      num_presses: 1,
+      incident_category: 'incidentCategory',
+      num_button_presses: 1,
       created_at: new Date('2020-01-20T10:10:10.000Z'),
       responded_at: new Date('2020-01-20T10:12:40.000Z'),
     }
@@ -69,9 +71,9 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
       new HistoricAlert(
         results.id,
         results.display_name,
-        results.incident_type,
+        results.incident_category,
         ALERT_TYPE.BUTTONS_NOT_URGENT,
-        results.num_presses,
+        results.num_button_presses,
         results.created_at,
         results.responded_at,
       ),
@@ -81,17 +83,19 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
   it('if there are multiple results from db.getHistoricAlertsByAlertApiKey, returns an array containing the HistoricAlert objects with the returned data', async () => {
     const results1 = {
       id: 'id1',
+      alert_type: ALERT_TYPE.BUTTONS_NOT_URGENT,
       display_name: 'unit1',
-      incident_type: 'incidentType1',
-      num_presses: 1,
+      incident_category: 'incidentType1',
+      num_button_presses: 1,
       created_at: new Date('2020-01-20T10:10:10.000Z'),
       responded_at: new Date('2020-01-20T10:12:40.000Z'),
     }
     const results2 = {
       id: 'id2',
+      alert_type: ALERT_TYPE.BUTTONS_URGENT,
       display_name: 'unit2',
-      incident_type: 'incidentType2',
-      num_presses: 2,
+      incident_category: 'incidentType2',
+      num_button_presses: 2,
       created_at: new Date('2019-02-20T09:10:10.000Z'),
       responded_at: new Date('2019-02-20T09:12:40.000Z'),
     }
@@ -103,18 +107,18 @@ describe('BraveAlerterConfigurator.js unit tests: getHistoricAlertsByAlertApiKey
       new HistoricAlert(
         results1.id,
         results1.display_name,
-        results1.incident_type,
+        results1.incident_category,
         ALERT_TYPE.BUTTONS_NOT_URGENT,
-        results1.num_presses,
+        results1.num_button_presses,
         results1.created_at,
         results1.responded_at,
       ),
       new HistoricAlert(
         results2.id,
         results2.display_name,
-        results2.incident_type,
+        results2.incident_category,
         ALERT_TYPE.BUTTONS_URGENT,
-        results2.num_presses,
+        results2.num_button_presses,
         results2.created_at,
         results2.responded_at,
       ),

@@ -1,39 +1,20 @@
 // In-house dependencies
-const { factories, CHATBOT_STATE } = require('brave-alert-lib')
+const { factories, CHATBOT_STATE, ALERT_TYPE } = require('brave-alert-lib')
 const Session = require('../Session')
 const Hub = require('../Hub')
+const Button = require('../Button')
 
-function sessionFactory(overrides = {}) {
-  return new Session(
-    overrides.id !== undefined ? overrides.id : 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc',
-    overrides.clientId !== undefined ? overrides.clientId : 'fakeClientId',
+function buttonFactory(overrides = {}) {
+  return new Button(
+    overrides.id !== undefined ? overrides.id : 'fakeId',
     overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
-    overrides.unit !== undefined ? overrides.unit : 'fakeUnit',
-    overrides.phoneNumber !== undefined ? overrides.phoneNumber : '18885554444',
-    overrides.state !== undefined ? overrides.state : CHATBOT_STATE.COMPLETED,
-    overrides.numPresses !== undefined ? overrides.numPresses : 1,
-    overrides.incidentType !== undefined ? overrides.incidentType : '1',
-    overrides.buttonBatteryLevel !== undefined ? overrides.buttonBatteryLevel : 100,
-    overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
-    overrides.createdAt !== undefined ? overrides.createdAt : 'fakeCreatedAt',
-    overrides.updatedAt !== undefined ? overrides.updatedAt : 'fakeUpdatedAt',
+    overrides.displayName !== undefined ? overrides.displayName : 'Unit 305',
+    overrides.phoneNumber !== undefined ? overrides.phoneNumber : '+12223334444',
+    overrides.createdAt !== undefined ? overrides.createdAt : new Date(),
+    overrides.updatedAt !== undefined ? overrides.updatedAt : new Date(),
+    overrides.buttonSerialNumber !== undefined ? overrides.buttonSerialNumber : 'AB12-12345',
+    overrides.client !== undefined ? overrides.client : factories.clientFactory(),
   )
-}
-
-async function sessionDBFactory(db, overrides = {}) {
-  const session = await db.createSession(
-    overrides.clientId !== undefined ? overrides.clientId : 'fakeClientId',
-    overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
-    overrides.unit !== undefined ? overrides.unit : 'fakeUnit',
-    overrides.phoneNumber !== undefined ? overrides.phoneNumber : '+18885554444',
-    overrides.state !== undefined ? overrides.state : CHATBOT_STATE.STARTED,
-    overrides.numPresses !== undefined ? overrides.numPresses : 1,
-    overrides.incidentType !== undefined ? overrides.incidentType : null,
-    overrides.buttonBatteryLevel !== undefined ? overrides.buttonBatteryLevel : null,
-    overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
-  )
-
-  return session
 }
 
 async function buttonDBFactory(db, overrides = {}) {
@@ -46,6 +27,34 @@ async function buttonDBFactory(db, overrides = {}) {
   )
 
   return button
+}
+
+function sessionFactory(overrides = {}) {
+  return new Session(
+    overrides.id !== undefined ? overrides.id : 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc',
+    overrides.chatbotState !== undefined ? overrides.chatbotState : CHATBOT_STATE.COMPLETED,
+    overrides.alertType !== undefined ? overrides.alertType : ALERT_TYPE.BUTTONS_NOT_URGENT,
+    overrides.numButtonPresses !== undefined ? overrides.numButtonPresses : 1,
+    overrides.createdAt !== undefined ? overrides.createdAt : 'fakeCreatedAt',
+    overrides.updatedAt !== undefined ? overrides.updatedAt : 'fakeUpdatedAt',
+    overrides.incidentCategory !== undefined ? overrides.incidentCategory : '1',
+    overrides.buttonBatteryLevel !== undefined ? overrides.buttonBatteryLevel : 100,
+    overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
+    overrides.button !== undefined ? overrides.button : buttonFactory(),
+  )
+}
+
+async function sessionDBFactory(db, overrides = {}) {
+  const session = await db.createSession(
+    overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
+    overrides.chatbotState !== undefined ? overrides.chatbotState : CHATBOT_STATE.STARTED,
+    overrides.numButtonPresses !== undefined ? overrides.numButtonPresses : 1,
+    overrides.incidentCategory !== undefined ? overrides.incidentCategory : null,
+    overrides.buttonBatteryLevel !== undefined ? overrides.buttonBatteryLevel : null,
+    overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
+  )
+
+  return session
 }
 
 function hubFactory(overrides = {}) {
@@ -67,6 +76,7 @@ function hubFactory(overrides = {}) {
 
 module.exports = {
   buttonDBFactory,
+  buttonFactory,
   hubFactory,
   sessionDBFactory,
   sessionFactory,

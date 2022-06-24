@@ -6,12 +6,12 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 const { CHATBOT_STATE, AlertSession, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
-const { sessionDBFactory } = require('../../testingHelpers')
+const { sessionDBFactory, buttonDBFactory } = require('../../testingHelpers')
 
 describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () => {
   beforeEach(async () => {
-    this.sessionState = CHATBOT_STATE.COMPLETED
-    this.sessionIncidentType = '2'
+    this.chatbotState = CHATBOT_STATE.COMPLETED
+    this.sessionIncidentCategory = '2'
     this.message = 'message'
     this.installationResponderPhoneNumber = '+17775558888'
     this.installationIncidentCategories = ['Cat1', 'Cat2', 'Cat3']
@@ -26,12 +26,15 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
       alertApiKey: null,
       responderPushId: null,
     })
-    const session = await sessionDBFactory(db, {
+    const button = await buttonDBFactory(db, {
       clientId: client.id,
-      numPresses: 1,
-      state: this.sessionState,
-      incidentType: this.sessionIncidentType,
-      unit: '701',
+      displayName: '701',
+    })
+    const session = await sessionDBFactory(db, {
+      buttonId: button.buttonId,
+      numButtonPresses: 1,
+      chatbotState: this.chatbotState,
+      incidentCategory: this.sessionIncidentCategory,
     })
     this.sessionId = session.id
   })
@@ -48,8 +51,8 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
     expect(alertSession).to.eql(
       new AlertSession(
         this.sessionId,
-        this.sessionState,
-        this.sessionIncidentType,
+        this.chatbotState,
+        this.sessionIncidentCategory,
         undefined,
         'There has been a request for help from 701 . Please respond "Ok" when you have followed up on the call.',
         this.installationResponderPhoneNumber,
