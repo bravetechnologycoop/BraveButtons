@@ -46,6 +46,8 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
       await db.saveSession(currentSession, pgClient)
     }
 
+    await db.commitTransaction(pgClient)
+
     if (currentSession.numButtonPresses === 1) {
       const alertInfo = {
         sessionId: currentSession.id,
@@ -63,7 +65,7 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
         fallbackToPhoneNumbers: button.client.fallbackPhoneNumbers,
         fallbackFromPhoneNumber: button.client.fromPhoneNumber,
       }
-      braveAlerter.startAlertSession(alertInfo)
+      await braveAlerter.startAlertSession(alertInfo) // includes a transaction, so must have already committed before this point
     } else if (
       currentSession.numButtonPresses % 5 === 0 ||
       currentSession.numButtonPresses === 2 ||
@@ -80,8 +82,6 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
     } else {
       // no alert to be sent
     }
-
-    await db.commitTransaction(pgClient)
   } catch (e) {
     try {
       await db.rollbackTransaction(pgClient)

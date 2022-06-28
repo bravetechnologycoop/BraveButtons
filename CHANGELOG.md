@@ -27,6 +27,10 @@ the code was deployed.
 - API endpoint for pressing a Radio Bridge LoRa button (CU-2fk4arw).
 - Old `buttons_id` from the Buttons table.
 
+### Fixed
+
+- Race condition for quick responders.
+
 ## [9.0.0] - 2022-06-16
 
 ### Changed
