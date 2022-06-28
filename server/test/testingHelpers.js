@@ -7,7 +7,6 @@ const Button = require('../Button')
 function buttonFactory(overrides = {}) {
   return new Button(
     overrides.id !== undefined ? overrides.id : 'fakeId',
-    overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
     overrides.displayName !== undefined ? overrides.displayName : 'Unit 305',
     overrides.phoneNumber !== undefined ? overrides.phoneNumber : '+12223334444',
     overrides.createdAt !== undefined ? overrides.createdAt : new Date(),
@@ -19,7 +18,6 @@ function buttonFactory(overrides = {}) {
 
 async function buttonDBFactory(db, overrides = {}) {
   const button = await db.createButton(
-    overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
     overrides.clientId !== undefined ? overrides.clientId : 'fakeClientId',
     overrides.displayName !== undefined ? overrides.displayName : 'Unit 305',
     overrides.phoneNumber !== undefined ? overrides.phoneNumber : '+12223334444',

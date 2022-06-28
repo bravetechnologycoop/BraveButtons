@@ -1,7 +1,6 @@
 class Button {
-  constructor(id, buttonId, displayName, phoneNumber, createdAt, updatedAt, buttonSerialNumber, client) {
+  constructor(id, displayName, phoneNumber, createdAt, updatedAt, buttonSerialNumber, client) {
     this.id = id
-    this.buttonId = buttonId
     this.displayName = displayName
     this.phoneNumber = phoneNumber
     this.createdAt = createdAt

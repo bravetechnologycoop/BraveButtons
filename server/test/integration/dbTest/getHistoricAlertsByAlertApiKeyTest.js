@@ -15,11 +15,10 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       // Insert a single client with a single button that has a single session that doesn't match the Alert API Key that we ask for
       const client = await factories.clientDBFactory(db)
       const button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
       })
       await sessionDBFactory(db, {
-        buttonId: button.buttonId,
+        buttonId: button.id,
       })
     })
 
@@ -43,11 +42,10 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         alertApiKey: 'not our API key',
       })
       const button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
       })
       await sessionDBFactory(db, {
-        buttonId: button.buttonId,
+        buttonId: button.id,
       })
 
       // Insert a single client with no sessions that matches the Alert API Key that we ask for
@@ -78,7 +76,6 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         alertApiKey: this.alertApiKey,
       })
       this.button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         displayName: 'unit1',
         clientId: client.id,
         buttonSerialNumber: 'button1',
@@ -89,7 +86,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
       this.numButtonPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
       this.session = await sessionDBFactory(db, {
-        buttonId: this.button.buttonId,
+        buttonId: this.button.id,
         numButtonPresses: this.numButtonPresses,
         alertType: ALERT_TYPE.BUTTONS_URGENT,
         respondedAt: this.respondedAt,
@@ -129,22 +126,20 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         alertApiKey: this.alertApiKey,
       })
       const button1 = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
         displayName: 'unit1',
         buttonSerialNumber: 'button1',
       })
       const button2 = await buttonDBFactory(db, {
-        buttonId: '1283be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
         displayName: 'unit2',
         buttonSerialNumber: 'button2',
       })
-      this.session1 = await sessionDBFactory(db, { buttonId: button1.buttonId })
-      this.session2 = await sessionDBFactory(db, { buttonId: button2.buttonId })
-      this.session3 = await sessionDBFactory(db, { buttonId: button2.buttonId })
-      this.session4 = await sessionDBFactory(db, { buttonId: button1.buttonId })
-      this.session5 = await sessionDBFactory(db, { buttonId: button2.buttonId })
+      this.session1 = await sessionDBFactory(db, { buttonId: button1.id })
+      this.session2 = await sessionDBFactory(db, { buttonId: button2.id })
+      this.session3 = await sessionDBFactory(db, { buttonId: button2.id })
+      this.session4 = await sessionDBFactory(db, { buttonId: button1.id })
+      this.session5 = await sessionDBFactory(db, { buttonId: button2.id })
     })
 
     afterEach(async () => {
@@ -170,23 +165,21 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         alertApiKey: this.alertApiKey,
       })
       const button1 = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
         displayName: 'unit1',
         buttonSerialNumber: 'button1',
       })
       const button2 = await buttonDBFactory(db, {
-        buttonId: '1283be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
         displayName: 'unit2',
         buttonSerialNumber: 'button2',
       })
-      this.session1 = await sessionDBFactory(db, { buttonId: button1.buttonId })
-      this.session2 = await sessionDBFactory(db, { buttonId: button2.buttonId })
+      this.session1 = await sessionDBFactory(db, { buttonId: button1.id })
+      this.session2 = await sessionDBFactory(db, { buttonId: button2.id })
       await helpers.sleep(2000) // Couldn't get around doing this because there is a trigger on updated_at to keep it correct
-      this.session3 = await sessionDBFactory(db, { buttonId: button2.buttonId })
-      this.session4 = await sessionDBFactory(db, { buttonId: button1.buttonId })
-      this.session5 = await sessionDBFactory(db, { buttonId: button2.buttonId })
+      this.session3 = await sessionDBFactory(db, { buttonId: button2.id })
+      this.session4 = await sessionDBFactory(db, { buttonId: button1.id })
+      this.session5 = await sessionDBFactory(db, { buttonId: button2.id })
     })
 
     afterEach(async () => {
@@ -213,12 +206,11 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
         alertApiKey: this.alertApiKey,
       })
       const button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         displayName: 'unit1',
         clientId: client.id,
       })
       this.session = await sessionDBFactory(db, {
-        buttonId: button.buttonId,
+        buttonId: button.id,
       })
     })
 

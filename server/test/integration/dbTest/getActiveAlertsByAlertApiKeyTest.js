@@ -15,11 +15,10 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       // Insert a single client with a single button that has a single session that doesn't match the Alert API Key that we ask for
       const client = await factories.clientDBFactory(db)
       const button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
       })
       await sessionDBFactory(db, {
-        buttonId: button.buttonId,
+        buttonId: button.id,
       })
     })
 
@@ -43,11 +42,10 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         alertApiKey: 'not our API key',
       })
       const button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
       })
       await sessionDBFactory(db, {
-        buttonId: button.buttonId,
+        buttonId: button.id,
       })
 
       // Insert a single client with no sessions that matches the Alert API Key that we ask for
@@ -79,7 +77,6 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         incidentCategories: '{"cat1","cat2"}',
       })
       this.button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
         displayName: 'unit1',
       })
@@ -89,7 +86,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       this.numButtonPresses = 6
       this.respondedAt = new Date('2021-01-20T06:20:19.000Z')
       this.session = await sessionDBFactory(db, {
-        buttonId: this.button.buttonId,
+        buttonId: this.button.id,
         numButtonPresses: this.numButtonPresses,
         respondedAt: this.respondedAt,
         chatbotState: CHATBOT_STATE.WAITING_FOR_CATEGORY,
@@ -128,12 +125,11 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         alertApiKey: this.alertApiKey,
       })
       const button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
         displayName: 'unit1',
       })
       this.session = await sessionDBFactory(db, {
-        buttonId: button.buttonId,
+        buttonId: button.id,
         respondedAt: new Date('2021-01-20T06:20:19.000Z'),
       })
     })
@@ -209,12 +205,11 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
         alertApiKey: this.alertApiKey,
       })
       const button = await buttonDBFactory(db, {
-        buttonId: '51b8be5678bf5ade9bf6a5958b2a4a45',
         clientId: client.id,
         displayName: 'unit1',
       })
       this.session = await sessionDBFactory(db, {
-        buttonId: button.buttonId,
+        buttonId: button.id,
         respondedAt: new Date('2021-01-20T06:20:19.000Z'),
       })
     })

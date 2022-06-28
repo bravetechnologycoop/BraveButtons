@@ -26,7 +26,7 @@ pool.on('error', err => {
 types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
 function createSessionFromRow(r, allButtons) {
-  const button = allButtons.filter(b => b.buttonId === r.button_id)[0]
+  const button = allButtons.filter(b => b.id === r.button_id)[0]
 
   // prettier-ignore
   return new Session(r.id, r.chatbot_state, r.alert_type, r.num_button_presses, r.created_at, r.updated_at, r.incident_category, r.button_battery_level, r.responded_at, r.responded_by_phone_number, button)
@@ -41,7 +41,7 @@ function createButtonFromRow(r, allClients) {
   const client = allClients.filter(c => c.id === r.client_id)[0]
 
   // prettier-ignore
-  return new Button(r.id, r.button_id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, client)
+  return new Button(r.id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, client)
 }
 
 function createButtonsVitalFromRow(r, allButtons) {
@@ -257,7 +257,7 @@ async function getMostRecentSessionWithPhoneNumber(phoneNumber, pgClient) {
       `
       SELECT s.*
       FROM sessions AS s
-      LEFT JOIN buttons AS b ON s.button_id = b.button_id
+      LEFT JOIN buttons AS b ON s.button_id = b.id
       WHERE b.phone_number = $1
       ORDER BY created_at DESC
       LIMIT 1
@@ -285,7 +285,7 @@ async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, pgC
       `
       SELECT s.*
       FROM sessions AS s
-      LEFT JOIN buttons AS b on s.button_id = b.button_id
+      LEFT JOIN buttons AS b on s.button_id = b.id
       LEFT JOIN clients AS c ON b.client_id = c.id
       WHERE s.id = $1
       AND c.alert_api_key = $2
@@ -338,7 +338,7 @@ async function getRecentSessionsWithClientId(clientId, pgClient) {
       `
       SELECT s.*
       FROM sessions AS s
-      LEFT JOIN buttons AS b on s.button_id = b.button_id
+      LEFT JOIN buttons AS b on s.button_id = b.id
       WHERE b.client_id = $1
       ORDER BY created_at DESC
       LIMIT 40
@@ -575,7 +575,7 @@ async function saveSession(session, pgClient) {
       WHERE id = $9
       `,
       [
-        session.button.buttonId,
+        session.button.id,
         session.chatbotState,
         session.alertType,
         session.numButtonPresses,
@@ -682,16 +682,16 @@ async function getButtonWithSerialNumber(serialNumber, pgClient) {
   return null
 }
 
-async function createButton(buttonId, clientId, displayName, phoneNumber, button_serial_number, pgClient) {
+async function createButton(clientId, displayName, phoneNumber, buttonSerialNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createButton',
       `
-      INSERT INTO buttons (button_id, client_id, display_name, phone_number, button_serial_number)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO buttons (client_id, display_name, phone_number, button_serial_number)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
       `,
-      [buttonId, clientId, displayName, phoneNumber, button_serial_number],
+      [clientId, displayName, phoneNumber, buttonSerialNumber],
       pool,
       pgClient,
     )
@@ -847,7 +847,7 @@ async function getClientWithSessionId(sessionId, pgClient) {
       `
       SELECT c.*
       FROM sessions AS s
-      LEFT JOIN buttons AS b ON s.button_id = b.button_id
+      LEFT JOIN buttons AS b ON s.button_id = b.id
       LEFT JOIN clients AS c ON b.client_id = c.id 
       WHERE s.id = $1
       `,
@@ -873,7 +873,7 @@ async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, pgC
       `
       SELECT s.id, s.chatbot_state, s.alert_type, b.display_name, s.num_button_presses, i.incident_categories, s.created_at
       FROM sessions AS s
-      LEFT JOIN buttons AS b ON s.button_id = b.button_id
+      LEFT JOIN buttons AS b ON s.button_id = b.id
       LEFT JOIN clients AS i ON b.client_id = i.id
       WHERE i.alert_api_key = $1
       AND (
@@ -900,7 +900,7 @@ async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, ma
       `
       SELECT s.id, s.alert_type, b.display_name, s.incident_category, s.num_button_presses, s.created_at, s.responded_at
       FROM sessions AS s
-      LEFT JOIN buttons AS b ON s.button_id = b.button_id
+      LEFT JOIN buttons AS b ON s.button_id = b.id
       LEFT JOIN clients AS i ON b.client_id = i.id
       WHERE i.alert_api_key = $1
       AND (
@@ -1196,7 +1196,7 @@ async function getDataForExport(pgClient) {
         TO_CHAR(s.responded_at, 'yyyy-MM-dd HH24:mi:ss') AS "Session Responded At",
         s.responded_by_phone_number AS "Session Responded By"
       FROM sessions AS s
-        LEFT JOIN buttons AS b ON s.button_id = b.button_id
+        LEFT JOIN buttons AS b ON s.button_id = b.id
         LEFT JOIN clients AS c ON c.id = b.client_id
       `,
       [],

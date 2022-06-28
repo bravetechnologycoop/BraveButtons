@@ -25,6 +25,7 @@ the code was deployed.
 ### Removed
 
 - API endpoint for pressing a Radio Bridge LoRa button (CU-2fk4arw).
+- Old `buttons_id` from the Buttons table.
 
 ## [9.0.0] - 2022-06-16
 
