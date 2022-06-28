@@ -281,6 +281,7 @@ async function downloadCsv(req, res) {
     'Date Button Created',
     'Button Last Updated',
     'Button Serial Number',
+    'Session Responded At',
     'Session Responded By',
   ]
 
