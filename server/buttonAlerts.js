@@ -14,7 +14,7 @@ function setup(braveAlerterObj) {
 
 async function handleValidRequest(button, numButtonPresses, batteryLevel) {
   helpers.log(
-    `UUID: ${button.buttonId.toString()} SerialNumber: ${
+    `id: ${button.id.toString()} SerialNumber: ${
       button.buttonSerialNumber
     } Unit: ${button.displayName.toString()} Presses: ${numButtonPresses.toString()} BatteryLevel: ${batteryLevel}`,
   )
@@ -28,19 +28,19 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
       return
     }
 
-    let currentSession = await db.getUnrespondedSessionWithButtonId(button.buttonId, pgClient)
+    let currentSession = await db.getUnrespondedSessionWithButtonId(button.id, pgClient)
     const currentTime = await db.getCurrentTime(pgClient)
 
     if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
       if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-        currentSession = await db.createSession(button.buttonId, CHATBOT_STATE.STARTED, numButtonPresses, null, batteryLevel, null, null, pgClient)
+        currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, numButtonPresses, null, batteryLevel, null, null, pgClient)
       } else {
         currentSession.incrementButtonPresses(numButtonPresses)
         currentSession.updateBatteryLevel(batteryLevel)
         await db.saveSession(currentSession, pgClient)
       }
     } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(button.buttonId, CHATBOT_STATE.STARTED, numButtonPresses, null, null, null, null, pgClient)
+      currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, numButtonPresses, null, null, null, null, pgClient)
     } else {
       currentSession.incrementButtonPresses(numButtonPresses)
       await db.saveSession(currentSession, pgClient)

@@ -31,7 +31,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
       displayName: '701',
     })
     const session = await sessionDBFactory(db, {
-      buttonId: button.buttonId,
+      buttonId: button.id,
       numButtonPresses: 1,
       chatbotState: this.chatbotState,
       incidentCategory: this.sessionIncidentCategory,

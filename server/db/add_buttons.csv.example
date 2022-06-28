@@ -1,4 +1,4 @@
-button_id,unit,phone_number,button_serial_number
-51b8be5678bf5ade9bf6a5958b2a4a44,202,+17787787778,AAAA-A0A0A0
-42a9fa1122aa4fed7cd5d0871f6b1d45,203,+12507787778,BBBB-B0B0B0
+unit,phone_number,button_serial_number
+202,+17787787778,AAAA-A0A0A0
+203,+12507787778,BBBB-B0B0B0
 

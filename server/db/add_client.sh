@@ -15,7 +15,7 @@ elif [[ ! -n "$6" ]]; then
     echo "Example: $0 ./../.env NewClient '{+16041234567,+16049876541}' '{+17781234567,+17789876543}' +18881112222 ./add_buttons.csv.example"
     echo ""
     echo "The buttons CSV file"
-    echo "MUST have the header 'button_id,unit,phone_number,button_serial_number'"
+    echo "MUST have the header 'unit,phone_number,button_serial_number'"
     echo "MUST use Unix line endings (LF), or else the phone numbers will have '\r' at the end"
     echo "MUST end with a newline, or else the last button will be silently ignored"
     echo ""
@@ -43,15 +43,14 @@ else
 
     client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE created_at = (SELECT MAX(created_at) FROM clients);")
 
-    while IFS=",", read -r button_id unit phone_number button_serial_number; do
+    while IFS=",", read -r unit phone_number button_serial_number; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
             echo "Adding button"
-            echo "  Button ID: $button_id"
             echo "  Display Name: $unit"
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_id, button_serial_number, display_name, phone_number, client_id) VALUES ('$button_id', '$button_serial_number', '$unit', '$phone_number', '$client_id');"
+            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_serial_number, display_name, phone_number, client_id) VALUES ('$button_serial_number', '$unit', '$phone_number', '$client_id');"
         fi
     done < $6
 

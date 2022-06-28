@@ -33,7 +33,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
       phoneNumber: this.sessionToPhoneNumber,
     })
     const session = await sessionDBFactory(db, {
-      buttonId: button.button_id,
+      buttonId: button.id,
       numButtonPresses: 1,
       chatbotState: this.chatbotState,
       incidentCategory: this.sessionIncidentCategory,

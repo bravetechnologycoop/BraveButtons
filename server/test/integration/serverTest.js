@@ -22,11 +22,9 @@ const sandbox = sinon.createSandbox()
 const validApiKey = helpers.getEnvVar('FLIC_BUTTON_PRESS_API_KEY')
 
 describe('Chatbot server', () => {
-  const unit1UUID = '111'
   const unit1SerialNumber = 'AAAA-A0A0A0'
   const unit1PhoneNumber = '+15005550006'
 
-  const unit2UUID = '222'
   const unit2SerialNumber = 'BBBB-B0B0B0'
   const unit2PhoneNumber = '+15005550006'
 
@@ -78,15 +76,13 @@ describe('Chatbot server', () => {
         fallbackTimeout: 2,
         fromPhoneNumber: '+15005550006',
       })
-      await buttonDBFactory(db, {
-        buttonId: unit1UUID,
+      this.button1 = await buttonDBFactory(db, {
         clientId: client.id,
         displayName: '1',
         phoneNumber: unit1PhoneNumber,
         buttonSerialNumber: unit1SerialNumber,
       })
-      await buttonDBFactory(db, {
-        buttonId: unit2UUID,
+      this.button2 = await buttonDBFactory(db, {
         clientId: client.id,
         displayName: '2',
         phoneNumber: unit2PhoneNumber,
@@ -152,7 +148,7 @@ describe('Chatbot server', () => {
         .send()
       expect(response).to.have.status(200)
 
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      const sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       expect(sessions.length).to.equal(1)
 
       const session = sessions[0]
@@ -162,7 +158,7 @@ describe('Chatbot server', () => {
       expect(session).to.have.property('numButtonPresses')
       expect(session).to.have.property('alertType')
       expect(session).to.have.property('respondedByPhoneNumber')
-      expect(session.button.buttonId).to.equal(unit1UUID)
+      expect(session.button.id).to.equal(this.button1.id)
       expect(session.button.displayName).to.equal('1')
       expect(session.numButtonPresses).to.equal(1)
       expect(session.buttonBatteryLevel).to.equal(100)
@@ -185,7 +181,7 @@ describe('Chatbot server', () => {
         .send()
       expect(response).to.have.status(200)
 
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      const sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       expect(sessions.length).to.equal(1)
 
       const session = sessions[0]
@@ -194,7 +190,7 @@ describe('Chatbot server', () => {
       expect(session).to.have.property('numButtonPresses')
       expect(session).to.have.property('alertType')
       expect(session).to.have.property('respondedByPhoneNumber')
-      expect(session.button.buttonId).to.equal(unit1UUID)
+      expect(session.button.id).to.equal(this.button1.id)
       expect(session.button.displayName).to.equal('1')
       expect(session.numButtonPresses).to.equal(1)
       expect(session.alertType).to.equal(ALERT_TYPE.BUTTONS_NOT_URGENT)
@@ -223,7 +219,7 @@ describe('Chatbot server', () => {
           .send(),
       ])
 
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      const sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       expect(sessions.length).to.equal(1)
     })
 
@@ -254,7 +250,7 @@ describe('Chatbot server', () => {
         .send()
       expect(response).to.have.status(200)
 
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      const sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       expect(sessions.length).to.equal(1)
 
       const session = sessions[0]
@@ -264,7 +260,7 @@ describe('Chatbot server', () => {
       expect(session).to.have.property('numButtonPresses')
       expect(session).to.have.property('alertType')
       expect(session).to.have.property('respondedByPhoneNumber')
-      expect(session.button.buttonId).to.equal(unit1UUID)
+      expect(session.button.id).to.equal(this.button1.id)
       expect(session.button.displayName).to.equal('1')
       expect(session.numButtonPresses).to.equal(4)
       expect(session.alertType).to.equal(ALERT_TYPE.BUTTONS_URGENT)
@@ -279,7 +275,7 @@ describe('Chatbot server', () => {
         .send()
 
       expect(response).to.have.status(200)
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      const sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       const session = sessions[0]
       expect(session.buttonBatteryLevel).to.be.null
     })
@@ -293,7 +289,7 @@ describe('Chatbot server', () => {
         .send()
 
       expect(response).to.have.status(200)
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      const sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       const session = sessions[0]
       expect(session.buttonBatteryLevel).to.be.null
     })
@@ -307,7 +303,7 @@ describe('Chatbot server', () => {
         .send()
 
       expect(response).to.have.status(200)
-      const sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      const sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       const session = sessions[0]
       expect(session.buttonBatteryLevel).to.be.null
     })
@@ -322,7 +318,7 @@ describe('Chatbot server', () => {
 
       expect(response).to.have.status(200)
 
-      let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      let sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       let session = sessions[0]
       expect(session.buttonBatteryLevel).to.equal(100)
 
@@ -332,7 +328,7 @@ describe('Chatbot server', () => {
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '1')
         .send()
-      sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       session = sessions[0]
       expect(session.buttonBatteryLevel).to.equal(1)
 
@@ -342,7 +338,7 @@ describe('Chatbot server', () => {
         .set('button-serial-number', unit1SerialNumber)
         .set('button-battery-level', '0')
         .send()
-      sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       session = sessions[0]
       expect(session.buttonBatteryLevel).to.equal(0)
     })
@@ -356,7 +352,7 @@ describe('Chatbot server', () => {
         .set('button-battery-level', fakeBatteryLevel.toString())
         .send()
       expect(response).to.have.status(200)
-      let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      let sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       let session = sessions[0]
       expect(session.buttonBatteryLevel).to.equal(fakeBatteryLevel)
 
@@ -368,7 +364,7 @@ describe('Chatbot server', () => {
         .send()
 
       expect(response).to.have.status(200)
-      sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       session = sessions[0]
       expect(session.buttonBatteryLevel).to.equal(fakeBatteryLevel)
     })
@@ -433,15 +429,13 @@ describe('Chatbot server', () => {
         fallbackTimeout: 2,
         fromPhoneNumber: '+15005550006',
       })
-      await buttonDBFactory(db, {
-        buttonId: unit1UUID,
+      this.button1 = await buttonDBFactory(db, {
         clientId: client.id,
         displayName: '1',
         phoneNumber: unit1PhoneNumber,
         buttonSerialNumber: unit1SerialNumber,
       })
-      await buttonDBFactory(db, {
-        buttonId: unit2UUID,
+      this.button2 = await buttonDBFactory(db, {
         clientId: client.id,
         displayName: '2',
         phoneNumber: unit2PhoneNumber,
@@ -717,7 +711,7 @@ describe('Chatbot server', () => {
         .set('button-serial-number', unit1SerialNumber)
         .send()
 
-      let sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      let sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after initial button press').to.equal(CHATBOT_STATE.STARTED)
       expect(sessions[0].respondedByPhoneNumber).to.equal(null)
@@ -730,7 +724,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_InitialStaffResponse)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after initial staff response').to.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -743,7 +737,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_IncidentCategoryResponseFromOtherResponderPhone)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after one of the other responders sent a message').to.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -756,7 +750,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_IncidentCategoryResponse)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(unit1UUID)
+      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after staff have categorized the incident').to.equal(CHATBOT_STATE.COMPLETED)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -770,10 +764,10 @@ describe('Chatbot server', () => {
         .set('button-serial-number', unit2SerialNumber)
         .send()
 
-      sessions = await db.getAllSessionsWithButtonId(unit2UUID)
+      sessions = await db.getAllSessionsWithButtonId(this.button2.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after new button press from a different unit').to.equal(CHATBOT_STATE.STARTED)
-      expect(sessions[0].button.buttonId).to.equal(unit2UUID)
+      expect(sessions[0].button.id).to.equal(this.button2.id)
       expect(sessions[0].numButtonPresses).to.equal(1)
       expect(sessions[0].respondedByPhoneNumber).to.equal(null)
       expect(sessions[0].respondedAt).to.equal(null)
