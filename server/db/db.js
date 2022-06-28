@@ -1193,6 +1193,7 @@ async function getDataForExport(pgClient) {
         TO_CHAR(b.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Button Created",
         TO_CHAR(b.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Button Last Updated",
         b.button_serial_number AS "Button Serial Number",
+        TO_CHAR(s.responded_at, 'yyyy-MM-dd HH24:mi:ss') AS "Session Responded At",
         s.responded_by_phone_number AS "Session Responded By"
       FROM sessions AS s
         LEFT JOIN buttons AS b ON s.button_id = b.button_id
