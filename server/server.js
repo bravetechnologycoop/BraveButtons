@@ -12,6 +12,10 @@ const vitals = require('./vitals')
 const routes = require('./routes')
 const buttonAlerts = require('./buttonAlerts')
 const dashboard = require('./dashboard')
+const i18nextHelpers = require('./i18nextHelpers')
+
+// Configure internationalization
+i18nextHelpers.setup()
 
 // Configure BraveAlerter
 const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()

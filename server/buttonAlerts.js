@@ -1,4 +1,5 @@
 // Third-party dependencies
+const { t } = require('i18next')
 
 // In-house dependencies
 const { ALERT_TYPE, helpers, CHATBOT_STATE } = require('brave-alert-lib')
@@ -56,12 +57,15 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
         responderPushId: button.client.responderPushId,
         deviceName: button.displayName,
         alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
-        message: `There has been a request for help from ${button.displayName.toString()} . Please respond "Ok" when you have followed up on the call.`,
+        message: t('alertStart', { lng: button.client.language, buttonDisplayName: button.displayName.toString() }),
         reminderTimeoutMillis: button.client.reminderTimeout * 1000,
         fallbackTimeoutMillis: button.client.fallbackTimeout * 1000,
-        reminderMessage:
-          'Please Respond "Ok" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.',
-        fallbackMessage: `There has been an unresponded request at ${button.client.displayName} ${button.displayName.toString()}`,
+        reminderMessage: t('alertReminder', { lng: button.client.language }),
+        fallbackMessage: t('alertFallback', {
+          lng: button.client.language,
+          clientDisplayName: button.client.displayName,
+          buttonDisplayName: button.displayName,
+        }),
         fallbackToPhoneNumbers: button.client.fallbackPhoneNumbers,
         fallbackFromPhoneNumber: button.client.fromPhoneNumber,
       }
@@ -76,7 +80,7 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
         button.client.responderPushId,
         button.client.responderPhoneNumbers,
         button.phoneNumber,
-        `This in an urgent request. The button has been pressed ${currentSession.numButtonPresses.toString()} times. Please respond "Ok" when you have followed up on the call.`,
+        t('alertUrgent', { lng: button.client.language, numButtonPresses: currentSession.numButtonPresses.toString() }),
         `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT)} Alert:\n${button.displayName.toString()}`,
       )
     } else {

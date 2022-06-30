@@ -15,6 +15,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
     this.sessionToPhoneNumber = '+13335557777'
     this.installationResponderPhoneNumbers = ['+17775558888']
     this.installationIncidentCategories = ['Cat1', 'Cat2', 'Cat3']
+    this.language = 'de'
     this.respondedByPhoneNumber = '+11114442222'
 
     await db.clearTables()
@@ -26,6 +27,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
       incidentCategories: this.installationIncidentCategories,
       alertApiKey: null,
       responderPushId: null,
+      language: this.language,
     })
     const button = await buttonDBFactory(db, {
       clientId: client.id,
@@ -60,6 +62,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
         this.installationResponderPhoneNumbers,
         ['0', '1', '2'],
         this.installationIncidentCategories,
+        this.language,
       ),
     )
   })

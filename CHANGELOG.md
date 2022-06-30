@@ -21,6 +21,7 @@ the code was deployed.
 - Session and Buttons factories.
 - Track the responsible Responder Phone for each session (CU-2dm6x2j).
 - Responded At column to the CSV export.
+- Bilingual English/French messages (CU-2dtutrx).
 
 ### Removed
 
