@@ -1,6 +1,7 @@
 // Third-party dependencies
 /* eslint-disable no-continue */
 const { DateTime } = require('luxon')
+const { t } = require('i18next')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
@@ -26,8 +27,8 @@ function differenceInSeconds(date1, date2) {
   return dateTime1.diff(dateTime2, 'seconds').seconds
 }
 
-function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber) {
-  const message = `The connection for ${locationDescription} Button Hub has been lost. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email clientsupport@brave.coop for further support.`
+function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber, language) {
+  const message = t('disconnectionInitial', { lng: language, hubLocationDescription: locationDescription })
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
@@ -37,8 +38,8 @@ function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients,
   })
 }
 
-function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber) {
-  const message = `${locationDescription} Button Hub is still disconnected. \nPlease unplug the hub and plug it back in to reset it. If you do not receive a reconnection message shortly after doing this, contact your network administrator. \nYou can also email clientsupport@brave.coop for further support.`
+function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber, language) {
+  const message = t('disconnectionReminder', { lng: language, hubLocationDescription: locationDescription })
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
@@ -48,8 +49,8 @@ function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients
   })
 }
 
-function sendReconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber) {
-  const message = `${locationDescription} Button Hub has reconnected.`
+function sendReconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber, language) {
+  const message = t('reconnection', { lng: language, hubLocationDescription: locationDescription })
 
   heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
     braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
@@ -115,14 +116,26 @@ async function checkHeartbeat() {
       if (externalHeartbeatExceeded) {
         if (hub.sentVitalsAlertAt === null) {
           await db.updateSentAlerts(hub.systemId, true)
-          sendDisconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber)
+          sendDisconnectionMessage(
+            hub.locationDescription,
+            client.heartbeatPhoneNumbers,
+            responderPhoneNumbers,
+            client.fromPhoneNumber,
+            client.language,
+          )
         } else if (differenceInSeconds(currentTime, hub.sentVitalsAlertAt) > helpers.getEnvVar('SUBSEQUENT_VITALS_ALERT_THRESHOLD')) {
           await db.updateSentAlerts(hub.systemId, true)
-          sendDisconnectionReminder(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber)
+          sendDisconnectionReminder(
+            hub.locationDescription,
+            client.heartbeatPhoneNumbers,
+            responderPhoneNumbers,
+            client.fromPhoneNumber,
+            client.language,
+          )
         }
       } else if (hub.sentVitalsAlertAt !== null) {
         await db.updateSentAlerts(hub.systemId, false)
-        sendReconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber)
+        sendReconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber, client.language)
       }
     }
   } catch (e) {

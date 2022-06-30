@@ -16,6 +16,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessio
     this.message = 'message'
     this.installationResponderPhoneNumbers = ['+17775558888']
     this.installationIncidentCategories = ['Cat1', 'Cat2', 'Cat3']
+    this.language = 'de'
     this.alertApiKey = 'myApiKey'
     this.respondedByPhoneNumber = '+17775554444'
 
@@ -28,6 +29,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessio
       incidentCategories: this.installationIncidentCategories,
       alertApiKey: this.alertApiKey,
       responderPushId: null,
+      language: this.language,
     })
     const button = await buttonDBFactory(db, {
       clientId: client.id,
@@ -62,6 +64,7 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionBySessio
         this.installationResponderPhoneNumbers,
         ['0', '1', '2'],
         this.installationIncidentCategories,
+        this.language,
       ),
     )
   })

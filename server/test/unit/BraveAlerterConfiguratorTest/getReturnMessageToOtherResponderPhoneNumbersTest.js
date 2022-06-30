@@ -21,6 +21,7 @@ describe('BraveAlerterConfigurator.js unit tests: getReturnMessageToOtherRespond
 
   it('should get message when STARTED => WAITING_FOR_CATEGORY', () => {
     const returnMessage = this.alertStateMachine.getReturnMessageToOtherResponderPhoneNumbers(
+      'en',
       CHATBOT_STATE.STARTED,
       CHATBOT_STATE.WAITING_FOR_CATEGORY,
     )
@@ -30,6 +31,7 @@ describe('BraveAlerterConfigurator.js unit tests: getReturnMessageToOtherRespond
 
   it('should get message when WAITING_FOR_REPLY => WAITING_FOR_CATEGORY', () => {
     const returnMessage = this.alertStateMachine.getReturnMessageToOtherResponderPhoneNumbers(
+      'en',
       CHATBOT_STATE.WAITING_FOR_REPLY,
       CHATBOT_STATE.WAITING_FOR_CATEGORY,
       'Selected Category',
@@ -40,6 +42,7 @@ describe('BraveAlerterConfigurator.js unit tests: getReturnMessageToOtherRespond
 
   it('should get no message when WAITING_FOR_CATEGORY => WAITING_FOR_CATEGORY', () => {
     const returnMessage = this.alertStateMachine.getReturnMessageToOtherResponderPhoneNumbers(
+      'en',
       CHATBOT_STATE.WAITING_FOR_CATEGORY,
       CHATBOT_STATE.WAITING_FOR_CATEGORY,
     )
@@ -49,6 +52,7 @@ describe('BraveAlerterConfigurator.js unit tests: getReturnMessageToOtherRespond
 
   it('should get message when WAITING_FOR_CATEGORY => COMPLETED', () => {
     const returnMessage = this.alertStateMachine.getReturnMessageToOtherResponderPhoneNumbers(
+      'en',
       CHATBOT_STATE.WAITING_FOR_CATEGORY,
       CHATBOT_STATE.COMPLETED,
       'Selected Category',
@@ -60,15 +64,20 @@ describe('BraveAlerterConfigurator.js unit tests: getReturnMessageToOtherRespond
   })
 
   it('should get no message when COMPLETED => COMPLETED', () => {
-    const returnMessage = this.alertStateMachine.getReturnMessageToOtherResponderPhoneNumbers(CHATBOT_STATE.COMPLETED, CHATBOT_STATE.COMPLETED, [
-      'Cat0',
-    ])
+    const returnMessage = this.alertStateMachine.getReturnMessageToOtherResponderPhoneNumbers(
+      'en',
+      CHATBOT_STATE.COMPLETED,
+      CHATBOT_STATE.COMPLETED,
+      ['Cat0'],
+    )
 
     expect(returnMessage).to.equal(null)
   })
 
   it('should get default message if given something funky', () => {
-    const returnMessage = this.alertStateMachine.getReturnMessageToOtherResponderPhoneNumbers('something funky', CHATBOT_STATE.COMPLETED, ['Cat0'])
+    const returnMessage = this.alertStateMachine.getReturnMessageToOtherResponderPhoneNumbers('en', 'something funky', CHATBOT_STATE.COMPLETED, [
+      'Cat0',
+    ])
 
     expect(returnMessage).to.equal('Error: No active session found')
   })

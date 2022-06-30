@@ -1,4 +1,8 @@
 /* eslint-disable class-methods-use-this */
+// Third-party dependencies
+const { t } = require('i18next')
+
+// In-house dependencies
 const { BraveAlerter, AlertSession, CHATBOT_STATE, helpers, Location, SYSTEM, HistoricAlert, ActiveAlert } = require('brave-alert-lib')
 const db = require('./db/db.js')
 
@@ -28,14 +32,16 @@ class BraveAlerterConfigurator {
 
       const incidentCategoryKeys = this.createIncidentCategoryKeys(session.button.client.incidentCategories)
 
+      const client = session.button.client
       alertSession = new AlertSession(
         session.id,
         session.chatbotState,
         session.respondedByPhoneNumber,
         session.incidentCategory,
-        session.button.client.responderPhoneNumbers,
+        client.responderPhoneNumbers,
         incidentCategoryKeys,
-        session.button.client.incidentCategories,
+        client.incidentCategories,
+        client.language,
       )
     } catch (e) {
       helpers.logError(`getAlertSession: failed to get and create a new alert session: ${JSON.stringify(e)}`)
@@ -47,14 +53,16 @@ class BraveAlerterConfigurator {
   async createAlertSessionFromSession(session) {
     const incidentCategoryKeys = this.createIncidentCategoryKeys(session.button.client.incidentCategories)
 
+    const client = session.button.client
     return new AlertSession(
       session.id,
       session.chatbotState,
       session.respondedByPhoneNumber,
       session.incidentCategory,
-      session.button.client.responderPhoneNumbers,
+      client.responderPhoneNumbers,
       incidentCategoryKeys,
-      session.button.client.incidentCategories,
+      client.incidentCategories,
+      client.language,
     )
   }
 
@@ -203,45 +211,46 @@ class BraveAlerterConfigurator {
     return count
   }
 
-  getReturnMessageToRespondedByPhoneNumber(fromAlertState, toAlertState, incidentCategories) {
+  getReturnMessageToRespondedByPhoneNumber(language, fromAlertState, toAlertState, incidentCategories) {
     let returnMessage
 
     switch (fromAlertState) {
       case CHATBOT_STATE.STARTED:
       case CHATBOT_STATE.WAITING_FOR_REPLY:
-        returnMessage = `Once you have responded, please reply with the number that best describes the incident:\n${this.createResponseStringFromIncidentCategories(
-          incidentCategories,
-        )}`
+        returnMessage = t('incidentCategoryRequest', {
+          lng: language,
+          incidentCategories: this.createResponseStringFromIncidentCategories(incidentCategories),
+        })
         break
 
       case CHATBOT_STATE.WAITING_FOR_CATEGORY:
         if (toAlertState === CHATBOT_STATE.WAITING_FOR_CATEGORY) {
-          returnMessage = "Sorry, the incident type wasn't recognized. Please try again."
+          returnMessage = t('incidentCategoryInvalid', { lng: language })
         } else if (toAlertState === CHATBOT_STATE.COMPLETED) {
-          returnMessage = `Thank you! This session is now complete. (You don't need to respond to this message.)`
+          returnMessage = t('alertCompleted', { lng: language })
         }
         break
 
       case CHATBOT_STATE.COMPLETED:
-        returnMessage = 'Thank you'
+        returnMessage = t('thankYou', { lng: language })
         break
 
       default:
-        returnMessage = 'Error: No active session found'
+        returnMessage = t('errorNoSession', { lng: language })
         break
     }
 
     return returnMessage
   }
 
-  getReturnMessageToOtherResponderPhoneNumbers(fromAlertState, toAlertState, selectedIncidentCategory) {
+  getReturnMessageToOtherResponderPhoneNumbers(language, fromAlertState, toAlertState, selectedIncidentCategory) {
     let returnMessage
 
     switch (fromAlertState) {
       case CHATBOT_STATE.STARTED:
       case CHATBOT_STATE.WAITING_FOR_REPLY:
         if (toAlertState === CHATBOT_STATE.WAITING_FOR_CATEGORY) {
-          returnMessage = `Another Responder has acknowledged this request. (You don't need to respond to this message.)`
+          returnMessage = t('alertAcknowledged', { lng: language })
         } else {
           returnMessage = null
         }
@@ -251,7 +260,7 @@ class BraveAlerterConfigurator {
         if (toAlertState === CHATBOT_STATE.WAITING_FOR_CATEGORY) {
           returnMessage = null
         } else if (toAlertState === CHATBOT_STATE.COMPLETED) {
-          returnMessage = `The incident was categorized as ${selectedIncidentCategory}.\n\nThank you. This session is now complete. (You don't need to respond to this message.)`
+          returnMessage = t('incidentCategorized', { lng: language, incidentCategory: selectedIncidentCategory })
         }
         break
 
@@ -260,7 +269,7 @@ class BraveAlerterConfigurator {
         break
 
       default:
-        returnMessage = 'Error: No active session found'
+        returnMessage = t('errorNoSession', { lng: language })
         break
     }
 
