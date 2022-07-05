@@ -175,9 +175,9 @@ async function renderClientVitalsPage(req, res) {
       for (const buttonsVital of buttonsVitals) {
         viewParams.buttons.push({
           unit: buttonsVital.button.displayName,
-          batteryLevel: buttonsVital.batteryLevel,
-          lastSeenAt: helpers.formatDateTimeForDashboard(buttonsVital.createdAt),
-          lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db),
+          batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
+          lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
+          lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
         })
       }
 
@@ -234,9 +234,9 @@ async function renderVitalsPage(req, res) {
       viewParams.buttons.push({
         clientName: buttonsVital.button.client.displayName,
         unit: buttonsVital.button.displayName,
-        batteryLevel: buttonsVital.batteryLevel,
-        lastSeenAt: helpers.formatDateTimeForDashboard(buttonsVital.createdAt),
-        lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db),
+        batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
+        lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
+        lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
       })
     }
 
