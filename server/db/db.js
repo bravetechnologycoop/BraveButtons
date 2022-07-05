@@ -81,7 +81,7 @@ async function beginTransaction() {
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await pgClient.query('LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications, gateways')
+    await pgClient.query('LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications, gateways, buttons_vitals, buttons_vitals_cache')
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
     if (pgClient) {
@@ -364,14 +364,11 @@ async function getRecentButtonsVitals(pgClient) {
     const results = await helpers.runQuery(
       'getRecentButtonsVitals',
       `
-      SELECT a.*
-      FROM (
-        SELECT DISTINCT ON (b.display_name) bv.*
-        FROM buttons_vitals AS bv
-        LEFT JOIN buttons AS b ON b.id = bv.button_id
-        ORDER BY b.display_name, bv.created_at DESC
-      ) AS a
-      ORDER BY a.created_at
+      SELECT b.id as button_id, bv.id, bv.battery_level, bv.created_at
+      FROM buttons b
+      LEFT JOIN buttons_vitals_cache bv ON b.id = bv.button_id
+      WHERE b.button_serial_number like 'ac%'
+      ORDER BY bv.created_at
       `,
       [],
       pool,
@@ -394,15 +391,12 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
     const results = await helpers.runQuery(
       'getRecentButtonsVitalsWithClientId',
       `
-      SELECT a.*
-      FROM (
-        SELECT DISTINCT ON (b.display_name) bv.*
-        FROM buttons_vitals AS bv
-        LEFT JOIN buttons AS b ON b.id = bv.button_id
-        WHERE b.client_id = $1
-        ORDER BY b.display_name, bv.created_at DESC
-      ) AS a
-      ORDER BY a.created_at
+      SELECT b.id as button_id, bv.id, bv.battery_level, bv.created_at
+      FROM buttons b
+      LEFT JOIN buttons_vitals_cache bv ON b.id = bv.button_id
+      WHERE b.client_id = $1
+      AND b.button_serial_number like 'ac%'
+      ORDER BY bv.created_at
       `,
       [clientId],
       pool,
@@ -1006,6 +1000,27 @@ async function clearButtonsVitals(pgClient) {
   }
 }
 
+async function clearButtonsVitalsCache(pgClient) {
+  if (!helpers.isTestEnvironment()) {
+    helpers.log('warning - tried to clear buttons vitals cache table outside of a test environment!')
+    return
+  }
+
+  try {
+    await helpers.runQuery(
+      'clearButtonsVitalsCache',
+      `
+      DELETE FROM buttons_vitals_cache
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function clearGateways(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear gateways table outside of a test environment!')
@@ -1054,6 +1069,7 @@ async function clearTables(pgClient) {
     return
   }
 
+  await clearButtonsVitalsCache(pgClient)
   await clearGatewaysVitals(pgClient)
   await clearButtonsVitals(pgClient)
   await clearGateways(pgClient)
@@ -1292,6 +1308,7 @@ module.exports = {
   beginTransaction,
   clearButtons,
   clearButtonsVitals,
+  clearButtonsVitalsCache,
   clearClients,
   clearGateways,
   clearGatewaysVitals,
