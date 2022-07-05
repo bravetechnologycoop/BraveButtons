@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Removed
+
+- Auto-fresh on Vitals pages.
+
 ## [10.0.0] - 2022-07-07
 
 ### Changed
