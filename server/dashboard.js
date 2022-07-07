@@ -186,8 +186,9 @@ async function renderClientVitalsPage(req, res) {
         viewParams.gateways.push({
           id: gatewaysVital.gateway.id,
           name: gatewaysVital.gateway.displayName,
-          lastSeenAt: helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt),
-          lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db),
+          lastSeenAt: gatewaysVital.lastSeenAt !== null ? helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt) : 'Never',
+          lastSeenAgo:
+            gatewaysVital.lastSeenAt !== null ? await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db) : 'Never',
           isActive: gatewaysVital.gateway.isActive,
         })
       }
@@ -246,8 +247,8 @@ async function renderVitalsPage(req, res) {
         clientName: gatewaysVital.gateway.client.displayName,
         id: gatewaysVital.gateway.id,
         name: gatewaysVital.gateway.displayName,
-        lastSeenAt: helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt),
-        lastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db),
+        lastSeenAt: gatewaysVital.lastSeenAt !== null ? helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt) : 'Never',
+        lastSeenAgo: gatewaysVital.lastSeenAt !== null ? await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db) : 'Never',
         isActive: gatewaysVital.gateway.isActive,
       })
     }

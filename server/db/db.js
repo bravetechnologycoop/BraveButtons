@@ -81,7 +81,9 @@ async function beginTransaction() {
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await pgClient.query('LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications, gateways, buttons_vitals, buttons_vitals_cache')
+    await pgClient.query(
+      'LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications, gateways, gateways_vitals, gateways_vitals_cache, buttons_vitals, buttons_vitals_cache',
+    )
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
     if (pgClient) {
@@ -419,14 +421,10 @@ async function getRecentGatewaysVitals(pgClient) {
     const results = await helpers.runQuery(
       'getRecentGatewaysVitals',
       `
-      SELECT a.*
-      FROM (
-        SELECT DISTINCT ON (g.id) gv.*
-        FROM gateways_vitals AS gv
-        LEFT JOIN gateways AS g ON g.id = gv.gateway_id
-        ORDER BY g.id, gv.created_at DESC
-      ) AS a
-      ORDER BY a.last_seen_at
+      SELECT g.id as gateway_id, gv.id, gv.last_seen_at, gv.created_at
+      FROM gateways g
+      LEFT JOIN gateways_vitals_cache gv ON g.id = gv.gateway_id
+      ORDER BY gv.last_seen_at
       `,
       [],
       pool,
@@ -449,15 +447,11 @@ async function getRecentGatewaysVitalsWithClientId(clientId, pgClient) {
     const results = await helpers.runQuery(
       'getRecentGatewaysVitalsWithClientId',
       `
-      SELECT a.*
-      FROM (
-        SELECT DISTINCT ON (g.id) gv.*
-        FROM gateways_vitals AS gv
-        LEFT JOIN gateways AS g ON g.id = gv.gateway_id
-        WHERE g.client_id = $1
-        ORDER BY g.id, gv.created_at DESC
-      ) AS a
-      ORDER BY a.last_seen_at
+      SELECT g.id as gateway_id, gv.id, gv.last_seen_at, gv.created_at
+      FROM gateways g
+      LEFT JOIN gateways_vitals_cache gv ON g.id = gv.gateway_id
+      WHERE g.client_id = $1
+      ORDER BY gv.last_seen_at
       `,
       [clientId],
       pool,
@@ -1063,12 +1057,34 @@ async function clearGatewaysVitals(pgClient) {
   }
 }
 
+async function clearGatewaysVitalsCache(pgClient) {
+  if (!helpers.isTestEnvironment()) {
+    helpers.log('warning - tried to clear gateways vitals cache table outside of a test environment!')
+    return
+  }
+
+  try {
+    await helpers.runQuery(
+      'clearGatewaysVitalsCache',
+      `
+      DELETE FROM gateways_vitals_cache
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function clearTables(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear tables outside of a test environment!')
     return
   }
 
+  await clearGatewaysVitalsCache(pgClient)
   await clearButtonsVitalsCache(pgClient)
   await clearGatewaysVitals(pgClient)
   await clearButtonsVitals(pgClient)
@@ -1312,6 +1328,7 @@ module.exports = {
   clearClients,
   clearGateways,
   clearGatewaysVitals,
+  clearGatewaysVitalsCache,
   clearNotifications,
   clearSessions,
   clearTables,
