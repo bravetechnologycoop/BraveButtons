@@ -14,6 +14,7 @@ the code was deployed.
 ### Added
 
 - Buttons Vitals cache table of only the most recent heartbeat from each Button (CU-2dm6xaf).
+- Gateway Vitals cache table of only the most recent seen timestamp from each Gateway (CU-2dm6xaf).
 
 ### Removed
 
