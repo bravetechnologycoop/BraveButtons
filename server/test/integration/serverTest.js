@@ -12,7 +12,7 @@ chai.use(chaiHttp)
 chai.use(sinonChai)
 
 const { buttonDBFactory } = require('../testingHelpers')
-const imports = require('../../server.js')
+const imports = require('../../server')
 
 const server = imports.server
 const db = imports.db

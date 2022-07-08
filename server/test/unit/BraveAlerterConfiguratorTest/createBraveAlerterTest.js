@@ -3,7 +3,7 @@ const { expect } = require('chai')
 const { describe, it } = require('mocha')
 
 // In-house dependencies
-const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
+const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
 
 describe('BraveAlerterConfigurator.js unit tests: createBraveAlerter', () => {
   it('returns a BraveAlerter', () => {

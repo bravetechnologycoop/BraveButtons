@@ -6,7 +6,7 @@ const { clickUpHelpers } = require('brave-alert-lib')
 const dashboard = require('./dashboard')
 const flic = require('./flic')
 const pa = require('./pa')
-const rak = require('./rak.js')
+const rak = require('./rak')
 const vitals = require('./vitals')
 
 const jsonBodyParser = express.json()

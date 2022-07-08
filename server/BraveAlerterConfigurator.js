@@ -4,7 +4,7 @@ const { t } = require('i18next')
 
 // In-house dependencies
 const { BraveAlerter, AlertSession, CHATBOT_STATE, helpers, Location, SYSTEM, HistoricAlert, ActiveAlert } = require('brave-alert-lib')
-const db = require('./db/db.js')
+const db = require('./db/db')
 
 class BraveAlerterConfigurator {
   createBraveAlerter() {
