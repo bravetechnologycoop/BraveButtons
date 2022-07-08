@@ -5,8 +5,8 @@ const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 
 const { helpers, HistoricAlert, ALERT_TYPE } = require('brave-alert-lib')
-const db = require('../../../db/db.js')
-const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
+const db = require('../../../db/db')
+const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
 
 // Configure Chai
 use(sinonChai)

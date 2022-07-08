@@ -3,7 +3,7 @@ const { t } = require('i18next')
 
 // In-house dependencies
 const { ALERT_TYPE, helpers, CHATBOT_STATE } = require('brave-alert-lib')
-const db = require('./db/db.js')
+const db = require('./db/db')
 
 const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
 

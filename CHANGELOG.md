@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Upgraded to Node 16 and NodePostgres 8 (CU-28na1ge).
+
 ### Added
 
 - Buttons Vitals cache table of only the most recent heartbeat from each Button (CU-2dm6xaf).

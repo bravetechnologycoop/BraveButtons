@@ -5,9 +5,9 @@ const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 
 const { AlertSession, CHATBOT_STATE, factories } = require('brave-alert-lib')
-const db = require('../../../db/db.js')
-const { sessionFactory, buttonFactory } = require('../../testingHelpers.js')
-const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator.js')
+const db = require('../../../db/db')
+const { sessionFactory, buttonFactory } = require('../../testingHelpers')
+const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
 
 // Configure Chai
 use(sinonChai)

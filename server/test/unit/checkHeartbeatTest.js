@@ -8,7 +8,7 @@ const { DateTime } = require('luxon')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
-const db = require('../../db/db.js')
+const db = require('../../db/db')
 const { hubFactory } = require('../testingHelpers')
 
 const vitals = rewire('../../vitals')
