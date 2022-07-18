@@ -14,6 +14,7 @@ the code was deployed.
 ### Changed
 
 - Upgraded to Node 16 and NodePostgres 8 (CU-28na1ge).
+- Allow Twilio numbers to be shared across clients (CU-2fk3y8a).
 
 ### Added
 

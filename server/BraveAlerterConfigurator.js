@@ -10,7 +10,7 @@ class BraveAlerterConfigurator {
   createBraveAlerter() {
     return new BraveAlerter(
       this.getAlertSession.bind(this),
-      this.getAlertSessionByPhoneNumber.bind(this),
+      this.getAlertSessionByPhoneNumbers.bind(this),
       this.getAlertSessionBySessionIdAndAlertApiKey.bind(this),
       this.alertSessionChangedCallback,
       this.getLocationByAlertApiKey.bind(this),
@@ -66,18 +66,18 @@ class BraveAlerterConfigurator {
     )
   }
 
-  async getAlertSessionByPhoneNumber(toPhoneNumber) {
+  async getAlertSessionByPhoneNumbers(devicePhoneNumber, responderPhoneNumber) {
     let alertSession = null
 
     try {
-      const session = await db.getMostRecentSessionWithPhoneNumber(toPhoneNumber)
+      const session = await db.getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responderPhoneNumber)
       if (session === null) {
         return null
       }
 
       alertSession = await this.createAlertSessionFromSession(session)
     } catch (e) {
-      helpers.logError(`getAlertSessionByPhoneNumber: failed to get and create a new alert session: ${e.toString()}`)
+      helpers.logError(`getAlertSessionByPhoneNumbers: failed to get and create a new alert session: ${e.toString()}`)
     }
 
     return alertSession
