@@ -19,6 +19,7 @@ the code was deployed.
 
 - Buttons Vitals cache table of only the most recent heartbeat from each Button (CU-2dm6xaf).
 - Gateway Vitals cache table of only the most recent seen timestamp from each Gateway (CU-2dm6xaf).
+- Country, Country Subdivision, and Building Type columns to the CSV Export (CU-2c6crcn).
 
 ### Removed
 

@@ -770,6 +770,16 @@ async function clearClients(pgClient) {
 
   try {
     await helpers.runQuery(
+      'clearClientsExtension',
+      `
+      DELETE FROM clients_extension
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+
+    await helpers.runQuery(
       'clearClients',
       `
       DELETE FROM clients
@@ -1228,10 +1238,14 @@ async function getDataForExport(pgClient) {
         TO_CHAR(b.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Button Last Updated",
         b.button_serial_number AS "Button Serial Number",
         TO_CHAR(s.responded_at, 'yyyy-MM-dd HH24:mi:ss') AS "Session Responded At",
-        s.responded_by_phone_number AS "Session Responded By"
+        s.responded_by_phone_number AS "Session Responded By",
+        x.country AS "Country",
+        x.country_subdivision AS "Country Subdivision",
+        x.building_type AS "Building Type"
       FROM sessions AS s
         LEFT JOIN buttons AS b ON s.button_id = b.id
         LEFT JOIN clients AS c ON c.id = b.client_id
+        LEFT JOIN clients_extension x on x.client_id = c.id
       `,
       [],
       pool,
