@@ -252,19 +252,21 @@ async function getUnrespondedSessionWithButtonId(buttonId, pgClient) {
   return null
 }
 
-async function getMostRecentSessionWithPhoneNumber(phoneNumber, pgClient) {
+async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responderPhoneNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getMostRecentSessionWithPhoneNumber',
+      'getMostRecentSessionWithPhoneNumbers',
       `
       SELECT s.*
       FROM sessions AS s
       LEFT JOIN buttons AS b ON s.button_id = b.id
+      LEFT JOIN clients AS c ON b.client_id = c.id
       WHERE b.phone_number = $1
+      AND $2 = ANY(c.responder_phone_numbers)
       ORDER BY created_at DESC
       LIMIT 1
       `,
-      [phoneNumber],
+      [devicePhoneNumber, responderPhoneNumber],
       pool,
       pgClient,
     )
@@ -1367,7 +1369,7 @@ module.exports = {
   getClientWithId,
   getClientWithSessionId,
   getGateways,
-  getMostRecentSessionWithPhoneNumber,
+  getMostRecentSessionWithPhoneNumbers,
   getNewNotificationsCountByAlertApiKey,
   getPool,
   getRecentButtonsVitals,
