@@ -284,6 +284,9 @@ async function downloadCsv(req, res) {
     'Button Serial Number',
     'Session Responded At',
     'Session Responded By',
+    'Country',
+    'Country Subdivision',
+    'Building Type',
   ]
 
   const csvParser = new Parser({ fields })
