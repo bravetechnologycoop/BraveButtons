@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [10.1.0] - 2022-07-25
+
 ### Changed
 
 - Upgraded to Node 16 and NodePostgres 8 (CU-28na1ge).
@@ -551,7 +553,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.0.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.1.0...HEAD
+[10.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v9.0.0...v10.0.0
 [9.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.2.0...v9.0.0
 [8.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.1.0...v8.2.0
