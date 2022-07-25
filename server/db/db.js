@@ -1194,7 +1194,7 @@ async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heart
   }
 }
 
-async function updateSentAlerts(id, sentalerts, pgClient) {
+async function updateHubSentVitalsAlerts(id, sentalerts, pgClient) {
   try {
     const query = sentalerts
       ? `
@@ -1208,7 +1208,7 @@ async function updateSentAlerts(id, sentalerts, pgClient) {
         WHERE system_id = $1
       `
 
-    await helpers.runQuery('updateSentAlerts', query, [id], pool, pgClient)
+    await helpers.runQuery('updateHubSentVitalsAlerts', query, [id], pool, pgClient)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -1385,6 +1385,6 @@ module.exports = {
   rollbackTransaction,
   saveHeartbeat,
   saveSession,
-  updateSentAlerts,
+  updateHubSentVitalsAlerts,
   updateSentInternalAlerts,
 }

@@ -8,10 +8,10 @@ const { DateTime } = require('luxon')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
-const db = require('../../db/db')
-const { hubFactory } = require('../testingHelpers')
+const db = require('../../../db/db')
+const { hubFactory } = require('../../testingHelpers')
 
-const vitals = rewire('../../vitals')
+const vitals = rewire('../../../vitals')
 
 use(sinonChai)
 
@@ -37,7 +37,7 @@ const exceededPiTimestamp = subtractSeconds(currentDBDate, piThreshold + 1) // s
 const exceededExternalTimestamp = subtractSeconds(currentDBDate, clientThreshold + 1) // sub(currentDBDate, { seconds: clientThreshold + 1 })
 const exceededReminderTimestamp = subtractSeconds(currentDBDate, subsequentVitalsThreshold + 1) // sub(currentDBDate, { seconds: subsequentVitalsThreshold + 1 })
 
-describe('vitals.js unit tests: checkHeartbeat', () => {
+describe('vitals.js unit tests: checkHubHeartbeat', () => {
   /* eslint-disable no-underscore-dangle */
   beforeEach(() => {
     const getEnvVarStub = sandbox.stub(helpers, 'getEnvVar')
@@ -48,7 +48,7 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     getEnvVarStub.withArgs('SUBSEQUENT_VITALS_ALERT_THRESHOLD').returns(subsequentVitalsThreshold)
 
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
-    sandbox.stub(db, 'updateSentAlerts')
+    sandbox.stub(db, 'updateHubSentVitalsAlerts')
     sandbox.stub(db, 'updateSentInternalAlerts')
 
     sandbox.stub(helpers, 'logSentry')
@@ -74,12 +74,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should not send a disconnection message to Sentry', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
 
     it('should not send any alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(this.sendDisconnectionMessageStub).to.not.be.called
     })
   })
@@ -94,12 +94,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should send a disconnection message to Sentry', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.be.called
     })
 
     it('should update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledWith(hubFactory({ flicLastSeenTime: exceededFlicTimestamp, sentInternalFlicAlert: true }))
     })
   })
@@ -114,12 +114,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should send a disconnection message to Sentry', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.be.called
     })
 
     it('should update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledWith(hubFactory({ flicLastPingTime: exceededPingTimestamp, sentInternalPingAlert: true }))
     })
   })
@@ -134,12 +134,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should send a disconnection message to Sentry', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.be.called
     })
 
     it('should update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledWith(hubFactory({ heartbeatLastSeenTime: exceededPiTimestamp, sentInternalPiAlert: true }))
     })
   })
@@ -154,12 +154,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should not send another disconnection message to Sentry', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
 
     it('should not update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.not.be.called
     })
   })
@@ -174,12 +174,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should not send another disconnection message to Sentry', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
 
     it('should not update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.not.be.called
     })
   })
@@ -194,12 +194,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should not send another disconnection message to Sentry', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
 
     it('should not update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.not.be.called
     })
   })
@@ -214,7 +214,7 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledWith(hubFactory({ flicLastSeenTime: currentDBDate, sentInternalFlicAlert: false }))
     })
   })
@@ -229,7 +229,7 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledWith(hubFactory({ flicLastPingTime: currentDBDate, sentInternalPingAlert: false }))
     })
   })
@@ -244,7 +244,7 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should update flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledWith(hubFactory({ heartbeatLastSeenTime: currentDBDate, sentInternalPiAlert: false }))
     })
   })
@@ -263,17 +263,17 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should send three disconnection messages to Sentry', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.be.calledThrice
     })
 
     it('should update each flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledThrice
     })
 
     it('should not send any alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(this.sendDisconnectionMessageStub).to.not.be.called
     })
   })
@@ -292,12 +292,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should send reconnection messages', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.be.calledThrice
     })
 
     it('should update each flag for internal alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledThrice
     })
   })
@@ -317,12 +317,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should update external alerts flag', async () => {
-      await vitals.checkHeartbeat()
-      expect(db.updateSentAlerts).to.be.called
+      await vitals.checkHubHeartbeat()
+      expect(db.updateHubSentVitalsAlerts).to.be.called
     })
 
     it('should send disconnection alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(this.sendDisconnectionMessageStub).to.be.called
     })
   })
@@ -342,12 +342,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should not update external alerts flag', async () => {
-      await vitals.checkHeartbeat()
-      expect(db.updateSentAlerts).to.not.be.called
+      await vitals.checkHubHeartbeat()
+      expect(db.updateHubSentVitalsAlerts).to.not.be.called
     })
 
     it('should not send reminder alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(this.sendDisconnectionReminderStub).to.not.be.called
     })
   })
@@ -367,12 +367,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should update external alerts with new timestamp', async () => {
-      await vitals.checkHeartbeat()
-      expect(db.updateSentAlerts).to.be.called
+      await vitals.checkHubHeartbeat()
+      expect(db.updateHubSentVitalsAlerts).to.be.called
     })
 
     it('should not send reminder alerts', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(this.sendDisconnectionReminderStub).to.be.called
     })
   })
@@ -392,22 +392,22 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should send a reconnection message for the metric which has gotten back to normal', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.be.calledOnce
     })
 
     it('should update internal alert flag for the metric which has gotten back to normal', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledOnce
     })
 
     it('should not update external alerts flag', async () => {
-      await vitals.checkHeartbeat()
-      expect(db.updateSentAlerts).to.be.called
+      await vitals.checkHubHeartbeat()
+      expect(db.updateHubSentVitalsAlerts).to.be.called
     })
 
     it('should not send reconnection messages', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(this.sendReconnectionMessageStub).to.be.called
     })
   })
@@ -427,12 +427,12 @@ describe('vitals.js unit tests: checkHeartbeat', () => {
     })
 
     it('should update external alerts flag', async () => {
-      await vitals.checkHeartbeat()
-      expect(db.updateSentAlerts).to.be.called
+      await vitals.checkHubHeartbeat()
+      expect(db.updateHubSentVitalsAlerts).to.be.called
     })
 
     it('should send reconnection messages', async () => {
-      await vitals.checkHeartbeat()
+      await vitals.checkHubHeartbeat()
       expect(this.sendReconnectionMessageStub).to.be.called
     })
   })

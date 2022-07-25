@@ -60,7 +60,7 @@ function sendReconnectionMessage(locationDescription, heartbeatAlertRecipients, 
   })
 }
 
-async function checkHeartbeat() {
+async function checkHubHeartbeat() {
   try {
     const hubs = await db.getHubs()
     for (const hub of hubs) {
@@ -115,7 +115,7 @@ async function checkHeartbeat() {
 
       if (externalHeartbeatExceeded) {
         if (hub.sentVitalsAlertAt === null) {
-          await db.updateSentAlerts(hub.systemId, true)
+          await db.updateHubSentVitalsAlerts(hub.systemId, true)
           sendDisconnectionMessage(
             hub.locationDescription,
             client.heartbeatPhoneNumbers,
@@ -124,7 +124,7 @@ async function checkHeartbeat() {
             client.language,
           )
         } else if (differenceInSeconds(currentTime, hub.sentVitalsAlertAt) > helpers.getEnvVar('SUBSEQUENT_VITALS_ALERT_THRESHOLD')) {
-          await db.updateSentAlerts(hub.systemId, true)
+          await db.updateHubSentVitalsAlerts(hub.systemId, true)
           sendDisconnectionReminder(
             hub.locationDescription,
             client.heartbeatPhoneNumbers,
@@ -134,7 +134,7 @@ async function checkHeartbeat() {
           )
         }
       } else if (hub.sentVitalsAlertAt !== null) {
-        await db.updateSentAlerts(hub.systemId, false)
+        await db.updateHubSentVitalsAlerts(hub.systemId, false)
         sendReconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber, client.language)
       }
     }
@@ -173,7 +173,7 @@ async function handleHeartbeat(req, res) {
 
 module.exports = {
   checkGatewayHeartbeat,
-  checkHeartbeat,
+  checkHubHeartbeat,
   handleHeartbeat,
   setup,
 }

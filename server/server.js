@@ -48,7 +48,7 @@ if (helpers.isTestEnvironment()) {
     cert: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/fullchain.pem`),
   }
   server = https.createServer(httpsOptions, app).listen(443)
-  setInterval(vitals.checkHeartbeat, 10 * 1000)
+  setInterval(vitals.checkHubHeartbeat, 10 * 1000)
   setInterval(vitals.checkGatewayHeartbeat, 5 * 60 * 1000)
   helpers.log('brave server listening on port 443')
 }
