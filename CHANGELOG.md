@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Improve Twilio number purchasing error messages.
+
 ## [10.1.0] - 2022-07-25
 
 ### Changed
