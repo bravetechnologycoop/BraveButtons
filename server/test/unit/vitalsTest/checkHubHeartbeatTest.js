@@ -55,12 +55,8 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')
 
-    this.sendDisconnectionMessageStub = sandbox.stub()
-    vitals.__set__('sendDisconnectionMessage', this.sendDisconnectionMessageStub)
-    this.sendDisconnectionReminderStub = sandbox.stub()
-    vitals.__set__('sendDisconnectionReminder', this.sendDisconnectionReminderStub)
-    this.sendReconnectionMessageStub = sandbox.stub()
-    vitals.__set__('sendReconnectionMessage', this.sendReconnectionMessageStub)
+    this.sendNotificationStub = sandbox.stub()
+    vitals.__set__('sendNotification', this.sendNotificationStub)
   })
 
   afterEach(() => {
@@ -78,13 +74,13 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
       expect(helpers.logSentry).to.not.be.called
     })
 
-    it('should not send any alerts', async () => {
+    it('should not send any notifications', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendDisconnectionMessageStub).to.not.be.called
+      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
-  describe('when just time since flic last seen exceeds the internal threshold, but is less than external threshold, and no internal alerts have been sent', () => {
+  describe('when just the time since flic last seen exceeds the internal threshold, but is less than external threshold, and no internal alerts have been sent', () => {
     beforeEach(async () => {
       this.hub = hubFactory({
         flicLastSeenTime: exceededFlicTimestamp,
@@ -104,7 +100,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     })
   })
 
-  describe('when just time since last ping exceeds the internal threshold but is less than external threshold, and no internal alerts have been sent', () => {
+  describe('when just the time since last ping exceeds the internal threshold but is less than external threshold, and no internal alerts have been sent', () => {
     beforeEach(async () => {
       this.hub = hubFactory({
         flicLastPingTime: exceededPingTimestamp,
@@ -124,7 +120,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     })
   })
 
-  describe('when just time since last pi heartbeat exceeds the internal threshold but is less than external threshold, and no internal alerts have been sent', () => {
+  describe('when just the time since last pi heartbeat exceeds the internal threshold but is less than external threshold, and no internal alerts have been sent', () => {
     beforeEach(async () => {
       this.hub = hubFactory({
         heartbeatLastSeenTime: exceededPiTimestamp,
@@ -144,7 +140,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     })
   })
 
-  describe('when just time since flic last seen exceeds the internal threshold, but is less than external threshold, and internal alert has been sent', () => {
+  describe('when just the time since flic last seen exceeds the internal threshold, but is less than external threshold, and internal alert has been sent', () => {
     beforeEach(async () => {
       this.hub = hubFactory({
         flicLastSeenTime: exceededFlicTimestamp,
@@ -164,7 +160,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     })
   })
 
-  describe('when just time since last ping exceeds the internal threshold, but is less than external threshold, and internal alert has been sent', () => {
+  describe('when just the time since last ping exceeds the internal threshold, but is less than external threshold, and internal alert has been sent', () => {
     beforeEach(async () => {
       this.hub = hubFactory({
         flicLastPingTime: exceededPingTimestamp,
@@ -184,7 +180,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     })
   })
 
-  describe('when just time since last pi heartbeat exceeds the internal threshold, but is less than external threshold, and internal alert has been sent', () => {
+  describe('when just the time since last pi heartbeat exceeds the internal threshold, but is less than external threshold, and internal alert has been sent', () => {
     beforeEach(async () => {
       this.hub = hubFactory({
         heartbeatLastSeenTime: exceededPiTimestamp,
@@ -204,7 +200,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     })
   })
 
-  describe('when just time since flic last seen no longer exceeds the internal threshold, but is less than external threshold, and internal alert has been sent', () => {
+  describe('when just the time since flic last seen no longer exceeds the internal threshold, but is less than external threshold, and internal alert has been sent', () => {
     beforeEach(async () => {
       this.hub = hubFactory({
         flicLastSeenTime: currentDBDate,
@@ -274,7 +270,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should not send any alerts', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendDisconnectionMessageStub).to.not.be.called
+      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -323,7 +319,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should send disconnection alerts', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendDisconnectionMessageStub).to.be.called
+      expect(this.sendNotificationStub).to.be.called
     })
   })
 
@@ -348,7 +344,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should not send reminder alerts', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendDisconnectionReminderStub).to.not.be.called
+      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -371,9 +367,9 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
       expect(db.updateHubSentVitalsAlerts).to.be.called
     })
 
-    it('should not send reminder alerts', async () => {
+    it('should send reminder alerts', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendDisconnectionReminderStub).to.be.called
+      expect(this.sendNotificationStub).to.be.called
     })
   })
 
@@ -408,7 +404,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should not send reconnection messages', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendReconnectionMessageStub).to.be.called
+      expect(this.sendNotificationStub).to.be.called
     })
   })
 
@@ -433,7 +429,7 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should send reconnection messages', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendReconnectionMessageStub).to.be.called
+      expect(this.sendNotificationStub).to.be.called
     })
   })
 })
