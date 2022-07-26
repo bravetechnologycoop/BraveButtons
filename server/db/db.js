@@ -61,7 +61,7 @@ function createHubFromRow(r, allClients) {
 function createGatewayFromRow(r, allClients) {
   const client = allClients.filter(c => c.id === r.client_id)[0]
 
-  return new Gateway(r.id, r.display_name, r.is_active, r.created_at, r.updated_at, client)
+  return new Gateway(r.id, r.display_name, r.is_active, r.created_at, r.updated_at, r.sent_vitals_alert_at, client)
 }
 
 function createGatewaysVitalFromRow(r, allGateways) {
@@ -464,6 +464,33 @@ async function getRecentGatewaysVitalsWithClientId(clientId, pgClient) {
       const allGateways = await getGateways(pgClient)
       return results.rows.map(r => createGatewaysVitalFromRow(r, allGateways))
     }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getRecentGatewaysVitalWithGatewayId(gatewayId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getRecentGatewaysVitalWithGatewayId',
+      `
+      SELECT *
+      FROM gateways_vitals_cache
+      WHERE gateway_id = $1
+      `,
+      [gatewayId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allGateways = await getGateways(pgClient)
+    return createGatewaysVitalFromRow(results.rows[0], allGateways)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -1214,6 +1241,26 @@ async function updateHubSentVitalsAlerts(id, sentalerts, pgClient) {
   }
 }
 
+async function updateGatewaySentVitalsAlerts(gatewayId, sentalerts, pgClient) {
+  try {
+    const query = sentalerts
+      ? `
+        UPDATE gateways
+        SET sent_vitals_alert_at = NOW()
+        WHERE id = $1
+      `
+      : `
+        UPDATE gateways
+        SET sent_vitals_alert_at = NULL
+        WHERE id = $1
+      `
+
+    await helpers.runQuery('updateGatewaySentVitalsAlerts', query, [gatewayId], pool, pgClient)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function getDataForExport(pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1376,6 +1423,7 @@ module.exports = {
   getRecentButtonsVitalsWithClientId,
   getRecentGatewaysVitals,
   getRecentGatewaysVitalsWithClientId,
+  getRecentGatewaysVitalWithGatewayId,
   getRecentSessionsWithClientId,
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,
@@ -1385,6 +1433,7 @@ module.exports = {
   rollbackTransaction,
   saveHeartbeat,
   saveSession,
+  updateGatewaySentVitalsAlerts,
   updateHubSentVitalsAlerts,
   updateSentInternalAlerts,
 }

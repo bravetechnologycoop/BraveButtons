@@ -3,6 +3,8 @@ const { factories, CHATBOT_STATE, ALERT_TYPE } = require('brave-alert-lib')
 const Session = require('../Session')
 const Hub = require('../Hub')
 const Button = require('../Button')
+const Gateway = require('../Gateway')
+const GatewaysVital = require('../GatewaysVital')
 
 function buttonFactory(overrides = {}) {
   return new Button(
@@ -74,9 +76,32 @@ function hubFactory(overrides = {}) {
   )
 }
 
+function gatewayFactory(overrides = {}) {
+  return new Gateway(
+    overrides.id !== undefined ? overrides.id : 'f92eab3b-99e1-4abf-8a98-783fc1b18218',
+    overrides.displayName !== undefined ? overrides.displayName : 'My Fake Gateway',
+    overrides.isActive !== undefined ? overrides.isActive : true,
+    overrides.createdAt !== undefined ? overrides.createdAt : new Date('2022-01-04T22:28:28.0248Z'),
+    overrides.updatedAt !== undefined ? overrides.updatedAt : new Date('2022-01-04T22:28:28.0248Z'),
+    overrides.sentVitalsAlertAt !== undefined ? overrides.sentVitalsAlertAt : new Date('2021-11-04T22:28:28.0248Z'),
+    overrides.client !== undefined ? overrides.client : factories.clientFactory(),
+  )
+}
+
+function gatewaysVitalFactory(overrides = {}) {
+  return new GatewaysVital(
+    overrides.id !== undefined ? overrides.id : '',
+    overrides.lastSeenAt !== undefined ? overrides.lastSeenAt : new Date(),
+    overrides.createdAt !== undefined ? overrides.createdAt : new Date(),
+    overrides.gateway !== undefined ? overrides.gateway : gatewayFactory(),
+  )
+}
+
 module.exports = {
   buttonDBFactory,
   buttonFactory,
+  gatewayFactory,
+  gatewaysVitalFactory,
   hubFactory,
   sessionDBFactory,
   sessionFactory,

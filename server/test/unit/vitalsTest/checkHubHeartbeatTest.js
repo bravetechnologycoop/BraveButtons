@@ -10,6 +10,7 @@ const { DateTime } = require('luxon')
 const { helpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { hubFactory } = require('../../testingHelpers')
+require('../../mocks/tMock')
 
 const vitals = rewire('../../../vitals')
 
@@ -94,6 +95,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
       expect(helpers.logSentry).to.be.called
     })
 
+    it('should not send any notifications', async () => {
+      await vitals.checkHubHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
+    })
+
     it('should update flag for internal alerts', async () => {
       await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledWith(hubFactory({ flicLastSeenTime: exceededFlicTimestamp, sentInternalFlicAlert: true }))
@@ -112,6 +118,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     it('should send a disconnection message to Sentry', async () => {
       await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.be.called
+    })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkHubHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
     })
 
     it('should update flag for internal alerts', async () => {
@@ -134,6 +145,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
       expect(helpers.logSentry).to.be.called
     })
 
+    it('should not send any notifications', async () => {
+      await vitals.checkHubHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
+    })
+
     it('should update flag for internal alerts', async () => {
       await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.be.calledWith(hubFactory({ heartbeatLastSeenTime: exceededPiTimestamp, sentInternalPiAlert: true }))
@@ -152,6 +168,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     it('should not send another disconnection message to Sentry', async () => {
       await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.not.be.called
+    })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkHubHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
     })
 
     it('should not update flag for internal alerts', async () => {
@@ -174,6 +195,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
       expect(helpers.logSentry).to.not.be.called
     })
 
+    it('should not send any notifications', async () => {
+      await vitals.checkHubHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
+    })
+
     it('should not update flag for internal alerts', async () => {
       await vitals.checkHubHeartbeat()
       expect(db.updateSentInternalAlerts).to.not.be.called
@@ -192,6 +218,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
     it('should not send another disconnection message to Sentry', async () => {
       await vitals.checkHubHeartbeat()
       expect(helpers.logSentry).to.not.be.called
+    })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkHubHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
     })
 
     it('should not update flag for internal alerts', async () => {
@@ -319,7 +350,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should send disconnection alerts', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendNotificationStub).to.be.called
+      expect(this.sendNotificationStub).to.be.calledWithExactly(
+        'hubDisconnectionInitial',
+        this.hub.client.responderPhoneNumbers.concat(this.hub.client.heartbeatPhoneNumbers),
+        this.hub.client.fromPhoneNumber,
+      )
     })
   })
 
@@ -369,7 +404,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should send reminder alerts', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendNotificationStub).to.be.called
+      expect(this.sendNotificationStub).to.be.calledWithExactly(
+        'hubDisconnectionReminder',
+        this.hub.client.responderPhoneNumbers.concat(this.hub.client.heartbeatPhoneNumbers),
+        this.hub.client.fromPhoneNumber,
+      )
     })
   })
 
@@ -404,7 +443,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should not send reconnection messages', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendNotificationStub).to.be.called
+      expect(this.sendNotificationStub).to.be.calledWithExactly(
+        'hubReconnection',
+        this.hub.client.responderPhoneNumbers.concat(this.hub.client.heartbeatPhoneNumbers),
+        this.hub.client.fromPhoneNumber,
+      )
     })
   })
 
@@ -429,7 +472,11 @@ describe('vitals.js unit tests: checkHubHeartbeat', () => {
 
     it('should send reconnection messages', async () => {
       await vitals.checkHubHeartbeat()
-      expect(this.sendNotificationStub).to.be.called
+      expect(this.sendNotificationStub).to.be.calledWithExactly(
+        'hubReconnection',
+        this.hub.client.responderPhoneNumbers.concat(this.hub.client.heartbeatPhoneNumbers),
+        this.hub.client.fromPhoneNumber,
+      )
     })
   })
 })

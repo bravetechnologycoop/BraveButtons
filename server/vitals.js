@@ -1,7 +1,7 @@
 // Third-party dependencies
 /* eslint-disable no-continue */
 const { DateTime } = require('luxon')
-const { t } = require('i18next')
+const i18next = require('i18next')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
@@ -89,14 +89,14 @@ async function checkHubHeartbeat() {
         if (hub.sentVitalsAlertAt === null) {
           await db.updateHubSentVitalsAlerts(hub.systemId, true)
           sendNotification(
-            t('hubDisconnectionInitial', { lng: client.language, hubLocationDescription: hub.locationDescription }),
+            i18next.t('hubDisconnectionInitial', { lng: client.language, hubLocationDescription: hub.locationDescription }),
             client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
             client.fromPhoneNumber,
           )
         } else if (differenceInSeconds(currentTime, hub.sentVitalsAlertAt) > helpers.getEnvVar('SUBSEQUENT_VITALS_ALERT_THRESHOLD')) {
           await db.updateHubSentVitalsAlerts(hub.systemId, true)
           sendNotification(
-            t('hubDisconnectionReminder', { lng: client.language, hubLocationDescription: hub.locationDescription }),
+            i18next.t('hubDisconnectionReminder', { lng: client.language, hubLocationDescription: hub.locationDescription }),
             client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
             client.fromPhoneNumber,
           )
@@ -104,7 +104,7 @@ async function checkHubHeartbeat() {
       } else if (hub.sentVitalsAlertAt !== null) {
         await db.updateHubSentVitalsAlerts(hub.systemId, false)
         sendNotification(
-          t('hubReconnection', { lng: client.language, hubLocationDescription: hub.locationDescription }),
+          i18next.t('hubReconnection', { lng: client.language, hubLocationDescription: hub.locationDescription }),
           client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
           client.fromPhoneNumber,
         )
@@ -117,11 +117,59 @@ async function checkHubHeartbeat() {
 
 async function checkGatewayHeartbeat() {
   try {
+    const THRESHOLD = helpers.getEnvVar('GATEWAY_VITALS_ALERT_THRESHOLD')
+    const SUBSEQUENT_THRESHOLD = helpers.getEnvVar('SUBSEQUENT_VITALS_ALERT_THRESHOLD')
+
     const gateways = await db.getGateways()
+
     for (const gateway of gateways) {
+      // Get latest gateway statistics from AWS
       const gatewayStats = await aws.getGatewayStats(gateway.id)
       if (gatewayStats !== null) {
         await db.logGatewaysVital(gateway.id, gatewayStats)
+      }
+
+      if (gateway.isActive && gateway.client.isActive) {
+        const currentTime = await db.getCurrentTime()
+        const gatewaysVital = await db.getRecentGatewaysVitalWithGatewayId(gateway.id)
+        const gatewayDelay = differenceInSeconds(currentTime, gatewaysVital.lastSeenAt)
+        const gatewayThreholdExceeded = gatewayDelay > THRESHOLD
+        const client = gateway.client
+        if (gatewayThreholdExceeded) {
+          if (gateway.sentVitalsAlertAt === null) {
+            const logMessage = `Disconnection: ${gateway.displayName} Gateway delay is ${gatewayDelay} seconds.`
+            helpers.logSentry(logMessage)
+            helpers.log(logMessage)
+
+            await db.updateGatewaySentVitalsAlerts(gateway.id, true)
+
+            sendNotification(
+              i18next.t('gatewayDisconnectionInitial', { lng: client.language, gatewayDisplayName: gateway.displayName }),
+              client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+              client.fromPhoneNumber,
+            )
+          } else if (differenceInSeconds(currentTime, gateway.sentVitalsAlertAt) > SUBSEQUENT_THRESHOLD) {
+            await db.updateGatewaySentVitalsAlerts(gateway.id, true)
+
+            sendNotification(
+              i18next.t('gatewayDisconnectionReminder', { lng: client.language, gatewayDisplayName: gateway.displayName }),
+              client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+              client.fromPhoneNumber,
+            )
+          }
+        } else if (gateway.sentVitalsAlertAt !== null) {
+          const logMessage = `Reconnection: ${gateway.displayName} Gateway.`
+          helpers.logSentry(logMessage)
+          helpers.log(logMessage)
+
+          await db.updateGatewaySentVitalsAlerts(gateway.id, false)
+
+          sendNotification(
+            i18next.t('gatewayReconnection', { lng: client.language, gatewayDisplayName: gateway.displayName }),
+            client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+            client.fromPhoneNumber,
+          )
+        }
       }
     }
   } catch (e) {
