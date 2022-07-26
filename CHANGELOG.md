@@ -15,6 +15,10 @@ the code was deployed.
 
 - Improve Twilio number purchasing error messages.
 
+### Added
+
+- Disconnection/reconnection SMS messages to Heartbeat Phone Numbers for RAK Gateways (CU-208arfp).
+
 ## [10.1.0] - 2022-07-25
 
 ### Changed
