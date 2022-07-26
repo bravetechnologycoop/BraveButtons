@@ -27,36 +27,9 @@ function differenceInSeconds(date1, date2) {
   return dateTime1.diff(dateTime2, 'seconds').seconds
 }
 
-function sendDisconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber, language) {
-  const message = t('disconnectionInitial', { lng: language, hubLocationDescription: locationDescription })
-
-  heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
-    braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
-  })
-  responderPhoneNumbers.forEach(responderPhoneNumber => {
-    braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
-  })
-}
-
-function sendDisconnectionReminder(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber, language) {
-  const message = t('disconnectionReminder', { lng: language, hubLocationDescription: locationDescription })
-
-  heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
-    braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
-  })
-  responderPhoneNumbers.forEach(responderPhoneNumber => {
-    braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
-  })
-}
-
-function sendReconnectionMessage(locationDescription, heartbeatAlertRecipients, responderPhoneNumbers, fromPhoneNumber, language) {
-  const message = t('reconnection', { lng: language, hubLocationDescription: locationDescription })
-
-  heartbeatAlertRecipients.forEach(heartbeatAlertRecipient => {
-    braveAlerter.sendSingleAlert(heartbeatAlertRecipient, fromPhoneNumber, message)
-  })
-  responderPhoneNumbers.forEach(responderPhoneNumber => {
-    braveAlerter.sendSingleAlert(responderPhoneNumber, fromPhoneNumber, message)
+function sendNotification(message, toPhoneNumbers, fromPhoneNumber) {
+  toPhoneNumbers.forEach(toPhoneNumber => {
+    braveAlerter.sendSingleAlert(toPhoneNumber, fromPhoneNumber, message)
   })
 }
 
@@ -69,7 +42,6 @@ async function checkHubHeartbeat() {
       }
 
       const client = hub.client
-      const responderPhoneNumbers = client.responderPhoneNumbers
       const currentTime = await db.getCurrentTime()
       const flicDelayinSeconds = differenceInSeconds(currentTime, hub.flicLastSeenTime)
       const piDelayinSeconds = differenceInSeconds(currentTime, hub.heartbeatLastSeenTime)
@@ -116,26 +88,26 @@ async function checkHubHeartbeat() {
       if (externalHeartbeatExceeded) {
         if (hub.sentVitalsAlertAt === null) {
           await db.updateHubSentVitalsAlerts(hub.systemId, true)
-          sendDisconnectionMessage(
-            hub.locationDescription,
-            client.heartbeatPhoneNumbers,
-            responderPhoneNumbers,
+          sendNotification(
+            t('hubDisconnectionInitial', { lng: client.language, hubLocationDescription: hub.locationDescription }),
+            client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
             client.fromPhoneNumber,
-            client.language,
           )
         } else if (differenceInSeconds(currentTime, hub.sentVitalsAlertAt) > helpers.getEnvVar('SUBSEQUENT_VITALS_ALERT_THRESHOLD')) {
           await db.updateHubSentVitalsAlerts(hub.systemId, true)
-          sendDisconnectionReminder(
-            hub.locationDescription,
-            client.heartbeatPhoneNumbers,
-            responderPhoneNumbers,
+          sendNotification(
+            t('hubDisconnectionReminder', { lng: client.language, hubLocationDescription: hub.locationDescription }),
+            client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
             client.fromPhoneNumber,
-            client.language,
           )
         }
       } else if (hub.sentVitalsAlertAt !== null) {
         await db.updateHubSentVitalsAlerts(hub.systemId, false)
-        sendReconnectionMessage(hub.locationDescription, client.heartbeatPhoneNumbers, responderPhoneNumbers, client.fromPhoneNumber, client.language)
+        sendNotification(
+          t('hubReconnection', { lng: client.language, hubLocationDescription: hub.locationDescription }),
+          client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
+          client.fromPhoneNumber,
+        )
       }
     }
   } catch (e) {
