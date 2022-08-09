@@ -15,9 +15,28 @@
 
 <body>
    {{> nav}}
-    <div class="content-area">
-        <div class="content-wrapper">            
-            <h4 class="no-clients">{{viewMessage}}</h4>
+     <div class="content-area">
+        <div class="content-wrapper">
+            <h4 class="no-locations">Buttons Clients</h4>
+            <br>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm table-fixed">
+                    <thead>
+                        <tr class="table-header" scope="row">
+                            <th scope="col">Client</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {{#clients}}
+                        <tr class="table-data">
+                            <th scope="row"><a href="/clients/{{id}}">{{displayName}}</a></th>
+                            <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
+                        </tr>
+                    {{/clients}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     

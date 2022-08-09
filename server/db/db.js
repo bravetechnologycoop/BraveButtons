@@ -133,6 +133,7 @@ async function getClients(pgClient) {
       `
       SELECT *
       FROM clients
+      ORDER BY display_name
       `,
       [],
       pool,

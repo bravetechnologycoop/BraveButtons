@@ -31,6 +31,7 @@
                 <table class="table table-striped table-sm">
                     <thead>
                         <tr class="table-header" scope="row">
+                            <th scope="col">Client</th>
                             <th scope="col">Name</th>
                             <th scope="col">Location Description</th>
                             <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Flic Hub's MAC address did anything on the network (according to darkstat). This represents real activity from the Flic Hub.">Last Seen (Flic)</th>
@@ -42,6 +43,7 @@
                     <tbody>
                         {{#hubs}}
                             <tr class="table-data">
+                                <th scope="row"><a href="/clients/{{clientId}}">{{clientName}}</a></th>
                                 <th scope="row">{{name}}</th>
                                 <td>{{locationDescription}}</td>
                                 <td data-toggle="tooltip" data-placement="top" title="{{flicLastSeenTime}}">{{flicLastSeenAgo}}</td>
@@ -74,7 +76,7 @@
                     <tbody>
                         {{#gateways}}
                             <tr class="table-data">
-                                <th scope="row">{{clientName}}</th>
+                                <th scope="row"><a href="/clients/{{clientId}}">{{clientName}}</a></th>
                                 <th scope="row">{{id}}</th>
                                 <td>{{name}}</td>
                                 <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
@@ -99,15 +101,17 @@
                             <th scope="col">Unit</th>
                             <th scope="col">Battery Level</th>
                             <th scope="col">Last Seen</th>
+                            <th scope="col"></th>
                         </tr>
                     </thead>
                     <tbody>
                         {{#buttons}}
                             <tr class="table-data">
-                                <th scope="row">{{clientName}}</th>
+                                <th scope="row"><a href="/clients/{{clientId}}">{{clientName}}</a></th>
                                 <th scope="row">{{unit}}</th>
                                 <td>{{batteryLevel}}</td>
                                 <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
+                                <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
                             </tr>
                         {{/buttons}}
                     </tbody>
