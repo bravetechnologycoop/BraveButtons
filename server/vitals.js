@@ -139,7 +139,6 @@ async function checkGatewayHeartbeat() {
           if (gateway.sentVitalsAlertAt === null) {
             const logMessage = `Disconnection: ${gateway.displayName} Gateway delay is ${gatewayDelay} seconds.`
             helpers.logSentry(logMessage)
-            helpers.log(logMessage)
 
             await db.updateGatewaySentVitalsAlerts(gateway.id, true)
 
@@ -160,12 +159,64 @@ async function checkGatewayHeartbeat() {
         } else if (gateway.sentVitalsAlertAt !== null) {
           const logMessage = `Reconnection: ${gateway.displayName} Gateway.`
           helpers.logSentry(logMessage)
-          helpers.log(logMessage)
 
           await db.updateGatewaySentVitalsAlerts(gateway.id, false)
 
           sendNotification(
             i18next.t('gatewayReconnection', { lng: client.language, gatewayDisplayName: gateway.displayName }),
+            client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+            client.fromPhoneNumber,
+          )
+        }
+      }
+    }
+  } catch (e) {
+    helpers.logError(`Failed to check gateway heartbeat: ${e}`)
+  }
+}
+
+async function checkButtonBatteries() {
+  try {
+    const THRESHOLD = helpers.getEnvVar('BUTTON_LOW_BATTERY_ALERT_THRESHOLD')
+    const SUBSEQUENT_THRESHOLD = helpers.getEnvVar('SUBSEQUENT_VITALS_ALERT_THRESHOLD')
+
+    const buttonsVitals = await db.getRecentButtonsVitals()
+
+    for (const buttonsVital of buttonsVitals) {
+      const currentTime = await db.getCurrentTime()
+      const button = buttonsVital.button
+      const client = button.client
+
+      if (button.isActive && client.isActive) {
+        if (buttonsVital.batteryLevel !== null && buttonsVital.batteryLevel < THRESHOLD) {
+          if (button.sentLowBatteryAlertAt === null) {
+            const logMessage = `Low Battery: ${client.displayName} ${button.displayName} Button battery level is ${buttonsVital.batteryLevel}%.`
+            helpers.logSentry(logMessage)
+
+            await db.updateButtonsSentLowBatteryAlerts(button.id, true)
+
+            sendNotification(
+              i18next.t('buttonLowBatteryInitial', { lng: client.language, buttonDisplayName: button.displayName }),
+              client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+              client.fromPhoneNumber,
+            )
+          } else if (differenceInSeconds(currentTime, button.sentLowBatteryAlertAt) > SUBSEQUENT_THRESHOLD) {
+            await db.updateButtonsSentLowBatteryAlerts(button.id, true)
+
+            sendNotification(
+              i18next.t('buttonLowBatteryReminder', { lng: client.language, buttonDisplayName: button.displayName }),
+              client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+              client.fromPhoneNumber,
+            )
+          }
+        } else if (button.sentLowBatteryAlertAt !== null && buttonsVital.batteryLevel > 80) {
+          const logMessage = `Battery recharged: ${client.displayName} ${button.displayName} Button.`
+          helpers.logSentry(logMessage)
+
+          await db.updateButtonsSentLowBatteryAlerts(button.id, false)
+
+          sendNotification(
+            i18next.t('buttonLowBatteryNoLonger', { lng: client.language, buttonDisplayName: button.displayName }),
             client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
             client.fromPhoneNumber,
           )
@@ -192,6 +243,7 @@ async function handleHeartbeat(req, res) {
 }
 
 module.exports = {
+  checkButtonBatteries,
   checkGatewayHeartbeat,
   checkHubHeartbeat,
   handleHeartbeat,

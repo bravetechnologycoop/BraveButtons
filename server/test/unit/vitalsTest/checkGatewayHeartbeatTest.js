@@ -73,11 +73,6 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
       expect(helpers.logSentry).to.not.be.called
     })
 
-    it('should not log anything', async () => {
-      await vitals.checkGatewayHeartbeat()
-      expect(helpers.log).not.to.be.called
-    })
-
     it('should not send any notifications', async () => {
       await vitals.checkGatewayHeartbeat()
       expect(this.sendNotificationStub).to.not.be.called
@@ -103,11 +98,6 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
     it('should send the reconnection message to Sentry', async () => {
       await vitals.checkGatewayHeartbeat()
       expect(helpers.logSentry).to.be.called
-    })
-
-    it('should log the reconnection', async () => {
-      await vitals.checkGatewayHeartbeat()
-      expect(helpers.log).to.be.called
     })
 
     it('should send a reconnection notifications', async () => {
@@ -141,11 +131,6 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
       expect(helpers.logSentry).to.be.called
     })
 
-    it('should log the disconnection', async () => {
-      await vitals.checkGatewayHeartbeat()
-      expect(helpers.log).to.be.called
-    })
-
     it('should send a disconnection notifications', async () => {
       await vitals.checkGatewayHeartbeat()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
@@ -177,11 +162,6 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
       expect(helpers.logSentry).not.to.be.called
     })
 
-    it('should not log anything', async () => {
-      await vitals.checkGatewayHeartbeat()
-      expect(helpers.log).not.to.be.called
-    })
-
     it('should not send any notifications', async () => {
       await vitals.checkGatewayHeartbeat()
       expect(this.sendNotificationStub).not.to.be.called
@@ -207,11 +187,6 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
     it('should not send any messages to Sentry', async () => {
       await vitals.checkGatewayHeartbeat()
       expect(helpers.logSentry).not.to.be.called
-    })
-
-    it('should not log anything', async () => {
-      await vitals.checkGatewayHeartbeat()
-      expect(helpers.log).not.to.be.called
     })
 
     it('should send a disconnection reminder notifications', async () => {
