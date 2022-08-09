@@ -41,7 +41,7 @@ function createButtonFromRow(r, allClients) {
   const client = allClients.filter(c => c.id === r.client_id)[0]
 
   // prettier-ignore
-  return new Button(r.id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, client)
+  return new Button(r.id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, r.is_active, r.sent_low_battery_alert_at, r.sent_vitals_alert_at, client)
 }
 
 function createButtonsVitalFromRow(r, allButtons) {
@@ -699,16 +699,16 @@ async function getButtonWithSerialNumber(serialNumber, pgClient) {
   return null
 }
 
-async function createButton(clientId, displayName, phoneNumber, buttonSerialNumber, pgClient) {
+async function createButton(clientId, displayName, phoneNumber, buttonSerialNumber, isActive, sentLowBatteryAlertAt, sentVitalsAlertAt, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createButton',
       `
-      INSERT INTO buttons (client_id, display_name, phone_number, button_serial_number)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO buttons (client_id, display_name, phone_number, button_serial_number, is_active, sent_low_battery_alert_at, sent_vitals_alert_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
       `,
-      [clientId, displayName, phoneNumber, buttonSerialNumber],
+      [clientId, displayName, phoneNumber, buttonSerialNumber, isActive, sentLowBatteryAlertAt, sentVitalsAlertAt],
       pool,
       pgClient,
     )
@@ -1261,6 +1261,26 @@ async function updateGatewaySentVitalsAlerts(gatewayId, sentalerts, pgClient) {
   }
 }
 
+async function updateButtonsSentLowBatteryAlerts(buttonId, sentalerts, pgClient) {
+  try {
+    const query = sentalerts
+      ? `
+        UPDATE buttons
+        SET sent_low_battery_alert_at = NOW()
+        WHERE id = $1
+      `
+      : `
+        UPDATE buttons
+        SET sent_low_battery_alert_at = NULL
+        WHERE id = $1
+      `
+
+    await helpers.runQuery('updateButtonsSentLowBatteryAlerts', query, [buttonId], pool, pgClient)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function getDataForExport(pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1433,6 +1453,7 @@ module.exports = {
   rollbackTransaction,
   saveHeartbeat,
   saveSession,
+  updateButtonsSentLowBatteryAlerts,
   updateGatewaySentVitalsAlerts,
   updateHubSentVitalsAlerts,
   updateSentInternalAlerts,

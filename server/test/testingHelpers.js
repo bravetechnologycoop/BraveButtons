@@ -5,6 +5,7 @@ const Hub = require('../Hub')
 const Button = require('../Button')
 const Gateway = require('../Gateway')
 const GatewaysVital = require('../GatewaysVital')
+const ButtonsVital = require('../ButtonsVital')
 
 function buttonFactory(overrides = {}) {
   return new Button(
@@ -14,6 +15,9 @@ function buttonFactory(overrides = {}) {
     overrides.createdAt !== undefined ? overrides.createdAt : new Date(),
     overrides.updatedAt !== undefined ? overrides.updatedAt : new Date(),
     overrides.buttonSerialNumber !== undefined ? overrides.buttonSerialNumber : 'AB12-12345',
+    overrides.isActive !== undefined ? overrides.isActive : true,
+    overrides.sentLowBatteryAlertAt !== undefined ? overrides.sentLowBatteryAlertAt : null,
+    overrides.sentVitalsAlertAt !== undefined ? overrides.sentVitalsAlertAt : null,
     overrides.client !== undefined ? overrides.client : factories.clientFactory(),
   )
 }
@@ -24,9 +28,21 @@ async function buttonDBFactory(db, overrides = {}) {
     overrides.displayName !== undefined ? overrides.displayName : 'Unit 305',
     overrides.phoneNumber !== undefined ? overrides.phoneNumber : '+12223334444',
     overrides.buttonSerialNumber !== undefined ? overrides.buttonSerialNumber : 'AB12-12345',
+    overrides.isActive !== undefined ? overrides.isActive : true,
+    overrides.sentLowBatteryAlertAt !== undefined ? overrides.sentLowBatteryAlertAt : null,
+    overrides.sentVitalsAlertAt !== undefined ? overrides.sentVitalsAlertAt : null,
   )
 
   return button
+}
+
+function buttonsVitalFactory(overrides = {}) {
+  return new ButtonsVital(
+    overrides.id !== undefined ? overrides.id : '',
+    overrides.batteryLevel !== undefined ? overrides.batteryLevel : 95,
+    overrides.createdAt !== undefined ? overrides.createdAt : new Date(),
+    overrides.button !== undefined ? overrides.button : buttonFactory(),
+  )
 }
 
 function sessionFactory(overrides = {}) {
@@ -100,6 +116,7 @@ function gatewaysVitalFactory(overrides = {}) {
 module.exports = {
   buttonDBFactory,
   buttonFactory,
+  buttonsVitalFactory,
   gatewayFactory,
   gatewaysVitalFactory,
   hubFactory,
