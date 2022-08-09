@@ -39,8 +39,8 @@
                                 <th scope="col">Name</th>
                                 <th scope="col">Location Description</th>
                                 <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Flic Hub's MAC address did anything on the network (according to darkstat). This represents real activity from the Flic Hub.">Last Seen (Flic)</th>
-                            <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Raspberry Pi was able to ping the Flic Hub (using the IP address that darkstat says is associated with the Flic Hub's MAC address). This indicates that the Flic Hub is powered on and connected to the network.">Last Seen (Ping)</th>
-                            <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Last Seen (Flic) and Last Seen (Ping) values were updated (by the Raspberry Pi calling the /heartbeat endpoint on the Heartbeat Server with the newest values). This indicates that the Raspberry Pi is powered on and connected to the Internet.">Last Seen (Heartbeat)</th>
+                                <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Raspberry Pi was able to ping the Flic Hub (using the IP address that darkstat says is associated with the Flic Hub's MAC address). This indicates that the Flic Hub is powered on and connected to the network.">Last Seen (Ping)</th>
+                                <th scope="col" data-toggle="tooltip" data-placement="top" title="Time since the Last Seen (Flic) and Last Seen (Ping) values were updated (by the Raspberry Pi calling the /heartbeat endpoint on the Heartbeat Server with the newest values). This indicates that the Raspberry Pi is powered on and connected to the Internet.">Last Seen (Heartbeat)</th>
                                 <th scope="col"></th>
                             </tr>
                         </thead>
@@ -99,6 +99,7 @@
                                 <th scope="col">Unit</th>
                                 <th scope="col">Battery Level</th>
                                 <th scope="col">Last Seen</th>
+                                <th scope="col"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,6 +108,7 @@
                                     <th scope="row">{{unit}}</th>
                                     <td>{{batteryLevel}}</td>
                                     <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
+                                    <td>{{^isActive}}[INACTIVE]{{/isActive}}</td>
                                 </tr>
                             {{/buttons}}
                         </tbody>
