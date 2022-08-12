@@ -15,6 +15,7 @@ the code was deployed.
 
 - Improve Twilio number purchasing error messages.
 - Dashboard to better display active and inactive clients.
+- Updated deployment instructions in README.
 
 ### Added
 
