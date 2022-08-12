@@ -26,7 +26,9 @@ making a new tag during step 2. This is essentially redeploying an older version
 
    1. update the `production` branch: `git checkout production && git merge main && git push origin production`
 
-1. on your local machine, in the `BraveButtonsConfig` repository:
+1. on your local machine, in the `buttons-config` repository:
+
+   1. login to AWS SSO: `aws sso login --profile brave-management`
 
    1. ensure you have the latest version of the code: `git pull origin main`
 
@@ -58,12 +60,16 @@ making a new tag during step 2. This is essentially redeploying an older version
 
    1. update the code: `cd ~/BraveButtons && git checkout production && git pull origin production`
 
-   1. update the config: `cd ~/BraveButtonsConfig && git checkout production && git pull origin production`
+   1. update the config:
+
+      - login to AWS SSO: `aws sso login --profile brave-management`
+
+      - `cd ~/buttons-config && git checkout production && git pull origin production`
 
    1. run the following command:
 
       ```
-      ansible-playbook -i ~/BraveButtonsConfig/ansible/inventory-prod.yaml ~/BraveButtons/ops/update_pi_fleet.yaml --ask-vault-pass
+      ansible-playbook -i ~/buttons-config/ansible/inventory-prod.yaml ~/BraveButtons/ops/update_pi_fleet.yaml --ask-vault-pass
       ```
 
    Optionally, you can deploy to a subset of the fleet by adding `--limit <host or group name from inventory file>` to the `ansible-playbook` command.
@@ -198,7 +204,7 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
       1. to start the pairing tool, run `npm start` and follow the on-screen prompts
 
-      1. copy the resulting `pairing-tool-output-*.csv` file to the `BraveButtonsConfig/button_config` folder your local machine
+      1. copy the resulting `pairing-tool-output-*.csv` file to the `buttons-config/button_config` folder on your local machine
 
    1. option 2: Use the Flic App (recommended when pairing a small number of replacement Buttons)
 
@@ -214,13 +220,13 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
          `Bad request to /flic_button_press: Serial Number is not registered. Serial Number for '416' is BA48-A35308`
 
-      1. on your local machine, create a CSV file in the `BraveButtonsConfig/button_config` folder that conforms to the rest of the CSV files in that folder, uses any unused GUID as the `button_id` and uses the `serial_number` from the log. Do this as many times as needed to make a line in the CSV for every Button you want to pair
+      1. on your local machine, create a CSV file in the `buttons-config/button_config` folder that conforms to the rest of the CSV files in that folder, uses any unused GUID as the `button_id` and uses the `serial_number` from the log. Do this as many times as needed to make a line in the CSV for every Button you want to pair
 
       1. **_IMPORTANT_** be sure to have a single blank line at the end of the CSV or else the last button will not end up in the database. Copy the other files to be sure that you do this correctly
 
    1. rename it to be similar to the other `.csv` files in that folder
 
-   1. commit the file to the `BraveButtonsConfig` repo
+   1. login to AWS SSO `aws sso login --profile brave-management` and commit the CSV file to the `buttons-config` repo
 
    1. scp the CSV file to the `chatbot` or `chatbot-dev` server depending on where you want to add the Buttons
 
@@ -234,7 +240,7 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
    1. open the Flic App on a phone, connect to the Hub, and pair all the Buttons to it and name each Button
 
-   1. configure a single Button's "Click" action (do not add anything under "Double Click" or "Hold") by adding an "Internet Request" to `POST https://chatbot-dev.brave.coop/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
+   1. configure a single Button's "Click" action (do not add anything under "Double Click" or "Hold") by adding an "Internet Request" to `POST https://<domain>/flic_button_press?apikey=<FLIC_BUTTON_PRESS_API_KEY value from .env or 1Password>`
 
    1. to configure the rest of the Buttons in bulk, open the Button whose configuration you want to clone, go to "Settings" --> "Clone Config" --> "Select All"
 
@@ -252,13 +258,16 @@ In all of these template files, strings that LOOK_LIKE_THIS will get replaced wi
 
 The config repo stores many of the files used to configure the Button Hub fleet. It has the following directory structure:
 
-- BraveButtonsConfig
+- buttons-config
   - ansible
     - group_vars
     - inventory-file.yaml
   - button_config
     - button-config-1.csv
     - button-config-2.csv
+  - gateway_config
+    - dev
+    - prod
   - pi_config
     - pi-config-1.ini
     - pi-config-2.ini
@@ -270,6 +279,12 @@ The config repo stores many of the files used to configure the Button Hub fleet.
 - **inventory-file.yaml** is an example of an inventory file that contains a formatted YAML object describing the different devices that Ansible can access.
 
 **button_config** contains files generated during the Button pairing process. These files can be ingested by scripts located in `./server/db/` that add buttons to our database.
+
+**gateway_config** contains configuration files generated by the RAK Gateway that are uploaded into AWS IoT.
+
+- **dev** RAK Gateways in the dev environment.
+
+- **prod** RAK Gateways in the dev environment.
 
 **pi_config** contains INI files used by the `./pi/setup_pi.sh` script to configure the system. These INI files are also used by `./pi/heartbeat.py` as a source of config.
 
@@ -297,13 +312,13 @@ The config repo stores many of the files used to configure the Button Hub fleet.
 
 1. plug the RPi into a router that you have admin access to and determine its IP address
 
-1. on your local machine, ensure that this repo (BraveButtons) and the config repo (BraveButtonsConfig) are present and are on their latest `production` branches
+1. on your local machine, ensure that this repo (BraveButtons) and the config repo (buttons-config) are present and are on their latest `production` branches
 
-1. In BraveButtonsConfig:
+1. In buttons-config:
 
-   1. ensure that the new Brave Hub has been added to the appropriate inventory file in `BraveButtonsConfig/ansible`
+   1. ensure that the new Brave Hub has been added to the appropriate inventory file in `buttons-config/ansible`
 
-   1. ensure that the new Brave Hub's password has been added to the appropriate file in `BraveButtonsConfig/ansible/group_vars`
+   1. ensure that the new Brave Hub's password has been added to the appropriate file in `buttons-config/ansible/group_vars`
 
    1. create the new Brave Hub's `.ini` file in `/pi_congfig` and fill in the appropriate values
 
@@ -316,7 +331,7 @@ The config repo stores many of the files used to configure the Button Hub fleet.
 1. run the following mega-command:
 
    ```
-   ansible-playbook -i ./BraveButtonsConfig/ansible/<inventory file name> \
+   ansible-playbook -i ./buttons-config/ansible/<inventory file name> \
                  -i '<local IP address of the RPi>,' \
                  -e 'target_alias=<alias of new RPi in inventory>' \
                  ./BraveButtons/ops/setup_pi.yaml \
@@ -371,7 +386,7 @@ Otherwise, the scripts will not run.
 
 1. Update the file with its migration ID and the new migration scripts
 
-1. Add the call to the migration script to setup_postgresql.sh
+1. Add the call to the migration script to `setup_postgresql.sh`
 
 # How to access a remote database
 
