@@ -21,6 +21,7 @@ the code was deployed.
 
 - Disconnection/reconnection SMS messages to Heartbeat Phone Numbers for RAK Gateways (CU-208arfp).
 - Low battery SMS messages to Heartbeat Phone Numbers for RAK Buttons (CU-208arfp).
+- Disconnection/reconnection Sentry messages for RAK Buttons (CU-208arfp).`
 
 ## [10.1.0] - 2022-07-25
 

@@ -144,7 +144,7 @@ async function checkGatewayHeartbeat() {
 
             sendNotification(
               i18next.t('gatewayDisconnectionInitial', { lng: client.language, gatewayDisplayName: gateway.displayName }),
-              client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+              client.heartbeatPhoneNumbers, // TODO Also send to the Responder Phones once we know that these messages are reliable
               client.fromPhoneNumber,
             )
           } else if (differenceInSeconds(currentTime, gateway.sentVitalsAlertAt) > SUBSEQUENT_THRESHOLD) {
@@ -152,7 +152,7 @@ async function checkGatewayHeartbeat() {
 
             sendNotification(
               i18next.t('gatewayDisconnectionReminder', { lng: client.language, gatewayDisplayName: gateway.displayName }),
-              client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+              client.heartbeatPhoneNumbers, // TODO Also send to the Responder Phones once we know that these messages are reliable
               client.fromPhoneNumber,
             )
           }
@@ -164,7 +164,7 @@ async function checkGatewayHeartbeat() {
 
           sendNotification(
             i18next.t('gatewayReconnection', { lng: client.language, gatewayDisplayName: gateway.displayName }),
-            client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+            client.heartbeatPhoneNumbers, // TODO Also send to the Responder Phones once we know that these messages are reliable
             client.fromPhoneNumber,
           )
         }
@@ -197,7 +197,7 @@ async function checkButtonBatteries() {
 
             sendNotification(
               i18next.t('buttonLowBatteryInitial', { lng: client.language, buttonDisplayName: button.displayName }),
-              client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+              client.heartbeatPhoneNumbers, // TODO Also send to the Responder Phones once we know that these messages are reliable
               client.fromPhoneNumber,
             )
           } else if (differenceInSeconds(currentTime, button.sentLowBatteryAlertAt) > SUBSEQUENT_THRESHOLD) {
@@ -205,7 +205,7 @@ async function checkButtonBatteries() {
 
             sendNotification(
               i18next.t('buttonLowBatteryReminder', { lng: client.language, buttonDisplayName: button.displayName }),
-              client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+              client.heartbeatPhoneNumbers, // TODO Also send to the Responder Phones once we know that these messages are reliable
               client.fromPhoneNumber,
             )
           }
@@ -217,14 +217,53 @@ async function checkButtonBatteries() {
 
           sendNotification(
             i18next.t('buttonLowBatteryNoLonger', { lng: client.language, buttonDisplayName: button.displayName }),
-            client.heartbeatPhoneNumbers, // TODO Also sent to the Responder Phones once we know that these messages are reliable
+            client.heartbeatPhoneNumbers, // TODO Also send to the Responder Phones once we know that these messages are reliable
             client.fromPhoneNumber,
           )
         }
       }
     }
   } catch (e) {
-    helpers.logError(`Failed to check gateway heartbeat: ${e}`)
+    helpers.logError(`Failed to check button batteries: ${e}`)
+  }
+}
+
+async function checkButtonHeartbeat() {
+  try {
+    const THRESHOLD = helpers.getEnvVar('RAK_BUTTONS_VITALS_ALERT_THRESHOLD')
+
+    const buttonsVitals = await db.getRecentButtonsVitals()
+
+    for (const buttonsVital of buttonsVitals) {
+      const button = buttonsVital.button
+      const client = button.client
+
+      if (button.isActive && client.isActive) {
+        const currentTime = await db.getCurrentTime()
+        const buttonDelay = differenceInSeconds(currentTime, buttonsVital.createdAt)
+        const buttonThreholdExceeded = buttonDelay > THRESHOLD
+        if (buttonThreholdExceeded) {
+          if (button.sentVitalsAlertAt === null) {
+            const logMessage = `Disconnection: ${client.displayName} ${button.displayName} Button delay is ${buttonDelay} seconds.`
+            helpers.logSentry(logMessage)
+
+            await db.updateButtonsSentVitalsAlerts(button.id, true)
+
+            // TODO Also send a text message to Responders and Heartbeat Phone Numbers once we know that these messages are reliable
+          }
+          // TODO Also send a text message reminder once we know that these messages are reliable
+        } else if (button.sentVitalsAlertAt !== null) {
+          const logMessage = `Reconnection: ${client.displayName} ${button.displayName} Button.`
+          helpers.logSentry(logMessage)
+
+          await db.updateButtonsSentVitalsAlerts(button.id, false)
+
+          // TODO Also send  text message to Responders and Heartbeat Phone Numbers once we know that these messages are reliable
+        }
+      }
+    }
+  } catch (e) {
+    helpers.logError(`Failed to check button heartbeat: ${e}`)
   }
 }
 
@@ -244,6 +283,7 @@ async function handleHeartbeat(req, res) {
 
 module.exports = {
   checkButtonBatteries,
+  checkButtonHeartbeat,
   checkGatewayHeartbeat,
   checkHubHeartbeat,
   handleHeartbeat,

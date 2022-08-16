@@ -1282,6 +1282,26 @@ async function updateButtonsSentLowBatteryAlerts(buttonId, sentalerts, pgClient)
   }
 }
 
+async function updateButtonsSentVitalsAlerts(buttonId, sentalerts, pgClient) {
+  try {
+    const query = sentalerts
+      ? `
+        UPDATE buttons
+        SET sent_vitals_alert_at = NOW()
+        WHERE id = $1
+      `
+      : `
+        UPDATE buttons
+        SET sent_vitals_alert_at = NULL
+        WHERE id = $1
+      `
+
+    await helpers.runQuery('updateButtonSentVitalsAlerts', query, [buttonId], pool, pgClient)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function getDataForExport(pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1455,6 +1475,7 @@ module.exports = {
   saveHeartbeat,
   saveSession,
   updateButtonsSentLowBatteryAlerts,
+  updateButtonsSentVitalsAlerts,
   updateGatewaySentVitalsAlerts,
   updateHubSentVitalsAlerts,
   updateSentInternalAlerts,
