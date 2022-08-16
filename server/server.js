@@ -51,6 +51,7 @@ if (helpers.isTestEnvironment()) {
   setInterval(vitals.checkHubHeartbeat, 10 * 1000)
   setInterval(vitals.checkGatewayHeartbeat, 5 * 60 * 1000)
   setInterval(vitals.checkButtonBatteries, 5 * 60 * 1000)
+  setInterval(vitals.checkButtonHeartbeat, 5 * 60 * 1000)
   helpers.log('brave server listening on port 443')
 }
 

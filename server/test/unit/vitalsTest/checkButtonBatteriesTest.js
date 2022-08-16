@@ -105,7 +105,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
       )
     })
 
-    it("should update the gateway's sentVitalsAlertAt the database to null", async () => {
+    it("should update the button's sentLowBatteryAlertAt the database to null", async () => {
       await vitals.checkButtonBatteries()
       expect(db.updateButtonsSentLowBatteryAlerts).to.be.calledWithExactly(this.button.id, false)
     })
