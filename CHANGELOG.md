@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [10.2.0] - 2022-08-22
+
 ### Changed
 
 - Improve Twilio number purchasing error messages.
@@ -565,7 +567,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.1.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.2.0...HEAD
+[10.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.1.0...v10.2.0
 [10.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v9.0.0...v10.0.0
 [9.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v8.2.0...v9.0.0
