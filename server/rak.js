@@ -41,7 +41,7 @@ async function handleButtonPress(req, res) {
 
       if (event[0] === EVENT_TYPE.HEARTBEAT && button !== null) {
         await db.logButtonsVital(button.id, event[1])
-      } else if (event[0] === EVENT_TYPE.BUTTON_PRESS_3) {
+      } else if (event[0] === EVENT_TYPE.BUTTON_PRESS_4 || event[0] === EVENT_TYPE.BUTTON_PRESS_3) {
         if (button === null) {
           const errorMessage = `Bad request to ${req.path}: DevEui is not registered: '${devEui}'`
           helpers.logError(errorMessage)

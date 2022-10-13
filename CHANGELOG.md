@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- RAK Button 4 can be used to trigger alerts (CU-2uadjfh).
+
 ## [10.2.0] - 2022-08-22
 
 ### Changed
