@@ -257,8 +257,8 @@ describe('rak.js integration tests: handleButtonpress', () => {
       expect(helpers.logError).not.to.be.called
     })
 
-    it('should not handle the button press', () => {
-      expect(buttonAlerts.handleValidRequest).not.to.be.called
+    it('should handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
     })
   })
 
