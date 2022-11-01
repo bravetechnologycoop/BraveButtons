@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [10.3.0] - 2022-11-01
+
 ### Added
 
 - RAK Button 4 can be used to trigger alerts (CU-2uadjfh).
@@ -571,7 +573,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.2.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.3.0...HEAD
+[10.3.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.2.0...v10.3.0
 [10.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.1.0...v10.2.0
 [10.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v9.0.0...v10.0.0
