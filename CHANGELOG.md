@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Spanish messages (CU-38tu7z8).
+
 ## [10.3.0] - 2022-11-01
 
 ### Added
