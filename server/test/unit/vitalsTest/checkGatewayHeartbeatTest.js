@@ -104,7 +104,7 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
       await vitals.checkGatewayHeartbeat()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
         'gatewayReconnection',
-        this.gateway.client.heartbeatPhoneNumbers,
+        this.gateway.client.responderPhoneNumbers.concat(this.gateway.client.heartbeatPhoneNumbers),
         this.gateway.client.fromPhoneNumber,
       )
     })
@@ -135,7 +135,7 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
       await vitals.checkGatewayHeartbeat()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
         'gatewayDisconnectionInitial',
-        this.gateway.client.heartbeatPhoneNumbers,
+        this.gateway.client.responderPhoneNumbers.concat(this.gateway.client.heartbeatPhoneNumbers),
         this.gateway.client.fromPhoneNumber,
       )
     })
@@ -193,7 +193,7 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
       await vitals.checkGatewayHeartbeat()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
         'gatewayDisconnectionReminder',
-        this.gateway.client.heartbeatPhoneNumbers,
+        this.gateway.client.responderPhoneNumbers.concat(this.gateway.client.heartbeatPhoneNumbers),
         this.gateway.client.fromPhoneNumber,
       )
     })

@@ -14,6 +14,7 @@ the code was deployed.
 ### Added
 
 - Spanish messages (CU-38tu7z8).
+- Responder Phones as receipients of RAK Gateway disconnection, RAK Gateway reconnection, and RAK Button low battery messages (CU-3bft2mp).
 
 ## [10.3.0] - 2022-11-01
 
