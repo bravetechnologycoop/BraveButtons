@@ -100,7 +100,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
       await vitals.checkButtonBatteries()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
         'buttonLowBatteryNoLonger',
-        this.button.client.heartbeatPhoneNumbers,
+        this.button.client.responderPhoneNumbers.concat(this.button.client.heartbeatPhoneNumbers),
         this.button.client.fromPhoneNumber,
       )
     })
@@ -158,7 +158,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
       await vitals.checkButtonBatteries()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
         'buttonLowBatteryInitial',
-        this.button.client.heartbeatPhoneNumbers,
+        this.button.client.responderPhoneNumbers.concat(this.button.client.heartbeatPhoneNumbers),
         this.button.client.fromPhoneNumber,
       )
     })
@@ -216,7 +216,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
       await vitals.checkButtonBatteries()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
         'buttonLowBatteryReminder',
-        this.button.client.heartbeatPhoneNumbers,
+        this.button.client.responderPhoneNumbers.concat(this.button.client.heartbeatPhoneNumbers),
         this.button.client.fromPhoneNumber,
       )
     })
