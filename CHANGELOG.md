@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Update AWS libraries (CU-3c6mw16).
+
 ### Added
 
 - Spanish messages (CU-38tu7z8).
