@@ -6,7 +6,7 @@
   "dependencies": {
     "@aws-sdk/client-iot": "^3.235.0",
     "@aws-sdk/client-iot-wireless": "^3.235.0",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v9.1.0",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v9.2.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "express": "^4.17.1",
@@ -14,7 +14,7 @@
     "express-validator": "^6.10.0",
     "i18next": "^21.8.11",
     "json2csv": "^5.0.6",
-    "luxon": "^2.3.1",
+    "luxon": "^2.5.2",
     "mustache": "^3.2.1",
     "pg": "^8.2.0",
     "uuid": "^8.3.2"
@@ -26,7 +26,7 @@
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-brave": "git+https://github.com/bravetechnologycoop/eslint-config-brave.git#v1.0.0",
     "eslint-config-prettier": "^7.2.0",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.22.0",

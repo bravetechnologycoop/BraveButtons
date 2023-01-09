@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [unreleased]
 
+### Security
+
+- Updated dependencies.
+
 ## [10.4.0]
 
 ### Changed
