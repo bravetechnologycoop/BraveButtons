@@ -9,13 +9,13 @@ Please note that the date associated with a release is the date the code
 was committed to the `main` branch. This is not necessarily the date that
 the code was deployed.
 
-## [unreleased]
+## [Unreleased]
 
 ## [10.5.0]
 
 ### Security
 
-- Updated dependencies.
+- Updated dependencies (CU-860phzbq5).
 
 ## [10.4.0]
 
