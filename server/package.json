@@ -6,7 +6,7 @@
   "dependencies": {
     "@aws-sdk/client-iot": "^3.235.0",
     "@aws-sdk/client-iot-wireless": "^3.235.0",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v9.2.0",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v9.3.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "express": "^4.17.1",
@@ -37,7 +37,7 @@
     "rewire": "^6.0.0",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.5.0",
-    "twilio": "^3.57.0"
+    "twilio": "^4.7.1"
   },
   "scripts": {
     "lint": "eslint .",
