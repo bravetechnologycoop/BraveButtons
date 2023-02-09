@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Button add scripts ensure that the serial number is in lower case.
+
 ## [10.5.0]
 
 ### Security

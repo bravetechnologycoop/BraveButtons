@@ -50,7 +50,7 @@ else
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_serial_number, display_name, phone_number, client_id) VALUES ('$button_serial_number', '$unit', '$phone_number', '$client_id');"
+            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_serial_number, display_name, phone_number, client_id) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id');"
         fi
     done < $6
 
