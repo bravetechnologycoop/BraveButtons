@@ -14,11 +14,19 @@ function setup(braveAlerterObj) {
 }
 
 async function handleValidRequest(button, numButtonPresses, batteryLevel) {
+  // Log the request
   helpers.log(
     `id: ${button.id.toString()} SerialNumber: ${
       button.buttonSerialNumber
-    } Unit: ${button.displayName.toString()} Presses: ${numButtonPresses.toString()} BatteryLevel: ${batteryLevel}`,
+    } Unit: ${button.displayName.toString()} Presses: ${numButtonPresses.toString()} BatteryLevel: ${batteryLevel} Is Sending Alerts?: ${
+      button.isSendingAlerts && button.client.isSendingAlerts
+    }`,
   )
+
+  // Don't start any sessions if this Button or Client is not sending alerts
+  if (!button.isSendingAlerts || !button.client.isSendingAlerts) {
+    return
+  }
 
   let pgClient
 

@@ -21,7 +21,7 @@ const sandbox = sinon.createSandbox()
 const rakApiKeyPrimary = helpers.getEnvVar('RAK_API_KEY_PRIMARY')
 const rakApiKeySecondary = helpers.getEnvVar('RAK_API_KEY_SECONDARY')
 
-describe('rak.js integration tests: handleButtonpress', () => {
+describe('rak.js integration tests: handleButtonPress', () => {
   beforeEach(async () => {
     await db.clearTables()
 
