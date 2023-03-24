@@ -47,9 +47,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     sandbox.restore()
   })
 
-  describe('when active button last seen is more recent than the threshold and no alerts have been sent ', () => {
+  describe('when button that is sending vitals last seen is more recent than the threshold and no alerts have been sent ', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: null, isActive: true, client: factories.clientFactory({ isActive: true }) })
+      this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: true, client: factories.clientFactory({ isSendingVitals: true }) })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: currentDBDate,
@@ -69,9 +69,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     })
   })
 
-  describe('when active button last seen exceeds the threshold and no alerts have been sent', () => {
+  describe('when button that is sending vitals last seen exceeds the threshold and no alerts have been sent', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: null, isActive: true, client: factories.clientFactory({ isActive: true }) })
+      this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: true, client: factories.clientFactory({ isSendingVitals: true }) })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: exceededThresholdTimestamp,
@@ -91,9 +91,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     })
   })
 
-  describe('when inactive button last seen exceeds the threshold and no alerts have been sent', () => {
+  describe('when button that is not sending vitals last seen exceeds the threshold and no alerts have been sent', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: null, isActive: false, client: factories.clientFactory({ isActive: true }) })
+      this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: false, client: factories.clientFactory({ isSendingVitals: true }) })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: exceededThresholdTimestamp,
@@ -113,9 +113,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     })
   })
 
-  describe("when inactive client's active button last seen exceeds the threshold and no alerts have been sent", () => {
+  describe("when client that is not sending vitals's button that is sending vitals last seen exceeds the threshold and no alerts have been sent", () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: null, isActive: true, client: factories.clientFactory({ isActive: false }) })
+      this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: true, client: factories.clientFactory({ isSendingVitals: false }) })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: exceededThresholdTimestamp,
@@ -135,9 +135,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     })
   })
 
-  describe("when inactive client's inactive button last seen exceeds the threshold and no alerts have been sent", () => {
+  describe("when client that is not sending vitals's button that is not sending vitals last seen exceeds the threshold and no alerts have been sent", () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: null, isActive: false, client: factories.clientFactory({ isActive: false }) })
+      this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: false, client: factories.clientFactory({ isSendingVitals: false }) })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: exceededThresholdTimestamp,
@@ -157,9 +157,13 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     })
   })
 
-  describe('when active button last seen is more recent than the threshold and an alert was sent ', () => {
+  describe('when button that is sending vitals last seen is more recent than the threshold and an alert was sent ', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: new Date(), isActive: true, client: factories.clientFactory({ isActive: true }) })
+      this.button = buttonFactory({
+        sentVitalsAlertAt: new Date(),
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: currentDBDate,
@@ -179,9 +183,13 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     })
   })
 
-  describe('when inactive button last seen is more recent than the threshold and an alert was sent ', () => {
+  describe('when button that is not sending vitals last seen is more recent than the threshold and an alert was sent ', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: new Date(), isActive: false, client: factories.clientFactory({ isActive: true }) })
+      this.button = buttonFactory({
+        sentVitalsAlertAt: new Date(),
+        isSendingVitals: false,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: currentDBDate,
@@ -201,9 +209,13 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     })
   })
 
-  describe("when inactive client's active button last seen is more recent than the threshold and an alert was sent ", () => {
+  describe("when client that is not sending vitals's button that is sending vitals last seen is more recent than the threshold and an alert was sent ", () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: new Date(), isActive: true, client: factories.clientFactory({ isActive: false }) })
+      this.button = buttonFactory({
+        sentVitalsAlertAt: new Date(),
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: false }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: currentDBDate,
@@ -223,9 +235,13 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     })
   })
 
-  describe("when inactive client's inactive button last seen is more recent than the threshold and an alert was sent ", () => {
+  describe("when client that is not sending vitals's button that is not sending vitals last seen is more recent than the threshold and an alert was sent ", () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentVitalsAlertAt: new Date(), isActive: false, client: factories.clientFactory({ isActive: false }) })
+      this.button = buttonFactory({
+        sentVitalsAlertAt: new Date(),
+        isSendingVitals: false,
+        client: factories.clientFactory({ isSendingVitals: false }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         createdAt: currentDBDate,

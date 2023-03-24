@@ -39,7 +39,7 @@ else
     echo "  Responder Phones: $3"
     echo "  Fallback Phones: $4"
     echo "  From Phone: $5"
-    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO clients (display_name, responder_phone_numbers, fallback_phone_numbers, from_phone_number, is_active) VALUES ('$2', '$3', '$4', '$5', 't');"
+    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO clients (display_name, responder_phone_numbers, fallback_phone_numbers, from_phone_number, is_displayed, is_sending_alerts, is_sending_vitals) VALUES ('$2', '$3', '$4', '$5', 't', 'f', 'f');"
 
     client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE created_at = (SELECT MAX(created_at) FROM clients);")
 
@@ -50,7 +50,7 @@ else
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_serial_number, display_name, phone_number, client_id) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id');"
+            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO buttons (button_serial_number, display_name, phone_number, client_id, is_displayed, is_sending_alerts, is_sending_vitals) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', 't', 'f', 'f');"
         fi
     done < $6
 

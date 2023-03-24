@@ -1,8 +1,9 @@
 class Gateway {
-  constructor(id, displayName, isActive, createdAt, updatedAt, sentVitalsAlertAt, client) {
+  constructor(id, displayName, isDisplayed, isSendingVitals, createdAt, updatedAt, sentVitalsAlertAt, client) {
     this.id = id
     this.displayName = displayName
-    this.isActive = isActive
+    this.isDisplayed = isDisplayed
+    this.isSendingVitals = isSendingVitals
     this.createdAt = createdAt
     this.updatedAt = updatedAt
     this.sentVitalsAlertAt = sentVitalsAlertAt
