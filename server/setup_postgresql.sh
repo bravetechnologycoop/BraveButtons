@@ -35,3 +35,4 @@ sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USE
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/034-addclientsextensiontable.sql
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/035-addsentgatewayvitalsalert.sql
 sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/036-addbuttonsvitalsalerts.sql
+sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./db/037-addmorestatuses.sql

@@ -75,7 +75,7 @@ async function renderDashboardPage(req, res) {
   try {
     const clients = await db.getClients()
 
-    const viewParams = { clients }
+    const viewParams = { clients: clients.filter(client => client.isDisplayed) }
 
     res.send(Mustache.render(landingPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
@@ -97,7 +97,7 @@ async function renderClientDetailsPage(req, res) {
     const currentClient = await db.getClientWithId(req.params.clientId)
     const viewParams = {
       recentSessions: [],
-      clients,
+      clients: clients.filter(client => client.isDisplayed),
     }
 
     if (currentClient !== null) {
@@ -145,7 +145,7 @@ async function renderClientVitalsPage(req, res) {
       buttons: [],
       gateways: [],
       hubs: [],
-      clients,
+      clients: clients.filter(client => client.isDisplayed),
       currentDateTime: helpers.formatDateTimeForDashboard(await db.getCurrentTime()),
     }
 
@@ -170,25 +170,30 @@ async function renderClientVitalsPage(req, res) {
 
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
-        viewParams.buttons.push({
-          unit: buttonsVital.button.displayName,
-          batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
-          lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
-          lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
-          isActive: buttonsVital.button.isActive,
-        })
+        if (buttonsVital.button.isDisplayed) {
+          viewParams.buttons.push({
+            unit: buttonsVital.button.displayName,
+            batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
+            lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
+            lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
+            isSendingAlerts: buttonsVital.button.isSendingAlerts && buttonsVital.button.client.isSendingAlerts,
+            isSendingVitals: buttonsVital.button.isSendingVitals && buttonsVital.button.client.isSendingVitals,
+          })
+        }
       }
 
       const gatewaysVitals = await db.getRecentGatewaysVitalsWithClientId(currentClient.id)
       for (const gatewaysVital of gatewaysVitals) {
-        viewParams.gateways.push({
-          id: gatewaysVital.gateway.id,
-          name: gatewaysVital.gateway.displayName,
-          lastSeenAt: gatewaysVital.lastSeenAt !== null ? helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt) : 'Never',
-          lastSeenAgo:
-            gatewaysVital.lastSeenAt !== null ? await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db) : 'Never',
-          isActive: gatewaysVital.gateway.isActive,
-        })
+        if (gatewaysVital.gateway.isDisplayed) {
+          viewParams.gateways.push({
+            id: gatewaysVital.gateway.id,
+            name: gatewaysVital.gateway.displayName,
+            lastSeenAt: gatewaysVital.lastSeenAt !== null ? helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt) : 'Never',
+            lastSeenAgo:
+              gatewaysVital.lastSeenAt !== null ? await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db) : 'Never',
+            isSendingVitals: gatewaysVital.gateway.isSendingVitals && gatewaysVital.gateway.client.isSendingVitals,
+          })
+        }
       }
     } else {
       viewParams.viewMessage = 'No client to display'
@@ -209,7 +214,7 @@ async function renderVitalsPage(req, res) {
       buttons: [],
       gateways: [],
       hubs: [],
-      clients,
+      clients: clients.filter(client => client.isDisplayed),
       currentDateTime: helpers.formatDateTimeForDashboard(await db.getCurrentTime()),
     }
 
@@ -232,28 +237,34 @@ async function renderVitalsPage(req, res) {
 
     const buttonsVitals = await db.getRecentButtonsVitals()
     for (const buttonsVital of buttonsVitals) {
-      viewParams.buttons.push({
-        clientName: buttonsVital.button.client.displayName,
-        clientId: buttonsVital.button.client.id,
-        unit: buttonsVital.button.displayName,
-        batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
-        lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
-        lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
-        isActive: buttonsVital.button.isActive,
-      })
+      if (buttonsVital.button.isDisplayed) {
+        viewParams.buttons.push({
+          clientName: buttonsVital.button.client.displayName,
+          clientId: buttonsVital.button.client.id,
+          unit: buttonsVital.button.displayName,
+          batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
+          lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
+          lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
+          isSendingAlerts: buttonsVital.button.isSendingAlerts && buttonsVital.button.client.isSendingAlerts,
+          isSendingVitals: buttonsVital.button.isSendingVitals && buttonsVital.button.client.isSendingVitals,
+        })
+      }
     }
 
     const gatewaysVitals = await db.getRecentGatewaysVitals()
     for (const gatewaysVital of gatewaysVitals) {
-      viewParams.gateways.push({
-        clientName: gatewaysVital.gateway.client.displayName,
-        clientId: gatewaysVital.gateway.client.id,
-        id: gatewaysVital.gateway.id,
-        name: gatewaysVital.gateway.displayName,
-        lastSeenAt: gatewaysVital.lastSeenAt !== null ? helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt) : 'Never',
-        lastSeenAgo: gatewaysVital.lastSeenAt !== null ? await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db) : 'Never',
-        isActive: gatewaysVital.gateway.isActive,
-      })
+      if (gatewaysVital.gateway.isDisplayed) {
+        viewParams.gateways.push({
+          clientName: gatewaysVital.gateway.client.displayName,
+          clientId: gatewaysVital.gateway.client.id,
+          id: gatewaysVital.gateway.id,
+          name: gatewaysVital.gateway.displayName,
+          lastSeenAt: gatewaysVital.lastSeenAt !== null ? helpers.formatDateTimeForDashboard(gatewaysVital.lastSeenAt) : 'Never',
+          lastSeenAgo:
+            gatewaysVital.lastSeenAt !== null ? await helpers.generateCalculatedTimeDifferenceString(gatewaysVital.lastSeenAt, db) : 'Never',
+          isSendingVitals: gatewaysVital.gateway.isSendingVitals && gatewaysVital.gateway.client.isSendingVitals,
+        })
+      }
     }
 
     res.send(Mustache.render(vitalsTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))

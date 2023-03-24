@@ -123,13 +123,13 @@ async function checkGatewayHeartbeat() {
     const gateways = await db.getGateways()
 
     for (const gateway of gateways) {
-      // Get latest gateway statistics from AWS
+      // Get latest gateway statistics from AWS and store them in the DB
       const gatewayStats = await aws.getGatewayStats(gateway.id)
       if (gatewayStats !== null) {
         await db.logGatewaysVital(gateway.id, gatewayStats)
       }
 
-      if (gateway.isActive && gateway.client.isActive) {
+      if (gateway.isSendingVitals && gateway.client.isSendingVitals) {
         const currentTime = await db.getCurrentTime()
         const gatewaysVital = await db.getRecentGatewaysVitalWithGatewayId(gateway.id)
         const gatewayDelay = differenceInSeconds(currentTime, gatewaysVital.lastSeenAt)
@@ -187,7 +187,7 @@ async function checkButtonBatteries() {
       const button = buttonsVital.button
       const client = button.client
 
-      if (button.isActive && client.isActive) {
+      if (button.isSendingVitals && client.isSendingVitals) {
         if (buttonsVital.batteryLevel !== null && buttonsVital.batteryLevel < THRESHOLD) {
           if (button.sentLowBatteryAlertAt === null) {
             const logMessage = `Low Battery: ${client.displayName} ${button.displayName} Button battery level is ${buttonsVital.batteryLevel}%.`
@@ -238,7 +238,7 @@ async function checkButtonHeartbeat() {
       const button = buttonsVital.button
       const client = button.client
 
-      if (button.isActive && client.isActive) {
+      if (button.isSendingVitals && client.isSendingVitals) {
         const currentTime = await db.getCurrentTime()
         const buttonDelay = differenceInSeconds(currentTime, buttonsVital.createdAt)
         const buttonThreholdExceeded = buttonDelay > THRESHOLD

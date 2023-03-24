@@ -7,7 +7,7 @@ const rewire = require('rewire')
 const { DateTime } = require('luxon')
 
 // In-house dependencies
-const { helpers } = require('brave-alert-lib')
+const { factories, helpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { buttonFactory, buttonsVitalFactory } = require('../../testingHelpers')
 require('../../mocks/tMock')
@@ -55,7 +55,11 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
   describe('when battery level is higher than the threshold and no alerts have been sent ', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentLowBatteryAlertAt: null })
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: null,
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         batteryLevel: lowBatteryThreshold + 1,
@@ -80,9 +84,13 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
     })
   })
 
-  describe('when battery level is higher than 80% and an alert was sent ', () => {
+  describe('when a button that is sending vitals battery level is higher than 80% and an alert was sent ', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentLowBatteryAlertAt: currentDBDate })
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: currentDBDate,
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         batteryLevel: 81,
@@ -111,9 +119,106 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
     })
   })
 
+  describe('when a button that is not sending vitals battery level is higher than 80% and an alert was sent ', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: currentDBDate,
+        isSendingVitals: false,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: 81,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send the reconnection message to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a no longer low battery notifications', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it("should not update the button's sentLowBatteryAlertAt the database to null", async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+    })
+  })
+
+  describe('when a button that is sending vitals but whose client is not sending vitals battery level is higher than 80% and an alert was sent ', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: currentDBDate,
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: false }),
+      })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: 81,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send the reconnection message to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a no longer low battery notifications', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it("should not update the button's sentLowBatteryAlertAt the database to null", async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+    })
+  })
+
+  describe('when a button that is not sending vitals and whose client is also not sending vitals battery level is higher than 80% and an alert was sent ', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: currentDBDate,
+        isSendingVitals: false,
+        client: factories.clientFactory({ isSendingVitals: false }),
+      })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: 81,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send the reconnection message to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a no longer low battery notifications', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it("should not update the button's sentLowBatteryAlertAt the database to null", async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+    })
+  })
+
   describe('when battery level is higher than the threshold but less than 80% and an alert was sent ', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentLowBatteryAlertAt: currentDBDate })
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: currentDBDate,
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         batteryLevel: lowBatteryThreshold + 1,
@@ -138,9 +243,9 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
     })
   })
 
-  describe('when battery level is less than the threshold and no alerts have been sent', () => {
+  describe('when a button that is sending vitals battery level is less than the threshold and no alerts have been sent', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentLowBatteryAlertAt: null })
+      this.button = buttonFactory({ sentLowBatteryAlertAt: null, isSendingVitals: true, client: factories.clientFactory({ isSendingVitals: true }) })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         batteryLevel: lowBatteryThreshold - 1,
@@ -169,9 +274,98 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
     })
   })
 
+  describe('when a button that is not sending vitals battery level is less than the threshold and no alerts have been sent', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({ sentLowBatteryAlertAt: null, isSendingVitals: false, client: factories.clientFactory({ isSendingVitals: true }) })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: lowBatteryThreshold - 1,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send the low battery message to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a low battery notifications', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+    })
+  })
+
+  describe('when a button that is sending vitals but whose client is not sending vitals battery level is less than the threshold and no alerts have been sent', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({ sentLowBatteryAlertAt: null, isSendingVitals: true, client: factories.clientFactory({ isSendingVitals: false }) })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: lowBatteryThreshold - 1,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send the low battery message to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a low battery notifications', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+    })
+  })
+
+  describe('when a button that is not sending vitals and whose client is not sending vitals battery level is less than the threshold and no alerts have been sent', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: null,
+        isSendingVitals: false,
+        client: factories.clientFactory({ isSendingVitals: false }),
+      })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: lowBatteryThreshold - 1,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send the low battery message to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a low battery notifications', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+    })
+  })
+
   describe('when battery level is less than the threshold and the last alert was sent less than the subsequent alert threshold', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentLowBatteryAlertAt: currentDBDate })
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: currentDBDate,
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         batteryLevel: lowBatteryThreshold - 1,
@@ -196,9 +390,13 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
     })
   })
 
-  describe('when battery level is less than the threshold and the last alert was sent more than the subsequent alert threshold', () => {
+  describe('when a button that is sending vitals battery level is less than the threshold and the last alert was sent more than the subsequent alert threshold', () => {
     beforeEach(async () => {
-      this.button = buttonFactory({ sentLowBatteryAlertAt: exceededReminderTimestamp })
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: exceededReminderTimestamp,
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
       sandbox.stub(db, 'getButtons').returns([this.button])
       this.buttonsVital = buttonsVitalFactory({
         batteryLevel: lowBatteryThreshold - 1,
@@ -224,6 +422,99 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
     it('should update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
       expect(db.updateButtonsSentLowBatteryAlerts).to.be.calledWithExactly(this.button.id, true)
+    })
+  })
+
+  describe('when a button that is not sending vitals battery level is less than the threshold and the last alert was sent more than the subsequent alert threshold', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: exceededReminderTimestamp,
+        isSendingVitals: false,
+        client: factories.clientFactory({ isSendingVitals: true }),
+      })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: lowBatteryThreshold - 1,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send any messages to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a low battery reminder notification', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+    })
+  })
+
+  describe('when a button that is sending vitals but whose client is not sending vitals battery level is less than the threshold and the last alert was sent more than the subsequent alert threshold', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: exceededReminderTimestamp,
+        isSendingVitals: true,
+        client: factories.clientFactory({ isSendingVitals: false }),
+      })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: lowBatteryThreshold - 1,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send any messages to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a low battery reminder notification', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+    })
+  })
+
+  describe('when a button that is not sending vitals and whose client is also not sending vitals battery level is less than the threshold and the last alert was sent more than the subsequent alert threshold', () => {
+    beforeEach(async () => {
+      this.button = buttonFactory({
+        sentLowBatteryAlertAt: exceededReminderTimestamp,
+        isSendingVitals: false,
+        client: factories.clientFactory({ isSendingVitals: false }),
+      })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        batteryLevel: lowBatteryThreshold - 1,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+    })
+
+    it('should not send any messages to Sentry', async () => {
+      await vitals.checkButtonBatteries()
+      expect(helpers.logSentry).not.to.be.called
+    })
+
+    it('should not send a low battery reminder notification', async () => {
+      await vitals.checkButtonBatteries()
+      expect(this.sendNotificationStub).not.to.be.called
+    })
+
+    it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
+      await vitals.checkButtonBatteries()
+      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
     })
   })
 })

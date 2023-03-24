@@ -14,6 +14,9 @@ the code was deployed.
 ### Changed
 
 - Button add scripts ensure that the serial number is in lower case.
+- Broke up the Client, Button, and Gateway `is_active` fields into the component parts: `is_displayed`, `is_sending_alerts`, and `is_sending_vitals` (CU-860q154rh).
+- Only display Clients, Buttons, and Gateways in the dashboard if their `is_displayed` is true (CU-860q154rh).
+- Only send vitals messages if the relevant `is_sending_vitals` is true (CU-860q154rh).
 
 ## [10.5.0]
 

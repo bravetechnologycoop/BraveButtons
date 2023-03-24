@@ -34,14 +34,14 @@ function createSessionFromRow(r, allButtons) {
 
 function createClientFromRow(r) {
   // prettier-ignore
-  return new Client(r.id, r.display_name, r.responder_phone_numbers, r.responder_push_id, r.alert_api_key, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_active, r.language, r.created_at, r.updated_at)
+  return new Client(r.id, r.display_name, r.responder_phone_numbers, r.responder_push_id, r.alert_api_key, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_displayed, r.is_sending_alerts, r.is_sending_vitals, r.language, r.created_at, r.updated_at)
 }
 
 function createButtonFromRow(r, allClients) {
   const client = allClients.filter(c => c.id === r.client_id)[0]
 
   // prettier-ignore
-  return new Button(r.id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, r.is_active, r.sent_low_battery_alert_at, r.sent_vitals_alert_at, client)
+  return new Button(r.id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, r.is_displayed, r.is_sending_alerts, r.is_sending_vitals, r.sent_low_battery_alert_at, r.sent_vitals_alert_at, client)
 }
 
 function createButtonsVitalFromRow(r, allButtons) {
@@ -61,7 +61,7 @@ function createHubFromRow(r, allClients) {
 function createGatewayFromRow(r, allClients) {
   const client = allClients.filter(c => c.id === r.client_id)[0]
 
-  return new Gateway(r.id, r.display_name, r.is_active, r.created_at, r.updated_at, r.sent_vitals_alert_at, client)
+  return new Gateway(r.id, r.display_name, r.is_displayed, r.is_sending_vitals, r.created_at, r.updated_at, r.sent_vitals_alert_at, client)
 }
 
 function createGatewaysVitalFromRow(r, allGateways) {
@@ -700,16 +700,37 @@ async function getButtonWithSerialNumber(serialNumber, pgClient) {
   return null
 }
 
-async function createButton(clientId, displayName, phoneNumber, buttonSerialNumber, isActive, sentLowBatteryAlertAt, sentVitalsAlertAt, pgClient) {
+async function createButton(
+  clientId,
+  displayName,
+  phoneNumber,
+  buttonSerialNumber,
+  isDisplayed,
+  isSendingAlerts,
+  isSendingVitals,
+  sentLowBatteryAlertAt,
+  sentVitalsAlertAt,
+  pgClient,
+) {
   try {
     const results = await helpers.runQuery(
       'createButton',
       `
-      INSERT INTO buttons (client_id, display_name, phone_number, button_serial_number, is_active, sent_low_battery_alert_at, sent_vitals_alert_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO buttons (client_id, display_name, phone_number, button_serial_number, is_displayed, is_sending_alerts, is_sending_vitals, sent_low_battery_alert_at, sent_vitals_alert_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
       `,
-      [clientId, displayName, phoneNumber, buttonSerialNumber, isActive, sentLowBatteryAlertAt, sentVitalsAlertAt],
+      [
+        clientId,
+        displayName,
+        phoneNumber,
+        buttonSerialNumber,
+        isDisplayed,
+        isSendingAlerts,
+        isSendingVitals,
+        sentLowBatteryAlertAt,
+        sentVitalsAlertAt,
+      ],
       pool,
       pgClient,
     )
@@ -754,7 +775,9 @@ async function createClient(
   fallbackTimeout,
   heartbeatPhoneNumbers,
   incidentCategories,
-  isActive,
+  isDisplayed,
+  isSendingAlerts,
+  isSendingVitals,
   language,
   pgClient,
 ) {
@@ -762,8 +785,8 @@ async function createClient(
     const results = await helpers.runQuery(
       'createClient',
       `
-      INSERT INTO clients (display_name, responder_phone_numbers, responder_push_id, alert_api_key, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_active, language)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      INSERT INTO clients (display_name, responder_phone_numbers, responder_push_id, alert_api_key, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_displayed, is_sending_alerts, is_sending_vitals, language)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
       `,
       [
@@ -777,7 +800,9 @@ async function createClient(
         fallbackTimeout,
         heartbeatPhoneNumbers,
         incidentCategories,
-        isActive,
+        isDisplayed,
+        isSendingAlerts,
+        isSendingVitals,
         language,
       ],
       pool,
@@ -1313,7 +1338,7 @@ async function getDataForExport(pgClient) {
         c.fallback_phone_numbers AS "Fallback Phones",
         TO_CHAR(c.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Installation Created",
         c.incident_categories AS "Incident Categories",
-        c.is_active AS "Active?",
+        c.is_sending_vitals AS "Active?",
         b.display_name AS "Unit",
         b.phone_number AS "Button Phone",
         s.chatbot_state AS "Session State",
