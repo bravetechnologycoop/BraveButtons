@@ -75,18 +75,21 @@ describe('Chatbot server', () => {
         reminderTimeout: 1,
         fallbackTimeout: 2,
         fromPhoneNumber: '+15005550006',
+        isSendingAlerts: true,
       })
       this.button1 = await buttonDBFactory(db, {
         clientId: client.id,
         displayName: '1',
         phoneNumber: unit1PhoneNumber,
         buttonSerialNumber: unit1SerialNumber,
+        isSendingAlerts: true,
       })
       this.button2 = await buttonDBFactory(db, {
         clientId: client.id,
         displayName: '2',
         phoneNumber: unit2PhoneNumber,
         buttonSerialNumber: unit2SerialNumber,
+        isSendingAlerts: true,
       })
     })
 
