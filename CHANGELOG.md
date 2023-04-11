@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [11.0.0]
+
 ### Changed
 
 - Button add scripts ensure that the serial number is in lower case.
@@ -598,7 +600,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.5.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v11.0.0...HEAD
+[11.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.5.0...v11.0.0
 [10.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.3.0...v10.4.0
 [10.3.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.2.0...v10.3.0
