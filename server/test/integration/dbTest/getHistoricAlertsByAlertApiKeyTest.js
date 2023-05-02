@@ -100,7 +100,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
 
     it('should return an array with one object with the correct values in it', async () => {
-      const rows = await db.getHistoricAlertsByAlertApiKey(this.alertApiKey, 1, 1)
+      const rows = await db.getHistoricAlertsByAlertApiKey(this.alertApiKey, 1, 0)
 
       expect(rows).to.eql([
         {
@@ -147,7 +147,7 @@ describe('db.js integration tests: getHistoricAlertsByAlertApiKey', () => {
     })
 
     it('should return only the most recent maxHistoricAlerts of them', async () => {
-      const rows = await db.getHistoricAlertsByAlertApiKey(this.alertApiKey, 3, 1)
+      const rows = await db.getHistoricAlertsByAlertApiKey(this.alertApiKey, 3, 0)
 
       const ids = rows.map(row => row.id)
 

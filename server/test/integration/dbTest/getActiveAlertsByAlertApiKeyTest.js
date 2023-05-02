@@ -237,7 +237,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       updatedSession.chatbotState = CHATBOT_STATE.WAITING_FOR_CATEGORY
       await db.saveSession(updatedSession)
 
-      const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 1)
+      const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 0)
 
       const ids = rows.map(row => row.id)
 
@@ -250,7 +250,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       updatedSession.chatbotState = CHATBOT_STATE.WAITING_FOR_REPLY
       await db.saveSession(updatedSession)
 
-      const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 1)
+      const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 0)
 
       const ids = rows.map(row => row.id)
 
@@ -263,7 +263,7 @@ describe('db.js integration tests: getActiveAlertsByAlertApiKey', () => {
       updatedSession.chatbotState = CHATBOT_STATE.STARTED
       await db.saveSession(updatedSession)
 
-      const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 1)
+      const rows = await db.getActiveAlertsByAlertApiKey(this.alertApiKey, 0)
 
       const ids = rows.map(row => row.id)
 

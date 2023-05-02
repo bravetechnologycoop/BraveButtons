@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Modified tests to be able to work on faster computers.
+
 ## [11.0.0]
 
 ### Changed
