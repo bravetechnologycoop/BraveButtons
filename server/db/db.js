@@ -48,7 +48,7 @@ function createButtonsVitalFromRow(r, allButtons) {
   const button = allButtons.filter(b => b.id === r.button_id)[0]
 
   // prettier-ignore
-  return new ButtonsVital(r.id, r.battery_level, r.created_at, button)
+  return new ButtonsVital(r.id, r.battery_level, r.created_at, r.snr, r.rssi, button)
 }
 
 function createHubFromRow(r, allClients) {
@@ -369,7 +369,7 @@ async function getRecentButtonsVitals(pgClient) {
     const results = await helpers.runQuery(
       'getRecentButtonsVitals',
       `
-      SELECT b.id as button_id, bv.id, bv.battery_level, bv.created_at
+      SELECT b.id as button_id, bv.id, bv.battery_level, bv.rssi, bv.snr, bv.created_at
       FROM buttons b
       LEFT JOIN buttons_vitals_cache bv ON b.id = bv.button_id
       WHERE b.button_serial_number like 'ac%'
@@ -396,7 +396,7 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
     const results = await helpers.runQuery(
       'getRecentButtonsVitalsWithClientId',
       `
-      SELECT b.id as button_id, bv.id, bv.battery_level, bv.created_at
+      SELECT b.id as button_id, bv.id, bv.battery_level, bv.rssi, bv.snr, bv.created_at
       FROM buttons b
       LEFT JOIN buttons_vitals_cache bv ON b.id = bv.button_id
       WHERE b.client_id = $1
@@ -1373,16 +1373,16 @@ async function getDataForExport(pgClient) {
   }
 }
 
-async function logButtonsVital(buttonId, batteryLevel, pgClient) {
+async function logButtonsVital(buttonId, batteryLevel, snr, rssi, pgClient) {
   try {
     const results = await helpers.runQuery(
       'logButtonsVital',
       `
-      INSERT INTO buttons_vitals (button_id, battery_level)
-      VALUES ($1, $2)
+      INSERT INTO buttons_vitals (button_id, battery_level, snr, rssi)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
       `,
-      [buttonId, batteryLevel],
+      [buttonId, batteryLevel, snr, rssi],
       pool,
       pgClient,
     )

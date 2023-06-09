@@ -23,12 +23,11 @@ async function handleButtonPress(req, res) {
     const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
     if (validationErrors.isEmpty()) {
-      const { devEui, payload } = req.body
+      const { devEui, snr, rssi, payload } = req.body
       const { authorization } = req.headers
 
       const event = Buffer.from(payload, 'base64')
 
-      // TODO Remove this after we are done testing the RAK buttons
       helpers.log(JSON.stringify(req.body))
 
       if (!rakApiKeys.includes(authorization)) {
@@ -40,7 +39,7 @@ async function handleButtonPress(req, res) {
       const button = await db.getButtonWithSerialNumber(devEui)
 
       if (event[0] === EVENT_TYPE.HEARTBEAT && button !== null) {
-        await db.logButtonsVital(button.id, event[1])
+        await db.logButtonsVital(button.id, event[1], snr, rssi)
       } else if (event[0] === EVENT_TYPE.BUTTON_PRESS_4 || event[0] === EVENT_TYPE.BUTTON_PRESS_3) {
         if (button === null) {
           const errorMessage = `Bad request to ${req.path}: DevEui is not registered: '${devEui}'`

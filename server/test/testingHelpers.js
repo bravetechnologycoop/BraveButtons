@@ -45,6 +45,8 @@ function buttonsVitalFactory(overrides = {}) {
     overrides.id !== undefined ? overrides.id : '',
     overrides.batteryLevel !== undefined ? overrides.batteryLevel : 95,
     overrides.createdAt !== undefined ? overrides.createdAt : new Date(),
+    overrides.snr !== undefined ? overrides.snr : 14.5,
+    overrides.rssi !== undefined ? overrides.rssi : -60,
     overrides.button !== undefined ? overrides.button : buttonFactory(),
   )
 }

@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Logging RSSI and SNR values for each RAK Button message (CU-2a7dcrz).
+
 ## [12.0.0] - 2023-07-24
 
 ### Changed

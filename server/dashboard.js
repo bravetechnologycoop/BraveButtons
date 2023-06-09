@@ -174,6 +174,8 @@ async function renderClientVitalsPage(req, res) {
           viewParams.buttons.push({
             unit: buttonsVital.button.displayName,
             batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
+            rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
+            snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
             lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
             lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
             isSendingAlerts: buttonsVital.button.isSendingAlerts && buttonsVital.button.client.isSendingAlerts,
@@ -243,6 +245,8 @@ async function renderVitalsPage(req, res) {
           clientId: buttonsVital.button.client.id,
           unit: buttonsVital.button.displayName,
           batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
+          rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
+          snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
           lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
           lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
           isSendingAlerts: buttonsVital.button.isSendingAlerts && buttonsVital.button.client.isSendingAlerts,

@@ -100,6 +100,8 @@
                             <th scope="col">Client</th>
                             <th scope="col">Unit</th>
                             <th scope="col">Battery Level</th>
+                            <th scope="col">RSSI</th>
+                            <th scope="col">SNR</th>
                             <th scope="col">Last Seen</th>
                             <th scope="col">Sends Alerts?</th>
                             <th scope="col">Sends Vitals?</th>
@@ -111,6 +113,8 @@
                                 <th scope="row"><a href="/clients/{{clientId}}">{{clientName}}</a></th>
                                 <th scope="row">{{unit}}</th>
                                 <td>{{batteryLevel}}</td>
+                                <td>{{rssi}}</td>
+                                <td>{{snr}}</td>
                                 <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
                                 <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                                 <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
