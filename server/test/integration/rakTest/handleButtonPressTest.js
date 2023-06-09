@@ -310,7 +310,7 @@ describe('rak.js integration tests: handleButtonPress', () => {
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeyPrimary)
-        .send({ devEui: buttonSerialNumber, payload: 'SFA=' })
+        .send({ devEui: buttonSerialNumber, snr: 22.25, rssi: -70, payload: 'SFA=' })
     })
 
     afterEach(async () => {
@@ -325,8 +325,8 @@ describe('rak.js integration tests: handleButtonPress', () => {
       expect(helpers.logError).not.to.be.called
     })
 
-    it('should log the heartbeat', () => {
-      expect(db.logButtonsVital).to.be.calledWithExactly(this.button.id, 80)
+    it('should log the heartbeat including its battery level, RSSI, and SNR', () => {
+      expect(db.logButtonsVital).to.be.calledWithExactly(this.button.id, 80, 22.25, -70)
     })
   })
 
