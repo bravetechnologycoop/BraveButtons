@@ -19,6 +19,10 @@ the code was deployed.
 
 - Pairing Tool and Raspberry Pi code (CU-860r70drx).
 
+### Security
+
+- Upgrade to Node.js 18.16.1 (CU-860pqat6u).
+
 ## [11.0.0]
 
 ### Changed
