@@ -15,6 +15,10 @@ the code was deployed.
 
 - Modified tests to be able to work on faster computers.
 
+### Removed
+
+- Pairing Tool and Raspberry Pi code (CU-860r70drx).
+
 ## [11.0.0]
 
 ### Changed

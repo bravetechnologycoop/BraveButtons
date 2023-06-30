@@ -1,21 +1,7 @@
-# Travis only support v 3.7 on this distribution
 dist: focal
 
 matrix:
   include:
-    - name: Pi
-      language: python
-      python: '3.7'
-
-      # install dependencies
-      install:
-        - pip3 install -r requirements-test.txt
-
-      # run unit tests
-      script:
-        - cp pi/example.pi_config.ini pi/pi_config.ini
-        - pytest --cov=heartbeat
-
     - name: Server
       language: node_js # node version specified in .nvmrc
 
@@ -72,15 +58,3 @@ matrix:
         - if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then npx audit-ci --config ./audit-ci.json; fi
         - npm run lint
         - sudo env "PATH=$PATH" npm run test
-
-    - name: Pairing Tool
-      language: node_js # node version specified in .nvmrc
-
-      # install dependencies
-      install:
-        - cd pairing-tool
-        - npm ci
-
-      # run linter
-      script:
-        - npm run lint
