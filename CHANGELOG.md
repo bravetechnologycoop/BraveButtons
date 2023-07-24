@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [12.0.0] - 2023-07-24
+
 ### Changed
 
 - Modified tests to be able to work on faster computers.
@@ -23,7 +25,7 @@ the code was deployed.
 
 - Upgrade to Node.js 18.16.1 (CU-860pqat6u).
 
-## [11.0.0]
+## [11.0.0] - 2023-04-10
 
 ### Changed
 
@@ -33,13 +35,13 @@ the code was deployed.
 - Only send vitals messages if the relevant `is_sending_vitals` is true (CU-860q154rh).
 - Only send Button press alerts if the relevant `is_sending_vitals` is true (CU-860q154rh).
 
-## [10.5.0]
+## [10.5.0] - 2023-01-30
 
 ### Security
 
 - Updated dependencies (CU-860phzbq5).
 
-## [10.4.0]
+## [10.4.0] -2023-12-22
 
 ### Changed
 
@@ -612,7 +614,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v11.0.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v12.0.0...HEAD
+[12.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v11.0.0...v12.0.0
 [11.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.5.0...v11.0.0
 [10.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v10.3.0...v10.4.0
