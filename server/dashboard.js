@@ -115,7 +115,6 @@ async function renderClientDetailsPage(req, res) {
           chatbotState: recentSession.chatbotState,
           numButtonPresses: recentSession.numButtonPresses.toString(),
           incidentCategory: recentSession.incidentCategory,
-          buttonBatteryLevel: recentSession.buttonBatteryLevel,
           respondedAt,
           respondedByPhoneNumber: recentSession.respondedByPhoneNumber,
         })
@@ -144,7 +143,6 @@ async function renderClientVitalsPage(req, res) {
     const viewParams = {
       buttons: [],
       gateways: [],
-      hubs: [],
       clients: clients.filter(client => client.isDisplayed),
       currentDateTime: helpers.formatDateTimeForDashboard(await db.getCurrentTime()),
     }
@@ -152,21 +150,6 @@ async function renderClientVitalsPage(req, res) {
     if (currentClient !== null) {
       viewParams.currentClientName = currentClient.displayName
       viewParams.currentClientId = currentClient.id
-
-      const hubsVitals = await db.getHubsWithClientId(req.params.clientId)
-      for (const hubsVital of hubsVitals) {
-        viewParams.hubs.push({
-          name: hubsVital.systemName,
-          locationDescription: hubsVital.locationDescription,
-          flicLastSeenTime: helpers.formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
-          flicLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastSeenTime, db),
-          flicLastPingTime: helpers.formatDateTimeForDashboard(hubsVital.flicLastPingTime),
-          flicLastPingAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastPingTime, db),
-          heartbeatLastSeenTime: helpers.formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
-          heartbeatLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.heartbeatLastSeenTime, db),
-          isActive: !hubsVital.muted,
-        })
-      }
 
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
@@ -215,26 +198,8 @@ async function renderVitalsPage(req, res) {
     const viewParams = {
       buttons: [],
       gateways: [],
-      hubs: [],
       clients: clients.filter(client => client.isDisplayed),
       currentDateTime: helpers.formatDateTimeForDashboard(await db.getCurrentTime()),
-    }
-
-    const hubsVitals = await db.getHubs()
-    for (const hubsVital of hubsVitals) {
-      viewParams.hubs.push({
-        clientName: hubsVital.client.displayName,
-        clientId: hubsVital.client.id,
-        name: hubsVital.systemName,
-        locationDescription: hubsVital.locationDescription,
-        flicLastSeenTime: helpers.formatDateTimeForDashboard(hubsVital.flicLastSeenTime),
-        flicLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastSeenTime, db),
-        flicLastPingTime: helpers.formatDateTimeForDashboard(hubsVital.flicLastPingTime),
-        flicLastPingAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.flicLastPingTime, db),
-        heartbeatLastSeenTime: helpers.formatDateTimeForDashboard(hubsVital.heartbeatLastSeenTime),
-        heartbeatLastSeenAgo: await helpers.generateCalculatedTimeDifferenceString(hubsVital.heartbeatLastSeenTime, db),
-        isActive: !hubsVital.muted,
-      })
     }
 
     const buttonsVitals = await db.getRecentButtonsVitals()

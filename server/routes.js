@@ -4,10 +4,8 @@ const express = require('express')
 // In-house dependencies
 const { clickUpHelpers } = require('brave-alert-lib')
 const dashboard = require('./dashboard')
-const flic = require('./flic')
 const pa = require('./pa')
 const rak = require('./rak')
-const vitals = require('./vitals')
 
 const jsonBodyParser = express.json()
 
@@ -21,8 +19,6 @@ function configureRoutes(app) {
   app.get('/logout', dashboard.submitLogout)
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
 
-  app.post('/flic_button_press', flic.validateButtonPress, flic.handleButtonPress)
-  app.post('/heartbeat', jsonBodyParser, vitals.handleHeartbeat)
   app.post('/login', dashboard.submitLogin)
   app.post(
     '/pa/aws-device-registration',

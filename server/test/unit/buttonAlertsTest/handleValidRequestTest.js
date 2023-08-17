@@ -53,19 +53,19 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       beforeEach(async () => {
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 86)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 86 Is Sending Alerts?: true`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: true`,
         )
       })
 
       it('should start a session', async () => {
-        expect(db.createSession).to.be.calledWith(this.button.id, CHATBOT_STATE.STARTED, 1, null, 86, null, null)
+        expect(db.createSession).to.be.calledWith(this.button.id, CHATBOT_STATE.STARTED, 1, null, null, null)
       })
 
       it('should not update the session', async () => {
@@ -86,14 +86,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 1, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 75)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 75 Is Sending Alerts?: true`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: true`,
         )
       })
 
@@ -121,14 +121,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 2, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 90)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 90 Is Sending Alerts?: true`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: true`,
         )
       })
 
@@ -156,14 +156,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 14, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 95)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 95 Is Sending Alerts?: true`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: true`,
         )
       })
 
@@ -202,14 +202,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       beforeEach(async () => {
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 86)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 86 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -235,14 +235,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 1, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 75)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 75 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -268,14 +268,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 2, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 90)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 90 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -301,14 +301,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 14, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 95)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 95 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -345,14 +345,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       beforeEach(async () => {
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 86)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 86 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -378,14 +378,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 1, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 75)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 75 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -411,14 +411,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 2, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 90)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 90 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -444,14 +444,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 14, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 95)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 95 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -488,14 +488,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       beforeEach(async () => {
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 86)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 86 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -521,14 +521,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 1, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 75)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 75 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -554,14 +554,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 2, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 90)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 90 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 
@@ -587,14 +587,14 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numButtonPresses: 14, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1, 95)
+        await buttonAlerts.handleValidRequest(this.button, 1)
       })
 
       it('should log the button press', async () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 BatteryLevel: 95 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
         )
       })
 

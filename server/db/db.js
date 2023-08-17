@@ -5,7 +5,6 @@ const { Pool, types } = require('pg')
 const { ALERT_TYPE, CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
 const Button = require('../Button')
 const Gateway = require('../Gateway')
-const Hub = require('../Hub')
 const Session = require('../Session')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
@@ -29,7 +28,7 @@ function createSessionFromRow(r, allButtons) {
   const button = allButtons.filter(b => b.id === r.button_id)[0]
 
   // prettier-ignore
-  return new Session(r.id, r.chatbot_state, r.alert_type, r.num_button_presses, r.created_at, r.updated_at, r.incident_category, r.button_battery_level, r.responded_at, r.responded_by_phone_number, button)
+  return new Session(r.id, r.chatbot_state, r.alert_type, r.num_button_presses, r.created_at, r.updated_at, r.incident_category, r.responded_at, r.responded_by_phone_number, button)
 }
 
 function createClientFromRow(r) {
@@ -49,13 +48,6 @@ function createButtonsVitalFromRow(r, allButtons) {
 
   // prettier-ignore
   return new ButtonsVital(r.id, r.battery_level, r.created_at, r.snr, r.rssi, button)
-}
-
-function createHubFromRow(r, allClients) {
-  const client = allClients.filter(c => c.id === r.client_id)[0]
-
-  // prettier-ignore
-  return new Hub(r.system_id, r.flic_last_seen_time, r.flic_last_ping_time, r.heartbeat_last_seen_time, r.system_name, r.sent_vitals_alert_at, r.muted, r.sent_internal_flic_alert, r.sent_internal_ping_alert, r.sent_internal_pi_alert, r.location_description, client)
 }
 
 function createGatewayFromRow(r, allClients) {
@@ -82,7 +74,7 @@ async function beginTransaction() {
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
     await pgClient.query(
-      'LOCK TABLE sessions, buttons, clients, migrations, hubs, notifications, gateways, gateways_vitals, gateways_vitals_cache, buttons_vitals, buttons_vitals_cache',
+      'LOCK TABLE sessions, buttons, clients, migrations, notifications, gateways, gateways_vitals, gateways_vitals_cache, buttons_vitals, buttons_vitals_cache',
     )
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
@@ -190,32 +182,6 @@ async function getGateways(pgClient) {
     if (results.rows.length > 0) {
       const allClients = await getClients(pgClient)
       return results.rows.map(r => createGatewayFromRow(r, allClients))
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return []
-}
-
-async function getHubs(pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getHubs',
-      `
-      SELECT *
-      FROM hubs
-      ORDER BY system_name
-      `,
-      [],
-      pool,
-      pgClient,
-    )
-
-    const allClients = await getClients(pgClient)
-
-    if (results.rows.length > 0) {
-      return results.rows.map(r => createHubFromRow(r, allClients))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -524,22 +490,13 @@ async function getSessionWithSessionId(sessionId, pgClient) {
   return null
 }
 
-async function createSession(
-  buttonId,
-  chatbotState,
-  numButtonPresses,
-  incidentCategory,
-  buttonBatteryLevel,
-  respondedAt,
-  respondedByPhoneNumber,
-  pgClient,
-) {
+async function createSession(buttonId, chatbotState, numButtonPresses, incidentCategory, respondedAt, respondedByPhoneNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createSession',
       `
-      INSERT INTO sessions (button_id, chatbot_state, alert_type, num_button_presses, button_battery_level, responded_at, incident_category, responded_by_phone_number) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO sessions (button_id, chatbot_state, alert_type, num_button_presses, responded_at, incident_category, responded_by_phone_number) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
       `,
       [
@@ -547,7 +504,6 @@ async function createSession(
         chatbotState,
         numButtonPresses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT,
         numButtonPresses,
-        buttonBatteryLevel,
         respondedAt,
         incidentCategory,
         respondedByPhoneNumber,
@@ -589,8 +545,8 @@ async function saveSession(session, pgClient) {
       'saveSessionUpdate',
       `
       UPDATE sessions
-      SET button_id = $1, chatbot_state = $2, alert_type=$3, num_button_presses = $4, incident_category = $5, button_battery_level = $6, responded_at = $7, responded_by_phone_number = $8
-      WHERE id = $9
+      SET button_id = $1, chatbot_state = $2, alert_type=$3, num_button_presses = $4, incident_category = $5, responded_at = $6, responded_by_phone_number = $7
+      WHERE id = $8
       `,
       [
         session.button.id,
@@ -598,7 +554,6 @@ async function saveSession(session, pgClient) {
         session.alertType,
         session.numButtonPresses,
         session.incidentCategory,
-        session.buttonBatteryLevel,
         session.respondedAt,
         session.respondedByPhoneNumber,
         session.id,
@@ -608,40 +563,6 @@ async function saveSession(session, pgClient) {
     )
   } catch (err) {
     helpers.logError(err.toString())
-  }
-}
-
-async function updateSentInternalAlerts(hub, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'updateSentInternalAlertsSelect',
-      `
-      SELECT *
-      FROM hubs
-      WHERE system_id = $1
-      LIMIT 1
-      `,
-      [hub.systemId],
-      pool,
-      pgClient,
-    )
-    if (results === null || results.rows.length === 0) {
-      throw new Error("Tried to update internal alert flags for a hub that doesn't exist.")
-    }
-
-    await helpers.runQuery(
-      'updateSentInternalAlertsUpdate',
-      `
-      UPDATE hubs
-      SET sent_internal_flic_alert = $1, sent_internal_ping_alert = $2, sent_internal_pi_alert = $3
-      WHERE system_id = $4
-      `,
-      [hub.sentInternalFlicAlert, hub.sentInternalPingAlert, hub.sentInternalPiAlert, hub.systemId],
-      pool,
-      pgClient,
-    )
-  } catch (e) {
-    helpers.logError(`Error running the updateSentInternalAlerts query: ${e}`)
   }
 }
 
@@ -1160,113 +1081,6 @@ async function clearTables(pgClient) {
   await clearClients(pgClient)
 }
 
-async function getHubWithSystemId(systemId, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getHubWithSystemId',
-      `
-      SELECT *
-      FROM hubs AS h
-      LEFT JOIN clients AS c ON h.client_id = c.id
-      WHERE system_id = $1
-      `,
-      [systemId],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      const allClients = await getClients(pgClient)
-      return createHubFromRow(results.rows[0], allClients)
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return null
-}
-
-async function getHubsWithClientId(clientId, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getHubsWithClientId',
-      `
-      SELECT *
-      FROM hubs AS h
-      LEFT JOIN clients AS c ON h.client_id = c.id
-      WHERE client_id = $1
-      ORDER BY system_name
-      `,
-      [clientId],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      const allClients = await getClients(pgClient)
-      return results.rows.map(r => createHubFromRow(r, allClients))
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return []
-}
-
-async function saveHeartbeat(systemId, flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'saveHeartbeat select',
-      `
-      SELECT *
-      FROM hubs
-      WHERE system_id = $1
-      LIMIT 1
-      `,
-      [systemId],
-      pool,
-      pgClient,
-    )
-    if (results === null || results.rows.length === 0) {
-      throw new Error("Tried to save a heartbeat for a hub that doesn't exist yet.")
-    }
-
-    await helpers.runQuery(
-      'saveHeartbeat update',
-      `
-      UPDATE hubs
-      SET flic_last_seen_time = $1, flic_last_ping_time = $2, heartbeat_last_seen_time = $3
-      WHERE system_id = $4
-      `,
-      [flicLastSeenTime, flicLastPingTime, heartbeatLastSeenTime, systemId],
-      pool,
-      pgClient,
-    )
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-}
-
-async function updateHubSentVitalsAlerts(id, sentalerts, pgClient) {
-  try {
-    const query = sentalerts
-      ? `
-        UPDATE hubs
-        SET sent_vitals_alert_at = NOW()
-        WHERE system_id = $1
-      `
-      : `
-        UPDATE hubs
-        SET sent_vitals_alert_at = NULL
-        WHERE system_id = $1
-      `
-
-    await helpers.runQuery('updateHubSentVitalsAlerts', query, [id], pool, pgClient)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-}
-
 async function updateGatewaySentVitalsAlerts(gatewayId, sentalerts, pgClient) {
   try {
     const query = sentalerts
@@ -1348,7 +1162,7 @@ async function getDataForExport(pgClient) {
         s.incident_category AS "Session Incident Type",
         '' AS "Session Notes",
         '' AS "Fallback Alert Status (Twilio)",
-        s.button_battery_level AS "Button Battery Level",
+        '' AS "Button Battery Level",
         TO_CHAR(b.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Button Created",
         TO_CHAR(b.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Button Last Updated",
         b.button_serial_number AS "Button Serial Number",
@@ -1361,6 +1175,7 @@ async function getDataForExport(pgClient) {
         LEFT JOIN buttons AS b ON s.button_id = b.id
         LEFT JOIN clients AS c ON c.id = b.client_id
         LEFT JOIN clients_extension x on x.client_id = c.id
+        LEFT JOIN buttons_vitals_cache bv ON b.id = bv.button_id
       `,
       [],
       pool,
@@ -1474,9 +1289,6 @@ module.exports = {
   getCurrentTime,
   getDataForExport,
   getHistoricAlertsByAlertApiKey,
-  getHubs,
-  getHubsWithClientId,
-  getHubWithSystemId,
   getClients,
   getClientsWithAlertApiKey,
   getClientWithId,
@@ -1497,11 +1309,8 @@ module.exports = {
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,
-  saveHeartbeat,
   saveSession,
   updateButtonsSentLowBatteryAlerts,
   updateButtonsSentVitalsAlerts,
   updateGatewaySentVitalsAlerts,
-  updateHubSentVitalsAlerts,
-  updateSentInternalAlerts,
 }

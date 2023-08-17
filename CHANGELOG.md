@@ -15,6 +15,10 @@ the code was deployed.
 
 - Logging RSSI and SNR values for each RAK Button message (CU-2a7dcrz).
 
+### Removed
+
+- Support for Flic Buttons (Buttons v2) (CU-860rj8dqc).
+
 ## [12.0.0] - 2023-07-24
 
 ### Changed

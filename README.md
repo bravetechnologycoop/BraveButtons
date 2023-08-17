@@ -134,24 +134,12 @@ making a new tag during step 2. This is essentially redeploying an older version
 The config repo stores many of the files used to configure the Button Hub fleet. It has the following directory structure:
 
 - buttons-config
-  - ansible
-    - group_vars
-    - inventory-file.yaml
   - button_config
     - button-config-1.csv
     - button-config-2.csv
   - gateway_config
     - dev
     - prod
-  - pi_config
-    - pi-config-1.ini
-    - pi-config-2.ini
-
-**ansible** contains files used by Ansible to identify and connect to the different devices that make up the Button Hub v2 fleet (legacy).
-
-- **group_vars** contains files that store passwords used to access the Raspberry Pi environment for each group of Button Hubs. These files are encrypted at rest using Ansible Vault (legacy).
-
-- **inventory-file.yaml** is an example of an inventory file that contains a formatted YAML object describing the different devices that Ansible can access (legacy).
 
 **button_config** contains files generated during the Button provisioning process. These files can be ingested by scripts located in `./server/db/` that add buttons to our database.
 
@@ -160,8 +148,6 @@ The config repo stores many of the files used to configure the Button Hub fleet.
 - **dev** RAK Gateways in the dev environment.
 
 - **prod** RAK Gateways in the dev environment.
-
-**pi_config** contains INI files used by the `./pi/setup_pi.sh` script to configure the Buttons v2 system. These INI files are also used by `./pi/heartbeat.py` as a source of config (legacy).
 
 # How to check the logs
 
