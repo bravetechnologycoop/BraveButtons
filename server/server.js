@@ -48,7 +48,6 @@ if (helpers.isTestEnvironment()) {
     cert: fs.readFileSync(`/etc/letsencrypt/live/${helpers.getEnvVar('DOMAIN')}/fullchain.pem`),
   }
   server = https.createServer(httpsOptions, app).listen(443)
-  setInterval(vitals.checkHubHeartbeat, 10 * 1000)
   setInterval(vitals.checkGatewayHeartbeat, 5 * 60 * 1000)
   setInterval(vitals.checkButtonBatteries, 5 * 60 * 1000)
   setInterval(vitals.checkButtonHeartbeat, 5 * 60 * 1000)

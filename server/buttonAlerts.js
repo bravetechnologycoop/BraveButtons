@@ -13,12 +13,12 @@ function setup(braveAlerterObj) {
   braveAlerter = braveAlerterObj
 }
 
-async function handleValidRequest(button, numButtonPresses, batteryLevel) {
+async function handleValidRequest(button, numButtonPresses) {
   // Log the request
   helpers.log(
     `id: ${button.id.toString()} SerialNumber: ${
       button.buttonSerialNumber
-    } Unit: ${button.displayName.toString()} Presses: ${numButtonPresses.toString()} BatteryLevel: ${batteryLevel} Is Sending Alerts?: ${
+    } Unit: ${button.displayName.toString()} Presses: ${numButtonPresses.toString()} Is Sending Alerts?: ${
       button.isSendingAlerts && button.client.isSendingAlerts
     }`,
   )
@@ -40,16 +40,8 @@ async function handleValidRequest(button, numButtonPresses, batteryLevel) {
     let currentSession = await db.getUnrespondedSessionWithButtonId(button.id, pgClient)
     const currentTime = await db.getCurrentTime(pgClient)
 
-    if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-      if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-        currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, numButtonPresses, null, batteryLevel, null, null, pgClient)
-      } else {
-        currentSession.incrementButtonPresses(numButtonPresses)
-        currentSession.updateBatteryLevel(batteryLevel)
-        await db.saveSession(currentSession, pgClient)
-      }
-    } else if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, numButtonPresses, null, null, null, null, pgClient)
+    if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
+      currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, numButtonPresses, null, null, null, pgClient)
     } else {
       currentSession.incrementButtonPresses(numButtonPresses)
       await db.saveSession(currentSession, pgClient)

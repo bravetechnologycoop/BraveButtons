@@ -35,7 +35,6 @@
                                 <th scope="col">Updated At</th>
                                 <th scope="col">Responded At</th>
                                 <th scope="col">Responded By</th>
-                                <th scope="col">Battery Level</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -49,7 +48,6 @@
                                     <td>{{updatedAt}}</td>
                                     <td>{{respondedAt}}</td>
                                     <td>{{respondedByPhoneNumber}}</td>
-                                    <td>{{buttonBatteryLevel}}</td>
                                 </tr>
                             {{/recentSessions}}
                         </tbody>
