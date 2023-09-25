@@ -9,16 +9,11 @@ Please note that the date associated with a release is the date the code
 was committed to the `main` branch. This is not necessarily the date that
 the code was deployed.
 
-
-
 ## [Unreleased]
 
-### Changes Made - 2023-09-22
+### Changed
 
-- Enhanced [Buttons DB Migration Process](https://app.clickup.com/t/8678vk9cj) (#8678vk9cj).
-- Local Testing: I ran Travis CI tests on my development machine using `npm test`, and all tests passed successfully.
-
-
+- Enhanced Buttons DB Migration Process by introducing a dynamic execution of SQL migration Files (CU-8678vk9cj).
 
 ## [13.0.0] - 2023-09-14
 
