@@ -29,6 +29,8 @@ dashboard.setupDashboardSessions(app)
 // Add routes
 routes.configureRoutes(app)
 
+console.log('Tara testing')
+
 // Add BraveAlerter's routes ( /alert/* )
 app.use(braveAlerter.getRouter())
 
