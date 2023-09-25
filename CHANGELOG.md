@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Enhanced Buttons DB Migration Process by introducing a dynamic execution of SQL migration Files (CU-8678vk9cj).
+
 ## [13.0.0] - 2023-09-14
 
 ### Added
