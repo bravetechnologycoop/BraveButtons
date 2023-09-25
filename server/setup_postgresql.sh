@@ -38,7 +38,7 @@ sudo PGPASSWORD=$pg_password psql -U $pg_user -h $pg_host -p $pg_port -d $pg_dbn
 # Run SQL setup scripts
 for file in $(ls -v db/*.sql); do
   echo "Running script $file"
-  PGPASSWORD=$pg_password psql -U $pg_user -h $pg_host -d $pg_dbname -p $pg_port -v "ON_ERROR_STOP=1" --set=sslmode=require -f ./$file
+  PGPASSWORD=$pg_password psql -U $pg_user -h $pg_host -d $pg_dbname -p $pg_port -v "ON_ERROR_STOP=1" -v installationName="'00000'" -v responderPhone="'00000'" -v fallbackPhone="'00000'" --set=sslmode=require -f ./$file
 done
 
 echo "PostgreSQL commands completed."
