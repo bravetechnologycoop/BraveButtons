@@ -14,6 +14,7 @@ the code was deployed.
 ### Changed
 
 - Body parsing middleware to match BraveSensor (moved from routes.js to server.js).
+- Updated production deployment instructions in README.
 
 ### Added
 
