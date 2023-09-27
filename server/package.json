@@ -45,7 +45,7 @@
     "test-coverage": "nyc --reporter=html --reporter=text npm test",
     "integrationtest": "NODE_ENV=test mocha --timeout 40000 \"test/integration/**/*.js\"",
     "unittest": "NODE_ENV=test mocha --timeout 40000 \"test/unit/**/*.js\"",
-    "start": "node server.js"
+    "start": "NODE_ENV=test node server.js"
   },
   "repository": {
     "type": "git",
