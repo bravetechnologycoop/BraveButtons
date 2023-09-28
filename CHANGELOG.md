@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [unreleased]
 
+### Security
+
+- Upgraded Chai.
+
 ## [13.1.0] - 2023-09-26
 
 ### Changed
