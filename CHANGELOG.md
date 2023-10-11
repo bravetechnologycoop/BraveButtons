@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [unreleased]
 
+### Changed
+
+- Body parsing middleware to match BraveSensor (moved from routes.js to server.js).
+
 ### Added
 
 - POST /api/message-clients sends a Twilio text message to all active clients (adapted from BraveSensor) (CU-w9bcb5).
