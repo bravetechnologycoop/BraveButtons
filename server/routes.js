@@ -8,8 +8,6 @@ const pa = require('./pa')
 const rak = require('./rak')
 const api = require('./api')
 
-const jsonBodyParser = express.json()
-
 function configureRoutes(app) {
   app.get('/', dashboard.sessionChecker, dashboard.redirectToHomePage)
   app.get('/dashboard', dashboard.sessionChecker, dashboard.renderDashboardPage)
@@ -23,15 +21,14 @@ function configureRoutes(app) {
   app.post('/login', dashboard.submitLogin)
   app.post(
     '/pa/aws-device-registration',
-    jsonBodyParser,
     pa.validateAwsDeviceRegistration,
     clickUpHelpers.clickUpChecker,
     pa.handleAwsDeviceRegistration,
   )
-  app.post('/pa/buttons-twilio-number', jsonBodyParser, pa.validateButtonsTwilioNumber, clickUpHelpers.clickUpChecker, pa.handleButtonsTwilioNumber)
-  app.post('/rak_button_press', jsonBodyParser, rak.validateButtonPress, rak.handleButtonPress)
+  app.post('/pa/buttons-twilio-number', pa.validateButtonsTwilioNumber, clickUpHelpers.clickUpChecker, pa.handleButtonsTwilioNumber)
+  app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
 
-  app.post('/api/message-clients', jsonBodyParser, api.validateMessageClients, api.authorize, api.messageClients)
+  app.post('/api/message-clients', api.validateMessageClients, api.authorize, api.messageClients)
 }
 
 module.exports = {
