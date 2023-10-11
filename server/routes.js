@@ -6,6 +6,7 @@ const { clickUpHelpers } = require('brave-alert-lib')
 const dashboard = require('./dashboard')
 const pa = require('./pa')
 const rak = require('./rak')
+const api = require('./api')
 
 const jsonBodyParser = express.json()
 
@@ -29,6 +30,8 @@ function configureRoutes(app) {
   )
   app.post('/pa/buttons-twilio-number', jsonBodyParser, pa.validateButtonsTwilioNumber, clickUpHelpers.clickUpChecker, pa.handleButtonsTwilioNumber)
   app.post('/rak_button_press', jsonBodyParser, rak.validateButtonPress, rak.handleButtonPress)
+
+  app.post('/api/message-clients', jsonBodyParser, api.validateMessageClients, api.authorize, api.messageClients)
 }
 
 module.exports = {

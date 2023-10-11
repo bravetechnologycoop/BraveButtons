@@ -11,6 +11,12 @@ the code was deployed.
 
 ## [unreleased]
 
+### Added
+
+- POST /api/message-clients sends a Twilio text message to all active clients (adapted from BraveSensor) (CU-w9bcb5).
+- Unit tests for the authorize function in api.js (adapted from BraveSensor) (CU-w9bcb5).
+- Integration tests for the /api/message-clients API call (adapted from BraveSensor) (CU-w9bcb5).
+
 ### Security
 
 - Upgrade Chai and brave-alert-lib (CU-8678wgn0p).
