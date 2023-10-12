@@ -142,6 +142,37 @@ async function getClients(pgClient) {
   return []
 }
 
+async function getActiveClients(pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getActiveClients',
+      `
+        SELECT c.*
+	FROM clients c
+	INNER JOIN (
+	  SELECT DISTINCT client_id AS id
+	  FROM buttons
+	  WHERE is_sending_alerts AND is_sending_vitals
+	) AS b
+	ON c.id = b.id
+	WHERE c.is_sending_alerts AND c.is_sending_vitals
+	ORDER BY c.display_name;
+      `,
+      [],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined) {
+      return null
+    }
+
+    return await Promise.all(results.rows.map(r => createClientFromRow(r)))
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+}
+
 async function getButtons(pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1290,6 +1321,7 @@ module.exports = {
   getDataForExport,
   getHistoricAlertsByAlertApiKey,
   getClients,
+  getActiveClients,
   getClientsWithAlertApiKey,
   getClientWithId,
   getClientWithSessionId,

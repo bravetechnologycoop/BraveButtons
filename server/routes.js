@@ -1,13 +1,9 @@
-// Third-party dependencies
-const express = require('express')
-
 // In-house dependencies
 const { clickUpHelpers } = require('brave-alert-lib')
 const dashboard = require('./dashboard')
 const pa = require('./pa')
 const rak = require('./rak')
-
-const jsonBodyParser = express.json()
+const api = require('./api')
 
 function configureRoutes(app) {
   app.get('/', dashboard.sessionChecker, dashboard.redirectToHomePage)
@@ -20,15 +16,11 @@ function configureRoutes(app) {
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
 
   app.post('/login', dashboard.submitLogin)
-  app.post(
-    '/pa/aws-device-registration',
-    jsonBodyParser,
-    pa.validateAwsDeviceRegistration,
-    clickUpHelpers.clickUpChecker,
-    pa.handleAwsDeviceRegistration,
-  )
-  app.post('/pa/buttons-twilio-number', jsonBodyParser, pa.validateButtonsTwilioNumber, clickUpHelpers.clickUpChecker, pa.handleButtonsTwilioNumber)
-  app.post('/rak_button_press', jsonBodyParser, rak.validateButtonPress, rak.handleButtonPress)
+  app.post('/pa/aws-device-registration', pa.validateAwsDeviceRegistration, clickUpHelpers.clickUpChecker, pa.handleAwsDeviceRegistration)
+  app.post('/pa/buttons-twilio-number', pa.validateButtonsTwilioNumber, clickUpHelpers.clickUpChecker, pa.handleButtonsTwilioNumber)
+  app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
+
+  app.post('/api/message-clients', api.validateMessageClients, api.authorize, api.messageClients)
 }
 
 module.exports = {
