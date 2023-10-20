@@ -141,6 +141,9 @@ async function checkButtonBatteries() {
 }
 
 async function checkButtonHeartbeat() {
+  // create obj to track disconnected buttons
+  const disconnectedButtons = {}
+
   try {
     const THRESHOLD = helpers.getEnvVar('RAK_BUTTONS_VITALS_ALERT_THRESHOLD')
 
@@ -159,10 +162,27 @@ async function checkButtonHeartbeat() {
             const logMessage = `Disconnection: ${client.displayName} ${button.displayName} Button delay is ${buttonDelay} seconds.`
             helpers.logSentry(logMessage)
 
+            // Store the recently disconnected button for the client to disconnectedButtons obj
+            // If the clientid isn't in the obj - then add it first
+            if (!disconnectedButtons[client.id]) {
+              disconnectedButtons[client.id] = []
+            }
+            // store the disconnected button data in an object and push it to the clientid keyvalue
+            disconnectedButtons[client.id].push({ buttonId: button.id, buttonName: button.displayName, time: currentTime })
+
             await db.updateButtonsSentVitalsAlerts(button.id, true)
 
             // TODO Also send a text message to Responders and Heartbeat Phone Numbers once we know that these messages are reliable
           }
+
+          // Store the existing disconnected buttons in the disconnectedButtons obj
+          // If the clientid isn't in the obj - then add it first
+          if (!disconnectedButtons[client.id]) {
+            disconnectedButtons[client.id] = []
+          }
+          // store the disconnected button data in an object and push it to the clientid keyvalue
+          disconnectedButtons[client.id].push({ buttonId: button.id, buttonName: button.displayName, time: currentTime })
+
           // TODO Also send a text message reminder once we know that these messages are reliable
         } else if (button.sentVitalsAlertAt !== null) {
           const logMessage = `Reconnection: ${client.displayName} ${button.displayName} Button.`
@@ -174,6 +194,10 @@ async function checkButtonHeartbeat() {
         }
       }
     }
+
+    // once the loop is done send one message per client with disconnected buttons info
+    // sendDisconnectionMessages(disconnectedButtons)
+    // PROBLEM: although resolves the issue of sendind multiple messages for one client with many buttons, if one button is not connected will send a msg everytime this is called
   } catch (e) {
     helpers.logError(`Failed to check button heartbeat: ${e}`)
   }
