@@ -25,6 +25,7 @@ the code was deployed.
 ### Security
 
 - Upgrade Chai and brave-alert-lib (CU-8678wgn0p).
+- Upgrade babel dependencies.
 
 ## [13.1.0] - 2023-09-26
 
