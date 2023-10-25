@@ -196,28 +196,36 @@ async function checkButtonHeartbeat() {
     }
     // TODO send a text message to Responders and Heartbeat Phone Numbers of disconnected and reconnected buttons
 
-    // Once the loop is done send one message per client with disconnected buttons info
-    // Should this be seperate function??
-    Object.values(disconnectedButtons).forEach(client => {
-      const clientDisplayName = client.client.displayName
-      const buttonDisplayNames = client.buttons.join(', ')
-      sendNotification(
-        i18next.t('buttonDisconnection', { lng: client.language, buttonDisplayNames, clientDisplayName }),
-        client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
-        client.fromPhoneNumber,
-      )
-    })
+    // TODO - don't send disconnection if gateways are offline
 
-    // Send Reconnected butoon messages to clients
-    Object.values(reconnectedButtons).forEach(client => {
-      const clientDisplayName = client.client.displayName
-      const buttonDisplayNames = client.buttons.join(', ')
-      sendNotification(
-        i18next.t('buttonReconnection', { lng: client.language, buttonDisplayNames, clientDisplayName }),
-        client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
-        client.fromPhoneNumber,
-      )
-    })
+    // TODO - look into feature flag to turn sending notifications on/off
+
+    // Once the loop is done send one message per client with disconnected buttons info
+    // Consider making these their own functions - to be cleaner
+    if (Object.keys(disconnectedButtons).length > 0) {
+      Object.values(disconnectedButtons).forEach(client => {
+        const clientDisplayName = client.client.displayName
+        const buttonDisplayNames = client.buttons.join(', ')
+        sendNotification(
+          i18next.t('buttonDisconnection', { lng: client.language, buttonDisplayNames, clientDisplayName }),
+          client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
+          client.fromPhoneNumber,
+        )
+      })
+    }
+
+    // Send Reconnected button messages to clients
+    if (Object.keys(reconnectedButtons).length > 0) {
+      Object.values(reconnectedButtons).forEach(client => {
+        const clientDisplayName = client.client.displayName
+        const buttonDisplayNames = client.buttons.join(', ')
+        sendNotification(
+          i18next.t('buttonReconnection', { lng: client.language, buttonDisplayNames, clientDisplayName }),
+          client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
+          client.fromPhoneNumber,
+        )
+      })
+    }
   } catch (e) {
     helpers.logError(`Failed to check button heartbeat: ${e}`)
   }
