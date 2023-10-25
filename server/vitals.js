@@ -141,10 +141,11 @@ async function checkButtonBatteries() {
 }
 
 async function checkButtonHeartbeat() {
-  // create obj to track disconnected buttons
-  const disconnectedButtons = {}
-
   try {
+    // Objets to track disconnected and reconnected buttons
+    const disconnectedButtons = {}
+    const reconnectedButtons = {}
+
     const THRESHOLD = helpers.getEnvVar('RAK_BUTTONS_VITALS_ALERT_THRESHOLD')
 
     const buttonsVitals = await db.getRecentButtonsVitals()
@@ -162,42 +163,61 @@ async function checkButtonHeartbeat() {
             const logMessage = `Disconnection: ${client.displayName} ${button.displayName} Button delay is ${buttonDelay} seconds.`
             helpers.logSentry(logMessage)
 
-            // Store the recently disconnected button for the client to disconnectedButtons obj
-            // If the clientid isn't in the obj - then add it first
+            // Store the disconnected client info
             if (!disconnectedButtons[client.id]) {
-              disconnectedButtons[client.id] = []
+              disconnectedButtons[client.id] = {
+                client,
+                buttons: [],
+              }
             }
-            // store the disconnected button data in an object and push it to the clientid keyvalue
-            disconnectedButtons[client.id].push({ buttonId: button.id, buttonName: button.displayName, time: currentTime })
+            // Store the disconnected button name
+            disconnectedButtons[client.id].buttons.push(button.displayName)
 
             await db.updateButtonsSentVitalsAlerts(button.id, true)
-
-            // TODO Also send a text message to Responders and Heartbeat Phone Numbers once we know that these messages are reliable
           }
-
-          // Store the existing disconnected buttons in the disconnectedButtons obj
-          // If the clientid isn't in the obj - then add it first
-          if (!disconnectedButtons[client.id]) {
-            disconnectedButtons[client.id] = []
-          }
-          // store the disconnected button data in an object and push it to the clientid keyvalue
-          disconnectedButtons[client.id].push({ buttonId: button.id, buttonName: button.displayName, time: currentTime })
-
           // TODO Also send a text message reminder once we know that these messages are reliable
         } else if (button.sentVitalsAlertAt !== null) {
           const logMessage = `Reconnection: ${client.displayName} ${button.displayName} Button.`
           helpers.logSentry(logMessage)
 
-          await db.updateButtonsSentVitalsAlerts(button.id, false)
+          // Store the reconnected client info
+          if (!reconnectedButtons[client.id]) {
+            reconnectedButtons[client.id] = {
+              client,
+              buttons: [],
+            }
+          }
+          // Store the reconnected button name
+          reconnectedButtons[client.id].buttons.push({ buttonName: button.displayName })
 
-          // TODO Also send a text message to Responders and Heartbeat Phone Numbers once we know that these messages are reliable
+          await db.updateButtonsSentVitalsAlerts(button.id, false)
         }
       }
     }
+    // TODO send a text message to Responders and Heartbeat Phone Numbers of disconnected and reconnected buttons
 
-    // once the loop is done send one message per client with disconnected buttons info
-    // sendDisconnectionMessages(disconnectedButtons)
-    // PROBLEM: although resolves the issue of sendind multiple messages for one client with many buttons, if one button is not connected will send a msg everytime this is called
+    // Once the loop is done send one message per client with disconnected buttons info
+    // Should this be seperate function??
+    Object.values(disconnectedButtons).forEach(client => {
+      const clientDisplayName = client.client.displayName
+      const buttonDisplayNames = client.buttons.join(', ')
+      sendNotification(
+        i18next.t('buttonDisconnection', { lng: client.language, buttonDisplayNames, clientDisplayName }),
+        client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
+        client.fromPhoneNumber,
+      )
+    })
+
+    // Send Reconnected butoon messages to clients
+    Object.values(reconnectedButtons).forEach(client => {
+      const clientDisplayName = client.client.displayName
+      const buttonDisplayNames = client.buttons.join(', ')
+      sendNotification(
+        i18next.t('buttonReconnection', { lng: client.language, buttonDisplayNames, clientDisplayName }),
+        client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
+        client.fromPhoneNumber,
+      )
+    })
   } catch (e) {
     helpers.logError(`Failed to check button heartbeat: ${e}`)
   }
