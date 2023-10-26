@@ -3,13 +3,16 @@ const { expect, use } = require('chai')
 const { describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
+const rewire = require('rewire')
 const { DateTime } = require('luxon')
 
 // In-house dependencies
 const { helpers, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { buttonFactory, buttonsVitalFactory } = require('../../testingHelpers')
-const vitals = require('../../../vitals')
+require('../../mocks/tMock')
+
+const vitals = rewire('../../../vitals')
 
 use(sinonChai)
 
@@ -41,6 +44,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     sandbox.spy(helpers, 'log')
 
     this.sendNotificationStub = sandbox.stub()
+    vitals.__set__('sendNotification', this.sendNotificationStub)
   })
 
   afterEach(() => {
@@ -88,6 +92,15 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should update the buttons sentVitalsAlertAt in the database to now', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, true)
+    })
+
+    it('should send a disconnection message to the client', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.be.calledWithExactly(
+        'buttonDisconnection',
+        [this.button.client.responderPhoneNumbers[0], this.button.client.heartbeatPhoneNumbers[0]],
+        this.button.client.fromPhoneNumber,
+      )
     })
   })
 
@@ -180,6 +193,15 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it("should update the button's sentVitalsAlertAt the database to null", async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, false)
+    })
+
+    it('should send a reconnection message to the client', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.be.calledWithExactly(
+        'buttonReconnection',
+        [this.button.client.responderPhoneNumbers[0], this.button.client.heartbeatPhoneNumbers[0]],
+        this.button.client.fromPhoneNumber,
+      )
     })
   })
 

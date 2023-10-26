@@ -5,6 +5,8 @@
   "alertReminder": "Responda \"Ok\" si le ha dado seguimiento a su llamada. Si no responde dentro 2 minutos, se emitirá una alerta de emergencia al personal.",
   "alertStart": "Ha habido una solicitud de ayuda de {{ buttonDisplayName }}. Responda \"Ok\" cuando le haya dado seguimiento a la llamada.",
   "alertUrgent": "Es una solicitud urgente. El Button se ha presionado {{ numButtonPresses }} veces. Responda \"Ok\" cuando le haya dado seguimiento a la llamada.",
+  "buttonDisconnection": "",
+  "buttonReconnection": "",
   "buttonLowBatteryInitial": "La batería del Button {{ buttonDisplayName }} está baja y necesita recargarse. Para ver un video que muestra cómo recargar la batería, vaya a https://www.youtube.com/watch?v=h7_5ff-_r5A",
   "buttonLowBatteryReminder": "La batería del Button {{ buttonDisplayName }} sigue baja y necesita recargarse.\n\nPara ver un video que muestra cómo recargar la batería, vaya a https://www.youtube.com/watch?v=h7_5ff-_r5A",
   "buttonLowBatteryNoLonger": "La batería del Button {{ buttonDisplayName }} ya no está baja. Gracias.",
