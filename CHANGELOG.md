@@ -13,7 +13,20 @@ the code was deployed.
 
 ### Changed
 
+- Body parsing middleware to match BraveSensor (moved from routes.js to server.js).
+- Updated production deployment instructions in README.
 - Modified getAlertTypeDisplayName function to adapt to the new Brave Alert library v10.3.0.
+
+### Added
+
+- POST /api/message-clients sends a Twilio text message to all active clients (adapted from BraveSensor) (CU-w9bcb5).
+- Unit tests for the authorize function in api.js (adapted from BraveSensor) (CU-w9bcb5).
+- Integration tests for the /api/message-clients API call (adapted from BraveSensor) (CU-w9bcb5).
+
+### Security
+
+- Upgrade Chai and brave-alert-lib (CU-8678wgn0p).
+- Upgrade babel dependencies.
 
 ## [13.1.0] - 2023-09-26
 
