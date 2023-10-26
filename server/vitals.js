@@ -194,8 +194,6 @@ async function checkButtonHeartbeat() {
         }
       }
     }
-    // TODO send a text message to Responders and Heartbeat Phone Numbers of disconnected and reconnected buttons
-
     // TODO - don't send disconnection if gateways are offline
 
     // TODO - look into feature flag to turn sending notifications on/off
@@ -203,26 +201,28 @@ async function checkButtonHeartbeat() {
     // Once the loop is done send one message per client with disconnected buttons info
     // Consider making these their own functions - to be cleaner
     if (Object.keys(disconnectedButtons).length > 0) {
-      Object.values(disconnectedButtons).forEach(client => {
-        const clientDisplayName = client.client.displayName
-        const buttonDisplayNames = client.buttons.join(', ')
+      Object.values(disconnectedButtons).forEach(id => {
+        const clientDisplayName = id.client.displayName
+        const buttonDisplayNames = id.buttons.join(', ')
+        const toPhoneNumbers = id.client.responderPhoneNumbers.concat(id.client.heartbeatPhoneNumbers)
         sendNotification(
-          i18next.t('buttonDisconnection', { lng: client.language, buttonDisplayNames, clientDisplayName }),
-          client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
-          client.fromPhoneNumber,
+          i18next.t('buttonDisconnection', { lng: id.client.language, buttonDisplayNames, clientDisplayName }),
+          toPhoneNumbers,
+          id.client.fromPhoneNumber,
         )
       })
     }
 
     // Send Reconnected button messages to clients
     if (Object.keys(reconnectedButtons).length > 0) {
-      Object.values(reconnectedButtons).forEach(client => {
-        const clientDisplayName = client.client.displayName
-        const buttonDisplayNames = client.buttons.join(', ')
+      Object.values(reconnectedButtons).forEach(id => {
+        const clientDisplayName = id.client.displayName
+        const buttonDisplayNames = id.buttons.join(', ')
+        const toPhoneNumbers = id.client.responderPhoneNumbers.concat(id.client.heartbeatPhoneNumbers)
         sendNotification(
-          i18next.t('buttonReconnection', { lng: client.language, buttonDisplayNames, clientDisplayName }),
-          client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
-          client.fromPhoneNumber,
+          i18next.t('buttonReconnection', { lng: id.client.language, buttonDisplayNames, clientDisplayName }),
+          toPhoneNumbers,
+          id.client.fromPhoneNumber,
         )
       })
     }
