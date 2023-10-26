@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [unreleased]
 
+### Changed
+
+- Modified getAlertTypeDisplayName function to adapt to the new Brave Alert library v10.3.0.
+
 ## [13.1.0] - 2023-09-26
 
 ### Changed
