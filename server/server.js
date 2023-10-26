@@ -22,6 +22,8 @@ const braveAlerter = new BraveAlerterConfigurator().createBraveAlerter()
 
 // Start and configure Express App
 const app = express()
+
+app.use(express.json()) // Body Parser Middleware
 app.use(express.urlencoded({ extended: true }))
 app.use(cors()) // Cors Middleware (Cross Origin Resource Sharing)
 dashboard.setupDashboardSessions(app)
