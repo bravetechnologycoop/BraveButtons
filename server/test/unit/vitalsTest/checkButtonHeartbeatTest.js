@@ -71,6 +71,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
     })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
+    })
   })
 
   describe('when button that is sending vitals last seen exceeds the threshold and no alerts have been sent', () => {
@@ -94,7 +99,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, true)
     })
 
-    it('should send a disconnection message to the client', async () => {
+    it('should send a disconnection notification to the client', async () => {
       await vitals.checkButtonHeartbeat()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
         'buttonDisconnection',
@@ -124,6 +129,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
     })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
+    })
   })
 
   describe("when client that is not sending vitals's button that is sending vitals last seen exceeds the threshold and no alerts have been sent", () => {
@@ -146,6 +156,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
     })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
+    })
   })
 
   describe("when client that is not sending vitals's button that is not sending vitals last seen exceeds the threshold and no alerts have been sent", () => {
@@ -167,6 +182,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should not update the database', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+    })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -195,7 +215,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, false)
     })
 
-    it('should send a reconnection message to the client', async () => {
+    it('should send a reconnection notification to the client', async () => {
       await vitals.checkButtonHeartbeat()
       expect(this.sendNotificationStub).to.be.calledWithExactly(
         'buttonReconnection',
@@ -229,6 +249,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
     })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
+    })
   })
 
   describe("when client that is not sending vitals's button that is sending vitals last seen is more recent than the threshold and an alert was sent ", () => {
@@ -255,6 +280,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
     })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
+    })
   })
 
   describe("when client that is not sending vitals's button that is not sending vitals last seen is more recent than the threshold and an alert was sent ", () => {
@@ -280,6 +310,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should not update the database', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+    })
+
+    it('should not send any notifications', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 })
