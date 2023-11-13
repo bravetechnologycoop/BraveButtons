@@ -15,13 +15,14 @@ the code was deployed.
 
 - Body parsing middleware to match BraveSensor (moved from routes.js to server.js).
 - Updated production deployment instructions in README.
-- Modified getAlertTypeDisplayName function to adapt to the new Brave Alert library v10.3.0.
+- Modify getAlertTypeDisplayName function to support the 't' translation function (CU-86795d2nb).
 
 ### Added
 
 - POST /api/message-clients sends a Twilio text message to all active clients (adapted from BraveSensor) (CU-w9bcb5).
 - Unit tests for the authorize function in api.js (adapted from BraveSensor) (CU-w9bcb5).
 - Integration tests for the /api/message-clients API call (adapted from BraveSensor) (CU-w9bcb5).
+- Incorporate translations for the Alert Type in the JSON file for both English and Spanish (CU-86795d2nb).
 
 ### Security
 
