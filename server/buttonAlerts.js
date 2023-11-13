@@ -82,7 +82,7 @@ async function handleValidRequest(button, numButtonPresses) {
         button.client.responderPhoneNumbers,
         button.phoneNumber,
         t('alertUrgent', { lng: button.client.language, numButtonPresses: currentSession.numButtonPresses.toString() }),
-        `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT, button.client.language)} Alert:\n${button.displayName.toString()}`,
+        `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT, button.client.language, t)} Alert:\n${button.displayName.toString()}`,
       )
     } else {
       // no alert to be sent
