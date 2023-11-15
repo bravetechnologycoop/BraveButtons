@@ -200,7 +200,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, false)
     })
 
-    it('should send a reconnection notification to the client', async () => {
+    it('should send the client message to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.be.calledWith(
         `Button status change for: ${this.button.client.displayName}. The following buttons have been reconnected: ${this.button.displayName}.`,
