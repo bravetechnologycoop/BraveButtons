@@ -143,8 +143,7 @@ async function checkButtonBatteries() {
 async function checkButtonHeartbeat() {
   try {
     // Objets to track disconnected and reconnected buttons
-    const disconnectedButtons = {}
-    const reconnectedButtons = {}
+    const clientMessages = {}
 
     const THRESHOLD = helpers.getEnvVar('RAK_BUTTONS_VITALS_ALERT_THRESHOLD')
 
@@ -164,14 +163,14 @@ async function checkButtonHeartbeat() {
             helpers.logSentry(logMessage)
 
             // Store the disconnected client info
-            if (!disconnectedButtons[client.id]) {
-              disconnectedButtons[client.id] = {
+            if (!clientMessages[client.id]) {
+              clientMessages[client.id] = {
                 client,
-                buttons: [],
+                disconnectedButtons: [],
               }
             }
             // Store the disconnected button name
-            disconnectedButtons[client.id].buttons.push(button.displayName)
+            clientMessages[client.id].disconnectedButtons.push(button.displayName)
 
             await db.updateButtonsSentVitalsAlerts(button.id, true)
           }
@@ -181,14 +180,14 @@ async function checkButtonHeartbeat() {
           helpers.logSentry(logMessage)
 
           // Store the reconnected client info
-          if (!reconnectedButtons[client.id]) {
-            reconnectedButtons[client.id] = {
+          if (!clientMessages[client.id]) {
+            clientMessages[client.id] = {
               client,
-              buttons: [],
+              reconnectedButtons: [],
             }
           }
           // Store the reconnected button name
-          reconnectedButtons[client.id].buttons.push({ buttonName: button.displayName })
+          clientMessages[client.id].reconnectedButtons.push(button.displayName)
 
           await db.updateButtonsSentVitalsAlerts(button.id, false)
         }
@@ -198,32 +197,20 @@ async function checkButtonHeartbeat() {
 
     // TODO - look into feature flag to turn sending notifications on/off
 
-    // Once the loop is done send one message per client with disconnected buttons info
-    // Consider making these their own functions - to be cleaner
-    if (Object.keys(disconnectedButtons).length > 0) {
-      Object.values(disconnectedButtons).forEach(id => {
+    // Log one message per client
+    if (Object.keys(clientMessages).length > 0) {
+      Object.values(clientMessages).forEach(id => {
         const clientDisplayName = id.client.displayName
-        const buttonDisplayNames = id.buttons.join(', ')
-        const toPhoneNumbers = id.client.responderPhoneNumbers.concat(id.client.heartbeatPhoneNumbers)
-        sendNotification(
-          i18next.t('buttonDisconnection', { lng: id.client.language, buttonDisplayNames, clientDisplayName }),
-          toPhoneNumbers,
-          id.client.fromPhoneNumber,
-        )
-      })
-    }
-
-    // Send Reconnected button messages to clients
-    if (Object.keys(reconnectedButtons).length > 0) {
-      Object.values(reconnectedButtons).forEach(id => {
-        const clientDisplayName = id.client.displayName
-        const buttonDisplayNames = id.buttons.join(', ')
-        const toPhoneNumbers = id.client.responderPhoneNumbers.concat(id.client.heartbeatPhoneNumbers)
-        sendNotification(
-          i18next.t('buttonReconnection', { lng: id.client.language, buttonDisplayNames, clientDisplayName }),
-          toPhoneNumbers,
-          id.client.fromPhoneNumber,
-        )
+        let buttonLogMessage = ''
+        if (id.disconnectedButtons) {
+          const buttonNames = id.disconnectedButtons.join(', ')
+          buttonLogMessage += ` The following buttons have been disconnected: ${buttonNames}.`
+        }
+        if (id.reconnectedButtons) {
+          const buttonNames = id.reconnectedButtons.join(', ')
+          buttonLogMessage += ` The following buttons have been reconnected: ${buttonNames}.`
+        }
+        helpers.logSentry(`Button status change for: ${clientDisplayName}.${buttonLogMessage}`)
       })
     }
   } catch (e) {
