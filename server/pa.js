@@ -7,7 +7,7 @@ const aws = require('./aws')
 
 const paApiKeys = [helpers.getEnvVar('PA_API_KEY_PRIMARY'), helpers.getEnvVar('PA_API_KEY_SECONDARY')]
 
-const validateButtonsTwilioNumber = Validator.body(['braveKey', 'areaCode', 'locationID', 'clickupToken']).trim().notEmpty()
+const validateButtonsTwilioNumber = Validator.body(['braveKey', 'areaCode', 'locationID', 'googleIdToken']).trim().notEmpty()
 
 async function handleButtonsTwilioNumber(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -34,7 +34,7 @@ async function handleButtonsTwilioNumber(req, res) {
   }
 }
 
-const validateAwsDeviceRegistration = Validator.body(['deviceEUI', 'targetName', 'clickupToken', 'braveKey']).trim().notEmpty()
+const validateAwsDeviceRegistration = Validator.body(['deviceEUI', 'targetName', 'googleIdToken', 'braveKey']).trim().notEmpty()
 
 async function handleAwsDeviceRegistration(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
