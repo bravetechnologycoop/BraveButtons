@@ -1,5 +1,5 @@
 // Third-party dependencies
-const { expect, use } = require('chai')
+const { expect, use, should } = require('chai')
 const { describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
@@ -62,7 +62,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
     })
 
-    it('should not send a disconnection message to Sentry', async () => {
+    it('should not send any messages to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
@@ -70,11 +70,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should not update the database', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
-    })
-
-    it('should not send any notifications', async () => {
-      await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -89,9 +84,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
     })
 
-    it('should send the disconnection message to Sentry', async () => {
+    it('should send the initial disconnection message to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
-      expect(helpers.logSentry).to.be.called
+      expect(helpers.logSentry).to.be.calledWith(
+        `Disconnection: ${this.button.client.displayName} ${this.button.displayName} Button delay is ${heartbeatThreshold + 1} seconds.`,
+      )
     })
 
     it('should update the buttons sentVitalsAlertAt in the database to now', async () => {
@@ -99,13 +96,16 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, true)
     })
 
-    it('should send a disconnection notification to the client', async () => {
+    it('should send the client message to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.be.calledWithExactly(
-        'buttonDisconnection',
-        [this.button.client.responderPhoneNumbers[0], this.button.client.heartbeatPhoneNumbers[0]],
-        this.button.client.fromPhoneNumber,
+      expect(helpers.logSentry).to.be.calledWith(
+        `Button status change for: ${this.button.client.displayName}. The following buttons have been disconnected: ${this.button.displayName}.`,
       )
+    })
+
+    it('should only log two Sentry messages', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(helpers.logSentry).to.be.calledTwice
     })
   })
 
@@ -120,7 +120,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
     })
 
-    it('should not send a disconnection message to Sentry', async () => {
+    it('should not send any messages to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
@@ -128,11 +128,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should not update the database', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
-    })
-
-    it('should not send any notifications', async () => {
-      await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -147,7 +142,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
     })
 
-    it('should not send a disconnection message to Sentry', async () => {
+    it('should not send any messages to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
@@ -155,11 +150,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should not update the database', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
-    })
-
-    it('should not send any notifications', async () => {
-      await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -174,7 +164,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
     })
 
-    it('should not send a disconnection message to Sentry', async () => {
+    it('should not send any messages to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
@@ -182,11 +172,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should not update the database', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
-    })
-
-    it('should not send any notifications', async () => {
-      await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -207,7 +192,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
     it('should send the reconnection message to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
-      expect(helpers.logSentry).to.be.called
+      expect(helpers.logSentry).to.be.calledWith(`Reconnection: ${this.button.client.displayName} ${this.button.displayName} Button.`)
     })
 
     it("should update the button's sentVitalsAlertAt the database to null", async () => {
@@ -217,11 +202,14 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
     it('should send a reconnection notification to the client', async () => {
       await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.be.calledWithExactly(
-        'buttonReconnection',
-        [this.button.client.responderPhoneNumbers[0], this.button.client.heartbeatPhoneNumbers[0]],
-        this.button.client.fromPhoneNumber,
+      expect(helpers.logSentry).to.be.calledWith(
+        `Button status change for: ${this.button.client.displayName}. The following buttons have been reconnected: ${this.button.displayName}.`,
       )
+    })
+
+    it('should only log two Sentry messages', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(helpers.logSentry).to.be.calledTwice
     })
   })
 
@@ -240,7 +228,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
     })
 
-    it('should not send a disconnection message to Sentry', async () => {
+    it('should not send any messages to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
@@ -248,11 +236,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should not update the database', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
-    })
-
-    it('should not send any notifications', async () => {
-      await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -271,7 +254,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
     })
 
-    it('should not send a disconnection message to Sentry', async () => {
+    it('should not send any messages to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
@@ -279,11 +262,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     it('should not update the database', async () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
-    })
-
-    it('should not send any notifications', async () => {
-      await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.not.be.called
     })
   })
 
@@ -302,7 +280,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
     })
 
-    it('should not send a disconnection message to Sentry', async () => {
+    it('should not send any messages to Sentry', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.not.be.called
     })
@@ -311,10 +289,58 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       await vitals.checkButtonHeartbeat()
       expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
     })
+  })
 
-    it('should not send any notifications', async () => {
+  describe("when client that is sending vitals's two buttons that are sending vitals last seen exceeds the threshold and no alerts have been sent", () => {
+    beforeEach(async () => {
+      // Set up scenario where one client has two buttons that have just disconnected
+      this.client = factories.clientFactory({ isSendingVitals: true })
+      this.buttonA = buttonFactory({ id: 'fakeIdA', displayName: 'Unit A', sentVitalsAlertAt: null, isSendingVitals: true, client: this.client })
+      this.buttonB = buttonFactory({
+        id: 'fakeIdB',
+        displayName: 'Unit B',
+        buttonSerialNumber: 'AB12-23456',
+        sentVitalsAlertAt: null,
+        isSendingVitals: true,
+        client: this.client,
+      })
+      sandbox.stub(db, 'getButtons').returns([this.buttonA, this.buttonB])
+      this.buttonsVitalA = buttonsVitalFactory({
+        createdAt: exceededThresholdTimestamp,
+        button: this.buttonA,
+      })
+      this.buttonsVitalB = buttonsVitalFactory({
+        createdAt: exceededThresholdTimestamp,
+        button: this.buttonB,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalA, this.buttonsVitalB])
+    })
+
+    it('should log three Sentry messages', async () => {
       await vitals.checkButtonHeartbeat()
-      expect(this.sendNotificationStub).to.not.be.called
+      expect(helpers.logSentry).to.be.calledThrice
+    })
+
+    it('should send the initial disconnection messages for both buttons to Sentry', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(helpers.logSentry).to.be.calledWith(
+        `Disconnection: ${this.buttonA.client.displayName} ${this.buttonA.displayName} Button delay is ${heartbeatThreshold + 1} seconds.`,
+      )
+      expect(helpers.logSentry).to.be.calledWith(
+        `Disconnection: ${this.buttonB.client.displayName} ${this.buttonB.displayName} Button delay is ${heartbeatThreshold + 1} seconds.`,
+      )
+    })
+
+    it('should not send a reconnection message to Sentry', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(helpers.logSentry).to.not.be.calledWithMatch(`Reconnection:`)
+    })
+
+    it('should send the client message to Sentry', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(helpers.logSentry).to.be.calledWith(
+        `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonA.displayName}, ${this.buttonB.displayName}.`,
+      )
     })
   })
 })
