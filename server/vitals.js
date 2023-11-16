@@ -162,11 +162,12 @@ async function checkButtonHeartbeat() {
             const logMessage = `Disconnection: ${client.displayName} ${button.displayName} Button delay is ${buttonDelay} seconds.`
             helpers.logSentry(logMessage)
 
-            // Store the disconnected client info
+            // Store the client info
             if (!clientMessages[client.id]) {
               clientMessages[client.id] = {
                 client,
                 disconnectedButtons: [],
+                reconnectedButtons: [],
               }
             }
             // Store the disconnected button name
@@ -179,10 +180,11 @@ async function checkButtonHeartbeat() {
           const logMessage = `Reconnection: ${client.displayName} ${button.displayName} Button.`
           helpers.logSentry(logMessage)
 
-          // Store the reconnected client info
+          // Store the client info
           if (!clientMessages[client.id]) {
             clientMessages[client.id] = {
               client,
+              disconnectedButtons: [],
               reconnectedButtons: [],
             }
           }
@@ -202,11 +204,11 @@ async function checkButtonHeartbeat() {
       Object.values(clientMessages).forEach(id => {
         const clientDisplayName = id.client.displayName
         let buttonLogMessage = ''
-        if (id.disconnectedButtons) {
+        if (id.disconnectedButtons.length > 0) {
           const buttonNames = id.disconnectedButtons.join(', ')
           buttonLogMessage += ` The following buttons have been disconnected: ${buttonNames}.`
         }
-        if (id.reconnectedButtons) {
+        if (id.reconnectedButtons.length > 0) {
           const buttonNames = id.reconnectedButtons.join(', ')
           buttonLogMessage += ` The following buttons have been reconnected: ${buttonNames}.`
         }
