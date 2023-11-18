@@ -1295,6 +1295,34 @@ async function close() {
   }
 }
 
+async function getActiveGatewaysWithClient(client, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getActiveGatewaysWithClient',
+      `
+      SELECT *
+      FROM gateways g
+      WHERE g.client_id = $1
+      AND g.sent_vitals_alert_at IS NOT NULL
+      AND g.is_sending_vitals = true
+      LIMIT 1
+      `,
+      [client.id],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return results.rows.map(r => createGatewayFromRow(r, [client]))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+    return []
+  }
+
+  return []
+}
+
 module.exports = {
   beginTransaction,
   clearButtons,
@@ -1338,6 +1366,7 @@ module.exports = {
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,
+  getActiveGatewaysWithClient,
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,

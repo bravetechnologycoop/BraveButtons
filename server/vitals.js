@@ -140,6 +140,27 @@ async function checkButtonBatteries() {
   }
 }
 
+function logClientMessage(clientMessages) {
+  if (Object.keys(clientMessages).length > 0) {
+    Object.values(clientMessages).forEach(({ client, disconnectedButtons, reconnectedButtons }) => {
+      const clientDisplayName = client.displayName
+      let buttonLogMessage = ''
+
+      if (disconnectedButtons.length > 0) {
+        const buttonNames = disconnectedButtons.join(', ')
+        buttonLogMessage += ` The following buttons have been disconnected: ${buttonNames}.`
+      }
+
+      if (reconnectedButtons.length > 0) {
+        const buttonNames = reconnectedButtons.join(', ')
+        buttonLogMessage += ` The following buttons have been reconnected: ${buttonNames}.`
+      }
+
+      helpers.logSentry(`Button status change for: ${clientDisplayName}.${buttonLogMessage}`)
+    })
+  }
+}
+
 async function checkButtonHeartbeat() {
   try {
     // Objets to track disconnected and reconnected buttons
@@ -162,23 +183,29 @@ async function checkButtonHeartbeat() {
             const logMessage = `Disconnection: ${client.displayName} ${button.displayName} Button delay is ${buttonDelay} seconds.`
             helpers.logSentry(logMessage)
 
-            // Store the client info
-            if (!clientMessages[client.id]) {
-              clientMessages[client.id] = {
-                client,
-                disconnectedButtons: [],
-                reconnectedButtons: [],
-              }
-            }
-            // Store the disconnected button name
-            clientMessages[client.id].disconnectedButtons.push(button.displayName)
-
             await db.updateButtonsSentVitalsAlerts(button.id, true)
+
+            // Find Active Gateways for the client - Assumes if there's at least one active gateway we can message the client
+            const gateways = await db.getActiveGatewaysWithClient(client)
+            if (gateways.length > 0) {
+              // Store the client info
+              if (!clientMessages[client.id]) {
+                clientMessages[client.id] = {
+                  client,
+                  disconnectedButtons: [],
+                  reconnectedButtons: [],
+                }
+              }
+              // Store the disconnected button name and exit out of loop
+              clientMessages[client.id].disconnectedButtons.push(button.displayName)
+            }
           }
           // TODO Also send a text message reminder once we know that these messages are reliable
         } else if (button.sentVitalsAlertAt !== null) {
           const logMessage = `Reconnection: ${client.displayName} ${button.displayName} Button.`
           helpers.logSentry(logMessage)
+
+          await db.updateButtonsSentVitalsAlerts(button.id, false)
 
           // Store the client info
           if (!clientMessages[client.id]) {
@@ -190,31 +217,13 @@ async function checkButtonHeartbeat() {
           }
           // Store the reconnected button name
           clientMessages[client.id].reconnectedButtons.push(button.displayName)
-
-          await db.updateButtonsSentVitalsAlerts(button.id, false)
         }
       }
     }
-    // TODO - don't send disconnection if gateways are offline
-
     // TODO - look into feature flag to turn sending notifications on/off
 
     // Log one message per client
-    if (Object.keys(clientMessages).length > 0) {
-      Object.values(clientMessages).forEach(id => {
-        const clientDisplayName = id.client.displayName
-        let buttonLogMessage = ''
-        if (id.disconnectedButtons.length > 0) {
-          const buttonNames = id.disconnectedButtons.join(', ')
-          buttonLogMessage += ` The following buttons have been disconnected: ${buttonNames}.`
-        }
-        if (id.reconnectedButtons.length > 0) {
-          const buttonNames = id.reconnectedButtons.join(', ')
-          buttonLogMessage += ` The following buttons have been reconnected: ${buttonNames}.`
-        }
-        helpers.logSentry(`Button status change for: ${clientDisplayName}.${buttonLogMessage}`)
-      })
-    }
+    logClientMessage(clientMessages)
   } catch (e) {
     helpers.logError(`Failed to check button heartbeat: ${e}`)
   }
