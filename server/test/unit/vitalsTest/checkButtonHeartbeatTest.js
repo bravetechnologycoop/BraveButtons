@@ -1,5 +1,5 @@
 // Third-party dependencies
-const { expect, use, should } = require('chai')
+const { expect, use } = require('chai')
 const { describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
@@ -9,7 +9,7 @@ const { DateTime } = require('luxon')
 // In-house dependencies
 const { helpers, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
-const { buttonFactory, buttonsVitalFactory } = require('../../testingHelpers')
+const { buttonFactory, buttonsVitalFactory, gatewayFactory } = require('../../testingHelpers')
 require('../../mocks/tMock')
 
 const vitals = rewire('../../../vitals')
@@ -38,6 +38,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
     sandbox.stub(db, 'updateButtonsSentVitalsAlerts')
+    sandbox.stub(db, 'getActiveGatewaysWithClient').returns([gatewayFactory()])
 
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
