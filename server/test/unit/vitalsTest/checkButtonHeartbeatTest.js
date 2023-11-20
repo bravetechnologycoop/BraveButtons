@@ -38,7 +38,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
     sandbox.stub(db, 'updateButtonsSentVitalsAlerts')
-    sandbox.stub(db, 'getActiveGatewaysWithClient').returns([gatewayFactory()])
+    sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([gatewayFactory()])
 
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
