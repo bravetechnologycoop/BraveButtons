@@ -1315,12 +1315,15 @@ async function getInactiveGatewaysWithClient(client, pgClient) {
     if (results !== undefined && results.rows.length > 0) {
       return results.rows.map(r => createGatewayFromRow(r, [client]))
     }
+
+    if (results.rows.length === 0) {
+      return []
+    }
   } catch (err) {
     helpers.logError(err.toString())
-    return []
   }
 
-  return []
+  return null
 }
 
 module.exports = {

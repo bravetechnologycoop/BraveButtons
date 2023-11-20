@@ -163,7 +163,7 @@ function logClientMessage(clientMessages) {
 
 async function checkButtonHeartbeat() {
   try {
-    // Objets to track disconnected and reconnected buttons
+    // Object to track disconnected and reconnected buttons
     const clientMessages = {}
 
     const THRESHOLD = helpers.getEnvVar('RAK_BUTTONS_VITALS_ALERT_THRESHOLD')
@@ -185,9 +185,9 @@ async function checkButtonHeartbeat() {
 
             await db.updateButtonsSentVitalsAlerts(button.id, true)
 
-            // Check for inactive gateways - assume if gateway is sending vitals but sent_vitals_alert is null don't send client message
+            // Check for inactive gateways - if an inactive gateway is returned, do not message the client
             const gateways = await db.getInactiveGatewaysWithClient(client)
-            if (gateways.length > 0) {
+            if (gateways !== null && gateways.length === 0) {
               // Store the client info
               if (!clientMessages[client.id]) {
                 clientMessages[client.id] = {
