@@ -38,7 +38,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
     sandbox.stub(db, 'updateButtonsSentVitalsAlerts')
-    sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([gatewayFactory()])
 
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
@@ -61,6 +60,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -83,6 +83,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should send the initial disconnection message to Sentry', async () => {
@@ -119,6 +120,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -141,6 +143,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -163,6 +166,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -189,6 +193,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should send the reconnection message to Sentry', async () => {
@@ -227,6 +232,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -253,6 +259,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -279,6 +286,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -314,6 +322,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.buttonB,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalA, this.buttonsVitalB])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should log three Sentry messages', async () => {
@@ -378,6 +387,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.buttonC,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalA, this.buttonsVitalB, this.buttonsVitalC])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
     })
 
     it('should log three Sentry messages', async () => {
@@ -401,6 +411,38 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.be.calledWith(
         `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonA.displayName}. The following buttons have been reconnected: ${this.buttonB.displayName}.`,
+      )
+    })
+  })
+
+  describe('when client that is sending vitals with a gateway that is offline, has one button sending vitals that has disconnected and no alerts have been sent', () => {
+    beforeEach(async () => {
+      this.client = factories.clientFactory({ isSendingVitals: true })
+      this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: true, client: this.client })
+      sandbox.stub(db, 'getButtons').returns([this.button])
+      this.buttonsVital = buttonsVitalFactory({
+        createdAt: exceededThresholdTimestamp,
+        button: this.button,
+      })
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([gatewayFactory()])
+    })
+
+    it('should log one Sentry messages', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(helpers.logSentry).to.be.calledOnce
+    })
+
+    it('should send one button disconnection message to Sentry', async () => {
+      await vitals.checkButtonHeartbeat()
+      expect(helpers.logSentry).to.be.calledWith(
+        `Disconnection: ${this.button.client.displayName} ${this.button.displayName} Button delay is ${heartbeatThreshold + 1} seconds.`,
+      )
+    })
+
+    it('should not send a client message for the disconnected button', async () => {
+      expect(helpers.logSentry).to.not.be.calledWith(
+        `Button status change for: ${this.button.client.displayName}. The following buttons have been disconnected: ${this.button.displayName}.`,
       )
     })
   })
