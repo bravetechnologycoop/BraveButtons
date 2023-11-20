@@ -1295,7 +1295,7 @@ async function close() {
   }
 }
 
-async function getActiveGatewaysWithClient(client, pgClient) {
+async function getInactiveGatewaysWithClient(client, pgClient) {
   try {
     const results = await helpers.runQuery(
       'getActiveGatewaysWithClient',
@@ -1303,7 +1303,7 @@ async function getActiveGatewaysWithClient(client, pgClient) {
       SELECT *
       FROM gateways g
       WHERE g.client_id = $1
-      AND g.sent_vitals_alert_at IS NOT NULL
+      AND g.sent_vitals_alert_at IS NULL
       AND g.is_sending_vitals = true
       LIMIT 1
       `,
@@ -1366,7 +1366,7 @@ module.exports = {
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,
-  getActiveGatewaysWithClient,
+  getInactiveGatewaysWithClient,
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,

@@ -185,8 +185,8 @@ async function checkButtonHeartbeat() {
 
             await db.updateButtonsSentVitalsAlerts(button.id, true)
 
-            // Find Active Gateways for the client - Assumes if there's at least one active gateway we can message the client
-            const gateways = await db.getActiveGatewaysWithClient(client)
+            // Check for inactive gateways - assume if gateway is sending vitals but sent_vitals_alert is null don't send client message
+            const gateways = await db.getInactiveGatewaysWithClient(client)
             if (gateways.length > 0) {
               // Store the client info
               if (!clientMessages[client.id]) {
