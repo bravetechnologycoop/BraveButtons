@@ -1298,7 +1298,7 @@ async function close() {
 async function getInactiveGatewaysWithClient(client, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getActiveGatewaysWithClient',
+      'getInactiveGatewaysWithClient',
       `
       SELECT *
       FROM gateways g
