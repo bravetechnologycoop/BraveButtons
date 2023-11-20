@@ -60,7 +60,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -83,7 +83,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should send the initial disconnection message to Sentry', async () => {
@@ -120,7 +120,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -143,7 +143,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -166,7 +166,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -193,7 +193,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should send the reconnection message to Sentry', async () => {
@@ -232,7 +232,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -259,7 +259,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -286,7 +286,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should not send any messages to Sentry', async () => {
@@ -322,7 +322,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.buttonB,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalA, this.buttonsVitalB])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should log three Sentry messages', async () => {
@@ -387,7 +387,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.buttonC,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalA, this.buttonsVitalB, this.buttonsVitalC])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
     it('should log three Sentry messages', async () => {
@@ -425,7 +425,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         button: this.button,
       })
       sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
-      sandbox.stub(db, 'getInactiveGatewaysWithClient').returns([gatewayFactory()])
+      sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([gatewayFactory()])
     })
 
     it('should log one Sentry messages', async () => {

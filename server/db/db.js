@@ -1295,17 +1295,16 @@ async function close() {
   }
 }
 
-async function getInactiveGatewaysWithClient(client, pgClient) {
+async function getDisconnectedGatewaysWithClient(client, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getInactiveGatewaysWithClient',
+      'getDisconnectedGatewaysWithClient',
       `
       SELECT *
       FROM gateways g
       WHERE g.client_id = $1
       AND g.sent_vitals_alert_at IS NULL
       AND g.is_sending_vitals = true
-      LIMIT 1
       `,
       [client.id],
       pool,
@@ -1369,7 +1368,7 @@ module.exports = {
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,
-  getInactiveGatewaysWithClient,
+  getDisconnectedGatewaysWithClient,
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,
