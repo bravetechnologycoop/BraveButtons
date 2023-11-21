@@ -149,12 +149,12 @@ function logClientMessage(clientMessages) {
       let buttonLogMessage = ''
 
       if (disconnectedButtons.length > 0) {
-        const buttonNames = disconnectedButtons.join(', ')
+        const buttonNames = disconnectedButtons.sort().join(', ')
         buttonLogMessage += ` The following buttons have been disconnected: ${buttonNames}.`
       }
 
       if (reconnectedButtons.length > 0) {
-        const buttonNames = reconnectedButtons.join(', ')
+        const buttonNames = reconnectedButtons.sort().join(', ')
         buttonLogMessage += ` The following buttons have been reconnected: ${buttonNames}.`
       }
 

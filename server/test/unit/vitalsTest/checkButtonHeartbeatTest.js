@@ -318,7 +318,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         createdAt: exceededThresholdTimestamp,
         button: this.buttonB,
       })
-      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalA, this.buttonsVitalB])
+      sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalB, this.buttonsVitalA])
       sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
@@ -341,10 +341,10 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       )
     })
 
-    it('should send the client message to Sentry', async () => {
+    it.only('should send the client message to Sentry, with the buttons display name in alphabetical order', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.be.calledWith(
-        `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonA.displayName}, ${this.buttonB.displayName}.`,
+        `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonB.displayName}, ${this.buttonA.displayName}.`,
       )
     })
   })
