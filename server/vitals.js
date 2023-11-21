@@ -198,8 +198,8 @@ async function checkButtonHeartbeat() {
               }
               // Store the disconnected button name
               clientMessages[client.id].disconnectedButtons.push(button.displayName)
-              await db.updateButtonsSentVitalsAlerts(button.id, true)
             }
+            await db.updateButtonsSentVitalsAlerts(button.id, true)
           }
           // TODO Also send a text message reminder once we know that these messages are reliable
         } else if (button.sentVitalsAlertAt !== null) {

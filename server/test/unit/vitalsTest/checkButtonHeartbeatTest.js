@@ -42,9 +42,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')
-
-    this.sendNotificationStub = sandbox.stub()
-    vitals.__set__('sendNotification', this.sendNotificationStub)
   })
 
   afterEach(() => {
