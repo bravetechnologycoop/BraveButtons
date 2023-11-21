@@ -165,7 +165,7 @@ function logClientMessage(clientMessages) {
 
 async function checkButtonHeartbeat() {
   try {
-    // Object to track disconnected and reconnected buttons per client
+    // Object to track the client and its disconnected and reconnected buttons
     const clientMessages = {}
 
     const THRESHOLD = helpers.getEnvVar('RAK_BUTTONS_VITALS_ALERT_THRESHOLD')

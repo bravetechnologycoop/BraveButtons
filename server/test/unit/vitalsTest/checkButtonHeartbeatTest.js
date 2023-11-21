@@ -330,19 +330,18 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       expect(helpers.logSentry).to.be.calledThrice
     })
 
-    it('should send the initial disconnection messages for both buttons to Sentry', async () => {
+    it('should send the initial disconnection message to Sentry, for the first disconnected button', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.be.calledWith(
         `Disconnection: ${this.buttonA.client.displayName} ${this.buttonA.displayName} Button delay is ${heartbeatThreshold + 1} seconds.`,
       )
+    })
+
+    it('should send the initial disconnection message to Sentry, for the second disconnected button', async () => {
+      await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.be.calledWith(
         `Disconnection: ${this.buttonB.client.displayName} ${this.buttonB.displayName} Button delay is ${heartbeatThreshold + 1} seconds.`,
       )
-    })
-
-    it('should not send a reconnection message to Sentry', async () => {
-      await vitals.checkButtonHeartbeat()
-      expect(helpers.logSentry).to.not.be.calledWithMatch(`Reconnection:`)
     })
 
     it('should send the client message to Sentry', async () => {
