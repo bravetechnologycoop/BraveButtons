@@ -341,7 +341,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       )
     })
 
-    it.only('should send the client message to Sentry, with the buttons display name in alphabetical order', async () => {
+    it('should send the client message to Sentry, with the buttons display name in alphabetical order', async () => {
       await vitals.checkButtonHeartbeat()
       expect(helpers.logSentry).to.be.calledWith(
         `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonA.displayName}, ${this.buttonB.displayName}.`,
