@@ -11,6 +11,11 @@ the code was deployed.
 
 ## [unreleased]
 
+### Changed
+
+- PA API routes /pa/aws-device-registration, /pa/buttons-twilio-number to use googleHelpers.paAuthorize instead of clickUpHelpers.clickUpChecker (CU-8679128d6).
+- Upgraded `brave-alert-lib` to v10.3.1 (CU-8679128d6).
+
 ## [13.2.0] - 2023-11-23
 
 ### Changed
