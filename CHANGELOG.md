@@ -13,7 +13,15 @@ the code was deployed.
 
 ### Changed
 
+- PA API routes /pa/aws-device-registration, /pa/buttons-twilio-number to use googleHelpers.paAuthorize instead of clickUpHelpers.clickUpChecker (CU-8679128d6).
+- Upgraded `brave-alert-lib` to v10.3.1 (CU-8679128d6).
+
+## [13.2.0] - 2023-11-23
+
+### Changed
+
 - Body parsing middleware to match BraveSensor (moved from routes.js to server.js).
+- Updated production deployment instructions in README.
 
 ### Added
 
@@ -24,6 +32,7 @@ the code was deployed.
 ### Security
 
 - Upgrade Chai and brave-alert-lib (CU-8678wgn0p).
+- Upgrade babel dependencies.
 
 ## [13.1.0] - 2023-09-26
 
@@ -644,7 +653,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.1.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.2.0...HEAD
+[13.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.1.0...v13.2.0
 [13.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.0.0...v13.1.0
 [13.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v12.0.0...v13.0.0
 [12.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v11.0.0...v12.0.0

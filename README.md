@@ -1,14 +1,12 @@
 # BraveButtons [![Build Status](https://app.travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=main)](https://app.travis-ci.com/bravetechnologycoop/BraveButtons)
 
-# How to release a new production version & update the entire Button system
+# Production Deployment
 
-The following instructions apply if you are deploying a new version of the code, optionally including
-updates to the config repo and/or changes to the config repo schema. If you are only deploying changes
-to the config repo that do not change the schema (eg. adding new Buttons)
-then it is not necessary to create a new numbered version. In this case you can skip step 1 and skip
-making a new tag during step 2. This is essentially redeploying an older version with new config.
+## 1. Update git to reflect the new release
 
 1. check the deployment ClickUp Task for any comments or SubTasks that could affect these deployment steps.
+
+1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that you are doing a deployment and to expect some downtime.
 
 1. on your local machine, in the `BraveButtons` repository:
 
@@ -16,9 +14,15 @@ making a new tag during step 2. This is essentially redeploying an older version
 
    1. decide on an appropriate version number for the new version
 
-   1. update CHANGELOG.md by moving everything in `Unreleased` to a section for the new version
+   1. update CHANGELOG.md
 
-   1. make a new commit directly on `main` which only updates the changelog
+      1. Add a new section header with the new version number and the current date below the `[Unreleased]` link so it will look like this: `[<new version number>] - YYYY-MM-DD`
+
+      1. Create a new link for the new version near the bottom of the file that looks like this: `[<new version number>]: https://github.com/bravetechnologycoop/BraveButtons/compare/v<previous version number>...v<new version number`
+
+      1. Update the `[unreleased]` link to `[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v<new version number>...HEAD`
+
+   1. make a new commit directly on `main` which only updates the CHANGELOG
 
    1. tag the new commit - for example, if the version number is v1.0.0, use `git tag v1.0.0`
 
@@ -26,17 +30,13 @@ making a new tag during step 2. This is essentially redeploying an older version
 
    1. update the `production` branch: `git checkout production && git merge main && git push origin production`
 
-1. on your local machine, in the `buttons-config` repository:
+## 2. Update the Environment Variables (if necessary)
 
-   1. login to AWS SSO: `aws sso login --profile brave-management`
+1. on the production Buttons server (access using ssh):
 
-   1. ensure you have the latest version of the code: `git pull origin main`
+   1. update the values in `~/BraveButtons/server/.env`
 
-   1. tag the latest commit with the same version number used above, ie. `git tag v1.0.0`
-
-   1. update the `production` branch: `git checkout production && git merge main && git push origin production --tags`
-
-1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that you are doing a deployment and to expect some downtime.
+## 3. Notify the client Responder Phones
 
 1. send a text message to all of the Responder phones letting them know that you are doing some routine maintenance, there will be downtime, and that you will notify them when everything is back to normal again.
 
@@ -50,19 +50,29 @@ making a new tag during step 2. This is essentially redeploying an older version
         - To: The phone number to send the final confirmation text to (i.e. your phone number)
         - From: Any number in the format +12223334444 (we don't use this number for anything, but Twilio will complain if it's missing or incorrectly formatted)
 
+## 4. Deploy the server on Production
+
 1. on the production Buttons server (access using ssh):
 
    1. cd into the `BraveButtons/server` directory
 
    1. shut down the server process and ensure that environment variables are not cached: `pm2 kill`
 
-1. back on the production Buttons server (access using ssh):
-
    1. pull the latest production code: `git checkout production && git pull origin production`
 
    1. run the server setup script: `sudo ./setup_server.sh ./.env`
 
-1. open the dashboard and confirm that everything appears to be working normally
+## 5. Verify
+
+1. open the production dashboard and confirm that everything appears to be working normally
+
+1. Verify that the logs look reasonable
+
+   1. on the production Buttons server (access using ssh):
+
+      1. run `pm2 logs`
+
+## 6. Notify the client Responder Phones
 
 1. the Twilio Studio Flow "Buttons deployment completed notification"
 
@@ -78,7 +88,13 @@ making a new tag during step 2. This is essentially redeploying an older version
         - To: The phone number to send the final confirmation text to (i.e. your phone number)
         - From: Any number in the format +12223334444 (we don't use this number for anything, but Twilio will complain if it's missing or incorrectly formatted)
 
+## 8. Celebrate
+
 1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that the deployment is finished and list the changes in this deployment from the `CHANGELOG`
+
+1. update the ClickUp Tasks
+
+1. if appropriate, send a Feature Change Announcement email to the clients
 
 # How to deploy a new version of the Lambda function
 
@@ -114,7 +130,7 @@ making a new tag during step 2. This is essentially redeploying an older version
 
 1. to check that everything is working, run `npm test` and check that the tests pass.
 
-1. to run the server locally and see the dashboard, run `NODE_ENV=test node server.js` and browse to `localhost:8000`
+1. to run the server locally and see the dashboard, run `npm start` and browse to `localhost:8000`
 
 # How to run the linter
 

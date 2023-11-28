@@ -6,7 +6,7 @@
   "dependencies": {
     "@aws-sdk/client-iot": "^3.360.0",
     "@aws-sdk/client-iot-wireless": "^3.360.0",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v10.2.0",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib#v10.3.1",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "express": "^4.17.1",
@@ -45,7 +45,7 @@
     "test-coverage": "nyc --reporter=html --reporter=text npm test",
     "integrationtest": "NODE_ENV=test mocha --timeout 40000 \"test/integration/**/*.js\"",
     "unittest": "NODE_ENV=test mocha --timeout 40000 \"test/unit/**/*.js\"",
-    "start": "node server.js"
+    "start": "NODE_ENV=test node server.js"
   },
   "repository": {
     "type": "git",
