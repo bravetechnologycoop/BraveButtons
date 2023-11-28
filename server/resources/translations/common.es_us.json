@@ -17,5 +17,10 @@
   "incidentCategoryRequest": "Una vez que haya contestado, responda con el número que mejor describa el incidente:\n{{ incidentCategories }}",
   "thankYou": "Gracias",
   "BUTTONS_NOT_URGENT": "Pulsación del botón",
-  "BUTTONS_URGENT": "Pulsación del botón URGENTE"
+  "BUTTONS_URGENT": "Pulsación del botón URGENTE",
+  "Safer use":"Uso más seguro",
+  "Overdose":"Sobredosis",
+  "Connected to care":"Conectado a la atención",
+  "Conflict resolution":"Resolución de conflictos",
+  "Test":"Prueba"
 }
