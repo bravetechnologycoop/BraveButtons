@@ -15,5 +15,10 @@
   "incidentCategorized": "L'incident a été catégorisé comme étant {{ incidentCategory }}. (Vous n'avez pas besoin de répondre à ce message).\n\nMerci. La session est maintenant terminée. (Vous n'avez pas besoin de répondre à ce message.)\n---\nThe incident was categorized as {{ incidentCategory }}.\n\nThank you. This session is now complete. (You don't need to respond to this message.)",
   "incidentCategoryInvalid": "Désolé, le type d'incident n'a pas été reconnu. Merci d'essayer à nouveau.\n---\nSorry, the incident type wasn't recognized. Please try again.",
   "incidentCategoryRequest": "Maintenant que vous avez répondu, merci de répondre avec le numéro qui décrit le mieux l'incident:\n---\nOnce you have responded, please reply with the number that best describes the incident:\n\n{{ incidentCategories }}",
-  "thankYou": "Merci\n---\nThank you"
+  "thankYou": "Merci\n---\nThank you",
+  "Safer use":"Consommation plus sécuritaire / Safer use",
+  "Overdose":"Surdose / Overdose",
+  "Connected to care":"Besoin de soutien / Connected to care",
+  "Conflict resolution":"Résolution de conflit / Conflict resolution",
+  "Test":"Test / Test"
 }
