@@ -219,7 +219,7 @@ class BraveAlerterConfigurator {
       case CHATBOT_STATE.WAITING_FOR_REPLY:
         returnMessage = t('incidentCategoryRequest', {
           lng: language,
-          incidentCategories: this.createResponseStringFromIncidentCategories(incidentCategories),
+          incidentCategories: this.createResponseStringFromIncidentCategories(incidentCategories, language),
         })
         break
 
@@ -286,9 +286,9 @@ class BraveAlerterConfigurator {
     return incidentCategoryKeys
   }
 
-  createResponseStringFromIncidentCategories(categories) {
+  createResponseStringFromIncidentCategories(categories, language) {
     function reducer(accumulator, currentValue, currentIndex) {
-      return `${accumulator}${currentIndex} - ${currentValue}\n`
+      return `${accumulator}${currentIndex} - ${t(currentValue, { lng: language })}\n`
     }
 
     return categories.reduce(reducer, '')
