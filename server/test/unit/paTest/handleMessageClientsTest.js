@@ -118,13 +118,16 @@ use(sinonChai)
 const sandbox = sinon.createSandbox()
 
 describe('pa.js unit tests: handleMessageClients', () => {
+  beforeEach(() => {
+    sandbox.stub(db, 'getActiveClients').returns(activeClients)
+  })
+
   afterEach(() => {
     sandbox.restore()
   })
 
   describe('for a request when Twilio is operating as expected', () => {
     beforeEach(async () => {
-      sandbox.stub(db, 'getActiveClients').returns(activeClients)
       sandbox.stub(twilioHelpers, 'sendTwilioMessage').callsFake(mockSendTwilioMessage)
 
       this.res = mockResponse(sandbox)
@@ -195,7 +198,6 @@ describe('pa.js unit tests: handleMessageClients', () => {
 
   describe('for a request when Twilio is not operating as expected', () => {
     beforeEach(async () => {
-      sandbox.stub(db, 'getActiveClients').returns(activeClients)
       sandbox.stub(twilioHelpers, 'sendTwilioMessage').returns(undefined)
 
       this.res = mockResponse(sandbox)
