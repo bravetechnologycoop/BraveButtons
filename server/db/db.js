@@ -148,15 +148,15 @@ async function getActiveClients(pgClient) {
       'getActiveClients',
       `
         SELECT c.*
-	FROM clients c
-	INNER JOIN (
-	  SELECT DISTINCT client_id AS id
-	  FROM buttons
-	  WHERE is_sending_alerts AND is_sending_vitals
-	) AS b
-	ON c.id = b.id
-	WHERE c.is_sending_alerts AND c.is_sending_vitals
-	ORDER BY c.display_name;
+        FROM clients c
+        INNER JOIN (
+          SELECT DISTINCT client_id AS id
+          FROM buttons
+          WHERE is_sending_alerts AND is_sending_vitals
+        ) AS b
+        ON c.id = b.id
+        WHERE c.is_sending_alerts AND c.is_sending_vitals
+        ORDER BY c.display_name;
       `,
       [],
       pool,
