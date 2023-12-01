@@ -13,14 +13,16 @@ the code was deployed.
 
 ### Added
 
+- Translations for the Alert Type in the JSON file for both English and Spanish (CU-86795d2nb).
 - Integration tests for db.getActiveClients (CU-w9bcb5).
 - Unit tests for pa.handleMessageClients (CU-w9bcb5).
 
 ### Changed
 
 - PA API routes /pa/aws-device-registration, /pa/buttons-twilio-number to use googleHelpers.paAuthorize instead of clickUpHelpers.clickUpChecker (CU-8679128d6).
-- Upgraded `brave-alert-lib` to v10.3.1 (CU-8679128d6).
 - API call /api/message-clients to become the PA API call /pa/message-clients, now authenticating with Google (CU-w9bcb5).
+- getAlertTypeDisplayName function to support the 't' translation function (CU-86795d2nb).
+- Upgraded `brave-alert-lib` to v11.0.1 (CU-86795d2nb).
 
 ## [13.2.0] - 2023-11-23
 

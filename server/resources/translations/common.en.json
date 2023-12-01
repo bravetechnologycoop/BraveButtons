@@ -15,5 +15,7 @@
   "incidentCategorized": "The incident was categorized as {{ incidentCategory }}.\n\nThank you. This session is now complete. (You don't need to respond to this message.)",
   "incidentCategoryInvalid": "Sorry, the incident type wasn't recognized. Please try again.",
   "incidentCategoryRequest": "Once you have responded, please reply with the number that best describes the incident:\n{{ incidentCategories }}",
-  "thankYou": "Thank you"
+  "thankYou": "Thank you",
+  "BUTTONS_NOT_URGENT": "Button Press",
+  "BUTTONS_URGENT": "URGENT Button Press"
 }
