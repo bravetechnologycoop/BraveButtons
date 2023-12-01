@@ -14,7 +14,12 @@ the code was deployed.
 ### Changed
 
 - PA API routes /pa/aws-device-registration, /pa/buttons-twilio-number to use googleHelpers.paAuthorize instead of clickUpHelpers.clickUpChecker (CU-8679128d6).
-- Upgraded `brave-alert-lib` to v10.3.1 (CU-8679128d6).
+- getAlertTypeDisplayName function to support the 't' translation function (CU-86795d2nb).
+- Upgraded `brave-alert-lib` to v11.0.1 (CU-86795d2nb).
+
+### Added
+
+- Translations for the Alert Type in the JSON file for both English and Spanish (CU-86795d2nb).
 
 ## [13.2.0] - 2023-11-23
 
@@ -22,14 +27,12 @@ the code was deployed.
 
 - Body parsing middleware to match BraveSensor (moved from routes.js to server.js).
 - Updated production deployment instructions in README.
-- Modify getAlertTypeDisplayName function to support the 't' translation function (CU-86795d2nb).
 
 ### Added
 
 - POST /api/message-clients sends a Twilio text message to all active clients (adapted from BraveSensor) (CU-w9bcb5).
 - Unit tests for the authorize function in api.js (adapted from BraveSensor) (CU-w9bcb5).
 - Integration tests for the /api/message-clients API call (adapted from BraveSensor) (CU-w9bcb5).
-- Incorporate translations for the Alert Type in the JSON file for both English and Spanish (CU-86795d2nb).
 
 ### Security
 
