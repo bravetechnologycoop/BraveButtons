@@ -116,8 +116,7 @@ async function handleMessageClients(req, res) {
 
       for (const client of clients) {
         // create array of all phone numbers for this client
-        const phoneNumbers = []
-        phoneNumbers.push(...client.responderPhoneNumbers, ...client.fallbackPhoneNumbers, ...client.heartbeatPhoneNumbers)
+        const phoneNumbers = [...client.responderPhoneNumbers, ...client.fallbackPhoneNumbers, ...client.heartbeatPhoneNumbers]
 
         // create set of all unique phone numbers for this client
         const uniquePhoneNumbers = new Set()
