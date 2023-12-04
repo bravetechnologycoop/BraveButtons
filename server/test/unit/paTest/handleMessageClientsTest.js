@@ -157,7 +157,7 @@ describe('pa.js unit tests: handleMessageClients', () => {
     })
 
     it.only('should respond with the expected phone numbers in successfullyMessaged', () => {
-      const toPhoneNumbers = this.res.body.successfullyMessaged.map(twilioTraceObject =>  twilioTraceObject.to)
+      const toPhoneNumbers = this.res.body.successfullyMessaged.map(twilioTraceObject => twilioTraceObject.to)
 
       // deep equal; no other phone numbers should be contacted
       expect(toPhoneNumbers).to.eql(successfulPhoneNumbers)
