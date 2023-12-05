@@ -14,6 +14,7 @@ the code was deployed.
 ### Added
 
 - Translations for the Alert Type in the JSON file for both English and Spanish (CU-86795d2nb).
+- Sentry log per client that has a disconnected and/or reconnected button and no disconnected gateways (CU-860raw0d7).
 - Integration tests for db.getActiveClients (CU-w9bcb5).
 - Unit tests for pa.handleMessageClients (CU-w9bcb5).
 
