@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [unreleased]
 
+### Added
+
+- Sentry log per client that has a disconnected and/or reconnected button and no disconnected gateways (CU-860raw0d7).
+
 ### Changed
 
 - PA API routes /pa/aws-device-registration, /pa/buttons-twilio-number to use googleHelpers.paAuthorize instead of clickUpHelpers.clickUpChecker (CU-8679128d6).

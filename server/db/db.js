@@ -1295,6 +1295,36 @@ async function close() {
   }
 }
 
+async function getDisconnectedGatewaysWithClient(client, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getDisconnectedGatewaysWithClient',
+      `
+      SELECT *
+      FROM gateways g
+      WHERE g.client_id = $1
+      AND g.sent_vitals_alert_at IS NULL
+      AND g.is_sending_vitals = true
+      `,
+      [client.id],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return results.rows.map(r => createGatewayFromRow(r, [client]))
+    }
+
+    if (results.rows.length === 0) {
+      return []
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
 module.exports = {
   beginTransaction,
   clearButtons,
@@ -1338,6 +1368,7 @@ module.exports = {
   getSessionWithSessionId,
   getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,
+  getDisconnectedGatewaysWithClient,
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,

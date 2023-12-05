@@ -140,8 +140,36 @@ async function checkButtonBatteries() {
   }
 }
 
+/* 
+logClientMessage expects an object containing key-values that represent clients with recently disconnected and/or reconnected button(s)
+Each key is a clientID that holds an object with the client information and arrays of any disconnected and/or reconnected buttons
+The function will compile all this information into one message per client, and log the message to Sentry
+*/
+function logClientMessage(clientButtonStatusChanges) {
+  // Loop through each client to create the log message
+  Object.values(clientButtonStatusChanges).forEach(({ client, disconnectedButtons, reconnectedButtons }) => {
+    const clientDisplayName = client.displayName
+    let buttonLogMessage = ''
+
+    if (disconnectedButtons.length > 0) {
+      const buttonNames = disconnectedButtons.sort().join(', ')
+      buttonLogMessage += ` The following buttons have been disconnected: ${buttonNames}.`
+    }
+
+    if (reconnectedButtons.length > 0) {
+      const buttonNames = reconnectedButtons.sort().join(', ')
+      buttonLogMessage += ` The following buttons have been reconnected: ${buttonNames}.`
+    }
+
+    helpers.logSentry(`Button status change for: ${clientDisplayName}.${buttonLogMessage}`)
+  })
+}
+
 async function checkButtonHeartbeat() {
   try {
+    // Object to track initial button disconnections and/or reconnections per client
+    const clientButtonStatusChanges = {}
+
     const THRESHOLD = helpers.getEnvVar('RAK_BUTTONS_VITALS_ALERT_THRESHOLD')
 
     const buttonsVitals = await db.getRecentButtonsVitals()
@@ -159,21 +187,43 @@ async function checkButtonHeartbeat() {
             const logMessage = `Disconnection: ${client.displayName} ${button.displayName} Button delay is ${buttonDelay} seconds.`
             helpers.logSentry(logMessage)
 
+            // Check for disconnected gateways - if any disconnected gateways are returned, do not message the client
+            const gateways = await db.getDisconnectedGatewaysWithClient(client)
+            if (gateways !== null && gateways.length === 0) {
+              // Store the client info
+              if (!clientButtonStatusChanges[client.id]) {
+                clientButtonStatusChanges[client.id] = {
+                  client,
+                  disconnectedButtons: [],
+                  reconnectedButtons: [],
+                }
+              }
+              // Store the disconnected button name
+              clientButtonStatusChanges[client.id].disconnectedButtons.push(button.displayName)
+            }
             await db.updateButtonsSentVitalsAlerts(button.id, true)
-
-            // TODO Also send a text message to Responders and Heartbeat Phone Numbers once we know that these messages are reliable
           }
           // TODO Also send a text message reminder once we know that these messages are reliable
         } else if (button.sentVitalsAlertAt !== null) {
           const logMessage = `Reconnection: ${client.displayName} ${button.displayName} Button.`
           helpers.logSentry(logMessage)
 
+          // Store the client info
+          if (!clientButtonStatusChanges[client.id]) {
+            clientButtonStatusChanges[client.id] = {
+              client,
+              disconnectedButtons: [],
+              reconnectedButtons: [],
+            }
+          }
+          // Store the reconnected button name
+          clientButtonStatusChanges[client.id].reconnectedButtons.push(button.displayName)
           await db.updateButtonsSentVitalsAlerts(button.id, false)
-
-          // TODO Also send a text message to Responders and Heartbeat Phone Numbers once we know that these messages are reliable
         }
       }
     }
+    // Log one message per client
+    logClientMessage(clientButtonStatusChanges)
   } catch (e) {
     helpers.logError(`Failed to check button heartbeat: ${e}`)
   }
