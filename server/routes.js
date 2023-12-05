@@ -3,7 +3,6 @@ const { googleHelpers } = require('brave-alert-lib')
 const dashboard = require('./dashboard')
 const pa = require('./pa')
 const rak = require('./rak')
-const api = require('./api')
 
 function configureRoutes(app) {
   app.get('/', dashboard.sessionChecker, dashboard.redirectToHomePage)
@@ -18,9 +17,8 @@ function configureRoutes(app) {
   app.post('/login', dashboard.submitLogin)
   app.post('/pa/aws-device-registration', pa.validateAwsDeviceRegistration, googleHelpers.paAuthorize, pa.handleAwsDeviceRegistration)
   app.post('/pa/buttons-twilio-number', pa.validateButtonsTwilioNumber, googleHelpers.paAuthorize, pa.handleButtonsTwilioNumber)
+  app.post('/pa/message-clients', pa.validateMessageClients, googleHelpers.paAuthorize, pa.handleMessageClients)
   app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
-
-  app.post('/api/message-clients', api.validateMessageClients, api.authorize, api.messageClients)
 }
 
 module.exports = {
