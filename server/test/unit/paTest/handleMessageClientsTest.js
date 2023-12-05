@@ -148,22 +148,22 @@ describe('pa.js unit tests: handleMessageClients', () => {
       )
     })
 
-    it.only('should respond with status 200', () => {
+    it('should respond with status 200', () => {
       expect(this.res.status).to.be.calledWith(200)
     })
 
-    it.only('should respond with the Twilio message as twilioMessage', () => {
+    it('should respond with the Twilio message as twilioMessage', () => {
       expect(this.res.body.twilioMessage).to.equal(testTwilioMessage)
     })
 
-    it.only('should respond with the expected phone numbers in successfullyMessaged', () => {
+    it('should respond with the expected phone numbers in successfullyMessaged', () => {
       const toPhoneNumbers = this.res.body.successfullyMessaged.map(twilioTraceObject => twilioTraceObject.to)
 
       // deep equal; no other phone numbers should be contacted
       expect(toPhoneNumbers).to.eql(successfulPhoneNumbers)
     })
 
-    it.only('should respond with the expected phone numbers in failedToMessage', () => {
+    it('should respond with the expected phone numbers in failedToMessage', () => {
       const toPhoneNumbers = this.res.body.failedToMessage.map(twilioTraceObject => {
         return twilioTraceObject.to
       })
@@ -172,7 +172,7 @@ describe('pa.js unit tests: handleMessageClients', () => {
       expect(toPhoneNumbers).to.eql(failPhoneNumbers)
     })
 
-    it.only('should call twilioHelpers.sendTwilioMessage for all active clients', () => {
+    it('should call twilioHelpers.sendTwilioMessage for all active clients', () => {
       // expect twilioHelpers.sendTwilioMessage to be called with each of the expected arguments
       expectedArguments.forEach(args => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(args.toPhoneNumber, args.fromPhoneNumber, args.twilioMessage)
@@ -193,19 +193,19 @@ describe('pa.js unit tests: handleMessageClients', () => {
       )
     })
 
-    it.only('should respond with status 200', () => {
+    it('should respond with status 200', () => {
       expect(this.res.status).to.be.calledWith(200)
     })
 
-    it.only('should respond with the Twilio message as twilioMessage', () => {
+    it('should respond with the Twilio message as twilioMessage', () => {
       expect(this.res.body.twilioMessage).to.equal(testTwilioMessage)
     })
 
-    it.only('should respond with no phone numbers in successfullyMessaged', () => {
+    it('should respond with no phone numbers in successfullyMessaged', () => {
       expect(this.res.body.successfullyMessaged).to.eql([])
     })
 
-    it.only('should respond with all phone numbers in failedToMessage', () => {
+    it('should respond with all phone numbers in failedToMessage', () => {
       // create array of all phone numbers (successful and fail)
       const allPhoneNumbers = [...successfulPhoneNumbers, ...failPhoneNumbers]
 
@@ -216,7 +216,7 @@ describe('pa.js unit tests: handleMessageClients', () => {
       expect(toPhoneNumbers).to.eql(allPhoneNumbers)
     })
 
-    it.only('should call twilioHelpers.sendTwilioMessage for all active clients', () => {
+    it('should call twilioHelpers.sendTwilioMessage for all active clients', () => {
       // expect twilioHelpers.sendTwilioMessage to be called with each of the expected arguments
       expectedArguments.forEach(args => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(args.toPhoneNumber, args.fromPhoneNumber, args.twilioMessage)
