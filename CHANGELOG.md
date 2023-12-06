@@ -9,7 +9,9 @@ Please note that the date associated with a release is the date the code
 was committed to the `main` branch. This is not necessarily the date that
 the code was deployed.
 
-## [unreleased]
+## [Unreleased]
+
+## [13.3.0] - 2023-12-06
 
 ### Added
 
@@ -662,7 +664,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.2.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.3.0...HEAD
+[13.3.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.2.0...v13.3.0
 [13.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.1.0...v13.2.0
 [13.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.0.0...v13.1.0
 [13.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v12.0.0...v13.0.0
