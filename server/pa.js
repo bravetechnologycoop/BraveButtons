@@ -160,11 +160,39 @@ async function handleMessageClients(req, res) {
   }
 }
 
+const validateCheckDatabaseConnection = Validator.body(['braveKey', 'googleIdToken']).trim().notEmpty()
+
+async function handleCheckDatabaseConnection(req, res) {
+  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+  if (validationErrors.isEmpty()) {
+    const braveAPIKey = req.body.braveKey
+
+    if (paApiKeys.includes(braveAPIKey)) {
+      try {
+        await db.getCurrentTimeForHealthCheck()
+        res.status(200).send({ message: 'success' })
+      } catch (err) {
+        helpers.logError(err)
+        res.status(503).send({ message: 'Error in Database Access' })
+      }
+    } else {
+      res.status(401).send({ message: 'Invalid API Key' })
+    }
+  } else {
+    const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
+    helpers.log(errorMessage)
+    res.status(400).send(errorMessage)
+  }
+}
+
 module.exports = {
   handleAwsDeviceRegistration,
   handleButtonsTwilioNumber,
   handleMessageClients,
+  handleCheckDatabaseConnection,
   validateAwsDeviceRegistration,
   validateButtonsTwilioNumber,
   validateMessageClients,
+  validateCheckDatabaseConnection,
 }
