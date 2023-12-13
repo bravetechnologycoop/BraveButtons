@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+## Added
+
+- PA route /pa/health to check if database connection is working as expected (CU-86dqkw7ef).
+
 ## [13.3.0] - 2023-12-06
 
 ### Added
