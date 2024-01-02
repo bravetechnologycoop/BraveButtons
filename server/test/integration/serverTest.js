@@ -70,8 +70,6 @@ describe('Chatbot server', () => {
         responderPhoneNumbers: installationResponderPhoneNumbers,
         fallbackPhoneNumbers: installationFallbackPhoneNumbers,
         incidentCategories: installationIncidentCategories,
-        alertApiKey: null,
-        responderPushId: null,
         reminderTimeout: 1,
         fallbackTimeout: 2,
         fromPhoneNumber: '+15005550006',

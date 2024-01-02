@@ -33,7 +33,7 @@ function createSessionFromRow(r, allButtons) {
 
 function createClientFromRow(r) {
   // prettier-ignore
-  return new Client(r.id, r.display_name, r.responder_phone_numbers, r.responder_push_id, r.alert_api_key, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_displayed, r.is_sending_alerts, r.is_sending_vitals, r.language, r.created_at, r.updated_at)
+  return new Client(r.id, r.display_name, r.responder_phone_numbers, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_displayed, r.is_sending_alerts, r.is_sending_vitals, r.language, r.created_at, r.updated_at)
 }
 
 function createButtonFromRow(r, allClients) {
@@ -691,8 +691,6 @@ async function clearButtons(pgClient) {
 async function createClient(
   displayName,
   responderPhoneNumbers,
-  responderPushId,
-  alertApiKey,
   reminderTimeout,
   fallbackPhoneNumbers,
   fromPhoneNumber,
@@ -709,15 +707,13 @@ async function createClient(
     const results = await helpers.runQuery(
       'createClient',
       `
-      INSERT INTO clients (display_name, responder_phone_numbers, responder_push_id, alert_api_key, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_displayed, is_sending_alerts, is_sending_vitals, language)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      INSERT INTO clients (display_name, responder_phone_numbers, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_displayed, is_sending_alerts, is_sending_vitals, language)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
       `,
       [
         displayName,
         responderPhoneNumbers,
-        responderPushId,
-        alertApiKey,
         reminderTimeout,
         fallbackPhoneNumbers,
         fromPhoneNumber,

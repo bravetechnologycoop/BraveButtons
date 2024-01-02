@@ -25,8 +25,6 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSessionByPhoneN
       responderPhoneNumbers: this.installationResponderPhoneNumbers,
       fallbackPhoneNumbers: '{}',
       incidentCategories: this.installationIncidentCategories,
-      alertApiKey: null,
-      responderPushId: null,
       language: this.language,
     })
     const button = await buttonDBFactory(db, {
