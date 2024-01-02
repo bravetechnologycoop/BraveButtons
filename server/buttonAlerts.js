@@ -54,7 +54,6 @@ async function handleValidRequest(button, numButtonPresses) {
         sessionId: currentSession.id,
         toPhoneNumbers: button.client.responderPhoneNumbers,
         fromPhoneNumber: button.phoneNumber,
-        responderPushId: button.client.responderPushId,
         deviceName: button.displayName,
         alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
         language: button.client.language,
@@ -78,7 +77,6 @@ async function handleValidRequest(button, numButtonPresses) {
     ) {
       braveAlerter.sendAlertSessionUpdate(
         currentSession.id,
-        button.client.responderPushId,
         button.client.responderPhoneNumbers,
         button.phoneNumber,
         t('alertUrgent', { lng: button.client.language, numButtonPresses: currentSession.numButtonPresses.toString() }),

@@ -3,7 +3,7 @@
 const { t } = require('i18next')
 
 // In-house dependencies
-const { BraveAlerter, AlertSession, CHATBOT_STATE, helpers, Location, SYSTEM, HistoricAlert, ActiveAlert } = require('brave-alert-lib')
+const { BraveAlerter, AlertSession, CHATBOT_STATE, helpers } = require('brave-alert-lib')
 const db = require('./db/db')
 
 class BraveAlerterConfigurator {
@@ -11,12 +11,7 @@ class BraveAlerterConfigurator {
     return new BraveAlerter(
       this.getAlertSession.bind(this),
       this.getAlertSessionByPhoneNumbers.bind(this),
-      this.getAlertSessionBySessionIdAndAlertApiKey.bind(this),
       this.alertSessionChangedCallback,
-      this.getLocationByAlertApiKey.bind(this),
-      this.getActiveAlertsByAlertApiKey.bind(this),
-      this.getHistoricAlertsByAlertApiKey.bind(this),
-      this.getNewNotificationsCountByAlertApiKey.bind(this),
       this.getReturnMessageToRespondedByPhoneNumber.bind(this),
       this.getReturnMessageToOtherResponderPhoneNumbers.bind(this),
     )
@@ -83,22 +78,6 @@ class BraveAlerterConfigurator {
     return alertSession
   }
 
-  async getAlertSessionBySessionIdAndAlertApiKey(sessionId, alertApiKey) {
-    let alertSession = null
-    try {
-      const session = await db.getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey)
-      if (session === null) {
-        return null
-      }
-
-      alertSession = await this.createAlertSessionFromSession(session)
-    } catch (e) {
-      helpers.logError(`getAlertSessionBySessionIdAndAlertApiKey: failed to get and create a new alert session: ${e.toString()}`)
-    }
-
-    return alertSession
-  }
-
   async alertSessionChangedCallback(alertSession) {
     let pgClient
     let session
@@ -113,13 +92,13 @@ class BraveAlerterConfigurator {
       session = await db.getSessionWithSessionId(alertSession.sessionId, pgClient)
 
       if (session) {
-        // If this is not a OneSignal session (i.e. we are given a respondedByPhoneNumber) and the session has no respondedByPhoneNumber, then this is the first SMS response, so assign it as the session's respondedByPhoneNumber
-        if (alertSession.respondedByPhoneNumber !== undefined && session.respondedByPhoneNumber === null) {
+        // If the session has no respondedByPhoneNumber, then this is the first SMS response, so assign it as the session's respondedByPhoneNumber
+        if (session.respondedByPhoneNumber === null) {
           session.respondedByPhoneNumber = alertSession.respondedByPhoneNumber
         }
 
-        // If this is a OneSignal session (i.e. it isn't given the respondedByPhoneNumber) or if the SMS came from the session's respondedByPhoneNumber
-        if (alertSession.respondedByPhoneNumber === undefined || alertSession.respondedByPhoneNumber === session.respondedByPhoneNumber) {
+        // If the SMS came from the session's respondedByPhoneNumber
+        if (alertSession.respondedByPhoneNumber === session.respondedByPhoneNumber) {
           if (alertSession.alertState) {
             session.chatbotState = alertSession.alertState
           }
@@ -150,65 +129,6 @@ class BraveAlerterConfigurator {
     }
 
     return session.respondedByPhoneNumber
-  }
-
-  async getLocationByAlertApiKey(alertApiKey) {
-    const clients = await db.getClientsWithAlertApiKey(alertApiKey)
-
-    if (!Array.isArray(clients) || clients.length === 0) {
-      return null
-    }
-
-    // Even if there is more than one matching clients, we only return one and it will
-    // be used by the Alert App to indentify this client
-    return new Location(clients[0].displayName, SYSTEM.BUTTONS)
-  }
-
-  createActiveAlertFromRow(row) {
-    return new ActiveAlert(row.id, row.chatbot_state, row.display_name, row.alert_type, row.incident_categories, row.created_at)
-  }
-
-  // Active Alerts are those with status that is not "Completed" and were last updated SESSION_RESET_TIMEOUT ago or more recently
-  async getActiveAlertsByAlertApiKey(alertApiKey) {
-    const maxTimeAgoInMillis = helpers.getEnvVar('SESSION_RESET_TIMEOUT')
-
-    const activeAlerts = await db.getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis)
-
-    if (!Array.isArray(activeAlerts)) {
-      return null
-    }
-
-    return activeAlerts.map(this.createActiveAlertFromRow)
-  }
-
-  createHistoricAlertFromRow(row) {
-    return new HistoricAlert(
-      row.id,
-      row.display_name,
-      row.incident_category,
-      row.alert_type,
-      row.num_button_presses,
-      row.created_at,
-      row.responded_at,
-    )
-  }
-
-  // Historic Alerts are those with status "Completed" or that were last updated longer ago than the SESSION_RESET_TIMEOUT
-  async getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts) {
-    const maxTimeAgoInMillis = helpers.getEnvVar('SESSION_RESET_TIMEOUT')
-
-    const historicAlerts = await db.getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, maxTimeAgoInMillis)
-
-    if (!Array.isArray(historicAlerts)) {
-      return null
-    }
-
-    return historicAlerts.map(this.createHistoricAlertFromRow)
-  }
-
-  async getNewNotificationsCountByAlertApiKey(alertApiKey) {
-    const count = await db.getNewNotificationsCountByAlertApiKey(alertApiKey)
-    return count
   }
 
   getReturnMessageToRespondedByPhoneNumber(language, fromAlertState, toAlertState, incidentCategories) {

@@ -40,7 +40,7 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
 
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.STARTED))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.STARTED, null))
 
     const expectedSession = sessionFactory({ ...testSession, chatbotState: CHATBOT_STATE.STARTED })
 
@@ -57,7 +57,7 @@ describe('BraveAlerterConfigurator.js unit tests: alertSessionChangedCallback', 
 
     const braveAlerterConfigurator = new BraveAlerterConfigurator()
     const braveAlerter = braveAlerterConfigurator.createBraveAlerter()
-    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.WAITING_FOR_REPLY))
+    await braveAlerter.alertSessionChangedCallback(new AlertSession(testSession.id, CHATBOT_STATE.WAITING_FOR_REPLY, null))
 
     const expectedSession = sessionFactory({ ...testSession, chatbotState: CHATBOT_STATE.WAITING_FOR_REPLY })
 

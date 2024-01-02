@@ -134,7 +134,6 @@ describe('Chatbot server', () => {
         sandbox.match.any,
         sandbox.match.any,
         sandbox.match.any,
-        sandbox.match.any,
         'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
         'URGENT Button Press Alert:\n1',
       )
@@ -200,7 +199,6 @@ describe('Chatbot server', () => {
           sandbox.match.any,
           sandbox.match.any,
           sandbox.match.any,
-          sandbox.match.any,
           'This in an urgent request. The button has been pressed 2 times. Please respond "Ok" when you have followed up on the call.',
           'URGENT Button Press Alert:\n1',
         )
@@ -212,7 +210,6 @@ describe('Chatbot server', () => {
           .send({ devEui: unit1SerialNumber, payload: 'Qw==' })
 
         expect(imports.braveAlerter.sendAlertSessionUpdate).to.be.calledWith(
-          sandbox.match.any,
           sandbox.match.any,
           sandbox.match.any,
           sandbox.match.any,

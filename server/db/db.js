@@ -74,7 +74,7 @@ async function beginTransaction() {
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
     await pgClient.query(
-      'LOCK TABLE sessions, buttons, clients, migrations, notifications, gateways, gateways_vitals, gateways_vitals_cache, buttons_vitals, buttons_vitals_cache',
+      'LOCK TABLE sessions, buttons, clients, migrations, gateways, gateways_vitals, gateways_vitals_cache, buttons_vitals, buttons_vitals_cache',
     )
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
@@ -278,34 +278,6 @@ async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responder
   }
 
   return null
-}
-
-async function getSessionWithSessionIdAndAlertApiKey(sessionId, alertApiKey, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getSessionWithSessionIdAndAlertApiKey',
-      `
-      SELECT s.*
-      FROM sessions AS s
-      LEFT JOIN buttons AS b on s.button_id = b.id
-      LEFT JOIN clients AS c ON b.client_id = c.id
-      WHERE s.id = $1
-      AND c.alert_api_key = $2
-      `,
-      [sessionId, alertApiKey],
-      pool,
-      pgClient,
-    )
-
-    if (results === undefined || results.rows.length === 0) {
-      return null
-    }
-
-    const allButtons = await getButtons(pgClient)
-    return createSessionFromRow(results.rows[0], allButtons)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
 }
 
 async function getAllSessionsWithButtonId(buttonId, pgClient) {
@@ -800,29 +772,6 @@ async function clearClients(pgClient) {
   }
 }
 
-async function getClientsWithAlertApiKey(alertApiKey, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getClientsWithAlertApiKey',
-      `SELECT *
-      FROM clients
-      WHERE alert_api_key = $1
-      `,
-      [alertApiKey],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      return results.rows.map(createClientFromRow)
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return null
-}
-
 async function getClientWithId(id, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -871,123 +820,6 @@ async function getClientWithSessionId(sessionId, pgClient) {
   }
 
   return null
-}
-
-async function getActiveAlertsByAlertApiKey(alertApiKey, maxTimeAgoInMillis, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getActiveAlertsByAlertApiKey',
-      `
-      SELECT s.id, s.chatbot_state, s.alert_type, b.display_name, s.num_button_presses, i.incident_categories, s.created_at
-      FROM sessions AS s
-      LEFT JOIN buttons AS b ON s.button_id = b.id
-      LEFT JOIN clients AS i ON b.client_id = i.id
-      WHERE i.alert_api_key = $1
-      AND (
-        s.chatbot_state != $2
-        AND s.updated_at >= now() - $3 * INTERVAL '1 millisecond'
-      )
-      ORDER BY s.created_at DESC
-      `,
-      [alertApiKey, CHATBOT_STATE.COMPLETED, maxTimeAgoInMillis],
-      pool,
-      pgClient,
-    )
-
-    return results.rows
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-}
-
-async function getHistoricAlertsByAlertApiKey(alertApiKey, maxHistoricAlerts, maxTimeAgoInMillis, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getHistoricAlertsByAlertApiKey',
-      `
-      SELECT s.id, s.alert_type, b.display_name, s.incident_category, s.num_button_presses, s.created_at, s.responded_at
-      FROM sessions AS s
-      LEFT JOIN buttons AS b ON s.button_id = b.id
-      LEFT JOIN clients AS i ON b.client_id = i.id
-      WHERE i.alert_api_key = $1
-      AND (
-        s.chatbot_state = $2
-        OR s.updated_at <= now() - $3 * INTERVAL '1 millisecond'
-      )
-      ORDER BY s.created_at DESC
-      LIMIT $4
-      `,
-      [alertApiKey, CHATBOT_STATE.COMPLETED, maxTimeAgoInMillis, maxHistoricAlerts],
-      pool,
-      pgClient,
-    )
-
-    return results.rows
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-}
-
-async function getNewNotificationsCountByAlertApiKey(alertApiKey, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getNewNotificationsCountByAlertApiKey',
-      `
-      SELECT COUNT (*)
-      FROM notifications n
-      LEFT JOIN clients i ON n.client_id = i.id
-      WHERE i.alert_api_key = $1
-      AND NOT n.is_acknowledged
-      `,
-      [alertApiKey],
-      pool,
-      pgClient,
-    )
-
-    return parseInt(results.rows[0].count, 10)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return 0
-}
-
-async function createNotification(clientId, subject, body, isAcknowledged, pgClient) {
-  try {
-    await helpers.runQuery(
-      'createNotification',
-      `
-      INSERT INTO notifications (client_id, subject, body, is_acknowledged)
-      VALUES ($1, $2, $3, $4)
-      `,
-      [clientId, subject, body, isAcknowledged],
-      pool,
-      pgClient,
-    )
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-}
-
-async function clearNotifications(pgClient) {
-  if (!helpers.isTestEnvironment()) {
-    helpers.log('warning - tried to clear notifications table outside of a test environment!')
-    return
-  }
-
-  try {
-    await helpers.runQuery(
-      'clearNotifications',
-      `
-      DELETE FROM notifications
-      `,
-      [],
-      pool,
-      pgClient,
-    )
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
 }
 
 async function clearButtonsVitals(pgClient) {
@@ -1108,7 +940,6 @@ async function clearTables(pgClient) {
   await clearGateways(pgClient)
   await clearSessions(pgClient)
   await clearButtons(pgClient)
-  await clearNotifications(pgClient)
   await clearClients(pgClient)
 }
 
@@ -1366,31 +1197,25 @@ module.exports = {
   clearGateways,
   clearGatewaysVitals,
   clearGatewaysVitalsCache,
-  clearNotifications,
   clearSessions,
   clearTables,
   close,
   commitTransaction,
   createButton,
   createClient,
-  createNotification,
   createSession,
-  getActiveAlertsByAlertApiKey,
   getAllSessionsWithButtonId,
   getButtons,
   getButtonWithSerialNumber,
   getCurrentTime,
   getCurrentTimeForHealthCheck,
   getDataForExport,
-  getHistoricAlertsByAlertApiKey,
   getClients,
   getActiveClients,
-  getClientsWithAlertApiKey,
   getClientWithId,
   getClientWithSessionId,
   getGateways,
   getMostRecentSessionWithPhoneNumbers,
-  getNewNotificationsCountByAlertApiKey,
   getPool,
   getRecentButtonsVitals,
   getRecentButtonsVitalsWithClientId,
@@ -1399,7 +1224,6 @@ module.exports = {
   getRecentGatewaysVitalWithGatewayId,
   getRecentSessionsWithClientId,
   getSessionWithSessionId,
-  getSessionWithSessionIdAndAlertApiKey,
   getUnrespondedSessionWithButtonId,
   getDisconnectedGatewaysWithClient,
   logButtonsVital,
