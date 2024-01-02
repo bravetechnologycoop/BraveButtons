@@ -11,9 +11,13 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Removed
+
+- OneSignal functionality (CU-86dqkmhza).
+
 ## [13.4.0] - 2023-12-14
 
-## Added
+### Added
 
 - PA route /pa/health to check if database connection is working as expected (CU-86dqkw7ef).
 
