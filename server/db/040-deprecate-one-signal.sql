@@ -11,6 +11,10 @@ BEGIN
 
     -- Only execute this script if its migration ID is next after the last successful migration ID
     IF migrationId - lastSuccessfulMigrationId = 1 THEN
+    	-- Disable the set_clients_timestamp trigger so updated_at doesn't change
+	ALTER TABLE clients
+	DISABLE TRIGGER set_clients_timestamp;
+
         -- Remove columns alert_api_key and responder_push_id from clients
         ALTER TABLE clients DROP COLUMN alert_api_key;
         ALTER TABLE clients DROP COLUMN responder_push_id;
@@ -27,6 +31,10 @@ BEGIN
 	-- Update responder_phone_numbers to have a default empty array value
 	ALTER TABLE clients
 	ALTER COLUMN responder_phone_numbers SET DEFAULT '{}';
+
+    	-- Enable the set_clients_timestamp trigger now that the above queries have completed
+	ALTER TABLE clients
+	ENABLE TRIGGER set_clients_timestamp;
 
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
         INSERT INTO migrations (id)
