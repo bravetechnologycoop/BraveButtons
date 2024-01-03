@@ -14,6 +14,7 @@ the code was deployed.
 ### Removed
 
 - OneSignal functionality (CU-86dqkmhza).
+- OneSignal remnants Alert API Key and Responder Push ID from database and dashboard (CU-86dqkmhza).
 
 ## [13.4.0] - 2023-12-14
 
