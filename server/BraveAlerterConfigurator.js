@@ -14,6 +14,7 @@ class BraveAlerterConfigurator {
       this.alertSessionChangedCallback,
       this.getReturnMessageToRespondedByPhoneNumber.bind(this),
       this.getReturnMessageToOtherResponderPhoneNumbers.bind(this),
+      this.getClientMessageForRequestToReset.bind(this),
     )
   }
 
@@ -99,6 +100,20 @@ class BraveAlerterConfigurator {
 
         // If the SMS came from the session's respondedByPhoneNumber
         if (alertSession.respondedByPhoneNumber === session.respondedByPhoneNumber) {
+          // If the client sends a request to reset, reject it by not updating the session as stored in the database
+          // NOTE: this *should* never happen, as the getClientMessageForRequestToReset function returns null
+          // Thus, the alert state machine should never transition from `STARTED` or `WAITING_FOR_REPLY` to `RESET`
+          if (alertSession.alertState === CHATBOT_STATE.RESET) {
+            await db.rollbackTransaction(pgClient)
+
+            // Don't send messages to anyone; an error on part of Brave or Twilio likely caused the `RESET` state to be entered
+            return {
+              respondedByPhoneNumber: session.respondedByPhoneNumber,
+              replacementReturnMessageToRespondedByPhoneNumber: null,
+              replacementReturnMessageToOtherResponderPhoneNumbers: null // Don't send a message to the other responder phone numbers
+            }
+          }
+
           if (alertSession.alertState) {
             session.chatbotState = alertSession.alertState
           }
@@ -128,7 +143,7 @@ class BraveAlerterConfigurator {
       }
     }
 
-    return session.respondedByPhoneNumber
+    return { respondedByPhoneNumber: session.respondedByPhoneNumber }
   }
 
   getReturnMessageToRespondedByPhoneNumber(language, fromAlertState, toAlertState, incidentCategories) {
@@ -137,10 +152,14 @@ class BraveAlerterConfigurator {
     switch (fromAlertState) {
       case CHATBOT_STATE.STARTED:
       case CHATBOT_STATE.WAITING_FOR_REPLY:
-        returnMessage = t('incidentCategoryRequest', {
-          lng: language,
-          incidentCategories: this.createResponseStringFromIncidentCategories(incidentCategories, language),
-        })
+        if (toAlertState === CHATBOT_STATE.RESET) {
+          returnMessage = null
+        } else {
+          returnMessage = t('incidentCategoryRequest', {
+            lng: language,
+            incidentCategories: this.createResponseStringFromIncidentCategories(incidentCategories, language),
+          })
+        }
         break
 
       case CHATBOT_STATE.WAITING_FOR_CATEGORY:
@@ -153,6 +172,10 @@ class BraveAlerterConfigurator {
 
       case CHATBOT_STATE.COMPLETED:
         returnMessage = t('thankYou', { lng: language })
+        break
+
+      case CHATBOT_STATE.RESET:
+        returnMessage = null
         break
 
       default:
@@ -185,6 +208,7 @@ class BraveAlerterConfigurator {
         break
 
       case CHATBOT_STATE.COMPLETED:
+      case CHATBOT_STATE.RESET:
         returnMessage = null
         break
 
@@ -194,6 +218,11 @@ class BraveAlerterConfigurator {
     }
 
     return returnMessage
+  }
+
+  getClientMessageForRequestToReset() {
+    // disable reset functionality of the chatbot by returning null
+    return null
   }
 
   createIncidentCategoryKeys(incidentCategories) {
