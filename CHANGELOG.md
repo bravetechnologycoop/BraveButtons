@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- BraveAlerterConfigurator to reject the RESET state (CU-860r8k57h).
+
 ## [13.5.0] - 2023-01-04
 
 ### Removed

@@ -110,7 +110,7 @@ class BraveAlerterConfigurator {
             return {
               respondedByPhoneNumber: session.respondedByPhoneNumber,
               replacementReturnMessageToRespondedByPhoneNumber: null,
-              replacementReturnMessageToOtherResponderPhoneNumbers: null // Don't send a message to the other responder phone numbers
+              replacementReturnMessageToOtherResponderPhoneNumbers: null,
             }
           }
 
