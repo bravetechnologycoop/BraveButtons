@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [13.5.0] - 2023-01-04
+
 ### Removed
 
 - OneSignal functionality (CU-86dqkmhza).
@@ -675,7 +677,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.4.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.5.0...HEAD
+[13.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.4.0...v13.5.0
 [13.4.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.3.0...v13.4.0
 [13.3.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.2.0...v13.3.0
 [13.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.1.0...v13.2.0
