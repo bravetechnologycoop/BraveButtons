@@ -113,7 +113,7 @@ async function renderClientDetailsPage(req, res) {
           createdAt,
           updatedAt,
           chatbotState: recentSession.chatbotState,
-          numButtonPresses: recentSession.numButtonPresses.toString(),
+          numberOfAlerts: recentSession.numberOfAlerts.toString(),
           incidentCategory: recentSession.incidentCategory,
           respondedAt,
           respondedByPhoneNumber: recentSession.respondedByPhoneNumber,
