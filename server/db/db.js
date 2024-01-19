@@ -2,10 +2,9 @@
 const { Pool, types } = require('pg')
 
 // In-house dependencies
-const { ALERT_TYPE, CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
+const { ALERT_TYPE, CHATBOT_STATE, Client, helpers, Session } = require('brave-alert-lib')
 const Button = require('../Button')
 const Gateway = require('../Gateway')
-const Session = require('../Session')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
 

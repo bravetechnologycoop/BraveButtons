@@ -1,6 +1,5 @@
 // In-house dependencies
-const { factories, CHATBOT_STATE, ALERT_TYPE } = require('brave-alert-lib')
-const Session = require('../Session')
+const { factories, CHATBOT_STATE, ALERT_TYPE, Session } = require('brave-alert-lib')
 const Button = require('../Button')
 const Gateway = require('../Gateway')
 const GatewaysVital = require('../GatewaysVital')
