@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Removed
+
+- Session model (moved to brave-alert-lib) (CU-86791yyvg).
+
 ### Changed
 
 - BraveAlerterConfigurator to reject the RESET state (CU-860r8k57h).
