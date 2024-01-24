@@ -5,29 +5,50 @@ const pa = require('./pa')
 const rak = require('./rak')
 
 function configureRoutes(app) {
-  // clients PA API routes
-  app.get('/pa/clients', pa.validateGetClients, googleHelpers.paAuthorize, pa.handleGetClients)
-  app.post('/pa/clients', pa.validateRegisterClient, googleHelpers.paAuthorize, pa.handleRegisterClient)
-  app.get('/pa/clients/:clientId', pa.validateGetClient, googleHelpers.paAuthorize, pa.handleGetClient)
-  app.put('/pa/clients/:clientId', pa.validatePutClient, googleHelpers.paAuthorize, pa.handlePutClient)
-  app.get('/pa/clients/:clientId/buttons', pa.validateGetClientButtons, googleHelpers.paAuthorize, pa.handleGetClientButtons)
-  // app.get('/pa/clients/:clientId/sessions', pa.validateGetClientSessions, googleHelpers.paAuthorize, pa.handleGetClientSessions)
-  app.get('/pa/clients/:clientId/gateways', pa.validateGetClientGateways, googleHelpers.paAuthorize, pa.handleGetClientGateways)
+  // to-be-deprecated routes: keep these until the PA dashboard is complete
+  app.get('/', dashboard.sessionChecker, dashboard.redirectToHomePage)
+  app.get('/dashboard', dashboard.sessionChecker, dashboard.renderDashboardPage)
+  app.get('/clients/:clientId?', dashboard.sessionChecker, dashboard.renderClientDetailsPage)
+  app.get('/clients/:clientId/vitals', dashboard.sessionChecker, dashboard.renderClientVitalsPage)
+  app.get('/login', dashboard.renderLoginPage)
+  app.get('/logout', dashboard.submitLogout)
+  app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
+  app.post('/login', dashboard.submitLogin)
 
-  // buttons PA API routes
-  app.post('/pa/buttons', pa.validateRegisterButton, googleHelpers.paAuthorize, pa.handleRegisterButton)
-  app.get('/pa/buttons/:buttonId', pa.validateGetButton, googleHelpers.paAuthorize, pa.handleGetButton)
-  app.put('/pa/buttons/:buttonId', pa.validatePutButton, googleHelpers.paAuthorize, pa.handlePutButton)
-  app.get('/pa/buttons/:buttonId/vitals', pa.validateGetButtonVitals, googleHelpers.paAuthorize, pa.handleGetButtonVitals)
+  // new to-be-implemented API routes
+  /* get all clients */
+  app.get('/api/clients', pa.validateGetClients, googleHelpers.paAuthorize, pa.handleGetClients)
+  /* create new client */
+  app.post('/api/clients', pa.validateRegisterClient, googleHelpers.paAuthorize, pa.handleRegisterClient)
+  /* get client information */
+  app.get('/api/clients/:clientId', pa.validateGetClient, googleHelpers.paAuthorize, pa.handleGetClient)
+  /* update client information */
+  app.put('/api/clients/:clientId', pa.validateUpdateClient, googleHelpers.paAuthorize, pa.handleUpdateClient)
+  /* get all client's buttons */
+  app.get('/api/clients/:clientId/buttons', pa.validateGetClientButtons, googleHelpers.paAuthorize, pa.handleGetClientButtons)
+  /* register button */
+  app.post('/api/clients/:clientId/buttons', pa.validateRegisterClientButton, googleHelpers.paAuthorize, pa.handleRegisterClientButton)
+  /* get specific button */
+  app.get('/api/clients/:clientId/buttons/:buttonId', pa.validateGetClientButton, googleHelpers.paAuthorize, pa.handleGetClientButton)
+  /* update specific button */
+  app.put('/api/clients/:clientId/buttons/:buttonId', pa.validateUpdateClientButton, googleHelpers.paAuthorize, pa.handleUpdateClientButton)
+  /* array of button sessions; consider paging: limit & offset */
+  app.get('/api/clients/:clientId/buttons/:buttonId/sessions', pa.validateGetClientButtons, googleHelpers.paAuthorize, pa.handleGetClientButtons)
+  /* get all client's gateways */
+  app.get('/api/clients/:clientId/gateways', pa.validateGetClientGateways, googleHelpers.paAuthorize, pa.handleGetClientGateways)
+  /* register gateway */
+  app.post('/api/clients/:clientId/gateways', pa.validateRegisterClientGateway, googleHelpers.paAuthorize, pa.handleRegisterClientGateway)
+  /* get specific gateway */
+  app.get('/api/clients/:clientId/gateways/:gatewayId', pa.validateGetClientGateway, googleHelpers.paAuthorize, pa.handleGetClientGateway)
+  /* update specific gateway */
+  app.put('/api/clients/:clientId/gateways/:gatewayId', pa.validateUpdateClientGateway, googleHelpers.paAuthorize, pa.handleUpdateClientGateway)
+  /* array of gateways and buttons vitals */
+  app.get('/api/clients/:clientId/vitals', pa.validateGetClientVitals, googleHelpers.paAuthorize, pa.handleGetClientVitals)
 
-  // sessions PA API routes
-  app.get('/pa/sessions/:buttonId?', pa.validateGetSessions, googleHelpers.paAuthorize, pa.handleGetSessions)
-
-  // gateways PA API routes
-  app.post('/pa/gateways', pa.validateRegisterGateway, googleHelpers.paAuthorize, pa.handleRegisterGateway)
-  app.get('/pa/gateways/:gatewayId', pa.validateGetGateway, googleHelpers.paAuthorize, pa.handleGetGateway)
-  app.put('/pa/gateways/:gatewayId', pa.validatePutGateway, googleHelpers.paAuthorize, pa.handlePutGateway)
-  app.get('/pa/gateways/:gatewayId/vitals', pa.validateGetGatewayVitals, googleHelpers.paAuthorize, pa.handleGetGatewayVitals)
+  // non-client specific vitals: are these useful?
+  // Johnny: haven't really used them. Good to have a glance and see which devices are down?
+  // - Would need to filter manually, so filtering tools would be handy; maybe to display only down devices.
+  // app.get('/api/vitals', pa.validateGetVitals, googleHelpers.paAuthorize, pa.handleGetVitals)
 
   // misc. PA API routes
   app.post('/pa/aws-device-registration', pa.validateAwsDeviceRegistration, googleHelpers.paAuthorize, pa.handleAwsDeviceRegistration)
