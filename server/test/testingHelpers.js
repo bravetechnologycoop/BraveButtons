@@ -1,6 +1,5 @@
 // In-house dependencies
-const { factories, CHATBOT_STATE, ALERT_TYPE } = require('brave-alert-lib')
-const Session = require('../Session')
+const { factories, CHATBOT_STATE, ALERT_TYPE, Session } = require('brave-alert-lib')
 const Button = require('../Button')
 const Gateway = require('../Gateway')
 const GatewaysVital = require('../GatewaysVital')
@@ -55,7 +54,7 @@ function sessionFactory(overrides = {}) {
     overrides.id !== undefined ? overrides.id : 'ca6e85b1-0a8c-4e1a-8d1e-7a35f838d7bc',
     overrides.chatbotState !== undefined ? overrides.chatbotState : CHATBOT_STATE.COMPLETED,
     overrides.alertType !== undefined ? overrides.alertType : ALERT_TYPE.BUTTONS_NOT_URGENT,
-    overrides.numButtonPresses !== undefined ? overrides.numButtonPresses : 1,
+    overrides.numberOfAlerts !== undefined ? overrides.numberOfAlerts : 1,
     overrides.createdAt !== undefined ? overrides.createdAt : 'fakeCreatedAt',
     overrides.updatedAt !== undefined ? overrides.updatedAt : 'fakeUpdatedAt',
     overrides.incidentCategory !== undefined ? overrides.incidentCategory : '1',
@@ -69,7 +68,6 @@ async function sessionDBFactory(db, overrides = {}) {
   const session = await db.createSession(
     overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
     overrides.chatbotState !== undefined ? overrides.chatbotState : CHATBOT_STATE.STARTED,
-    overrides.numButtonPresses !== undefined ? overrides.numButtonPresses : 1,
     overrides.incidentCategory !== undefined ? overrides.incidentCategory : null,
     overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
     overrides.respondedByPhoneNumber !== undefined ? overrides.respondedByPhoneNumber : null,

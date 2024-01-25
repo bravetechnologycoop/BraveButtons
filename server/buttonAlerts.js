@@ -13,12 +13,10 @@ function setup(braveAlerterObj) {
   braveAlerter = braveAlerterObj
 }
 
-async function handleValidRequest(button, numButtonPresses) {
+async function handleValidRequest(button) {
   // Log the request
   helpers.log(
-    `id: ${button.id.toString()} SerialNumber: ${
-      button.buttonSerialNumber
-    } Unit: ${button.displayName.toString()} Presses: ${numButtonPresses.toString()} Is Sending Alerts?: ${
+    `id: ${button.id.toString()} SerialNumber: ${button.buttonSerialNumber} Unit: ${button.displayName.toString()} Is Sending Alerts?: ${
       button.isSendingAlerts && button.client.isSendingAlerts
     }`,
   )
@@ -41,15 +39,17 @@ async function handleValidRequest(button, numButtonPresses) {
     const currentTime = await db.getCurrentTime(pgClient)
 
     if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, numButtonPresses, null, null, null, pgClient)
+      currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, null, null, null, pgClient)
     } else {
-      currentSession.incrementButtonPresses(numButtonPresses)
+      currentSession.numberOfAlerts += 1
+      currentSession.alertType = ALERT_TYPE.BUTTONS_URGENT
+
       await db.saveSession(currentSession, pgClient)
     }
 
     await db.commitTransaction(pgClient)
 
-    if (currentSession.numButtonPresses === 1) {
+    if (currentSession.numberOfAlerts === 1) {
       const alertInfo = {
         sessionId: currentSession.id,
         toPhoneNumbers: button.client.responderPhoneNumbers,
@@ -71,15 +71,15 @@ async function handleValidRequest(button, numButtonPresses) {
       }
       await braveAlerter.startAlertSession(alertInfo) // includes a transaction, so must have already committed before this point
     } else if (
-      currentSession.numButtonPresses % 5 === 0 ||
-      currentSession.numButtonPresses === 2 ||
+      currentSession.numberOfAlerts % 5 === 0 ||
+      currentSession.numberOfAlerts === 2 ||
       currentTime - currentSession.updatedAt >= SUBSEQUENT_URGENT_MESSAGE_THRESHOLD
     ) {
       braveAlerter.sendAlertSessionUpdate(
         currentSession.id,
         button.client.responderPhoneNumbers,
         button.phoneNumber,
-        t('alertUrgent', { lng: button.client.language, numButtonPresses: currentSession.numButtonPresses.toString() }),
+        t('alertUrgent', { lng: button.client.language, numberOfAlerts: currentSession.numberOfAlerts.toString() }),
         `${helpers.getAlertTypeDisplayName(ALERT_TYPE.BUTTONS_URGENT, button.client.language, t)} Alert:\n${button.displayName.toString()}`,
       )
     } else {

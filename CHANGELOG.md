@@ -11,9 +11,14 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Removed
+
+- Session model (moved to brave-alert-lib) (CU-86791yyvg).
+
 ### Changed
 
 - BraveAlerterConfigurator to reject the RESET state (CU-860r8k57h).
+- `num_button_presses` column to be renamed to `number_of_alerts` to match BraveSensor (CU-86791yyvg).
 
 ## [13.5.0] - 2023-01-04
 
