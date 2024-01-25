@@ -2,10 +2,9 @@
 const { Pool, types } = require('pg')
 
 // In-house dependencies
-const { ALERT_TYPE, CHATBOT_STATE, Client, helpers } = require('brave-alert-lib')
+const { ALERT_TYPE, CHATBOT_STATE, Client, helpers, Session } = require('brave-alert-lib')
 const Button = require('../Button')
 const Gateway = require('../Gateway')
-const Session = require('../Session')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
 
@@ -28,7 +27,7 @@ function createSessionFromRow(r, allButtons) {
   const button = allButtons.filter(b => b.id === r.button_id)[0]
 
   // prettier-ignore
-  return new Session(r.id, r.chatbot_state, r.alert_type, r.num_button_presses, r.created_at, r.updated_at, r.incident_category, r.responded_at, r.responded_by_phone_number, button)
+  return new Session(r.id, r.chatbot_state, r.alert_type, r.number_of_alerts, r.created_at, r.updated_at, r.incident_category, r.responded_at, r.responded_by_phone_number, button)
 }
 
 function createClientFromRow(r) {
@@ -493,24 +492,16 @@ async function getSessionWithSessionId(sessionId, pgClient) {
   return null
 }
 
-async function createSession(buttonId, chatbotState, numButtonPresses, incidentCategory, respondedAt, respondedByPhoneNumber, pgClient) {
+async function createSession(buttonId, chatbotState, incidentCategory, respondedAt, respondedByPhoneNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createSession',
       `
-      INSERT INTO sessions (button_id, chatbot_state, alert_type, num_button_presses, responded_at, incident_category, responded_by_phone_number) 
+      INSERT INTO sessions (button_id, chatbot_state, alert_type, number_of_alerts, responded_at, incident_category, responded_by_phone_number) 
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
       `,
-      [
-        buttonId,
-        chatbotState,
-        numButtonPresses > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT,
-        numButtonPresses,
-        respondedAt,
-        incidentCategory,
-        respondedByPhoneNumber,
-      ],
+      [buttonId, chatbotState, ALERT_TYPE.BUTTONS_NOT_URGENT, 1, respondedAt, incidentCategory, respondedByPhoneNumber],
       pool,
       pgClient,
     )
@@ -548,14 +539,14 @@ async function saveSession(session, pgClient) {
       'saveSessionUpdate',
       `
       UPDATE sessions
-      SET button_id = $1, chatbot_state = $2, alert_type=$3, num_button_presses = $4, incident_category = $5, responded_at = $6, responded_by_phone_number = $7
+      SET button_id = $1, chatbot_state = $2, alert_type=$3, number_of_alerts = $4, incident_category = $5, responded_at = $6, responded_by_phone_number = $7
       WHERE id = $8
       `,
       [
         session.button.id,
         session.chatbotState,
         session.alertType,
-        session.numButtonPresses,
+        session.numberOfAlerts,
         session.incidentCategory,
         session.respondedAt,
         session.respondedByPhoneNumber,
@@ -1014,7 +1005,7 @@ async function getDataForExport(pgClient) {
         b.display_name AS "Unit",
         b.phone_number AS "Button Phone",
         s.chatbot_state AS "Session State",
-        s.num_button_presses AS "Number of Presses",
+        s.number_of_alerts AS "Number of Presses",
         TO_CHAR(s.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Session Start",
         TO_CHAR(s.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Last Session Activity",
         s.incident_category AS "Session Incident Type",

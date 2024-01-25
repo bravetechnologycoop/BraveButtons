@@ -4,7 +4,7 @@
   "alertFallback": "There has been an unresponded request at {{ clientDisplayName }} {{ buttonDisplayName }}",
   "alertReminder": "Please Respond \"Ok\" if you have followed up on your call. If you do not respond within 2 minutes an emergency alert will be issued to staff.",
   "alertStart": "There has been a request for help from {{ buttonDisplayName }} . Please respond \"Ok\" when you have followed up on the call.",
-  "alertUrgent": "This in an urgent request. The button has been pressed {{ numButtonPresses }} times. Please respond \"Ok\" when you have followed up on the call.",
+  "alertUrgent": "This in an urgent request. The button has been pressed {{ numberOfAlerts }} times. Please respond \"Ok\" when you have followed up on the call.",
   "buttonLowBatteryInitial": "The battery for the {{ buttonDisplayName }} Button is low, and needs recharging.\n\nTo watch a video showing how to recharge the battery, go to https://www.youtube.com/watch?v=h7_5ff-_r5A",
   "buttonLowBatteryReminder": "The battery for the {{ buttonDisplayName }} Button is still low, and needs recharging.\n\nTo watch a video showing how to recharge the battery, go to https://www.youtube.com/watch?v=h7_5ff-_r5A",
   "buttonLowBatteryNoLonger": "The battery for the {{ buttonDisplayName }} Button is no longer low. Thank you.",
