@@ -225,7 +225,7 @@ describe('rak.js integration tests: handleButtonPress', () => {
     })
 
     it('should handle the button press', () => {
-      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button)
     })
   })
 
@@ -258,7 +258,7 @@ describe('rak.js integration tests: handleButtonPress', () => {
     })
 
     it('should handle the button press', () => {
-      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button)
     })
   })
 
@@ -291,7 +291,7 @@ describe('rak.js integration tests: handleButtonPress', () => {
     })
 
     it('should handle the button press', () => {
-      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button, 1)
+      expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button)
     })
   })
 

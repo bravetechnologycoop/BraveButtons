@@ -53,7 +53,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       beforeEach(async () => {
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -86,7 +86,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 1, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -121,7 +121,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 2, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -156,7 +156,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 14, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -202,7 +202,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       beforeEach(async () => {
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -235,7 +235,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 1, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -268,7 +268,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 2, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -301,7 +301,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 14, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -345,7 +345,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       beforeEach(async () => {
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -378,7 +378,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 1, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -411,7 +411,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 2, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -444,7 +444,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 14, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -488,7 +488,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       beforeEach(async () => {
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -521,7 +521,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 1, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -554,7 +554,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 2, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {
@@ -587,7 +587,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         this.session = sessionFactory({ numberOfAlerts: 14, button: this.button })
         sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
 
-        await buttonAlerts.handleValidRequest(this.button, 1)
+        await buttonAlerts.handleValidRequest(this.button)
       })
 
       it('should log the button press', async () => {

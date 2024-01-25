@@ -48,7 +48,7 @@ async function handleButtonPress(req, res) {
           return
         }
 
-        await buttonAlerts.handleValidRequest(button, 1)
+        await buttonAlerts.handleValidRequest(button)
       }
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
