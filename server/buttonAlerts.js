@@ -13,12 +13,12 @@ function setup(braveAlerterObj) {
   braveAlerter = braveAlerterObj
 }
 
-async function handleValidRequest(button, numberOfAlerts) {
+async function handleValidRequest(button) {
   // Log the request
   helpers.log(
     `id: ${button.id.toString()} SerialNumber: ${
       button.buttonSerialNumber
-    } Unit: ${button.displayName.toString()} Presses: ${numberOfAlerts.toString()} Is Sending Alerts?: ${
+    } Unit: ${button.displayName.toString()} Is Sending Alerts?: ${
       button.isSendingAlerts && button.client.isSendingAlerts
     }`,
   )
@@ -41,9 +41,11 @@ async function handleValidRequest(button, numberOfAlerts) {
     const currentTime = await db.getCurrentTime(pgClient)
 
     if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {
-      currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, numberOfAlerts, null, null, null, pgClient)
+      currentSession = await db.createSession(button.id, CHATBOT_STATE.STARTED, null, null, null, pgClient)
     } else {
-      currentSession.incrementButtonPresses(numberOfAlerts)
+      currentSession.numberOfAlerts += 1
+      currentSession.alertType = ALERT_TYPE.BUTTONS_URGENT
+
       await db.saveSession(currentSession, pgClient)
     }
 

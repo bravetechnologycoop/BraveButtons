@@ -65,7 +65,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       })
 
       it('should start a session', async () => {
-        expect(db.createSession).to.be.calledWith(this.button.id, CHATBOT_STATE.STARTED, 1, null, null, null)
+        expect(db.createSession).to.be.calledWith(this.button.id, CHATBOT_STATE.STARTED, null, null, null)
       })
 
       it('should not update the session', async () => {

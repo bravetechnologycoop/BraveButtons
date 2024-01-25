@@ -492,7 +492,7 @@ async function getSessionWithSessionId(sessionId, pgClient) {
   return null
 }
 
-async function createSession(buttonId, chatbotState, numberOfAlerts, incidentCategory, respondedAt, respondedByPhoneNumber, pgClient) {
+async function createSession(buttonId, chatbotState, incidentCategory, respondedAt, respondedByPhoneNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createSession',
@@ -504,8 +504,8 @@ async function createSession(buttonId, chatbotState, numberOfAlerts, incidentCat
       [
         buttonId,
         chatbotState,
-        numberOfAlerts > 1 ? ALERT_TYPE.BUTTONS_URGENT : ALERT_TYPE.BUTTONS_NOT_URGENT,
-        numberOfAlerts,
+        ALERT_TYPE.BUTTONS_NOT_URGENT,
+        1,
         respondedAt,
         incidentCategory,
         respondedByPhoneNumber,

@@ -68,7 +68,6 @@ async function sessionDBFactory(db, overrides = {}) {
   const session = await db.createSession(
     overrides.buttonId !== undefined ? overrides.buttonId : 'fakeButtonId',
     overrides.chatbotState !== undefined ? overrides.chatbotState : CHATBOT_STATE.STARTED,
-    overrides.numberOfAlerts !== undefined ? overrides.numberOfAlerts : 1,
     overrides.incidentCategory !== undefined ? overrides.incidentCategory : null,
     overrides.respondedAt !== undefined ? overrides.respondedAt : new Date('2000-06-06T00:53:53.000Z'),
     overrides.respondedByPhoneNumber !== undefined ? overrides.respondedByPhoneNumber : null,
