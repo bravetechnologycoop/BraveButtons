@@ -60,7 +60,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: true`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: true`,
         )
       })
 
@@ -93,7 +93,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: true`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: true`,
         )
       })
 
@@ -128,7 +128,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: true`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: true`,
         )
       })
 
@@ -163,7 +163,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: true`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: true`,
         )
       })
 
@@ -209,7 +209,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -242,7 +242,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -275,7 +275,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -308,7 +308,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -352,7 +352,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -385,7 +385,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -418,7 +418,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -451,7 +451,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -495,7 +495,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -528,7 +528,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -561,7 +561,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 
@@ -594,7 +594,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         expect(helpers.log).to.be.calledWithExactly(
           `id: ${this.button.id.toString()} SerialNumber: ${
             this.button.buttonSerialNumber
-          } Unit: ${this.button.displayName.toString()} Presses: 1 Is Sending Alerts?: false`,
+          } Unit: ${this.button.displayName.toString()} Is Sending Alerts?: false`,
         )
       })
 

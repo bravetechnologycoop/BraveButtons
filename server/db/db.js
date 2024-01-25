@@ -501,15 +501,7 @@ async function createSession(buttonId, chatbotState, incidentCategory, responded
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
       `,
-      [
-        buttonId,
-        chatbotState,
-        ALERT_TYPE.BUTTONS_NOT_URGENT,
-        1,
-        respondedAt,
-        incidentCategory,
-        respondedByPhoneNumber,
-      ],
+      [buttonId, chatbotState, ALERT_TYPE.BUTTONS_NOT_URGENT, 1, respondedAt, incidentCategory, respondedByPhoneNumber],
       pool,
       pgClient,
     )

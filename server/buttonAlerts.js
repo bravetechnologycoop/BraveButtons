@@ -16,9 +16,7 @@ function setup(braveAlerterObj) {
 async function handleValidRequest(button) {
   // Log the request
   helpers.log(
-    `id: ${button.id.toString()} SerialNumber: ${
-      button.buttonSerialNumber
-    } Unit: ${button.displayName.toString()} Is Sending Alerts?: ${
+    `id: ${button.id.toString()} SerialNumber: ${button.buttonSerialNumber} Unit: ${button.displayName.toString()} Is Sending Alerts?: ${
       button.isSendingAlerts && button.client.isSendingAlerts
     }`,
   )
