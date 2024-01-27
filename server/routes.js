@@ -18,13 +18,9 @@ function configureRoutes(app) {
 
   // new to-be-implemented API routes
   app.get('/api/clients', api.validateGetClients, googleHelpers.paAuthorize, api.handleGetClients)
-  app.post('/api/clients', api.validateRegisterClient, googleHelpers.paAuthorize, api.handleRegisterClient)
   app.get('/api/clients/:clientId', api.validateGetClient, googleHelpers.paAuthorize, api.handleGetClient)
-  app.put('/api/clients/:clientId', api.validateUpdateClient, googleHelpers.paAuthorize, api.handleUpdateClient)
   app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, googleHelpers.paAuthorize, api.handleGetClientButtons)
-  app.post('/api/clients/:clientId/buttons', api.validateRegisterClientButton, googleHelpers.paAuthorize, api.handleRegisterClientButton)
   app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, googleHelpers.paAuthorize, api.handleGetClientButton)
-  app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, googleHelpers.paAuthorize, api.handleUpdateClientButton)
   app.get(
     '/api/clients/:clientId/buttons/:buttonId/sessions',
     api.validateGetClientButtonSessions,
@@ -32,10 +28,14 @@ function configureRoutes(app) {
     api.handleGetClientButtonSessions,
   )
   app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, googleHelpers.paAuthorize, api.handleGetClientGateways)
-  app.post('/api/clients/:clientId/gateways', api.validateRegisterClientGateway, googleHelpers.paAuthorize, api.handleRegisterClientGateway)
   app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, googleHelpers.paAuthorize, api.handleGetClientGateway)
-  app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, googleHelpers.paAuthorize, api.handleUpdateClientGateway)
   app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, googleHelpers.paAuthorize, api.handleGetClientVitals)
+  app.post('/api/clients', api.validateRegisterClient, googleHelpers.paAuthorize, api.handleRegisterClient)
+  app.post('/api/clients/:clientId/buttons', api.validateRegisterClientButton, googleHelpers.paAuthorize, api.handleRegisterClientButton)
+  app.post('/api/clients/:clientId/gateways', api.validateRegisterClientGateway, googleHelpers.paAuthorize, api.handleRegisterClientGateway)
+  app.put('/api/clients/:clientId', api.validateUpdateClient, googleHelpers.paAuthorize, api.handleUpdateClient)
+  app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, googleHelpers.paAuthorize, api.handleUpdateClientButton)
+  app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, googleHelpers.paAuthorize, api.handleUpdateClientGateway)
 
   // non-client specific vitals: are these useful?
   // Johnny: haven't really used them. Good to have a glance and see which devices are down?

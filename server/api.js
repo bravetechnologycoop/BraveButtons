@@ -1,44 +1,25 @@
+/* Conventions for this API:
+ *  - GET method for read actions
+ *  - POST method for create actions (think POSTing a new item to a directory)
+ *  - PUT method for update actions (think PUTting an item over an existing item)
+ *  - DELETE method for delete actions
+ *
+ *  - Must authorize using the Authorization header in all requests
+ *    - Presently, this is done as "Bearer (Google ID Token)" as requests should originate from PA
+ *
+ *  - Must return a JSON object containing the following keys:
+ *    - status:   which will be either "success" or "error"
+ *    - data:     the desired JSON object, if there is one
+ *    - message:  a human-readable explanation of the error, if there was one and this is appropriate. Be careful
+ *                to not include anything that will give an attacker extra information
+ */
+
 // Third-party dependencies
 const Validator = require('express-validator')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
-
-const validateGetClients = Validator.header(['Authorization']).notEmpty()
-
-async function handleGetClients(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
-    } else {
-      res.status(400).send({ status: 'error' })
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error' })
-  }
-}
-
-const validateRegisterClient = Validator.header(['Authorization']).notEmpty()
-
-async function handleRegisterClient(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
-    } else {
-      res.status(400).send({ status: 'error' })
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error' })
-  }
-}
+const db = require('./db/db')
 
 const validateGetClient = Validator.header(['Authorization']).notEmpty()
 
@@ -47,86 +28,32 @@ async function handleGetClient(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
+      const client = await db.getClientWithId(req.params.clientId)
+
+      res.status(200).send({ status: 'success', data: client })
     } else {
-      res.status(400).send({ status: 'error' })
+      res.status(400).send({ status: 'error', message: 'Bad request' })
     }
   } catch (error) {
-    res.status(500).send({ status: 'error' })
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
   }
 }
 
-const validateUpdateClient = Validator.header(['Authorization']).notEmpty()
+const validateGetClients = Validator.header(['Authorization']).notEmpty()
 
-async function handleUpdateClient(req, res) {
+async function handleGetClients(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
   try {
     if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
+      const clients = await db.getClients()
+
+      res.status(200).send({ status: 'success', data: clients })
     } else {
-      res.status(400).send({ status: 'error' })
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
     }
   } catch (error) {
-    res.status(500).send({ status: 'error' })
-  }
-}
-
-const validateGetClientGateways = Validator.header(['Authorization']).notEmpty()
-
-async function handleGetClientGateways(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
-    } else {
-      res.status(400).send({ status: 'error' })
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error' })
-  }
-}
-
-const validateGetClientButtons = Validator.header(['Authorization']).notEmpty()
-
-async function handleGetClientButtons(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
-    } else {
-      res.status(400).send({ status: 'error' })
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error' })
-  }
-}
-
-const validateRegisterClientButton = Validator.header(['Authorization']).notEmpty()
-
-async function handleRegisterClientButton(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
-    } else {
-      res.status(400).send({ status: 'error' })
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error' })
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
   }
 }
 
@@ -137,32 +64,32 @@ async function handleGetClientButton(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
+      const button = await db.getButtonWithId(req.params.buttonId)
+
+      res.status(200).send({ status: 'success', data: button })
     } else {
-      res.status(400).send({ status: 'error' })
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
     }
   } catch (error) {
-    res.status(500).send({ status: 'error' })
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
   }
 }
 
-const validateUpdateClientButton = Validator.header(['Authorization']).notEmpty()
+const validateGetClientButtons = Validator.header(['Authorization']).notEmpty()
 
-async function handleUpdateClientButton(req, res) {
+async function handleGetClientButtons(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
   try {
     if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
+      const buttons = await db.getButtonsWithClientId(req.params.clientId)
+
+      res.status(200).send({ status: 'success', data: buttons })
     } else {
-      res.status(400).send({ status: 'error' })
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
     }
   } catch (error) {
-    res.status(500).send({ status: 'error' })
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
   }
 }
 
@@ -173,32 +100,14 @@ async function handleGetClientButtonSessions(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
+      const sessions = await db.getRecentSessionsWithButtonId(req.params.buttonId)
+
+      res.status(200).send({ status: 'success', data: sessions })
     } else {
-      res.status(400).send({ status: 'error' })
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
     }
   } catch (error) {
-    res.status(500).send({ status: 'error' })
-  }
-}
-
-const validateRegisterClientGateway = Validator.header(['Authorization']).notEmpty()
-
-async function handleRegisterClientGateway(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
-    } else {
-      res.status(400).send({ status: 'error' })
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error' })
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
   }
 }
 
@@ -209,32 +118,32 @@ async function handleGetClientGateway(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
+      const gateway = await db.getGatewayWithId(req.params.gatewayId)
+
+      res.status(200).send({ status: 'success', data: gateway })
     } else {
-      res.status(400).send({ status: 'error' })
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
     }
   } catch (error) {
-    res.status(500).send({ status: 'error' })
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
   }
 }
 
-const validateUpdateClientGateway = Validator.header(['Authorization']).notEmpty()
+const validateGetClientGateways = Validator.header(['Authorization']).notEmpty()
 
-async function handleUpdateClientGateway(req, res) {
+async function handleGetClientGateways(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
   try {
     if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
+      const gateways = await db.getGatewaysWithClientId(req.params.clientId)
+
+      res.status(200).send({ status: 'success', data: gateways })
     } else {
-      res.status(400).send({ status: 'error' })
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
     }
   } catch (error) {
-    res.status(500).send({ status: 'error' })
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
   }
 }
 
@@ -245,44 +154,147 @@ async function handleGetClientVitals(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // logic here
-      // ...
-      res.status(200).send({ status: 'success' })
+      const buttonVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
+      const gatewayVitals = await db.getRecentGatewaysVitalsWithClientId(req.params.clientId)
+
+      res.status(200).send({ status: 'success', data: { buttonVitals, gatewayVitals } })
     } else {
-      res.status(400).send({ status: 'error' })
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
     }
   } catch (error) {
-    res.status(500).send({ status: 'error' })
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+  }
+}
+
+const validateRegisterClient = Validator.header(['Authorization']).notEmpty()
+
+async function handleRegisterClient(req, res) {
+  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+  try {
+    if (validationErrors.isEmpty()) {
+      // db.createClient
+      res.status(200).send({ status: 'success' })
+    } else {
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
+    }
+  } catch (error) {
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+  }
+}
+
+const validateRegisterClientButton = Validator.header(['Authorization']).notEmpty()
+
+async function handleRegisterClientButton(req, res) {
+  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+  try {
+    if (validationErrors.isEmpty()) {
+      // db.createButton
+      res.status(200).send({ status: 'success' })
+    } else {
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
+    }
+  } catch (error) {
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+  }
+}
+
+const validateRegisterClientGateway = Validator.header(['Authorization']).notEmpty()
+
+async function handleRegisterClientGateway(req, res) {
+  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+  try {
+    if (validationErrors.isEmpty()) {
+      // db.createGateway
+      res.status(200).send({ status: 'success' })
+    } else {
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
+    }
+  } catch (error) {
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+  }
+}
+
+const validateUpdateClient = Validator.header(['Authorization']).notEmpty()
+
+async function handleUpdateClient(req, res) {
+  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+  try {
+    if (validationErrors.isEmpty()) {
+      // db.updateClient
+      res.status(200).send({ status: 'success' })
+    } else {
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
+    }
+  } catch (error) {
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+  }
+}
+
+const validateUpdateClientButton = Validator.header(['Authorization']).notEmpty()
+
+async function handleUpdateClientButton(req, res) {
+  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+  try {
+    if (validationErrors.isEmpty()) {
+      // db.updateButton
+      res.status(200).send({ status: 'success' })
+    } else {
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
+    }
+  } catch (error) {
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+  }
+}
+
+const validateUpdateClientGateway = Validator.header(['Authorization']).notEmpty()
+
+async function handleUpdateClientGateway(req, res) {
+  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+  try {
+    if (validationErrors.isEmpty()) {
+      // db.updateGateway
+      res.status(200).send({ status: 'success' })
+    } else {
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
+    }
+  } catch (error) {
+    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
   }
 }
 
 module.exports = {
-  validateGetClients,
-  handleGetClients,
-  validateRegisterClient,
-  handleRegisterClient,
-  validateGetClient,
   handleGetClient,
-  validateUpdateClient,
-  handleUpdateClient,
-  validateGetClientButtons,
-  handleGetClientButtons,
-  validateRegisterClientButton,
-  handleRegisterClientButton,
-  validateGetClientButton,
+  handleGetClients,
   handleGetClientButton,
-  validateUpdateClientButton,
-  handleUpdateClientButton,
-  validateGetClientButtonSessions,
+  handleGetClientButtons,
   handleGetClientButtonSessions,
-  validateGetClientGateways,
-  handleGetClientGateways,
-  validateRegisterClientGateway,
-  handleRegisterClientGateway,
-  validateGetClientGateway,
   handleGetClientGateway,
-  validateUpdateClientGateway,
-  handleUpdateClientGateway,
-  validateGetClientVitals,
+  handleGetClientGateways,
   handleGetClientVitals,
+  handleRegisterClient,
+  handleRegisterClientButton,
+  handleRegisterClientGateway,
+  handleUpdateClient,
+  handleUpdateClientButton,
+  handleUpdateClientGateway,
+  validateGetClient,
+  validateGetClients,
+  validateGetClientButton,
+  validateGetClientButtons,
+  validateGetClientButtonSessions,
+  validateGetClientGateway,
+  validateGetClientGateways,
+  validateGetClientVitals,
+  validateRegisterClient,
+  validateRegisterClientButton,
+  validateRegisterClientGateway,
+  validateUpdateClient,
+  validateUpdateClientButton,
+  validateUpdateClientGateway,
 }

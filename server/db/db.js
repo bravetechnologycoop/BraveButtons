@@ -24,7 +24,11 @@ pool.on('error', err => {
 types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
 function createSessionFromRow(r, allButtons) {
-  const button = allButtons.filter(b => b.id === r.button_id)[0]
+  let button // initially undefined
+
+  if (allButtons !== undefined) {
+    button = allButtons.filter(b => b.id === r.button_id)[0]
+  }
 
   // prettier-ignore
   return new Session(r.id, r.chatbot_state, r.alert_type, r.number_of_alerts, r.created_at, r.updated_at, r.incident_category, r.responded_at, r.responded_by_phone_number, button)
@@ -36,27 +40,43 @@ function createClientFromRow(r) {
 }
 
 function createButtonFromRow(r, allClients) {
-  const client = allClients.filter(c => c.id === r.client_id)[0]
+  let client // initially undefined
+
+  if (allClients !== undefined) {
+    client = allClients.filter(c => c.id === r.client_id)[0]
+  }
 
   // prettier-ignore
   return new Button(r.id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, r.is_displayed, r.is_sending_alerts, r.is_sending_vitals, r.sent_low_battery_alert_at, r.sent_vitals_alert_at, client)
 }
 
 function createButtonsVitalFromRow(r, allButtons) {
-  const button = allButtons.filter(b => b.id === r.button_id)[0]
+  let button // initially undefined
+
+  if (allButtons !== undefined) {
+    button = allButtons.filter(b => b.id === r.button_id)[0]
+  }
 
   // prettier-ignore
   return new ButtonsVital(r.id, r.battery_level, r.created_at, r.snr, r.rssi, button)
 }
 
 function createGatewayFromRow(r, allClients) {
-  const client = allClients.filter(c => c.id === r.client_id)[0]
+  let client // initially undefined
+
+  if (allClients !== undefined) {
+    client = allClients.filter(c => c.id === r.client_id)[0]
+  }
 
   return new Gateway(r.id, r.display_name, r.is_displayed, r.is_sending_vitals, r.created_at, r.updated_at, r.sent_vitals_alert_at, client)
 }
 
 function createGatewaysVitalFromRow(r, allGateways) {
-  const gateway = allGateways.filter(g => g.id === r.gateway_id)[0]
+  let gateway // initially undefined
+
+  if (allGateways !== undefined) {
+    gateway = allGateways.filter(g => g.id === r.gateway_id)[0]
+  }
 
   // prettier-ignore
   return new GatewaysVital(r.id, r.last_seen_at, r.created_at, gateway)
@@ -1175,6 +1195,155 @@ async function getDisconnectedGatewaysWithClient(client, pgClient) {
   return null
 }
 
+async function getButtonWithId(id, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithId',
+      `
+      SELECT *
+      FROM buttons
+      WHERE id = $1
+      `,
+      [id],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      return createButtonFromRow(results.rows[0])
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function getButtonsWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonsWithClientId',
+      `
+      SELECT *
+      FROM buttons
+      WHERE client_id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return results.rows.map(r => createButtonFromRow(r))
+    }
+
+    if (results.rows.length === 0) {
+      return []
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function getRecentSessionsWithButtonId(buttonId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getRecentSessionsWithButtonId',
+      `
+      SELECT s.*
+      FROM sessions AS s
+      LEFT JOIN buttons AS b on s.button_id = b.id
+      WHERE b.id = $1
+      ORDER BY created_at DESC
+      LIMIT 40
+      `,
+      [buttonId],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return results.rows.map(r => createSessionFromRow(r))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getGatewayWithId(id, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithId',
+      `
+      SELECT *
+      FROM gateways
+      WHERE id = $1
+      `,
+      [id],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      return createGatewayFromRow(results.rows[0])
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function getGatewaysWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonsWithClientId',
+      `
+      SELECT *
+      FROM gateways
+      WHERE client_id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return results.rows.map(r => createGatewayFromRow(r))
+    }
+
+    if (results.rows.length === 0) {
+      return []
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+/*
+async function updateClient(id, ..., pgClient) {
+  // copy from BraveSensor
+}
+
+async function updateButton(id, ..., pgClient) {
+  // similar to updateClient
+}
+
+async function createGateway(..., pgClient) {
+  // new code
+}
+
+async function updateGateway(id, ..., pgClient) {
+  // similar to updateClient
+}
+*/
+
 module.exports = {
   beginTransaction,
   clearButtons,
@@ -1191,17 +1360,22 @@ module.exports = {
   createButton,
   createClient,
   createSession,
+  getActiveClients,
   getAllSessionsWithButtonId,
   getButtons,
+  getButtonsWithClientId,
+  getButtonWithId,
   getButtonWithSerialNumber,
   getCurrentTime,
   getCurrentTimeForHealthCheck,
-  getDataForExport,
   getClients,
-  getActiveClients,
   getClientWithId,
   getClientWithSessionId,
+  getDataForExport,
+  getDisconnectedGatewaysWithClient,
   getGateways,
+  getGatewayWithId,
+  getGatewaysWithClientId,
   getMostRecentSessionWithPhoneNumbers,
   getPool,
   getRecentButtonsVitals,
@@ -1209,10 +1383,10 @@ module.exports = {
   getRecentGatewaysVitals,
   getRecentGatewaysVitalsWithClientId,
   getRecentGatewaysVitalWithGatewayId,
+  getRecentSessionsWithButtonId,
   getRecentSessionsWithClientId,
   getSessionWithSessionId,
   getUnrespondedSessionWithButtonId,
-  getDisconnectedGatewaysWithClient,
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,
