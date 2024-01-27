@@ -30,6 +30,13 @@ async function handleGetClient(req, res) {
     if (validationErrors.isEmpty()) {
       const client = await db.getClientWithId(req.params.clientId)
 
+      // check that the client exists
+      if (client == null) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
       res.status(200).send({ status: 'success', data: client })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad request' })
@@ -66,6 +73,14 @@ async function handleGetClientButton(req, res) {
     if (validationErrors.isEmpty()) {
       const button = await db.getButtonWithId(req.params.buttonId)
 
+      // check that this button exists and is owned by the specified client
+      // NOTE: if clientId is invalid, then the query will fail and return null
+      if (button == null || button.clientId !== req.params.clientId) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
       res.status(200).send({ status: 'success', data: button })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
@@ -84,6 +99,13 @@ async function handleGetClientButtons(req, res) {
     if (validationErrors.isEmpty()) {
       const buttons = await db.getButtonsWithClientId(req.params.clientId)
 
+      // if the query failed and returned null, the clientId is probably wrong
+      if (buttons == null) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
       res.status(200).send({ status: 'success', data: buttons })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
@@ -100,6 +122,16 @@ async function handleGetClientButtonSessions(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
+      const button = await db.getButtonWithId(req.params.buttonId)
+
+      // check that this button exists and is owned by the specified client
+      // NOTE: if clientId is invalid, then the query will fail and return null
+      if (button == null || button.clientId !== req.params.clientId) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
       const sessions = await db.getRecentSessionsWithButtonId(req.params.buttonId)
 
       res.status(200).send({ status: 'success', data: sessions })
@@ -120,6 +152,14 @@ async function handleGetClientGateway(req, res) {
     if (validationErrors.isEmpty()) {
       const gateway = await db.getGatewayWithId(req.params.gatewayId)
 
+      // check that this gateway exists and is owned by the specified client
+      // NOTE: if clientId is invalid, then the query will fail and return null
+      if (gateway == null || gateway.clientId !== req.params.clientId) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
       res.status(200).send({ status: 'success', data: gateway })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
@@ -137,6 +177,13 @@ async function handleGetClientGateways(req, res) {
   try {
     if (validationErrors.isEmpty()) {
       const gateways = await db.getGatewaysWithClientId(req.params.clientId)
+
+      // if the query failed and returned null, the clientId is probably wrong
+      if (gateways == null) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
 
       res.status(200).send({ status: 'success', data: gateways })
     } else {
@@ -156,6 +203,13 @@ async function handleGetClientVitals(req, res) {
     if (validationErrors.isEmpty()) {
       const buttonVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       const gatewayVitals = await db.getRecentGatewaysVitalsWithClientId(req.params.clientId)
+
+      // if either of the query failed and returned null, the clientId is probably wrong
+      if (buttonVitals == null || gatewayVitals == null) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
 
       res.status(200).send({ status: 'success', data: { buttonVitals, gatewayVitals } })
     } else {
