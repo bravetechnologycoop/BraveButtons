@@ -238,10 +238,10 @@ async function handleGetClientVitals(req, res) {
 
 const validateRegisterClient = [
   Validator.header(['Authorization']).notEmpty(),
-  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString(),
-  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).trim().isArray(),
-  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
+  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).isArray(),
+  Validator.body(['reminderTimeout', 'fallbackTimeout']).isInt({ min: 0 }),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).isBoolean(),
 ]
 
 async function handleRegisterClient(req, res) {
@@ -264,8 +264,8 @@ async function handleRegisterClient(req, res) {
 const validateRegisterClientButton = [
   Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId']).notEmpty(),
-  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString(),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).isBoolean(),
 ]
 
 async function handleRegisterClientButton(req, res) {
@@ -288,8 +288,8 @@ async function handleRegisterClientButton(req, res) {
 const validateRegisterClientGateway = [
   Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId']).notEmpty(),
-  Validator.body(['displayName']).trim().isString(),
-  Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
+  Validator.body(['displayName']).trim().isString().notEmpty(),
+  Validator.body(['isDisplayed', 'isSendingVitals']).isBoolean(),
 ]
 
 async function handleRegisterClientGateway(req, res) {
@@ -312,10 +312,10 @@ async function handleRegisterClientGateway(req, res) {
 const validateUpdateClient = [
   Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId']).notEmpty(),
-  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString(),
-  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).trim().isArray(),
-  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
+  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).isArray(),
+  Validator.body(['reminderTimeout', 'fallbackTimeout']).isInt({ min: 0 }),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).isBoolean(),
 ]
 
 async function handleUpdateClient(req, res) {
@@ -338,8 +338,8 @@ async function handleUpdateClient(req, res) {
 const validateUpdateClientButton = [
   Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId', 'buttonId']).notEmpty(),
-  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString(),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).isBoolean(),
 ]
 
 async function handleUpdateClientButton(req, res) {
@@ -362,8 +362,8 @@ async function handleUpdateClientButton(req, res) {
 const validateUpdateClientGateway = [
   Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId', 'gatewayId']).notEmpty(),
-  Validator.body(['displayName']).trim().isString(),
-  Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
+  Validator.body(['displayName']).trim().isString().notEmpty(),
+  Validator.body(['isDisplayed', 'isSendingVitals']).isBoolean(),
 ]
 
 async function handleUpdateClientGateway(req, res) {
