@@ -21,7 +21,7 @@ const Validator = require('express-validator')
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
 
-const validateGetClient = Validator.header(['Authorization']).notEmpty()
+const validateGetClient = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClient(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -39,10 +39,12 @@ async function handleGetClient(req, res) {
 
       res.status(200).send({ status: 'success', data: client })
     } else {
-      res.status(400).send({ status: 'error', message: 'Bad request' })
+      res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
@@ -58,13 +60,15 @@ async function handleGetClients(req, res) {
       res.status(200).send({ status: 'success', data: clients })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateGetClientButton = Validator.header(['Authorization']).notEmpty()
+const validateGetClientButton = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'buttonId']).notEmpty()]
 
 async function handleGetClientButton(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -84,13 +88,15 @@ async function handleGetClientButton(req, res) {
       res.status(200).send({ status: 'success', data: button })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateGetClientButtons = Validator.header(['Authorization']).notEmpty()
+const validateGetClientButtons = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientButtons(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -109,13 +115,15 @@ async function handleGetClientButtons(req, res) {
       res.status(200).send({ status: 'success', data: buttons })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateGetClientButtonSessions = Validator.header(['Authorization']).notEmpty()
+const validateGetClientButtonSessions = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'buttonid']).notEmpty()]
 
 async function handleGetClientButtonSessions(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -137,13 +145,15 @@ async function handleGetClientButtonSessions(req, res) {
       res.status(200).send({ status: 'success', data: sessions })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateGetClientGateway = Validator.header(['Authorization']).notEmpty()
+const validateGetClientGateway = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'gatewayId']).notEmpty()]
 
 async function handleGetClientGateway(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -163,13 +173,15 @@ async function handleGetClientGateway(req, res) {
       res.status(200).send({ status: 'success', data: gateway })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateGetClientGateways = Validator.header(['Authorization']).notEmpty()
+const validateGetClientGateways = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientGateways(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -188,13 +200,15 @@ async function handleGetClientGateways(req, res) {
       res.status(200).send({ status: 'success', data: gateways })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateGetClientVitals = Validator.header(['Authorization']).notEmpty()
+const validateGetClientVitals = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientVitals(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -214,13 +228,21 @@ async function handleGetClientVitals(req, res) {
       res.status(200).send({ status: 'success', data: { buttonVitals, gatewayVitals } })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateRegisterClient = Validator.header(['Authorization']).notEmpty()
+const validateRegisterClient = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString(),
+  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).trim().isArray(),
+  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+]
 
 async function handleRegisterClient(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -231,13 +253,20 @@ async function handleRegisterClient(req, res) {
       res.status(200).send({ status: 'success' })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateRegisterClientButton = Validator.header(['Authorization']).notEmpty()
+const validateRegisterClientButton = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.param(['clientId']).notEmpty(),
+  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString(),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+]
 
 async function handleRegisterClientButton(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -248,13 +277,20 @@ async function handleRegisterClientButton(req, res) {
       res.status(200).send({ status: 'success' })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateRegisterClientGateway = Validator.header(['Authorization']).notEmpty()
+const validateRegisterClientGateway = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.param(['clientId']).notEmpty(),
+  Validator.body(['displayName']).trim().isString(),
+  Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
+]
 
 async function handleRegisterClientGateway(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -265,13 +301,22 @@ async function handleRegisterClientGateway(req, res) {
       res.status(200).send({ status: 'success' })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateUpdateClient = Validator.header(['Authorization']).notEmpty()
+const validateUpdateClient = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.param(['clientId']).notEmpty(),
+  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString(),
+  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).trim().isArray(),
+  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+]
 
 async function handleUpdateClient(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -282,13 +327,20 @@ async function handleUpdateClient(req, res) {
       res.status(200).send({ status: 'success' })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateUpdateClientButton = Validator.header(['Authorization']).notEmpty()
+const validateUpdateClientButton = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.param(['clientId', 'buttonId']).notEmpty(),
+  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString(),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+]
 
 async function handleUpdateClientButton(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -299,13 +351,20 @@ async function handleUpdateClientButton(req, res) {
       res.status(200).send({ status: 'success' })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
-const validateUpdateClientGateway = Validator.header(['Authorization']).notEmpty()
+const validateUpdateClientGateway = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.param(['clientId', 'gatewayId']).notEmpty(),
+  Validator.body(['displayName']).trim().isString(),
+  Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
+]
 
 async function handleUpdateClientGateway(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -316,9 +375,11 @@ async function handleUpdateClientGateway(req, res) {
       res.status(200).send({ status: 'success' })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
+      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
     }
   } catch (error) {
     res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
   }
 }
 
