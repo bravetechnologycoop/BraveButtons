@@ -79,7 +79,7 @@ async function handleGetClientButton(req, res) {
 
       // check that this button exists and is owned by the specified client
       // NOTE: if clientId is invalid, then the query will fail and return null
-      if (button == null || button.clientId !== req.params.clientId) {
+      if (button == null || button.client.id !== req.params.clientId) {
         res.status(404).send({ status: 'error', message: 'Not Found' })
 
         return
@@ -134,7 +134,7 @@ async function handleGetClientButtonSessions(req, res) {
 
       // check that this button exists and is owned by the specified client
       // NOTE: if clientId is invalid, then the query will fail and return null
-      if (button == null || button.clientId !== req.params.clientId) {
+      if (button == null || button.client.id !== req.params.clientId) {
         res.status(404).send({ status: 'error', message: 'Not Found' })
 
         return
@@ -164,7 +164,7 @@ async function handleGetClientGateway(req, res) {
 
       // check that this gateway exists and is owned by the specified client
       // NOTE: if clientId is invalid, then the query will fail and return null
-      if (gateway == null || gateway.clientId !== req.params.clientId) {
+      if (gateway == null || gateway.client.id !== req.params.clientId) {
         res.status(404).send({ status: 'error', message: 'Not Found' })
 
         return
@@ -338,7 +338,7 @@ async function handleRegisterClientGateway(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      const gateway = await db.createGateway(req.param.clientId, req.body.displayName, null, req.body.isDisplayed, req.body.isSendingVitals)
+      const gateway = await db.createGateway(req.params.clientId, req.body.displayName, null, req.body.isDisplayed, req.body.isSendingVitals)
 
       // Should the database query fail, db.createGateway should internally handle thrown errors and return either null or undefined.
       // The status code 404 is used here as the failure was probably caused by the client not existing.
@@ -434,7 +434,7 @@ async function handleUpdateClientButton(req, res) {
 
       // check that this button exists and is owned by the specified client
       // NOTE: if clientId is invalid, then the query will fail and return null
-      if (button == null || button.clientId !== req.params.clientId) {
+      if (button == null || button.client.id !== req.params.clientId) {
         res.status(404).send({ status: 'error', message: 'Not Found' })
 
         return
@@ -485,7 +485,7 @@ async function handleUpdateClientGateway(req, res) {
 
       // check that this gateway exists and is owned by the specified client
       // NOTE: if clientId is invalid, then the query will fail and return null
-      if (gateway == null || gateway.clientId !== req.params.clientId) {
+      if (gateway == null || gateway.client.id !== req.params.clientId) {
         res.status(404).send({ status: 'error', message: 'Not Found' })
 
         return

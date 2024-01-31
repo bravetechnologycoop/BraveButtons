@@ -1210,7 +1210,8 @@ async function getButtonWithId(id, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return createButtonFromRow(results.rows[0])
+      const allClients = await getClients(pgClient)
+      return createButtonFromRow(results.rows[0], allClients)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1289,7 +1290,8 @@ async function getGatewayWithId(id, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      return createGatewayFromRow(results.rows[0])
+      const allClients = await getClients(pgClient)
+      return createGatewayFromRow(results.rows[0], allClients)
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1301,7 +1303,7 @@ async function getGatewayWithId(id, pgClient) {
 async function getGatewaysWithClientId(clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getButtonsWithClientId',
+      'getGatewaysWithClientId',
       `
       SELECT *
       FROM gateways
