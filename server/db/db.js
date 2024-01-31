@@ -1328,16 +1328,16 @@ async function getGatewaysWithClientId(clientId, pgClient) {
   return null
 }
 
-async function createGateway(clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals, pgClient) {
+async function createGateway(gatewayId, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createGateway',
       `
-      INSERT INTO gateways (client_id, display_name, sent_vitals_alert_at, is_displayed, is_sending_vitals)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO gateways (id, client_id, display_name, sent_vitals_alert_at, is_displayed, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
       `,
-      [clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals],
+      [gatewayId, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals],
       pool,
       pgClient,
     )

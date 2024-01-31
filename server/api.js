@@ -123,7 +123,7 @@ async function handleGetClientButtons(req, res) {
   }
 }
 
-const validateGetClientButtonSessions = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'buttonid']).notEmpty()]
+const validateGetClientButtonSessions = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'buttonId']).notEmpty()]
 
 async function handleGetClientButtonSessions(req, res) {
   const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
@@ -295,7 +295,7 @@ async function handleRegisterClientButton(req, res) {
   try {
     if (validationErrors.isEmpty()) {
       const button = await db.createButton(
-        req.body.clientId,
+        req.params.clientId,
         req.body.displayName,
         req.body.phoneNumber,
         req.body.buttonSerialNumber,
@@ -309,7 +309,7 @@ async function handleRegisterClientButton(req, res) {
       // Should the database query fail, db.createButton should internally handle thrown errors and return either null or undefined.
       // The status code 404 is used here as the failure was probably caused by the client not existing.
       if (button == null) {
-        req.status(404).send({ status: 'error', message: 'Not Found' })
+        res.status(404).send({ status: 'error', message: 'Not Found' })
 
         return
       }
@@ -328,7 +328,7 @@ async function handleRegisterClientButton(req, res) {
 
 const validateRegisterClientGateway = [
   Validator.header(['Authorization']).notEmpty(),
-  Validator.param(['clientId']).notEmpty(),
+  Validator.param(['gatewayId', 'clientId']).notEmpty(),
   Validator.body(['displayName']).trim().isString().notEmpty(),
   Validator.body(['isDisplayed', 'isSendingVitals']).isBoolean(),
 ]
@@ -338,7 +338,14 @@ async function handleRegisterClientGateway(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      const gateway = await db.createGateway(req.params.clientId, req.body.displayName, null, req.body.isDisplayed, req.body.isSendingVitals)
+      const gateway = await db.createGateway(
+        req.body.gatewayId,
+        req.params.clientId,
+        req.body.displayName,
+        null,
+        req.body.isDisplayed,
+        req.body.isSendingVitals,
+      )
 
       // Should the database query fail, db.createGateway should internally handle thrown errors and return either null or undefined.
       // The status code 404 is used here as the failure was probably caused by the client not existing.
