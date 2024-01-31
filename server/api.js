@@ -249,8 +249,29 @@ async function handleRegisterClient(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // db.createClient
-      res.status(200).send({ status: 'success' })
+      const client = await db.createClient(
+        req.body.displayName,
+        req.body.responderPhoneNumbers,
+        req.body.reminderTimeout,
+        req.body.fallbackPhoneNumbers,
+        req.body.fromPhoneNumber,
+        req.body.fallbackTimeout,
+        req.body.heartbeatPhoneNumbers,
+        req.body.incidentCategories,
+        req.body.isDisplayed,
+        req.body.isSendingAlerts,
+        req.body.isSendingVitals,
+        req.body.language,
+      )
+
+      // Should the database query fail, db.createClient should internally handle thrown errors and return either null or undefined.
+      // The status code 400 is used here as the failure was probably caused by invalid fields.
+      if (client == null) {
+        res.status(400).send({ status: 'error', message: 'Bad Request' })
+      }
+
+      res.set('Location', `${req.path}/${client.id}`) // location of newly created client
+      res.status(201).send({ status: 'success', data: client })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
       helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
@@ -273,8 +294,28 @@ async function handleRegisterClientButton(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // db.createButton
-      res.status(200).send({ status: 'success' })
+      const button = await db.createButton(
+        req.body.clientId,
+        req.body.displayName,
+        req.body.phoneNumber,
+        req.body.buttonSerialNumber,
+        req.body.isDisplayed,
+        req.body.isSendingAlerts,
+        req.body.isSendingVitals,
+        null,
+        null,
+      )
+
+      // Should the database query fail, db.createButton should internally handle thrown errors and return either null or undefined.
+      // The status code 404 is used here as the failure was probably caused by the client not existing.
+      if (button == null) {
+        req.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
+      res.set('Location', `${req.path}/${button.id}`) // location of newly created button
+      res.status(201).send({ status: 'success', data: button })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
       helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
@@ -297,8 +338,18 @@ async function handleRegisterClientGateway(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // db.createGateway
-      res.status(200).send({ status: 'success' })
+      const gateway = await db.createGateway(req.param.clientId, req.body.displayName, null, req.body.isDisplayed, req.body.isSendingVitals)
+
+      // Should the database query fail, db.createGateway should internally handle thrown errors and return either null or undefined.
+      // The status code 404 is used here as the failure was probably caused by the client not existing.
+      if (gateway == null) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
+      res.set('Location', `${req.path}/${gateway.id}`) // location of newly created gateway
+      res.status(201).send({ status: 'success', data: gateway })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
       helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
@@ -323,8 +374,40 @@ async function handleUpdateClient(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // db.updateClient
-      res.status(200).send({ status: 'success' })
+      const client = await db.getClientWithId(req.params.clientId)
+
+      // check that the client exists
+      if (client == null) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
+      // attempt to update the client
+      const updatedClient = await db.updateClient(
+        req.body.displayName,
+        req.body.fromPhoneNumber,
+        req.body.responderPhoneNumbers,
+        req.body.reminderTimeout,
+        req.body.fallbackPhoneNumbers,
+        req.body.fallbackTimeout,
+        req.body.heartbeatPhoneNumbers,
+        req.body.incidentCategories,
+        req.body.isDisplayed,
+        req.body.isSendingAlerts,
+        req.body.isSendingVitals,
+        req.body.language,
+        req.params.clientId,
+      )
+
+      // something bad happened and the client wasn't updated; blame it on the request
+      if (updatedClient == null) {
+        res.status(400).send({ status: 'error', message: 'Bad Request' })
+
+        return
+      }
+
+      res.status(200).send({ status: 'success', data: updatedClient })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
       helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
@@ -347,8 +430,35 @@ async function handleUpdateClientButton(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // db.updateButton
-      res.status(200).send({ status: 'success' })
+      const button = await db.getButtonWithId(req.params.buttonId)
+
+      // check that this button exists and is owned by the specified client
+      // NOTE: if clientId is invalid, then the query will fail and return null
+      if (button == null || button.clientId !== req.params.clientId) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
+      // attempt to update the button
+      const updatedButton = await db.updateButton(
+        req.body.displayName,
+        req.body.phoneNumber,
+        req.body.buttonSerialNumber,
+        req.body.isDisplayed,
+        req.body.isSendingAlerts,
+        req.body.isSendingVitals,
+        req.params.buttonId,
+      )
+
+      // something bad happened and the button wasn't updated; blame it on the request
+      if (updatedButton == null) {
+        res.status(400).send({ status: 'error', message: 'Bad Request' })
+
+        return
+      }
+
+      res.status(200).send({ status: 'success', data: updatedButton })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
       helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
@@ -371,8 +481,27 @@ async function handleUpdateClientGateway(req, res) {
 
   try {
     if (validationErrors.isEmpty()) {
-      // db.updateGateway
-      res.status(200).send({ status: 'success' })
+      const gateway = await db.getGatewayWithId(req.params.gatewayId)
+
+      // check that this gateway exists and is owned by the specified client
+      // NOTE: if clientId is invalid, then the query will fail and return null
+      if (gateway == null || gateway.clientId !== req.params.clientId) {
+        res.status(404).send({ status: 'error', message: 'Not Found' })
+
+        return
+      }
+
+      // attempt to update the gateway
+      const updatedGateway = await db.updateGateway(req.body.displayName, req.body.isDisplayed, req.body.isSendingVitals, req.params.gatewayId)
+
+      // something bad happened and the gateway wasn't updated; blame it on the request
+      if (updatedGateway == null) {
+        res.status(400).send({ status: 'error', message: 'Bad Request' })
+
+        return
+      }
+
+      res.status(200).send({ status: 'success', data: updatedGateway })
     } else {
       res.status(400).send({ status: 'error', message: 'Bad Request' })
       helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)

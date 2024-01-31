@@ -1326,23 +1326,134 @@ async function getGatewaysWithClientId(clientId, pgClient) {
   return null
 }
 
-/*
-async function updateClient(id, ..., pgClient) {
-  // copy from BraveSensor
+async function createGateway(clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createGateway',
+      `
+      INSERT INTO gateways (client_id, display_name, sent_vitals_alert_at, is_displayed, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals],
+      pool,
+      pgClient,
+    )
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
 }
 
-async function updateButton(id, ..., pgClient) {
-  // similar to updateClient
+async function updateButton(displayName, phoneNumber, buttonSerialNumber, isDisplayed, isSendingAlerts, isSendingVitals, buttonId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'udateButton',
+      `
+      UPDATE buttons
+      SET display_name=$1, phone_number=$2, button_serial_number=$3, is_displayed=$4, is_sending_alerts=$5, is_sending_vitals=$6
+      WHERE id=$7
+      RETURNING *
+      `,
+      [displayName, phoneNumber, buttonSerialNumber, isDisplayed, isSendingAlerts, isSendingVitals, buttonId],
+      pool,
+      pgClient,
+    )
+
+    const allClients = await getClients(pgClient)
+    return createButtonFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
 }
 
-async function createGateway(..., pgClient) {
-  // new code
+async function updateClient(
+  displayName,
+  fromPhoneNumber,
+  responderPhoneNumbers,
+  reminderTimeout,
+  fallbackPhoneNumbers,
+  fallbackTimeout,
+  heartbeatPhoneNumbers,
+  incidentCategories,
+  isDisplayed,
+  isSendingAlerts,
+  isSendingVitals,
+  language,
+  clientId,
+  pgClient,
+) {
+  try {
+    const results = await helpers.runQuery(
+      'updateClient',
+      `
+      UPDATE clients
+      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12
+      WHERE id = $13
+      RETURNING *
+      `,
+      [
+        displayName,
+        fromPhoneNumber,
+        responderPhoneNumbers,
+        reminderTimeout,
+        fallbackPhoneNumbers,
+        fallbackTimeout,
+        heartbeatPhoneNumbers,
+        incidentCategories,
+        isDisplayed,
+        isSendingAlerts,
+        isSendingVitals,
+        language,
+        clientId,
+      ],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Client '${displayName}' successfully updated`)
+
+    return await createClientFromRow(results.rows[0])
+  } catch (err) {
+    helpers.log(err.toString())
+  }
+
+  return null
 }
 
-async function updateGateway(id, ..., pgClient) {
-  // similar to updateClient
+async function updateGateway(displayName, isDisplayed, isSendingVitals, gatewayId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'updateGateway',
+      `
+      UPDATE gateways
+      SET display_name=$1, is_displayed=$2, is_sending_vitals=$3
+      WHERE id=$4
+      RETURNING *
+      `,
+      [displayName, isDisplayed, isSendingVitals, gatewayId],
+      pool,
+      pgClient,
+    )
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
 }
-*/
 
 module.exports = {
   beginTransaction,
@@ -1359,6 +1470,7 @@ module.exports = {
   commitTransaction,
   createButton,
   createClient,
+  createGateway,
   createSession,
   getActiveClients,
   getAllSessionsWithButtonId,
@@ -1391,7 +1503,10 @@ module.exports = {
   logGatewaysVital,
   rollbackTransaction,
   saveSession,
+  updateButton,
   updateButtonsSentLowBatteryAlerts,
   updateButtonsSentVitalsAlerts,
+  updateClient,
+  updateGateway,
   updateGatewaySentVitalsAlerts,
 }
