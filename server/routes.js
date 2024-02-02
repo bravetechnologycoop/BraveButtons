@@ -17,30 +17,25 @@ function configureRoutes(app) {
   app.post('/login', dashboard.submitLogin)
 
   // new to-be-implemented API routes
-  app.get('/api/clients', api.validateGetClients, googleHelpers.paAuthorize, api.handleGetClients)
-  app.get('/api/clients/:clientId', api.validateGetClient, googleHelpers.paAuthorize, api.handleGetClient)
-  app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, googleHelpers.paAuthorize, api.handleGetClientButtons)
-  app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, googleHelpers.paAuthorize, api.handleGetClientButton)
-  app.get(
-    '/api/clients/:clientId/buttons/:buttonId/sessions',
-    api.validateGetClientButtonSessions,
-    googleHelpers.paAuthorize,
-    api.handleGetClientButtonSessions,
-  )
-  app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, googleHelpers.paAuthorize, api.handleGetClientGateways)
-  app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, googleHelpers.paAuthorize, api.handleGetClientGateway)
-  app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, googleHelpers.paAuthorize, api.handleGetClientVitals)
-  app.post('/api/clients', api.validateRegisterClient, googleHelpers.paAuthorize, api.handleRegisterClient)
-  app.post('/api/clients/:clientId/buttons', api.validateRegisterClientButton, googleHelpers.paAuthorize, api.handleRegisterClientButton)
-  app.post('/api/clients/:clientId/gateways', api.validateRegisterClientGateway, googleHelpers.paAuthorize, api.handleRegisterClientGateway)
-  app.put('/api/clients/:clientId', api.validateUpdateClient, googleHelpers.paAuthorize, api.handleUpdateClient)
-  app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, googleHelpers.paAuthorize, api.handleUpdateClientButton)
-  app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, googleHelpers.paAuthorize, api.handleUpdateClientGateway)
+  app.get('/api/clients', api.validateGetClients, api.wrapper, api.handleGetClients)
+  app.get('/api/clients/:clientId', api.validateGetClient, api.wrapper, api.handleGetClient)
+  app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, api.wrapper, api.handleGetClientButtons)
+  app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, api.wrapper, api.handleGetClientButton)
+  app.get('/api/clients/:clientId/buttons/:buttonId/sessions', api.validateGetClientButtonSessions, api.wrapper, api.handleGetClientButtonSessions)
+  app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, api.wrapper, api.handleGetClientGateways)
+  app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, api.wrapper, api.handleGetClientGateway)
+  app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, api.wrapper, api.handleGetClientVitals)
+  app.post('/api/clients', api.validateCreateClient, api.wrapper, api.handleCreateClient)
+  app.post('/api/clients/:clientId/buttons', api.validateCreateClientButton, api.wrapper, api.handleCreateClientButton)
+  app.post('/api/clients/:clientId/gateways', api.validateCreateClientGateway, api.wrapper, api.handleCreateClientGateway)
+  app.put('/api/clients/:clientId', api.validateUpdateClient, api.wrapper, api.handleUpdateClient)
+  app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, api.wrapper, api.handleUpdateClientButton)
+  app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, api.wrapper, api.handleUpdateClientGateway)
 
   // non-client specific vitals: are these useful?
   // Johnny: haven't really used them. Good to have a glance and see which devices are down?
   // - Would need to filter manually, so filtering tools would be handy; maybe to display only down devices.
-  // app.get('/api/vitals', api.validateGetVitals, googleHelpers.paAuthorize, api.handleGetVitals)
+  // app.get('/api/vitals', api.validateGetVitals, api.wrapper, api.handleGetVitals)
 
   // misc. PA API routes
   app.post('/pa/aws-device-registration', pa.validateAwsDeviceRegistration, googleHelpers.paAuthorize, pa.handleAwsDeviceRegistration)

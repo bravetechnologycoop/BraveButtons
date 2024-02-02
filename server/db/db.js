@@ -24,11 +24,7 @@ pool.on('error', err => {
 types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
 function createSessionFromRow(r, allButtons) {
-  let button // initially undefined
-
-  if (allButtons !== undefined) {
-    button = allButtons.filter(b => b.id === r.button_id)[0]
-  }
+  const button = allButtons.filter(b => b.id === r.button_id)[0]
 
   // prettier-ignore
   return new Session(r.id, r.chatbot_state, r.alert_type, r.number_of_alerts, r.created_at, r.updated_at, r.incident_category, r.responded_at, r.responded_by_phone_number, button)
@@ -40,43 +36,27 @@ function createClientFromRow(r) {
 }
 
 function createButtonFromRow(r, allClients) {
-  let client // initially undefined
-
-  if (allClients !== undefined) {
-    client = allClients.filter(c => c.id === r.client_id)[0]
-  }
+  const client = allClients.filter(c => c.id === r.client_id)[0]
 
   // prettier-ignore
   return new Button(r.id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, r.is_displayed, r.is_sending_alerts, r.is_sending_vitals, r.sent_low_battery_alert_at, r.sent_vitals_alert_at, client)
 }
 
 function createButtonsVitalFromRow(r, allButtons) {
-  let button // initially undefined
-
-  if (allButtons !== undefined) {
-    button = allButtons.filter(b => b.id === r.button_id)[0]
-  }
+  const button = allButtons.filter(b => b.id === r.button_id)[0]
 
   // prettier-ignore
   return new ButtonsVital(r.id, r.battery_level, r.created_at, r.snr, r.rssi, button)
 }
 
 function createGatewayFromRow(r, allClients) {
-  let client // initially undefined
-
-  if (allClients !== undefined) {
-    client = allClients.filter(c => c.id === r.client_id)[0]
-  }
+  const client = allClients.filter(c => c.id === r.client_id)[0]
 
   return new Gateway(r.id, r.display_name, r.is_displayed, r.is_sending_vitals, r.created_at, r.updated_at, r.sent_vitals_alert_at, client)
 }
 
 function createGatewaysVitalFromRow(r, allGateways) {
-  let gateway // initially undefined
-
-  if (allGateways !== undefined) {
-    gateway = allGateways.filter(g => g.id === r.gateway_id)[0]
-  }
+  const gateway = allGateways.filter(g => g.id === r.gateway_id)[0]
 
   // prettier-ignore
   return new GatewaysVital(r.id, r.last_seen_at, r.created_at, gateway)
@@ -396,15 +376,17 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
       pgClient,
     )
 
-    if (results !== undefined && results.rows.length > 0) {
+    if (results.rows.length > 0) {
       const allButtons = await getButtons(pgClient)
       return results.rows.map(r => createButtonsVitalFromRow(r, allButtons))
     }
+
+    return []
   } catch (err) {
     helpers.logError(err.toString())
   }
 
-  return []
+  return null
 }
 
 async function getRecentGatewaysVitals(pgClient) {
@@ -449,15 +431,17 @@ async function getRecentGatewaysVitalsWithClientId(clientId, pgClient) {
       pgClient,
     )
 
-    if (results !== undefined && results.rows.length > 0) {
+    if (results.rows.length > 0) {
       const allGateways = await getGateways(pgClient)
       return results.rows.map(r => createGatewaysVitalFromRow(r, allGateways))
     }
+
+    return []
   } catch (err) {
     helpers.logError(err.toString())
   }
 
-  return []
+  return null
 }
 
 async function getRecentGatewaysVitalWithGatewayId(gatewayId, pgClient) {
@@ -1235,7 +1219,8 @@ async function getButtonsWithClientId(clientId, pgClient) {
     )
 
     if (results !== undefined && results.rows.length > 0) {
-      return results.rows.map(r => createButtonFromRow(r))
+      const client = await getClientWithId(clientId)
+      return results.rows.map(r => createButtonFromRow(r, [client]))
     }
 
     if (results.rows.length === 0) {
@@ -1266,7 +1251,8 @@ async function getRecentSessionsWithButtonId(buttonId, pgClient) {
     )
 
     if (results !== undefined && results.rows.length > 0) {
-      return results.rows.map(r => createSessionFromRow(r))
+      const allClients = await getClients(pgClient)
+      return results.rows.map(r => createSessionFromRow(r, allClients))
     }
   } catch (err) {
     helpers.logError(err.toString())
@@ -1315,7 +1301,8 @@ async function getGatewaysWithClientId(clientId, pgClient) {
     )
 
     if (results !== undefined && results.rows.length > 0) {
-      return results.rows.map(r => createGatewayFromRow(r))
+      const client = await getClientWithId(clientId)
+      return results.rows.map(r => createGatewayFromRow(r, [client]))
     }
 
     if (results.rows.length === 0) {
@@ -1351,17 +1338,27 @@ async function createGateway(gatewayId, clientId, displayName, sentVitalsAlertAt
   return null
 }
 
-async function updateButton(displayName, phoneNumber, buttonSerialNumber, isDisplayed, isSendingAlerts, isSendingVitals, buttonId, pgClient) {
+async function updateButton(
+  clientId,
+  displayName,
+  phoneNumber,
+  buttonSerialNumber,
+  isDisplayed,
+  isSendingAlerts,
+  isSendingVitals,
+  buttonId,
+  pgClient,
+) {
   try {
     const results = await helpers.runQuery(
       'udateButton',
       `
       UPDATE buttons
-      SET display_name=$1, phone_number=$2, button_serial_number=$3, is_displayed=$4, is_sending_alerts=$5, is_sending_vitals=$6
-      WHERE id=$7
+      SET client_d=$1, display_name=$2, phone_number=$3, button_serial_number=$4, is_displayed=$5, is_sending_alerts=$6, is_sending_vitals=$7
+      WHERE id=$8
       RETURNING *
       `,
-      [displayName, phoneNumber, buttonSerialNumber, isDisplayed, isSendingAlerts, isSendingVitals, buttonId],
+      [clientId, displayName, phoneNumber, buttonSerialNumber, isDisplayed, isSendingAlerts, isSendingVitals, buttonId],
       pool,
       pgClient,
     )
@@ -1433,17 +1430,17 @@ async function updateClient(
   return null
 }
 
-async function updateGateway(displayName, isDisplayed, isSendingVitals, gatewayId, pgClient) {
+async function updateGateway(clientId, displayName, isDisplayed, isSendingVitals, gatewayId, pgClient) {
   try {
     const results = await helpers.runQuery(
       'updateGateway',
       `
       UPDATE gateways
-      SET display_name=$1, is_displayed=$2, is_sending_vitals=$3
-      WHERE id=$4
+      SET client_id=$1, display_name=$2, is_displayed=$3, is_sending_vitals=$4
+      WHERE id=$5
       RETURNING *
       `,
-      [displayName, isDisplayed, isSendingVitals, gatewayId],
+      [clientId, displayName, isDisplayed, isSendingVitals, gatewayId],
       pool,
       pgClient,
     )

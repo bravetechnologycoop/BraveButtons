@@ -18,353 +18,247 @@
 const Validator = require('express-validator')
 
 // In-house dependencies
-const { helpers } = require('brave-alert-lib')
+const { helpers, googleHelpers } = require('brave-alert-lib')
 const db = require('./db/db')
+
+// wrapper function for a given handler
+// this should preceed any handler when defining an Express route
+async function wrapper(req, res, next) {
+  // authorize using a Google ID Token submitted through the Authorization header of the request
+  // if the request is authorized, then the described function will run
+  googleHelpers.paAuthorize(req, res, () => {
+    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+    try {
+      if (validationErrors.isEmpty()) {
+        // run handler function (this wrapper will catch thrown errors)
+        next()
+      } else {
+        res.status(400).send({ status: 'error', message: 'Bad Request' })
+        helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
+      }
+    } catch (error) {
+      res.status(500).send({ status: 'error', message: 'Internal Server Error' })
+      helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    }
+  })
+}
+
+const validateCreateClient = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
+  Validator.body(['heartbeatPhoneNumbers']).isArray(),
+  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'incidentCategories']).isArray({ min: 0 }),
+  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+]
+
+async function handleCreateClient(req, res) {
+  const client = await db.createClient(
+    req.body.displayName,
+    req.body.responderPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
+    req.body.reminderTimeout,
+    req.body.fallbackPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
+    req.body.fromPhoneNumber,
+    req.body.fallbackTimeout,
+    req.body.heartbeatPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
+    req.body.incidentCategories,
+    req.body.isDisplayed,
+    req.body.isSendingAlerts,
+    req.body.isSendingVitals,
+    req.body.language,
+  )
+
+  if (client == null) {
+    // will result in a status 500
+    throw new Error('Failed to create client')
+  }
+
+  res.set('Location', `${req.path}/${client.id}`) // location of newly created client
+  res.status(201).send({ status: 'success', data: client })
+}
+
+const validateCreateClientButton = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.param(['clientId']).notEmpty(),
+  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+]
+
+async function handleCreateClientButton(req, res) {
+  const button = await db.createButton(
+    req.params.clientId,
+    req.body.displayName,
+    req.body.phoneNumber,
+    req.body.buttonSerialNumber,
+    req.body.isDisplayed,
+    req.body.isSendingAlerts,
+    req.body.isSendingVitals,
+    null,
+    null,
+  )
+
+  // Should the database query fail, db.createButton should internally handle thrown errors and return either null or undefined.
+  // The status code 404 is used here as the failure was probably caused by the client not existing.
+  if (button == null) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
+
+    return
+  }
+
+  res.set('Location', `${req.path}/${button.id}`) // location of newly created button
+  res.status(201).send({ status: 'success', data: button })
+}
+
+const validateCreateClientGateway = [
+  Validator.header(['Authorization']).notEmpty(),
+  Validator.param(['gatewayId', 'clientId']).notEmpty(),
+  Validator.body(['displayName']).trim().isString().notEmpty(),
+  Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
+]
+
+async function handleCreateClientGateway(req, res) {
+  const gateway = await db.createGateway(
+    req.body.gatewayId,
+    req.params.clientId,
+    req.body.displayName,
+    null,
+    req.body.isDisplayed,
+    req.body.isSendingVitals,
+  )
+
+  // Should the database query fail, db.createGateway should internally handle thrown errors and return either null or undefined.
+  // The status code 404 is used here as the failure was probably caused by the client not existing.
+  if (gateway == null) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
+
+    return
+  }
+
+  res.set('Location', `${req.path}/${gateway.id}`) // location of newly created gateway
+  res.status(201).send({ status: 'success', data: gateway })
+}
 
 const validateGetClient = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClient(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const client = await db.getClientWithId(req.params.clientId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const client = await db.getClientWithId(req.params.clientId)
+  // check that the client exists
+  if (client == null) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // check that the client exists
-      if (client == null) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: client })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  res.status(200).send({ status: 'success', data: client })
 }
 
 const validateGetClients = Validator.header(['Authorization']).notEmpty()
 
 async function handleGetClients(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const clients = await db.getClients()
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const clients = await db.getClients()
-
-      res.status(200).send({ status: 'success', data: clients })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
-  }
+  res.status(200).send({ status: 'success', data: clients })
 }
 
 const validateGetClientButton = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'buttonId']).notEmpty()]
 
 async function handleGetClientButton(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const button = await db.getButtonWithId(req.params.buttonId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const button = await db.getButtonWithId(req.params.buttonId)
+  // check that this button exists and is owned by the specified client
+  // NOTE: if clientId is invalid, then the query will fail and return null
+  if (button == null || button.client.id !== req.params.clientId) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // check that this button exists and is owned by the specified client
-      // NOTE: if clientId is invalid, then the query will fail and return null
-      if (button == null || button.client.id !== req.params.clientId) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: button })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  res.status(200).send({ status: 'success', data: button })
 }
 
 const validateGetClientButtons = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientButtons(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const buttons = await db.getButtonsWithClientId(req.params.clientId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const buttons = await db.getButtonsWithClientId(req.params.clientId)
+  // if the query failed and returned null, the clientId is probably wrong
+  if (buttons == null) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // if the query failed and returned null, the clientId is probably wrong
-      if (buttons == null) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: buttons })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  // something like this: buttons = buttons.map(button => { button.sdfs ... })
+  // (remove single field)
+
+  res.status(200).send({ status: 'success', data: buttons })
 }
 
 const validateGetClientButtonSessions = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'buttonId']).notEmpty()]
 
 async function handleGetClientButtonSessions(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const button = await db.getButtonWithId(req.params.buttonId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const button = await db.getButtonWithId(req.params.buttonId)
+  // check that this button exists and is owned by the specified client
+  // NOTE: if clientId is invalid, then the query will fail and return null
+  if (button == null || button.client.id !== req.params.clientId) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // check that this button exists and is owned by the specified client
-      // NOTE: if clientId is invalid, then the query will fail and return null
-      if (button == null || button.client.id !== req.params.clientId) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      const sessions = await db.getRecentSessionsWithButtonId(req.params.buttonId)
-
-      res.status(200).send({ status: 'success', data: sessions })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  const sessions = await db.getRecentSessionsWithButtonId(req.params.buttonId)
+
+  res.status(200).send({ status: 'success', data: sessions })
 }
 
 const validateGetClientGateway = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'gatewayId']).notEmpty()]
 
 async function handleGetClientGateway(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const gateway = await db.getGatewayWithId(req.params.gatewayId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const gateway = await db.getGatewayWithId(req.params.gatewayId)
+  // check that this gateway exists and is owned by the specified client
+  // NOTE: if clientId is invalid, then the query will fail and return null
+  if (gateway == null || gateway.client.id !== req.params.clientId) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // check that this gateway exists and is owned by the specified client
-      // NOTE: if clientId is invalid, then the query will fail and return null
-      if (gateway == null || gateway.client.id !== req.params.clientId) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: gateway })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  res.status(200).send({ status: 'success', data: gateway })
 }
 
 const validateGetClientGateways = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientGateways(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const gateways = await db.getGatewaysWithClientId(req.params.clientId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const gateways = await db.getGatewaysWithClientId(req.params.clientId)
+  // if the query failed and returned null, the clientId is probably wrong
+  if (gateways == null) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // if the query failed and returned null, the clientId is probably wrong
-      if (gateways == null) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: gateways })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  res.status(200).send({ status: 'success', data: gateways })
 }
 
 const validateGetClientVitals = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientVitals(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const buttonVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
+  const gatewayVitals = await db.getRecentGatewaysVitalsWithClientId(req.params.clientId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const buttonVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
-      const gatewayVitals = await db.getRecentGatewaysVitalsWithClientId(req.params.clientId)
+  // if either of the query failed and returned null, the clientId is probably wrong
+  if (buttonVitals == null || gatewayVitals == null) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // if either of the query failed and returned null, the clientId is probably wrong
-      if (buttonVitals == null || gatewayVitals == null) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: { buttonVitals, gatewayVitals } })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
-}
 
-const validateRegisterClient = [
-  Validator.header(['Authorization']).notEmpty(),
-  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
-  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).isArray(),
-  Validator.body(['reminderTimeout', 'fallbackTimeout']).isInt({ min: 0 }),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).isBoolean(),
-]
-
-async function handleRegisterClient(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      const client = await db.createClient(
-        req.body.displayName,
-        req.body.responderPhoneNumbers,
-        req.body.reminderTimeout,
-        req.body.fallbackPhoneNumbers,
-        req.body.fromPhoneNumber,
-        req.body.fallbackTimeout,
-        req.body.heartbeatPhoneNumbers,
-        req.body.incidentCategories,
-        req.body.isDisplayed,
-        req.body.isSendingAlerts,
-        req.body.isSendingVitals,
-        req.body.language,
-      )
-
-      // Should the database query fail, db.createClient should internally handle thrown errors and return either null or undefined.
-      // The status code 400 is used here as the failure was probably caused by invalid fields.
-      if (client == null) {
-        res.status(400).send({ status: 'error', message: 'Bad Request' })
-      }
-
-      res.set('Location', `${req.path}/${client.id}`) // location of newly created client
-      res.status(201).send({ status: 'success', data: client })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
-  }
-}
-
-const validateRegisterClientButton = [
-  Validator.header(['Authorization']).notEmpty(),
-  Validator.param(['clientId']).notEmpty(),
-  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).isBoolean(),
-]
-
-async function handleRegisterClientButton(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      const button = await db.createButton(
-        req.params.clientId,
-        req.body.displayName,
-        req.body.phoneNumber,
-        req.body.buttonSerialNumber,
-        req.body.isDisplayed,
-        req.body.isSendingAlerts,
-        req.body.isSendingVitals,
-        null,
-        null,
-      )
-
-      // Should the database query fail, db.createButton should internally handle thrown errors and return either null or undefined.
-      // The status code 404 is used here as the failure was probably caused by the client not existing.
-      if (button == null) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      res.set('Location', `${req.path}/${button.id}`) // location of newly created button
-      res.status(201).send({ status: 'success', data: button })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
-  }
-}
-
-const validateRegisterClientGateway = [
-  Validator.header(['Authorization']).notEmpty(),
-  Validator.param(['gatewayId', 'clientId']).notEmpty(),
-  Validator.body(['displayName']).trim().isString().notEmpty(),
-  Validator.body(['isDisplayed', 'isSendingVitals']).isBoolean(),
-]
-
-async function handleRegisterClientGateway(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-
-  try {
-    if (validationErrors.isEmpty()) {
-      const gateway = await db.createGateway(
-        req.body.gatewayId,
-        req.params.clientId,
-        req.body.displayName,
-        null,
-        req.body.isDisplayed,
-        req.body.isSendingVitals,
-      )
-
-      // Should the database query fail, db.createGateway should internally handle thrown errors and return either null or undefined.
-      // The status code 404 is used here as the failure was probably caused by the client not existing.
-      if (gateway == null) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      res.set('Location', `${req.path}/${gateway.id}`) // location of newly created gateway
-      res.status(201).send({ status: 'success', data: gateway })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
-  }
+  res.status(200).send({ status: 'success', data: { buttonVitals, gatewayVitals } })
 }
 
 const validateUpdateClient = [
@@ -372,154 +266,128 @@ const validateUpdateClient = [
   Validator.param(['clientId']).notEmpty(),
   Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
   Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).isArray(),
-  Validator.body(['reminderTimeout', 'fallbackTimeout']).isInt({ min: 0 }),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).isBoolean(),
+  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
 ]
 
 async function handleUpdateClient(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const client = await db.getClientWithId(req.params.clientId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const client = await db.getClientWithId(req.params.clientId)
+  // check that the client exists
+  if (client == null) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // check that the client exists
-      if (client == null) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      // attempt to update the client
-      const updatedClient = await db.updateClient(
-        req.body.displayName,
-        req.body.fromPhoneNumber,
-        req.body.responderPhoneNumbers,
-        req.body.reminderTimeout,
-        req.body.fallbackPhoneNumbers,
-        req.body.fallbackTimeout,
-        req.body.heartbeatPhoneNumbers,
-        req.body.incidentCategories,
-        req.body.isDisplayed,
-        req.body.isSendingAlerts,
-        req.body.isSendingVitals,
-        req.body.language,
-        req.params.clientId,
-      )
-
-      // something bad happened and the client wasn't updated; blame it on the request
-      if (updatedClient == null) {
-        res.status(400).send({ status: 'error', message: 'Bad Request' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: updatedClient })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  // attempt to update the client
+  const updatedClient = await db.updateClient(
+    req.body.displayName,
+    req.body.fromPhoneNumber,
+    req.body.responderPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
+    req.body.reminderTimeout,
+    req.body.fallbackPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
+    req.body.fallbackTimeout,
+    req.body.heartbeatPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
+    req.body.incidentCategories,
+    req.body.isDisplayed,
+    req.body.isSendingAlerts,
+    req.body.isSendingVitals,
+    req.body.language,
+    req.params.clientId,
+  )
+
+  // something bad happened and the client wasn't updated; blame it on the request
+  if (updatedClient == null) {
+    res.status(400).send({ status: 'error', message: 'Bad Request' })
+
+    return
+  }
+
+  res.status(200).send({ status: 'success', data: updatedClient })
 }
 
 const validateUpdateClientButton = [
   Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId', 'buttonId']).notEmpty(),
-  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).isBoolean(),
+  Validator.body(['clientId', 'displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
+  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
 ]
 
 async function handleUpdateClientButton(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const button = await db.getButtonWithId(req.params.buttonId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const button = await db.getButtonWithId(req.params.buttonId)
+  // check that this button exists and is owned by the specified client
+  // NOTE: if clientId is invalid, then the query will fail and return null
+  if (button == null || button.client.id !== req.params.clientId) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // check that this button exists and is owned by the specified client
-      // NOTE: if clientId is invalid, then the query will fail and return null
-      if (button == null || button.client.id !== req.params.clientId) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      // attempt to update the button
-      const updatedButton = await db.updateButton(
-        req.body.displayName,
-        req.body.phoneNumber,
-        req.body.buttonSerialNumber,
-        req.body.isDisplayed,
-        req.body.isSendingAlerts,
-        req.body.isSendingVitals,
-        req.params.buttonId,
-      )
-
-      // something bad happened and the button wasn't updated; blame it on the request
-      if (updatedButton == null) {
-        res.status(400).send({ status: 'error', message: 'Bad Request' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: updatedButton })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  // attempt to update the button
+  const updatedButton = await db.updateButton(
+    req.body.clientId,
+    req.body.displayName,
+    req.body.phoneNumber,
+    req.body.buttonSerialNumber,
+    req.body.isDisplayed,
+    req.body.isSendingAlerts,
+    req.body.isSendingVitals,
+    req.params.buttonId,
+  )
+
+  // something bad happened and the button wasn't updated; blame it on the request
+  if (updatedButton == null) {
+    res.status(400).send({ status: 'error', message: 'Bad Request' })
+
+    return
+  }
+
+  res.status(200).send({ status: 'success', data: updatedButton })
 }
 
 const validateUpdateClientGateway = [
   Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId', 'gatewayId']).notEmpty(),
-  Validator.body(['displayName']).trim().isString().notEmpty(),
-  Validator.body(['isDisplayed', 'isSendingVitals']).isBoolean(),
+  Validator.body(['clientId', 'displayName']).trim().isString().notEmpty(),
+  Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
 ]
 
 async function handleUpdateClientGateway(req, res) {
-  const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+  const gateway = await db.getGatewayWithId(req.params.gatewayId)
 
-  try {
-    if (validationErrors.isEmpty()) {
-      const gateway = await db.getGatewayWithId(req.params.gatewayId)
+  // check that this gateway exists and is owned by the specified client
+  // NOTE: if clientId is invalid, then the query will fail and return null
+  if (gateway == null || gateway.client.id !== req.params.clientId) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
 
-      // check that this gateway exists and is owned by the specified client
-      // NOTE: if clientId is invalid, then the query will fail and return null
-      if (gateway == null || gateway.client.id !== req.params.clientId) {
-        res.status(404).send({ status: 'error', message: 'Not Found' })
-
-        return
-      }
-
-      // attempt to update the gateway
-      const updatedGateway = await db.updateGateway(req.body.displayName, req.body.isDisplayed, req.body.isSendingVitals, req.params.gatewayId)
-
-      // something bad happened and the gateway wasn't updated; blame it on the request
-      if (updatedGateway == null) {
-        res.status(400).send({ status: 'error', message: 'Bad Request' })
-
-        return
-      }
-
-      res.status(200).send({ status: 'success', data: updatedGateway })
-    } else {
-      res.status(400).send({ status: 'error', message: 'Bad Request' })
-      helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
-    }
-  } catch (error) {
-    res.status(500).send({ status: 'error', message: 'Internal Server Error' })
-    helpers.logError(`Internal server error at ${req.path}: ${error.message}`)
+    return
   }
+
+  // attempt to update the gateway
+  const updatedGateway = await db.updateGateway(
+    req.body.clientId,
+    req.body.displayName,
+    req.body.isDisplayed,
+    req.body.isSendingVitals,
+    req.params.gatewayId,
+  )
+
+  // something bad happened and the gateway wasn't updated; blame it on the request
+  if (updatedGateway == null) {
+    res.status(400).send({ status: 'error', message: 'Bad Request' })
+
+    return
+  }
+
+  res.status(200).send({ status: 'success', data: updatedGateway })
 }
 
 module.exports = {
+  handleCreateClient,
+  handleCreateClientButton,
+  handleCreateClientGateway,
   handleGetClient,
   handleGetClients,
   handleGetClientButton,
@@ -528,12 +396,12 @@ module.exports = {
   handleGetClientGateway,
   handleGetClientGateways,
   handleGetClientVitals,
-  handleRegisterClient,
-  handleRegisterClientButton,
-  handleRegisterClientGateway,
   handleUpdateClient,
   handleUpdateClientButton,
   handleUpdateClientGateway,
+  validateCreateClient,
+  validateCreateClientButton,
+  validateCreateClientGateway,
   validateGetClient,
   validateGetClients,
   validateGetClientButton,
@@ -542,10 +410,8 @@ module.exports = {
   validateGetClientGateway,
   validateGetClientGateways,
   validateGetClientVitals,
-  validateRegisterClient,
-  validateRegisterClientButton,
-  validateRegisterClientGateway,
   validateUpdateClient,
   validateUpdateClientButton,
   validateUpdateClientGateway,
+  wrapper,
 }
