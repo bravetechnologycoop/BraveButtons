@@ -101,7 +101,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       it('should send the client message to Sentry', async () => {
         await vitals.checkButtonHeartbeat()
         expect(helpers.logSentry).to.be.calledWith(
-          `Button status change for: ${this.button.client.displayName}. The following buttons have been disconnected: ${this.button.displayName}.`,
+          `There has been connection changes for the buttons located at ${this.button.client.displayName}. The following buttons have disconnected: ${this.button.displayName}.`,
         )
       })
 
@@ -161,7 +161,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       it('should send the client message to Sentry', async () => {
         await vitals.checkButtonHeartbeat()
         expect(helpers.logSentry).to.be.calledWith(
-          `Button status change for: ${this.button.client.displayName}. The following buttons have been reconnected: ${this.button.displayName}.`,
+          `There has been connection changes for the buttons located at ${this.button.client.displayName}. The following buttons have reconnected: ${this.button.displayName}.`,
         )
       })
 
@@ -242,7 +242,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       it('should send the client message to Sentry, with the buttons display name in alphabetical order', async () => {
         await vitals.checkButtonHeartbeat()
         expect(helpers.logSentry).to.be.calledWith(
-          `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonA.displayName}, ${this.buttonB.displayName}.`,
+          `There has been connection changes for the buttons located at ${this.buttonA.client.displayName}. The following buttons have disconnected: ${this.buttonA.displayName}, ${this.buttonB.displayName}.`,
         )
       })
     })
@@ -302,7 +302,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       it('should send the client message to Sentry', async () => {
         await vitals.checkButtonHeartbeat()
         expect(helpers.logSentry).to.be.calledWith(
-          `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonA.displayName}. The following buttons have been reconnected: ${this.buttonB.displayName}.`,
+          `There has been connection changes for the buttons located at ${this.buttonA.client.displayName}. The following buttons have disconnected: ${this.buttonA.displayName}. The following buttons have reconnected: ${this.buttonB.displayName}.`,
         )
       })
     })
@@ -442,7 +442,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should not send a client message for the disconnected button', async () => {
         expect(helpers.logSentry).to.not.be.calledWith(
-          `Button status change for: ${this.button.client.displayName}. The following buttons have been disconnected: ${this.button.displayName}.`,
+          `There has been connection changes for the buttons located at ${this.button.client.displayName}. The following buttons have disconnected: ${this.button.displayName}.`,
         )
       })
     })
