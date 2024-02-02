@@ -1,7 +1,7 @@
 // Third-party dependencies
 /* eslint-disable no-continue */
 const { DateTime } = require('luxon')
-const { t } = require('i18next')
+const i18next = require('i18next')
 
 // In-house dependencies
 const { helpers, twilioHelpers } = require('brave-alert-lib')
@@ -55,7 +55,7 @@ async function checkGatewayHeartbeat() {
             await db.updateGatewaySentVitalsAlerts(gateway.id, true)
 
             sendNotification(
-              t('gatewayDisconnectionInitial', { lng: client.language, gatewayDisplayName: gateway.displayName }),
+              i18next.t('gatewayDisconnectionInitial', { lng: client.language, gatewayDisplayName: gateway.displayName }),
               client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
               client.fromPhoneNumber,
             )
@@ -63,7 +63,7 @@ async function checkGatewayHeartbeat() {
             await db.updateGatewaySentVitalsAlerts(gateway.id, true)
 
             sendNotification(
-              t('gatewayDisconnectionReminder', { lng: client.language, gatewayDisplayName: gateway.displayName }),
+              i18next.t('gatewayDisconnectionReminder', { lng: client.language, gatewayDisplayName: gateway.displayName }),
               client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
               client.fromPhoneNumber,
             )
@@ -75,7 +75,7 @@ async function checkGatewayHeartbeat() {
           await db.updateGatewaySentVitalsAlerts(gateway.id, false)
 
           sendNotification(
-            t('gatewayReconnection', { lng: client.language, gatewayDisplayName: gateway.displayName }),
+            i18next.t('gatewayReconnection', { lng: client.language, gatewayDisplayName: gateway.displayName }),
             client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
             client.fromPhoneNumber,
           )
@@ -108,7 +108,7 @@ async function checkButtonBatteries() {
             await db.updateButtonsSentLowBatteryAlerts(button.id, true)
 
             sendNotification(
-              t('buttonLowBatteryInitial', { lng: client.language, buttonDisplayName: button.displayName }),
+              i18next.t('buttonLowBatteryInitial', { lng: client.language, buttonDisplayName: button.displayName }),
               client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
               client.fromPhoneNumber,
             )
@@ -116,7 +116,7 @@ async function checkButtonBatteries() {
             await db.updateButtonsSentLowBatteryAlerts(button.id, true)
 
             sendNotification(
-              t('buttonLowBatteryReminder', { lng: client.language, buttonDisplayName: button.displayName }),
+              i18next.t('buttonLowBatteryReminder', { lng: client.language, buttonDisplayName: button.displayName }),
               client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
               client.fromPhoneNumber,
             )
@@ -128,7 +128,7 @@ async function checkButtonBatteries() {
           await db.updateButtonsSentLowBatteryAlerts(button.id, false)
 
           sendNotification(
-            t('buttonLowBatteryNoLonger', { lng: client.language, buttonDisplayName: button.displayName }),
+            i18next.t('buttonLowBatteryNoLonger', { lng: client.language, buttonDisplayName: button.displayName }),
             client.responderPhoneNumbers.concat(client.heartbeatPhoneNumbers),
             client.fromPhoneNumber,
           )
@@ -148,16 +148,16 @@ async function checkButtonBatteries() {
 function sendClientButtonStatusChanges(clientButtonStatusChanges) {
   // Loop through each client to create the Twilio messages
   Object.values(clientButtonStatusChanges).forEach(({ client, disconnectedButtons, reconnectedButtons }) => {
-    let message = [t('buttonStatusChangeStart', { lng: client.language, clientDisplayName: client.displayName })]
+    let message = [i18next.t('buttonStatusChangeStart', { lng: client.language, clientDisplayName: client.displayName })]
 
     if (disconnectedButtons.length > 0) {
       const buttonDisplayNames = disconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.append(t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames }))
+      message.append(i18next.t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames }))
     }
 
     if (reconnectedButtons.length > 0) {
       const buttonDisplayNames = reconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.append(t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames }))
+      message.append(i18next.t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames }))
     }
 
     // join the message parts with spaces
