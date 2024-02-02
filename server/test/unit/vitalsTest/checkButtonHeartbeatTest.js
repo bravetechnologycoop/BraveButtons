@@ -6,7 +6,7 @@ const sinonChai = require('sinon-chai')
 const { DateTime } = require('luxon')
 
 // In-house dependencies
-const { helpers, factories } = require('brave-alert-lib')
+const { helpers, factories, twilioHelpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { buttonFactory, buttonsVitalFactory, gatewayFactory } = require('../../testingHelpers')
 require('../../mocks/tMock')
@@ -29,6 +29,9 @@ function subtractSeconds(date, seconds) {
 
 const exceededThresholdTimestamp = subtractSeconds(currentDBDate, heartbeatThreshold + 1) // sub(currentDBDate, { seconds: subsequentVitalsThreshold + 1 })
 
+const testFromPhoneNumber = '+17780000000'
+const testHeartbeatPhoneNumbers = ['+16040000000']
+
 describe('vitals.js unit tests: checkButtonHeartbeat', () => {
   /* eslint-disable no-underscore-dangle */
   beforeEach(() => {
@@ -38,6 +41,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
     sandbox.stub(db, 'updateButtonsSentVitalsAlerts')
 
+    sandbox.stub(twilioHelpers, 'sendTwilioMessage')
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')
@@ -49,7 +53,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
   describe('for a client that is sending vitals and has no disconnected gateways', () => {
     beforeEach(async () => {
-      this.client = factories.clientFactory({ isSendingVitals: true })
+      this.client = factories.clientFactory({
+        fromPhoneNumber: testFromPhoneNumber,
+        heartbeatPhoneNumbers: testHeartbeatPhoneNumbers,
+        isSendingVitals: true,
+      })
       sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
@@ -98,16 +106,18 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, true)
       })
 
-      it('should send the client message to Sentry', async () => {
+      it('should send a Twilio message summarizing button status changes', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledWith(
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          testFromPhoneNumber,
+          testHeartbeatPhoneNumbers[0],
           `There has been connection changes for the buttons located at ${this.button.client.displayName}. The following buttons have disconnected: ${this.button.displayName}.`,
         )
       })
 
-      it('should only log two Sentry messages', async () => {
+      it('should only log to Sentry once', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledTwice
+        expect(helpers.logSentry).to.be.calledOnce
       })
     })
 
@@ -158,16 +168,18 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, false)
       })
 
-      it('should send the client message to Sentry', async () => {
+      it('should send a Twilio message summarizing button status changes', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledWith(
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          testFromPhoneNumber,
+          testHeartbeatPhoneNumbers[0],
           `There has been connection changes for the buttons located at ${this.button.client.displayName}. The following buttons have reconnected: ${this.button.displayName}.`,
         )
       })
 
-      it('should only log two Sentry messages', async () => {
+      it('should only log to Sentry once', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledTwice
+        expect(helpers.logSentry).to.be.calledOnce
       })
     })
 
@@ -239,9 +251,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         )
       })
 
-      it('should send the client message to Sentry, with the buttons display name in alphabetical order', async () => {
+      it('should send a Twilio message summarizing button status changes, with the buttons display name in alphabetical order', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledWith(
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          testFromPhoneNumber,
+          testHeartbeatPhoneNumbers[0],
           `There has been connection changes for the buttons located at ${this.buttonA.client.displayName}. The following buttons have disconnected: ${this.buttonA.displayName}, ${this.buttonB.displayName}.`,
         )
       })
@@ -299,9 +313,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(helpers.logSentry).to.be.calledWith(`Reconnection: ${this.buttonB.client.displayName} ${this.buttonB.displayName} Button.`)
       })
 
-      it('should send the client message to Sentry', async () => {
+      it('should send a Twilio message summarizing button status changes', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledWith(
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          testFromPhoneNumber,
+          testHeartbeatPhoneNumbers[0],
           `There has been connection changes for the buttons located at ${this.buttonA.client.displayName}. The following buttons have disconnected: ${this.buttonA.displayName}. The following buttons have reconnected: ${this.buttonB.displayName}.`,
         )
       })
@@ -310,7 +326,11 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
   describe('for a client that is not sending vitals and has no disconnected gateways', () => {
     beforeEach(async () => {
-      this.client = factories.clientFactory({ isSendingVitals: false })
+      this.client = factories.clientFactory({
+        fromPhoneNumber: testFromPhoneNumber,
+        heartbeatPhoneNumbers: testHeartbeatPhoneNumbers,
+        isSendingVitals: false,
+      })
       sandbox.stub(db, 'getDisconnectedGatewaysWithClient').returns([])
     })
 
@@ -440,10 +460,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         )
       })
 
-      it('should not send a client message for the disconnected button', async () => {
-        expect(helpers.logSentry).to.not.be.calledWith(
-          `There has been connection changes for the buttons located at ${this.button.client.displayName}. The following buttons have disconnected: ${this.button.displayName}.`,
-        )
+      it('should not send a Twilio message summarizing button status changes', async () => {
+        await vitals.checkButtonHeartbeat()
+        expect(twilioHelpers.sendTwilioMessage).to.not.be.called()
       })
     })
   })

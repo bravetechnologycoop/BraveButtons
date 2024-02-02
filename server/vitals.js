@@ -186,8 +186,8 @@ async function checkButtonHeartbeat() {
       if (button.isSendingVitals && client.isSendingVitals) {
         const currentTime = await db.getCurrentTime()
         const buttonDelay = differenceInSeconds(currentTime, buttonsVital.createdAt)
-        const buttonThreholdExceeded = buttonDelay > THRESHOLD
-        if (buttonThreholdExceeded) {
+        const buttonThresholdExceeded = buttonDelay > THRESHOLD
+        if (buttonThresholdExceeded) {
           if (button.sentVitalsAlertAt === null) {
             const logMessage = `Disconnection: ${client.displayName} ${button.displayName} Button delay is ${buttonDelay} seconds.`
             helpers.logSentry(logMessage)
@@ -197,7 +197,7 @@ async function checkButtonHeartbeat() {
             if (gateways !== null && gateways.length === 0) {
               // Store the client info
               if (!clientButtonStatusChanges[client.id]) {
-                clientButtonStatusChanges[client.id] = { client, disconnectedButtons: [], reconnectedButtons: []}
+                clientButtonStatusChanges[client.id] = { client, disconnectedButtons: [], reconnectedButtons: [] }
               }
 
               // Store the disconnected button name
