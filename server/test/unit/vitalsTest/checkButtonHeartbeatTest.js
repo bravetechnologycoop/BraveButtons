@@ -7,7 +7,7 @@ const { DateTime } = require('luxon')
 const rewire = require('rewire')
 
 // In-house dependencies
-const { helpers, factories, twilioHelpers } = require('brave-alert-lib')
+const { helpers, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { buttonFactory, buttonsVitalFactory, gatewayFactory } = require('../../testingHelpers')
 
@@ -39,7 +39,6 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
     sandbox.stub(db, 'updateButtonsSentVitalsAlerts')
-    sandbox.stub(twilioHelpers, 'sendTwilioMessage')
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')
@@ -100,7 +99,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, true)
       })
 
-      it('should send a Twilio message summarizing button status changes', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
         expect(this.sendClientButtonStatusChangesStub).to.be.calledWith(this.buttonStatusChanges)
       })
@@ -158,7 +157,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, false)
       })
 
-      it('should send a Twilio message summarizing button status changes', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
         expect(this.sendClientButtonStatusChangesStub).to.be.calledWith(this.buttonStatusChanges)
       })
@@ -234,7 +233,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         )
       })
 
-      it('should send a Twilio message summarizing button status changes, with the buttons display name in alphabetical order', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
         expect(this.sendClientButtonStatusChangesStub).to.be.calledWith(this.buttonStatusChanges)
       })
@@ -289,7 +288,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(helpers.logSentry).to.be.calledWith(`Reconnection: ${this.buttonB.client.displayName} ${this.buttonB.displayName} Button.`)
       })
 
-      it('should send a Twilio message summarizing button status changes', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
         expect(this.sendClientButtonStatusChangesStub).to.be.calledWith(this.buttonStatusChanges)
       })
@@ -413,7 +412,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         )
       })
 
-      it('should not send a Twilio message summarizing button status changes', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
         expect(this.sendClientButtonStatusChangesStub).to.be.calledWith({})
       })
