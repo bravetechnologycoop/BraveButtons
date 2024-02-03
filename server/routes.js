@@ -17,7 +17,7 @@ function configureRoutes(app) {
   app.post('/login', dashboard.submitLogin)
 
   // new to-be-implemented API routes
-  app.get('/api/clients', api.validateGetClients, api.wrapper, api.handleGetClients)
+  app.get('/api/clients', api.wrapper, api.handleGetClients)
   app.get('/api/clients/:clientId', api.validateGetClient, api.wrapper, api.handleGetClient)
   app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, api.wrapper, api.handleGetClientButtons)
   app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, api.wrapper, api.handleGetClientButton)

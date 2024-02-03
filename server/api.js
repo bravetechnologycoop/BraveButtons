@@ -24,8 +24,8 @@ const db = require('./db/db')
 // wrapper function for a given handler
 // this should preceed any handler when defining an Express route
 async function wrapper(req, res, next) {
-  // authorize using a Google ID Token submitted through the Authorization header of the request
-  // if the request is authorized, then the described function will run
+  // authorize with a Google ID Token submitted through the Authorization header of the request
+  // if the request is authorized, then the passed function will run
   googleHelpers.paAuthorize(req, res, () => {
     const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
@@ -45,7 +45,6 @@ async function wrapper(req, res, next) {
 }
 
 const validateCreateClient = [
-  Validator.header(['Authorization']).notEmpty(),
   Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
   Validator.body(['heartbeatPhoneNumbers']).isArray(),
   Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'incidentCategories']).isArray({ min: 0 }),
@@ -79,7 +78,6 @@ async function handleCreateClient(req, res) {
 }
 
 const validateCreateClientButton = [
-  Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId']).notEmpty(),
   Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
   Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
@@ -111,7 +109,6 @@ async function handleCreateClientButton(req, res) {
 }
 
 const validateCreateClientGateway = [
-  Validator.header(['Authorization']).notEmpty(),
   Validator.param(['gatewayId', 'clientId']).notEmpty(),
   Validator.body(['displayName']).trim().isString().notEmpty(),
   Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
@@ -139,7 +136,7 @@ async function handleCreateClientGateway(req, res) {
   res.status(201).send({ status: 'success', data: gateway })
 }
 
-const validateGetClient = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
+const validateGetClient = Validator.param(['clientId']).notEmpty()
 
 async function handleGetClient(req, res) {
   const client = await db.getClientWithId(req.params.clientId)
@@ -154,15 +151,13 @@ async function handleGetClient(req, res) {
   res.status(200).send({ status: 'success', data: client })
 }
 
-const validateGetClients = Validator.header(['Authorization']).notEmpty()
-
 async function handleGetClients(req, res) {
   const clients = await db.getClients()
 
   res.status(200).send({ status: 'success', data: clients })
 }
 
-const validateGetClientButton = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'buttonId']).notEmpty()]
+const validateGetClientButton = Validator.param(['clientId', 'buttonId']).notEmpty()
 
 async function handleGetClientButton(req, res) {
   const button = await db.getButtonWithId(req.params.buttonId)
@@ -178,7 +173,7 @@ async function handleGetClientButton(req, res) {
   res.status(200).send({ status: 'success', data: button })
 }
 
-const validateGetClientButtons = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
+const validateGetClientButtons = Validator.param(['clientId']).notEmpty()
 
 async function handleGetClientButtons(req, res) {
   const buttons = await db.getButtonsWithClientId(req.params.clientId)
@@ -196,7 +191,7 @@ async function handleGetClientButtons(req, res) {
   res.status(200).send({ status: 'success', data: buttons })
 }
 
-const validateGetClientButtonSessions = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'buttonId']).notEmpty()]
+const validateGetClientButtonSessions = Validator.param(['clientId', 'buttonId']).notEmpty()
 
 async function handleGetClientButtonSessions(req, res) {
   const button = await db.getButtonWithId(req.params.buttonId)
@@ -214,7 +209,7 @@ async function handleGetClientButtonSessions(req, res) {
   res.status(200).send({ status: 'success', data: sessions })
 }
 
-const validateGetClientGateway = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId', 'gatewayId']).notEmpty()]
+const validateGetClientGateway = Validator.param(['clientId', 'gatewayId']).notEmpty()
 
 async function handleGetClientGateway(req, res) {
   const gateway = await db.getGatewayWithId(req.params.gatewayId)
@@ -230,7 +225,7 @@ async function handleGetClientGateway(req, res) {
   res.status(200).send({ status: 'success', data: gateway })
 }
 
-const validateGetClientGateways = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
+const validateGetClientGateways = Validator.param(['clientId']).notEmpty()
 
 async function handleGetClientGateways(req, res) {
   const gateways = await db.getGatewaysWithClientId(req.params.clientId)
@@ -245,7 +240,7 @@ async function handleGetClientGateways(req, res) {
   res.status(200).send({ status: 'success', data: gateways })
 }
 
-const validateGetClientVitals = [Validator.header(['Authorization']).notEmpty(), Validator.param(['clientId']).notEmpty()]
+const validateGetClientVitals = Validator.param(['clientId']).notEmpty()
 
 async function handleGetClientVitals(req, res) {
   const buttonVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
@@ -262,7 +257,6 @@ async function handleGetClientVitals(req, res) {
 }
 
 const validateUpdateClient = [
-  Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId']).notEmpty(),
   Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
   Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).isArray(),
@@ -308,7 +302,6 @@ async function handleUpdateClient(req, res) {
 }
 
 const validateUpdateClientButton = [
-  Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId', 'buttonId']).notEmpty(),
   Validator.body(['clientId', 'displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
   Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
@@ -348,7 +341,6 @@ async function handleUpdateClientButton(req, res) {
 }
 
 const validateUpdateClientGateway = [
-  Validator.header(['Authorization']).notEmpty(),
   Validator.param(['clientId', 'gatewayId']).notEmpty(),
   Validator.body(['clientId', 'displayName']).trim().isString().notEmpty(),
   Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
@@ -403,7 +395,6 @@ module.exports = {
   validateCreateClientButton,
   validateCreateClientGateway,
   validateGetClient,
-  validateGetClients,
   validateGetClientButton,
   validateGetClientButtons,
   validateGetClientButtonSessions,
