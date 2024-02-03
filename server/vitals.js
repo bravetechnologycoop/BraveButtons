@@ -152,12 +152,12 @@ function sendClientButtonStatusChanges(clientButtonStatusChanges) {
 
     if (disconnectedButtons.length > 0) {
       const buttonDisplayNames = disconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.append(i18next.t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames }))
+      message.push(i18next.t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames }))
     }
 
     if (reconnectedButtons.length > 0) {
       const buttonDisplayNames = reconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.append(i18next.t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames }))
+      message.push(i18next.t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames }))
     }
 
     // join the message parts with spaces

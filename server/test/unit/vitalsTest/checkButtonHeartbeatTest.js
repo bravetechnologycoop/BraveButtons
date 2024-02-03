@@ -10,7 +10,6 @@ const rewire = require('rewire')
 const { helpers, factories, twilioHelpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { buttonFactory, buttonsVitalFactory, gatewayFactory } = require('../../testingHelpers')
-require('../../mocks/tMock')
 
 const vitals = rewire('../../../vitals')
 
