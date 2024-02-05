@@ -62,8 +62,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the first client's heartbeat phone numbers", () => {
       this.clientA.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'There has been connection changes for the buttons at Client A. The following buttons have disconnected: ButtonA, ButtonB.',
         )
       })
@@ -72,8 +72,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the second client's heartbeat phone numbers", () => {
       this.clientB.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'There has been connection changes for the buttons at Client B. The following buttons have reconnected: ButtonA, ButtonB.',
         )
       })
@@ -82,8 +82,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the third client's heartbeat phone numbers", () => {
       this.clientC.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'There has been connection changes for the buttons at Client C. The following buttons have disconnected: ButtonA. The following buttons have reconnected: ButtonB.',
         )
       })
@@ -128,8 +128,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the first client's heartbeat phone numbers", () => {
       this.clientA.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'Ha habido cambios de conexión para los botones en Client A. Los siguientes botones se han desconectado: ButtonA, ButtonB.',
         )
       })
@@ -138,8 +138,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the second client's heartbeat phone numbers", () => {
       this.clientB.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'Ha habido cambios de conexión para los botones en Client B. Los siguientes botones se han vuelto a conectar: ButtonA, ButtonB.',
         )
       })
@@ -148,8 +148,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the third client's heartbeat phone numbers", () => {
       this.clientC.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'Ha habido cambios de conexión para los botones en Client C. Los siguientes botones se han desconectado: ButtonA. Los siguientes botones se han vuelto a conectar: ButtonB.',
         )
       })
@@ -194,8 +194,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the first client's heartbeat phone numbers", () => {
       this.clientA.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'Des modifications de connexion ont été apportées aux boutons de Client A. Les boutons suivants ont été déconnectés: ButtonA, ButtonB.',
         )
       })
@@ -204,8 +204,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the second client's heartbeat phone numbers", () => {
       this.clientB.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'Des modifications de connexion ont été apportées aux boutons de Client B. Les boutons suivants ont été reconnectés: ButtonA, ButtonB.',
         )
       })
@@ -214,8 +214,8 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     it("should send the correct message to the third client's heartbeat phone numbers", () => {
       this.clientC.heartbeatPhoneNumbers.forEach(phoneNumber => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
-          fromPhoneNumber,
           phoneNumber,
+          fromPhoneNumber,
           'Des modifications de connexion ont été apportées aux boutons de Client C. Les boutons suivants ont été déconnectés: ButtonA. Les boutons suivants ont été reconnectés: ButtonB.',
         )
       })

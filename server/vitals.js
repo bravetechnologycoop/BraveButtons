@@ -165,7 +165,7 @@ function sendClientButtonStatusChanges(clientButtonStatusChanges) {
 
     // send SMS text messages to each of the client's heartbeat phone numbers
     client.heartbeatPhoneNumbers.forEach(phoneNumber => {
-      twilioHelpers.sendTwilioMessage(client.fromPhoneNumber, phoneNumber, message)
+      twilioHelpers.sendTwilioMessage(phoneNumber, client.fromPhoneNumber, message)
     })
   })
 }
