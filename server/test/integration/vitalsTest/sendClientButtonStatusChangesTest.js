@@ -28,7 +28,7 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
     sandbox.restore()
   })
 
-  describe('given three clients with disconnected buttons, reconnected buttons, and disconnected+reconnected buttons', () => {
+  describe('given three English clients with disconnected buttons, reconnected buttons, and disconnected+reconnected buttons', () => {
     beforeEach(() => {
       this.clientA = factories.clientFactory({
         id: 'ClientA',
@@ -85,6 +85,138 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
           fromPhoneNumber,
           phoneNumber,
           'There has been connection changes for the buttons at Client C. The following buttons have disconnected: ButtonA. The following buttons have reconnected: ButtonB.',
+        )
+      })
+    })
+
+    it('should send exactly nine messages', () => {
+      expect(twilioHelpers.sendTwilioMessage).to.have.callCount(9)
+    })
+  })
+
+  describe('given three Spanish clients with disconnected buttons, reconnected buttons, and disconnected+reconnected buttons', () => {
+    beforeEach(() => {
+      this.clientA = factories.clientFactory({
+        id: 'ClientA',
+        displayName: 'Client A',
+        fromPhoneNumber,
+        heartbeatPhoneNumbers: ['+16040000000', '+16041111111', '+16042222222'],
+        language: 'es_us',
+      })
+      this.clientB = factories.clientFactory({
+        id: 'ClientB',
+        displayName: 'Client B',
+        fromPhoneNumber,
+        heartbeatPhoneNumbers: ['+17780000000', '+17781111111', '+17782222222'],
+        language: 'es_us',
+      })
+      this.clientC = factories.clientFactory({
+        id: 'ClientC',
+        displayName: 'Client C',
+        fromPhoneNumber,
+        heartbeatPhoneNumbers: ['+12500000000', '+12501111111', '+12502222222'],
+        language: 'es_us',
+      })
+
+      sendClientButtonStatusChanges({
+        ClientA: { client: this.clientA, disconnectedButtons: ['ButtonA', 'ButtonB'], reconnectedButtons: [] },
+        ClientB: { client: this.clientB, disconnectedButtons: [], reconnectedButtons: ['ButtonA', 'ButtonB'] },
+        ClientC: { client: this.clientC, disconnectedButtons: ['ButtonA'], reconnectedButtons: ['ButtonB'] },
+      })
+    })
+
+    it("should send the correct message to the first client's heartbeat phone numbers", () => {
+      this.clientA.heartbeatPhoneNumbers.forEach(phoneNumber => {
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          fromPhoneNumber,
+          phoneNumber,
+          'Ha habido cambios de conexión para los botones en Client A. Los siguientes botones se han desconectado: ButtonA, ButtonB.',
+        )
+      })
+    })
+
+    it("should send the correct message to the second client's heartbeat phone numbers", () => {
+      this.clientB.heartbeatPhoneNumbers.forEach(phoneNumber => {
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          fromPhoneNumber,
+          phoneNumber,
+          'Ha habido cambios de conexión para los botones en Client B. Los siguientes botones se han vuelto a conectar: ButtonA, ButtonB.',
+        )
+      })
+    })
+
+    it("should send the correct message to the third client's heartbeat phone numbers", () => {
+      this.clientC.heartbeatPhoneNumbers.forEach(phoneNumber => {
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          fromPhoneNumber,
+          phoneNumber,
+          'Ha habido cambios de conexión para los botones en Client C. Los siguientes botones se han desconectado: ButtonA. Los siguientes botones se han vuelto a conectar: ButtonB.',
+        )
+      })
+    })
+
+    it('should send exactly nine messages', () => {
+      expect(twilioHelpers.sendTwilioMessage).to.have.callCount(9)
+    })
+  })
+
+  describe('given three French clients with disconnected buttons, reconnected buttons, and disconnected+reconnected buttons', () => {
+    beforeEach(() => {
+      this.clientA = factories.clientFactory({
+        id: 'ClientA',
+        displayName: 'Client A',
+        fromPhoneNumber,
+        heartbeatPhoneNumbers: ['+16040000000', '+16041111111', '+16042222222'],
+        language: 'en_fr_bilingual',
+      })
+      this.clientB = factories.clientFactory({
+        id: 'ClientB',
+        displayName: 'Client B',
+        fromPhoneNumber,
+        heartbeatPhoneNumbers: ['+17780000000', '+17781111111', '+17782222222'],
+        language: 'en_fr_bilingual',
+      })
+      this.clientC = factories.clientFactory({
+        id: 'ClientC',
+        displayName: 'Client C',
+        fromPhoneNumber,
+        heartbeatPhoneNumbers: ['+12500000000', '+12501111111', '+12502222222'],
+        language: 'en_fr_bilingual',
+      })
+
+      sendClientButtonStatusChanges({
+        ClientA: { client: this.clientA, disconnectedButtons: ['ButtonA', 'ButtonB'], reconnectedButtons: [] },
+        ClientB: { client: this.clientB, disconnectedButtons: [], reconnectedButtons: ['ButtonA', 'ButtonB'] },
+        ClientC: { client: this.clientC, disconnectedButtons: ['ButtonA'], reconnectedButtons: ['ButtonB'] },
+      })
+    })
+
+    it("should send the correct message to the first client's heartbeat phone numbers", () => {
+      this.clientA.heartbeatPhoneNumbers.forEach(phoneNumber => {
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          fromPhoneNumber,
+          phoneNumber,
+          'Des modifications de connexion ont été apportées aux boutons de Client A. Les boutons suivants ont été déconnectés: ButtonA, ButtonB.',
+        )
+      })
+    })
+
+    it("should send the correct message to the second client's heartbeat phone numbers", () => {
+      this.clientB.heartbeatPhoneNumbers.forEach(phoneNumber => {
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          fromPhoneNumber,
+          phoneNumber,
+          'Des modifications de connexion ont été apportées aux boutons de Client B. Les boutons suivants ont été reconnectés: ButtonA, ButtonB.',
+        )
+      })
+    })
+
+    it("should send the correct message to the third client's heartbeat phone numbers", () => {
+      this.clientC.heartbeatPhoneNumbers.forEach(phoneNumber => {
+        expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
+          fromPhoneNumber,
+          phoneNumber,
+          'Des modifications de connexion ont été apportées aux boutons de Client C. Les boutons suivants ont été déconnectés: ButtonA. Les boutons suivants ont été reconnectés: ButtonB.',
         )
       })
     })
