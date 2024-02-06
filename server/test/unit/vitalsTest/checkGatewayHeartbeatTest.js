@@ -5,13 +5,13 @@ const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 const rewire = require('rewire')
 const { DateTime } = require('luxon')
+const i18next = require('i18next')
 
 // In-house dependencies
 const { factories, helpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { gatewayFactory, gatewaysVitalFactory } = require('../../testingHelpers')
 const aws = require('../../../aws')
-require('../../mocks/tMock')
 
 const vitals = rewire('../../../vitals')
 
@@ -40,11 +40,10 @@ describe('vitals.js unit tests: checkGatewayHeartbeat', () => {
     getEnvVarStub.withArgs('GATEWAY_VITALS_ALERT_THRESHOLD').returns(gatewayThreshold)
     getEnvVarStub.withArgs('SUBSEQUENT_VITALS_ALERT_THRESHOLD').returns(subsequentVitalsThreshold)
 
+    sandbox.stub(i18next, 't').returnsArg(0)
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
     sandbox.stub(db, 'updateGatewaySentVitalsAlerts')
-
     sandbox.stub(aws, 'getGatewayStats').returns(null)
-
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')

@@ -5,12 +5,12 @@ const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 const rewire = require('rewire')
 const { DateTime } = require('luxon')
+const i18next = require('i18next')
 
 // In-house dependencies
 const { factories, helpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { buttonFactory, buttonsVitalFactory } = require('../../testingHelpers')
-require('../../mocks/tMock')
 
 const vitals = rewire('../../../vitals')
 
@@ -38,9 +38,9 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
     getEnvVarStub.withArgs('BUTTON_LOW_BATTERY_ALERT_THRESHOLD').returns(lowBatteryThreshold)
     getEnvVarStub.withArgs('SUBSEQUENT_VITALS_ALERT_THRESHOLD').returns(subsequentVitalsThreshold)
 
+    sandbox.stub(i18next, 't').returnsArg(0)
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
     sandbox.stub(db, 'updateButtonsSentLowBatteryAlerts')
-
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')

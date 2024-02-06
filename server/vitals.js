@@ -4,7 +4,7 @@ const { DateTime } = require('luxon')
 const i18next = require('i18next')
 
 // In-house dependencies
-const { helpers } = require('brave-alert-lib')
+const { helpers, twilioHelpers } = require('brave-alert-lib')
 const db = require('./db/db')
 const aws = require('./aws')
 
@@ -140,28 +140,33 @@ async function checkButtonBatteries() {
   }
 }
 
-/* 
-logClientMessage expects an object containing key-values that represent clients with recently disconnected and/or reconnected button(s)
-Each key is a clientID that holds an object with the client information and arrays of any disconnected and/or reconnected buttons
-The function will compile all this information into one message per client, and log the message to Sentry
-*/
-function logClientMessage(clientButtonStatusChanges) {
-  // Loop through each client to create the log message
+// Send button status changes as text messages to every client that has them.
+// This function expects an object (clientButtonStatusChanges) with client IDs as keys, and each each value an object with members:
+// - client: The client object
+// - disconnectedButtons: An array of button display names that refer to buttons that have recently disconnected
+// - reconnectedButtons: An array of button display names that refer to buttons that have recently reconnected
+function sendClientButtonStatusChanges(clientButtonStatusChanges) {
+  // Loop through each client to create the Twilio messages
   Object.values(clientButtonStatusChanges).forEach(({ client, disconnectedButtons, reconnectedButtons }) => {
-    const clientDisplayName = client.displayName
-    let buttonLogMessage = ''
+    let message = [i18next.t('buttonStatusChangeStart', { lng: client.language, clientDisplayName: client.displayName })]
 
     if (disconnectedButtons.length > 0) {
-      const buttonNames = disconnectedButtons.sort().join(', ')
-      buttonLogMessage += ` The following buttons have been disconnected: ${buttonNames}.`
+      const buttonDisplayNames = disconnectedButtons.sort().join(', ') // sorted alphabetically
+      message.push(i18next.t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames }))
     }
 
     if (reconnectedButtons.length > 0) {
-      const buttonNames = reconnectedButtons.sort().join(', ')
-      buttonLogMessage += ` The following buttons have been reconnected: ${buttonNames}.`
+      const buttonDisplayNames = reconnectedButtons.sort().join(', ') // sorted alphabetically
+      message.push(i18next.t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames }))
     }
 
-    helpers.logSentry(`Button status change for: ${clientDisplayName}.${buttonLogMessage}`)
+    // join the message parts with spaces
+    message = message.join(' ')
+
+    // send SMS text messages to each of the client's heartbeat phone numbers
+    client.heartbeatPhoneNumbers.forEach(phoneNumber => {
+      twilioHelpers.sendTwilioMessage(phoneNumber, client.fromPhoneNumber, message)
+    })
   })
 }
 
@@ -181,8 +186,8 @@ async function checkButtonHeartbeat() {
       if (button.isSendingVitals && client.isSendingVitals) {
         const currentTime = await db.getCurrentTime()
         const buttonDelay = differenceInSeconds(currentTime, buttonsVital.createdAt)
-        const buttonThreholdExceeded = buttonDelay > THRESHOLD
-        if (buttonThreholdExceeded) {
+        const buttonThresholdExceeded = buttonDelay > THRESHOLD
+        if (buttonThresholdExceeded) {
           if (button.sentVitalsAlertAt === null) {
             const logMessage = `Disconnection: ${client.displayName} ${button.displayName} Button delay is ${buttonDelay} seconds.`
             helpers.logSentry(logMessage)
@@ -192,12 +197,9 @@ async function checkButtonHeartbeat() {
             if (gateways !== null && gateways.length === 0) {
               // Store the client info
               if (!clientButtonStatusChanges[client.id]) {
-                clientButtonStatusChanges[client.id] = {
-                  client,
-                  disconnectedButtons: [],
-                  reconnectedButtons: [],
-                }
+                clientButtonStatusChanges[client.id] = { client, disconnectedButtons: [], reconnectedButtons: [] }
               }
+
               // Store the disconnected button name
               clientButtonStatusChanges[client.id].disconnectedButtons.push(button.displayName)
             }
@@ -210,20 +212,19 @@ async function checkButtonHeartbeat() {
 
           // Store the client info
           if (!clientButtonStatusChanges[client.id]) {
-            clientButtonStatusChanges[client.id] = {
-              client,
-              disconnectedButtons: [],
-              reconnectedButtons: [],
-            }
+            clientButtonStatusChanges[client.id] = { client, disconnectedButtons: [], reconnectedButtons: [] }
           }
+
           // Store the reconnected button name
           clientButtonStatusChanges[client.id].reconnectedButtons.push(button.displayName)
+
           await db.updateButtonsSentVitalsAlerts(button.id, false)
         }
       }
     }
-    // Log one message per client
-    logClientMessage(clientButtonStatusChanges)
+
+    // Send one message per client with button status changes
+    sendClientButtonStatusChanges(clientButtonStatusChanges)
   } catch (e) {
     helpers.logError(`Failed to check button heartbeat: ${e}`)
   }

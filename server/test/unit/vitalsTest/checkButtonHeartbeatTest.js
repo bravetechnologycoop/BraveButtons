@@ -4,14 +4,14 @@ const { describe, it } = require('mocha')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 const { DateTime } = require('luxon')
+const rewire = require('rewire')
 
 // In-house dependencies
 const { helpers, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { buttonFactory, buttonsVitalFactory, gatewayFactory } = require('../../testingHelpers')
-require('../../mocks/tMock')
 
-const vitals = require('../../../vitals')
+const vitals = rewire('../../../vitals')
 
 use(sinonChai)
 
@@ -30,14 +30,15 @@ function subtractSeconds(date, seconds) {
 const exceededThresholdTimestamp = subtractSeconds(currentDBDate, heartbeatThreshold + 1) // sub(currentDBDate, { seconds: subsequentVitalsThreshold + 1 })
 
 describe('vitals.js unit tests: checkButtonHeartbeat', () => {
-  /* eslint-disable no-underscore-dangle */
   beforeEach(() => {
     const getEnvVarStub = sandbox.stub(helpers, 'getEnvVar')
     getEnvVarStub.withArgs('RAK_BUTTONS_VITALS_ALERT_THRESHOLD').returns(heartbeatThreshold)
+    this.sendClientButtonStatusChangesStub = sandbox.stub()
+    // eslint-disable-next-line no-underscore-dangle
+    vitals.__set__('sendClientButtonStatusChanges', this.sendClientButtonStatusChangesStub)
 
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
     sandbox.stub(db, 'updateButtonsSentVitalsAlerts')
-
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')
@@ -57,10 +58,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       beforeEach(async () => {
         this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: true, client: this.client })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: currentDBDate,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: currentDBDate, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
       })
 
@@ -79,11 +77,14 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       beforeEach(async () => {
         this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: true, client: this.client })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: exceededThresholdTimestamp,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: exceededThresholdTimestamp, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+        this.buttonStatusChanges = {}
+        this.buttonStatusChanges[this.client.id] = {
+          client: this.client,
+          disconnectedButtons: [this.button.displayName],
+          reconnectedButtons: [],
+        }
       })
 
       it('should send the initial disconnection message to Sentry', async () => {
@@ -98,16 +99,14 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, true)
       })
 
-      it('should send the client message to Sentry', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledWith(
-          `Button status change for: ${this.button.client.displayName}. The following buttons have been disconnected: ${this.button.displayName}.`,
-        )
+        expect(this.sendClientButtonStatusChangesStub).to.be.calledWith(this.buttonStatusChanges)
       })
 
-      it('should only log two Sentry messages', async () => {
+      it('should only log to Sentry once', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledTwice
+        expect(helpers.logSentry).to.be.calledOnce
       })
     })
 
@@ -115,10 +114,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       beforeEach(async () => {
         this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: false, client: this.client })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: exceededThresholdTimestamp,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: exceededThresholdTimestamp, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
       })
 
@@ -141,11 +137,14 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
           client: this.client,
         })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: currentDBDate,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: currentDBDate, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
+        this.buttonStatusChanges = {}
+        this.buttonStatusChanges[this.client.id] = {
+          client: this.client,
+          disconnectedButtons: [],
+          reconnectedButtons: [this.button.displayName],
+        }
       })
 
       it('should send the reconnection message to Sentry', async () => {
@@ -158,16 +157,14 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, false)
       })
 
-      it('should send the client message to Sentry', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledWith(
-          `Button status change for: ${this.button.client.displayName}. The following buttons have been reconnected: ${this.button.displayName}.`,
-        )
+        expect(this.sendClientButtonStatusChangesStub).to.be.calledWith(this.buttonStatusChanges)
       })
 
-      it('should only log two Sentry messages', async () => {
+      it('should only log to Sentry once', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledTwice
+        expect(helpers.logSentry).to.be.calledOnce
       })
     })
 
@@ -179,10 +176,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
           client: this.client,
         })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: currentDBDate,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: currentDBDate, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
       })
 
@@ -209,20 +203,20 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
           isSendingVitals: true,
           client: this.client,
         })
-        this.buttonsVitalA = buttonsVitalFactory({
-          createdAt: exceededThresholdTimestamp,
-          button: this.buttonA,
-        })
-        this.buttonsVitalB = buttonsVitalFactory({
-          createdAt: exceededThresholdTimestamp,
-          button: this.buttonB,
-        })
+        this.buttonsVitalA = buttonsVitalFactory({ createdAt: exceededThresholdTimestamp, button: this.buttonA })
+        this.buttonsVitalB = buttonsVitalFactory({ createdAt: exceededThresholdTimestamp, button: this.buttonB })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalB, this.buttonsVitalA])
+        this.buttonStatusChanges = {}
+        this.buttonStatusChanges[this.client.id] = {
+          client: this.client,
+          disconnectedButtons: [this.buttonB.displayName, this.buttonA.displayName],
+          reconnectedButtons: [],
+        }
       })
 
-      it('should log three Sentry messages', async () => {
+      it('should only log to Sentry twice', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledThrice
+        expect(helpers.logSentry).to.be.calledTwice
       })
 
       it('should send the initial disconnection message to Sentry, for the first disconnected button', async () => {
@@ -239,11 +233,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         )
       })
 
-      it('should send the client message to Sentry, with the buttons display name in alphabetical order', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledWith(
-          `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonA.displayName}, ${this.buttonB.displayName}.`,
-        )
+        expect(this.sendClientButtonStatusChangesStub).to.be.calledWith(this.buttonStatusChanges)
       })
     })
 
@@ -267,24 +259,21 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
           isSendingVitals: true,
           client: this.client,
         })
-        this.buttonsVitalA = buttonsVitalFactory({
-          createdAt: exceededThresholdTimestamp,
-          button: this.buttonA,
-        })
-        this.buttonsVitalB = buttonsVitalFactory({
-          createdAt: currentDBDate,
-          button: this.buttonB,
-        })
-        this.buttonsVitalC = buttonsVitalFactory({
-          createdAt: currentDBDate,
-          button: this.buttonC,
-        })
+        this.buttonsVitalA = buttonsVitalFactory({ createdAt: exceededThresholdTimestamp, button: this.buttonA })
+        this.buttonsVitalB = buttonsVitalFactory({ createdAt: currentDBDate, button: this.buttonB })
+        this.buttonsVitalC = buttonsVitalFactory({ createdAt: currentDBDate, button: this.buttonC })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVitalA, this.buttonsVitalB, this.buttonsVitalC])
+        this.buttonStatusChanges = {}
+        this.buttonStatusChanges[this.client.id] = {
+          client: this.client,
+          disconnectedButtons: [this.buttonA.displayName],
+          reconnectedButtons: [this.buttonB.displayName],
+        }
       })
 
-      it('should log three Sentry messages', async () => {
+      it('should only log to Sentry twice', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledThrice
+        expect(helpers.logSentry).to.be.calledTwice
       })
 
       it('should send one button disconnection message', async () => {
@@ -299,11 +288,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         expect(helpers.logSentry).to.be.calledWith(`Reconnection: ${this.buttonB.client.displayName} ${this.buttonB.displayName} Button.`)
       })
 
-      it('should send the client message to Sentry', async () => {
+      it('should send client button status changes', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(helpers.logSentry).to.be.calledWith(
-          `Button status change for: ${this.buttonA.client.displayName}. The following buttons have been disconnected: ${this.buttonA.displayName}. The following buttons have been reconnected: ${this.buttonB.displayName}.`,
-        )
+        expect(this.sendClientButtonStatusChangesStub).to.be.calledWith(this.buttonStatusChanges)
       })
     })
   })
@@ -318,10 +305,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       beforeEach(async () => {
         this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: true, client: this.client })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: exceededThresholdTimestamp,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: exceededThresholdTimestamp, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
       })
 
@@ -340,10 +324,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       beforeEach(async () => {
         this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: false, client: this.client })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: exceededThresholdTimestamp,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: exceededThresholdTimestamp, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
       })
 
@@ -366,10 +347,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
           client: this.client,
         })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: currentDBDate,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: currentDBDate, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
       })
 
@@ -392,10 +370,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
           client: this.client,
         })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: currentDBDate,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: currentDBDate, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
       })
 
@@ -421,10 +396,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
       beforeEach(async () => {
         this.button = buttonFactory({ sentVitalsAlertAt: null, isSendingVitals: true, client: this.client })
         sandbox.stub(db, 'getButtons').returns([this.button])
-        this.buttonsVital = buttonsVitalFactory({
-          createdAt: exceededThresholdTimestamp,
-          button: this.button,
-        })
+        this.buttonsVital = buttonsVitalFactory({ createdAt: exceededThresholdTimestamp, button: this.button })
         sandbox.stub(db, 'getRecentButtonsVitals').returns([this.buttonsVital])
       })
 
@@ -440,10 +412,9 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
         )
       })
 
-      it('should not send a client message for the disconnected button', async () => {
-        expect(helpers.logSentry).to.not.be.calledWith(
-          `Button status change for: ${this.button.client.displayName}. The following buttons have been disconnected: ${this.button.displayName}.`,
-        )
+      it('should send client button status changes', async () => {
+        await vitals.checkButtonHeartbeat()
+        expect(this.sendClientButtonStatusChangesStub).to.be.calledWith({})
       })
     })
   })
