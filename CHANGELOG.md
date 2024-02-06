@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [13.6.0] - 2024-02-06
+
 ### Removed
 
 - Session model (moved to brave-alert-lib) (CU-86791yyvg).
@@ -22,7 +24,7 @@ the code was deployed.
 - Button status changes Sentry log to become Twilio text messages (CU-860raw0d7).
 - Travis CI PostgreSQL port from 5433 to 5432.
 
-## [13.5.0] - 2023-01-04
+## [13.5.0] - 2024-01-04
 
 ### Removed
 
@@ -688,7 +690,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.5.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...HEAD
+[13.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.5.0...v13.6.0
 [13.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.4.0...v13.5.0
 [13.4.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.3.0...v13.4.0
 [13.3.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.2.0...v13.3.0
