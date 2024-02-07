@@ -376,15 +376,17 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
       pgClient,
     )
 
-    if (results !== undefined && results.rows.length > 0) {
+    if (results.rows.length > 0) {
       const allButtons = await getButtons(pgClient)
       return results.rows.map(r => createButtonsVitalFromRow(r, allButtons))
     }
+
+    return []
   } catch (err) {
     helpers.logError(err.toString())
   }
 
-  return []
+  return null
 }
 
 async function getRecentGatewaysVitals(pgClient) {
@@ -429,15 +431,17 @@ async function getRecentGatewaysVitalsWithClientId(clientId, pgClient) {
       pgClient,
     )
 
-    if (results !== undefined && results.rows.length > 0) {
+    if (results.rows.length > 0) {
       const allGateways = await getGateways(pgClient)
       return results.rows.map(r => createGatewaysVitalFromRow(r, allGateways))
     }
+
+    return []
   } catch (err) {
     helpers.logError(err.toString())
   }
 
-  return []
+  return null
 }
 
 async function getRecentGatewaysVitalWithGatewayId(gatewayId, pgClient) {
@@ -1175,6 +1179,281 @@ async function getDisconnectedGatewaysWithClient(client, pgClient) {
   return null
 }
 
+async function getButtonWithId(id, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithId',
+      `
+      SELECT *
+      FROM buttons
+      WHERE id = $1
+      `,
+      [id],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      const allClients = await getClients(pgClient)
+      return createButtonFromRow(results.rows[0], allClients)
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function getButtonsWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonsWithClientId',
+      `
+      SELECT *
+      FROM buttons
+      WHERE client_id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      const client = await getClientWithId(clientId)
+      return results.rows.map(r => createButtonFromRow(r, [client]))
+    }
+
+    if (results.rows.length === 0) {
+      return []
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function getRecentSessionsWithButtonId(buttonId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getRecentSessionsWithButtonId',
+      `
+      SELECT s.*
+      FROM sessions AS s
+      LEFT JOIN buttons AS b on s.button_id = b.id
+      WHERE b.id = $1
+      ORDER BY created_at DESC
+      LIMIT 40
+      `,
+      [buttonId],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      const allClients = await getClients(pgClient)
+      return results.rows.map(r => createSessionFromRow(r, allClients))
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return []
+}
+
+async function getGatewayWithId(id, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithId',
+      `
+      SELECT *
+      FROM gateways
+      WHERE id = $1
+      `,
+      [id],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      const allClients = await getClients(pgClient)
+      return createGatewayFromRow(results.rows[0], allClients)
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function getGatewaysWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getGatewaysWithClientId',
+      `
+      SELECT *
+      FROM gateways
+      WHERE client_id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      const client = await getClientWithId(clientId)
+      return results.rows.map(r => createGatewayFromRow(r, [client]))
+    }
+
+    if (results.rows.length === 0) {
+      return []
+    }
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function createGateway(gatewayId, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createGateway',
+      `
+      INSERT INTO gateways (id, client_id, display_name, sent_vitals_alert_at, is_displayed, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+      `,
+      [gatewayId, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals],
+      pool,
+      pgClient,
+    )
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function updateButton(
+  clientId,
+  displayName,
+  phoneNumber,
+  buttonSerialNumber,
+  isDisplayed,
+  isSendingAlerts,
+  isSendingVitals,
+  buttonId,
+  pgClient,
+) {
+  try {
+    const results = await helpers.runQuery(
+      'udateButton',
+      `
+      UPDATE buttons
+      SET client_d=$1, display_name=$2, phone_number=$3, button_serial_number=$4, is_displayed=$5, is_sending_alerts=$6, is_sending_vitals=$7
+      WHERE id=$8
+      RETURNING *
+      `,
+      [clientId, displayName, phoneNumber, buttonSerialNumber, isDisplayed, isSendingAlerts, isSendingVitals, buttonId],
+      pool,
+      pgClient,
+    )
+
+    const allClients = await getClients(pgClient)
+    return createButtonFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
+async function updateClient(
+  displayName,
+  fromPhoneNumber,
+  responderPhoneNumbers,
+  reminderTimeout,
+  fallbackPhoneNumbers,
+  fallbackTimeout,
+  heartbeatPhoneNumbers,
+  incidentCategories,
+  isDisplayed,
+  isSendingAlerts,
+  isSendingVitals,
+  language,
+  clientId,
+  pgClient,
+) {
+  try {
+    const results = await helpers.runQuery(
+      'updateClient',
+      `
+      UPDATE clients
+      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12
+      WHERE id = $13
+      RETURNING *
+      `,
+      [
+        displayName,
+        fromPhoneNumber,
+        responderPhoneNumbers,
+        reminderTimeout,
+        fallbackPhoneNumbers,
+        fallbackTimeout,
+        heartbeatPhoneNumbers,
+        incidentCategories,
+        isDisplayed,
+        isSendingAlerts,
+        isSendingVitals,
+        language,
+        clientId,
+      ],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Client '${displayName}' successfully updated`)
+
+    return await createClientFromRow(results.rows[0])
+  } catch (err) {
+    helpers.log(err.toString())
+  }
+
+  return null
+}
+
+async function updateGateway(clientId, displayName, isDisplayed, isSendingVitals, gatewayId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'updateGateway',
+      `
+      UPDATE gateways
+      SET client_id=$1, display_name=$2, is_displayed=$3, is_sending_vitals=$4
+      WHERE id=$5
+      RETURNING *
+      `,
+      [clientId, displayName, isDisplayed, isSendingVitals, gatewayId],
+      pool,
+      pgClient,
+    )
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(err.toString())
+  }
+
+  return null
+}
+
 module.exports = {
   beginTransaction,
   clearButtons,
@@ -1190,18 +1469,24 @@ module.exports = {
   commitTransaction,
   createButton,
   createClient,
+  createGateway,
   createSession,
+  getActiveClients,
   getAllSessionsWithButtonId,
   getButtons,
+  getButtonsWithClientId,
+  getButtonWithId,
   getButtonWithSerialNumber,
   getCurrentTime,
   getCurrentTimeForHealthCheck,
-  getDataForExport,
   getClients,
-  getActiveClients,
   getClientWithId,
   getClientWithSessionId,
+  getDataForExport,
+  getDisconnectedGatewaysWithClient,
   getGateways,
+  getGatewayWithId,
+  getGatewaysWithClientId,
   getMostRecentSessionWithPhoneNumbers,
   getPool,
   getRecentButtonsVitals,
@@ -1209,15 +1494,18 @@ module.exports = {
   getRecentGatewaysVitals,
   getRecentGatewaysVitalsWithClientId,
   getRecentGatewaysVitalWithGatewayId,
+  getRecentSessionsWithButtonId,
   getRecentSessionsWithClientId,
   getSessionWithSessionId,
   getUnrespondedSessionWithButtonId,
-  getDisconnectedGatewaysWithClient,
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,
   saveSession,
+  updateButton,
   updateButtonsSentLowBatteryAlerts,
   updateButtonsSentVitalsAlerts,
+  updateClient,
+  updateGateway,
   updateGatewaySentVitalsAlerts,
 }
