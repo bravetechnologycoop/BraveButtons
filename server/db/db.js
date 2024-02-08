@@ -376,17 +376,15 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
       pgClient,
     )
 
-    if (results.rows.length > 0) {
+    if (results !== undefined && results.rows.length > 0) {
       const allButtons = await getButtons(pgClient)
       return results.rows.map(r => createButtonsVitalFromRow(r, allButtons))
     }
-
-    return []
   } catch (err) {
     helpers.logError(err.toString())
   }
 
-  return null
+  return []
 }
 
 async function getRecentGatewaysVitals(pgClient) {
@@ -431,17 +429,15 @@ async function getRecentGatewaysVitalsWithClientId(clientId, pgClient) {
       pgClient,
     )
 
-    if (results.rows.length > 0) {
+    if (results !== undefined && results.rows.length > 0) {
       const allGateways = await getGateways(pgClient)
       return results.rows.map(r => createGatewaysVitalFromRow(r, allGateways))
     }
-
-    return []
   } catch (err) {
     helpers.logError(err.toString())
   }
 
-  return null
+  return []
 }
 
 async function getRecentGatewaysVitalWithGatewayId(gatewayId, pgClient) {
@@ -1222,15 +1218,11 @@ async function getButtonsWithClientId(clientId, pgClient) {
       const client = await getClientWithId(clientId)
       return results.rows.map(r => createButtonFromRow(r, [client]))
     }
-
-    if (results.rows.length === 0) {
-      return []
-    }
   } catch (err) {
     helpers.logError(err.toString())
   }
 
-  return null
+  return []
 }
 
 async function getRecentSessionsWithButtonId(buttonId, pgClient) {
@@ -1304,15 +1296,11 @@ async function getGatewaysWithClientId(clientId, pgClient) {
       const client = await getClientWithId(clientId)
       return results.rows.map(r => createGatewayFromRow(r, [client]))
     }
-
-    if (results.rows.length === 0) {
-      return []
-    }
   } catch (err) {
     helpers.logError(err.toString())
   }
 
-  return null
+  return []
 }
 
 async function createGateway(gatewayId, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals, pgClient) {

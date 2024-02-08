@@ -17,25 +17,25 @@ function configureRoutes(app) {
   app.post('/login', dashboard.submitLogin)
 
   // new to-be-implemented API routes
-  app.get('/api/clients', api.wrapper, api.handleGetClients)
-  app.get('/api/clients/:clientId', api.validateGetClient, api.wrapper, api.handleGetClient)
-  app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, api.wrapper, api.handleGetClientButtons)
-  app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, api.wrapper, api.handleGetClientButton)
-  app.get('/api/clients/:clientId/buttons/:buttonId/sessions', api.validateGetClientButtonSessions, api.wrapper, api.handleGetClientButtonSessions)
-  app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, api.wrapper, api.handleGetClientGateways)
-  app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, api.wrapper, api.handleGetClientGateway)
-  app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, api.wrapper, api.handleGetClientVitals)
-  app.post('/api/clients', api.validateCreateClient, api.wrapper, api.handleCreateClient)
-  app.post('/api/clients/:clientId/buttons', api.validateCreateClientButton, api.wrapper, api.handleCreateClientButton)
-  app.post('/api/clients/:clientId/gateways', api.validateCreateClientGateway, api.wrapper, api.handleCreateClientGateway)
-  app.put('/api/clients/:clientId', api.validateUpdateClient, api.wrapper, api.handleUpdateClient)
-  app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, api.wrapper, api.handleUpdateClientButton)
-  app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, api.wrapper, api.handleUpdateClientGateway)
+  app.get('/api/clients', api.authorize, api.handleGetClients)
+  app.get('/api/clients/:clientId', api.validateGetClient, api.authorize, api.handleGetClient)
+  app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, api.authorize, api.handleGetClientButtons)
+  app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, api.authorize, api.handleGetClientButton)
+  app.get('/api/clients/:clientId/buttons/:buttonId/sessions', api.validateGetClientButtonSessions, api.authorize, api.handleGetClientButtonSessions)
+  app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, api.authorize, api.handleGetClientGateways)
+  app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, api.authorize, api.handleGetClientGateway)
+  app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, api.authorize, api.handleGetClientVitals)
+  app.post('/api/clients', api.validateCreateClient, api.authorize, api.handleCreateClient)
+  app.post('/api/clients/:clientId/buttons', api.validateCreateClientButton, api.authorize, api.handleCreateClientButton)
+  app.post('/api/clients/:clientId/gateways', api.validateCreateClientGateway, api.authorize, api.handleCreateClientGateway)
+  app.put('/api/clients/:clientId', api.validateUpdateClient, api.authorize, api.handleUpdateClient)
+  app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, api.authorize, api.handleUpdateClientButton)
+  app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, api.authorize, api.handleUpdateClientGateway)
 
   // non-client specific vitals: are these useful?
   // Johnny: haven't really used them. Good to have a glance and see which devices are down?
   // - Would need to filter manually, so filtering tools would be handy; maybe to display only down devices.
-  // app.get('/api/vitals', api.validateGetVitals, api.wrapper, api.handleGetVitals)
+  // app.get('/api/vitals', api.validateGetVitals, api.authorize, api.handleGetVitals)
 
   // misc. PA API routes
   app.post('/pa/aws-device-registration', pa.validateAwsDeviceRegistration, googleHelpers.paAuthorize, pa.handleAwsDeviceRegistration)

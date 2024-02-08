@@ -21,18 +21,18 @@ const Validator = require('express-validator')
 const { helpers, googleHelpers } = require('brave-alert-lib')
 const db = require('./db/db')
 
-// wrapper function for a given handler
-// this should preceed any handler when defining an Express route
-async function wrapper(req, res, next) {
-  // authorize with a Google ID Token submitted through the Authorization header of the request
-  // if the request is authorized, then the passed function will run
+// authorize function - using Google ID Tokens
+// this should be significantly reworked if providing a limited API to clients
+// NOTE: a route's validation should PRECEED the authorize function, and a route's handler should PROCEED the authorize function;
+//   e.g.: app.method('/api/thing', api.validateThing, api.authorize, api.handleThing)
+async function authorize(req, res, next) {
+  // the Google ID Token should be given in the Authorization header of the request
   googleHelpers.paAuthorize(req, res, () => {
     const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
     try {
       if (validationErrors.isEmpty()) {
-        // run handler function (this wrapper will catch thrown errors)
-        next()
+        next() // run handler function
       } else {
         res.status(400).send({ status: 'error', message: 'Bad Request' })
         helpers.logError(`Bad request to ${req.path}: ${validationErrors.array()}`)
@@ -46,8 +46,8 @@ async function wrapper(req, res, next) {
 
 const validateCreateClient = [
   Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
-  Validator.body(['heartbeatPhoneNumbers']).isArray(),
-  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'incidentCategories']).isArray({ min: 0 }),
+  Validator.body(['heartbeatPhoneNumbers']).isArray({ min: 0 }),
+  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'incidentCategories']).isArray({ min: 1 }),
   Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
   Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
 ]
@@ -96,12 +96,9 @@ async function handleCreateClientButton(req, res) {
     null,
   )
 
-  // Should the database query fail, db.createButton should internally handle thrown errors and return either null or undefined.
-  // The status code 404 is used here as the failure was probably caused by the client not existing.
+  // Couldn't create button; Internal server error.
   if (button == null) {
-    res.status(404).send({ status: 'error', message: 'Not Found' })
-
-    return
+    throw new Error(`Couldn't create button for client ${req.params.clientId}.`)
   }
 
   res.set('Location', `${req.path}/${button.id}`) // location of newly created button
@@ -141,7 +138,7 @@ const validateGetClient = Validator.param(['clientId']).notEmpty()
 async function handleGetClient(req, res) {
   const client = await db.getClientWithId(req.params.clientId)
 
-  // check that the client exists
+  // Couldn't get the client; Not found.
   if (client == null) {
     res.status(404).send({ status: 'error', message: 'Not Found' })
 
@@ -162,8 +159,7 @@ const validateGetClientButton = Validator.param(['clientId', 'buttonId']).notEmp
 async function handleGetClientButton(req, res) {
   const button = await db.getButtonWithId(req.params.buttonId)
 
-  // check that this button exists and is owned by the specified client
-  // NOTE: if clientId is invalid, then the query will fail and return null
+  // Couldn't get the button; Not found.
   if (button == null || button.client.id !== req.params.clientId) {
     res.status(404).send({ status: 'error', message: 'Not Found' })
 
@@ -259,7 +255,8 @@ async function handleGetClientVitals(req, res) {
 const validateUpdateClient = [
   Validator.param(['clientId']).notEmpty(),
   Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
-  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'heartbeatPhoneNumbers', 'incidentCategories']).isArray(),
+  Validator.body(['heartbeatPhoneNumbers']).isArray({ min: 0 }),
+  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'incidentCategories']).isArray({ min: 1 }),
   Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
   Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
 ]
@@ -301,6 +298,8 @@ async function handleUpdateClient(req, res) {
   res.status(200).send({ status: 'success', data: updatedClient })
 }
 
+// NOTE: clientId is submitted in the param and body of the request.
+// This is to let a button be moved from one client to another; think of the param clientId as 'from' and the body clientId as 'to'.
 const validateUpdateClientButton = [
   Validator.param(['clientId', 'buttonId']).notEmpty(),
   Validator.body(['clientId', 'displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
@@ -340,6 +339,8 @@ async function handleUpdateClientButton(req, res) {
   res.status(200).send({ status: 'success', data: updatedButton })
 }
 
+// NOTE: clientId is submitted in the param and body of the request.
+// This is to let a gateway be moved from one client to another; think of the param clientId as 'from' and the body clientId as 'to'.
 const validateUpdateClientGateway = [
   Validator.param(['clientId', 'gatewayId']).notEmpty(),
   Validator.body(['clientId', 'displayName']).trim().isString().notEmpty(),
@@ -404,5 +405,5 @@ module.exports = {
   validateUpdateClient,
   validateUpdateClientButton,
   validateUpdateClientGateway,
-  wrapper,
+  authorize,
 }
