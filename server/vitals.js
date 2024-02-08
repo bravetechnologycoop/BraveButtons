@@ -149,22 +149,59 @@ function sendClientButtonStatusChanges(clientButtonStatusChanges) {
   // Loop through each client to create the Twilio messages
   Object.values(clientButtonStatusChanges).forEach(({ client, disconnectedButtons, reconnectedButtons }) => {
     let message = [i18next.t('buttonStatusChangeStart', { lng: client.language, clientDisplayName: client.displayName })]
+    let messageBilingual = null
+
+    // check for bilingual client language
+    if (message[0].split('\n---\n').length > 1) {
+      const split = message[0].split('\n---\n')
+
+      message = [split[0]]
+      messageBilingual = [split[1]]
+    }
 
     if (disconnectedButtons.length > 0) {
       const buttonDisplayNames = disconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.push(i18next.t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames }))
+      let disconnectButtonsMessage = i18next.t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames })
+
+      // handle bilingual client language translation
+      if (messageBilingual !== null) {
+        const split = disconnectButtonsMessage.split('\n---\n')
+
+        disconnectButtonsMessage = split[0]
+        messageBilingual.push(split[1])
+      }
+
+      message.push(disconnectButtonsMessage)
     }
 
     if (reconnectedButtons.length > 0) {
       const buttonDisplayNames = reconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.push(i18next.t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames }))
+      let reconnectedButtonsMessage = i18next.t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames })
+
+      // handle bilingual client language translation
+      if (messageBilingual !== null) {
+        const split = reconnectedButtonsMessage.split('\n---\n')
+
+        reconnectedButtonsMessage = split[0]
+        messageBilingual.push(split[1])
+      }
+
+      message.push(reconnectedButtonsMessage)
     }
 
     // join the message parts with spaces
     message = message.join(' ')
 
-    // send SMS text messages to each of the client's heartbeat phone numbers
-    client.heartbeatPhoneNumbers.forEach(phoneNumber => {
+    // handle bilingual client language translation
+    if (messageBilingual !== null) {
+      messageBilingual = messageBilingual.join(' ')
+      message += `\n---\n${messageBilingual}`
+    }
+
+    // send the button status changes to the client's heartbeat and responder phone numbers
+    const recipients = [...client.heartbeatPhoneNumbers, ...client.responderPhoneNumbers]
+
+    recipients.forEach(phoneNumber => {
       twilioHelpers.sendTwilioMessage(phoneNumber, client.fromPhoneNumber, message)
     })
   })
