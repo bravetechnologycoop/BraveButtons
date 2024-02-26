@@ -11,6 +11,11 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- English-French bilingual translations for button status changes (CU-860raw0d7).
+- Method of translation for button status changes (CU-860raw0d7).
+
 ## [13.6.0] - 2024-02-06
 
 ### Removed
