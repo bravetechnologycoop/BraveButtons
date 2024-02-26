@@ -11,6 +11,11 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- English-French bilingual translations for button status changes (CU-860raw0d7).
+- Method of translation for button status changes (CU-860raw0d7).
+
 ## [13.6.0] - 2024-02-06
 
 ### Removed
@@ -22,7 +27,6 @@ the code was deployed.
 - BraveAlerterConfigurator to reject the RESET state (CU-860r8k57h).
 - `num_button_presses` column to be renamed to `number_of_alerts` to match BraveSensor (CU-86791yyvg).
 - Button status changes Sentry log to become Twilio text messages (CU-860raw0d7).
-- Travis CI PostgreSQL port from 5433 to 5432.
 
 ## [13.5.0] - 2024-01-04
 

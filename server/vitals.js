@@ -147,25 +147,35 @@ async function checkButtonBatteries() {
 // - reconnectedButtons: An array of button display names that refer to buttons that have recently reconnected
 function sendClientButtonStatusChanges(clientButtonStatusChanges) {
   // Loop through each client to create the Twilio messages
-  Object.values(clientButtonStatusChanges).forEach(({ client, disconnectedButtons, reconnectedButtons }) => {
-    let message = [i18next.t('buttonStatusChangeStart', { lng: client.language, clientDisplayName: client.displayName })]
+  Object.values(clientButtonStatusChanges).forEach(buttonStatusChanges => {
+    const disconnectedButtons =
+      buttonStatusChanges.disconnectedButtons.length > 0 ? buttonStatusChanges.disconnectedButtons.sort().join(', ') : undefined
+    const reconnectedButtons =
+      buttonStatusChanges.reconnectedButtons.length > 0 ? buttonStatusChanges.reconnectedButtons.sort().join(', ') : undefined
+    let translation
 
-    if (disconnectedButtons.length > 0) {
-      const buttonDisplayNames = disconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.push(i18next.t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames }))
+    if (disconnectedButtons !== undefined && reconnectedButtons !== undefined) {
+      translation = 'buttonStatusChangeDisconnectedAndReconnected'
+    } else if (disconnectedButtons !== undefined) {
+      translation = 'buttonStatusChangeDisconnected'
+    } else {
+      // NOTE: all client button status changes must have either disconnected or reconnected buttons
+      // therefore, if there are no disconnected buttons, there mustbe reconnected buttons
+      translation = 'buttonStatusChangeReconnected'
     }
 
-    if (reconnectedButtons.length > 0) {
-      const buttonDisplayNames = reconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.push(i18next.t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames }))
-    }
+    const message = i18next.t(translation, {
+      lng: buttonStatusChanges.client.language,
+      clientDisplayName: buttonStatusChanges.client.displayName,
+      disconnectedButtons,
+      reconnectedButtons,
+    })
 
-    // join the message parts with spaces
-    message = message.join(' ')
+    // send the button status changes to the client's heartbeat and responder phone numbers
+    const recipients = [...buttonStatusChanges.client.heartbeatPhoneNumbers, ...buttonStatusChanges.client.responderPhoneNumbers]
 
-    // send SMS text messages to each of the client's heartbeat phone numbers
-    client.heartbeatPhoneNumbers.forEach(phoneNumber => {
-      twilioHelpers.sendTwilioMessage(phoneNumber, client.fromPhoneNumber, message)
+    recipients.forEach(phoneNumber => {
+      twilioHelpers.sendTwilioMessage(phoneNumber, buttonStatusChanges.client.fromPhoneNumber, message)
     })
   })
 }
