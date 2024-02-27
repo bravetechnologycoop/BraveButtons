@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [13.7.0] - 2024-02-27
+
 ### Changed
 
 - English-French bilingual translations for button status changes (CU-860raw0d7).
@@ -694,7 +696,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...HEAD
+[13.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...v13.7.0
 [13.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.5.0...v13.6.0
 [13.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.4.0...v13.5.0
 [13.4.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.3.0...v13.4.0
