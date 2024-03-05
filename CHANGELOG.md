@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- `VITALS_MINUTES_BETWEEN_HEARTBEAT_CHECKS` environment variable to specify the frequency of vitals heartbeat checks in minutes (CU-86drtj00f).
+
 ## [13.7.0] - 2024-02-27
 
 ### Changed
