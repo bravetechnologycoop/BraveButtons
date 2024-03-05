@@ -52,7 +52,8 @@ if (helpers.isTestEnvironment()) {
   server = https.createServer(httpsOptions, app).listen(443)
   setInterval(vitals.checkGatewayHeartbeat, 5 * 60 * 1000)
   setInterval(vitals.checkButtonBatteries, 5 * 60 * 1000)
-  setInterval(vitals.checkButtonHeartbeat, 5 * 60 * 1000)
+  const minutesPerHeartbeatMessage = parseInt(helpers.getEnvVar('VITALS_MINUTES_PER_HEARTBEAT_MESSAGE'), 10)
+  setInterval(vitals.checkButtonHeartbeat, minutesPerHeartbeatMessage * 60 * 1000)
   helpers.log('brave server listening on port 443')
 }
 
