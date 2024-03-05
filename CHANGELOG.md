@@ -13,7 +13,7 @@ the code was deployed.
 
 ### Added
 
-- `VITALS_MINUTES_PER_HEARTBEAT_MESSAGE` environment variable to specify the frequency of vitals heartbeat messages (CU-86drtj00f).
+- `VITALS_MINUTES_BETWEEN_HEARTBEAT_CHECKS` environment variable to specify the frequency of vitals heartbeat checks in minutes (CU-86drtj00f).
 
 ## [13.7.0] - 2024-02-27
 
