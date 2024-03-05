@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [13.7.1] - 2024-03-05
+
 ### Added
 
 - `VITALS_MINUTES_BETWEEN_HEARTBEAT_CHECKS` environment variable to specify the frequency of vitals heartbeat checks in minutes (CU-86drtj00f).
@@ -700,7 +702,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...HEAD
+[13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1
 [13.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...v13.7.0
 [13.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.5.0...v13.6.0
 [13.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.4.0...v13.5.0
