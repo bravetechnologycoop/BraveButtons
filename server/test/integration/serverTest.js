@@ -11,7 +11,6 @@ const { CHATBOT_STATE, factories, helpers } = require('brave-alert-lib')
 chai.use(chaiHttp)
 chai.use(sinonChai)
 
-const { buttonDBFactory } = require('../testingHelpers')
 const imports = require('../../server')
 
 const server = imports.server
@@ -74,17 +73,17 @@ describe('Chatbot server', () => {
         fallbackTimeout: 2,
         fromPhoneNumber: '+15005550006',
       })
-      this.button1 = await buttonDBFactory(db, {
+      this.button1 = await factories.buttonDBFactory(db, {
         clientId: client.id,
         displayName: '1',
         phoneNumber: unit1PhoneNumber,
-        buttonSerialNumber: unit1SerialNumber,
+        serialNumber: unit1SerialNumber,
       })
-      this.button2 = await buttonDBFactory(db, {
+      this.button2 = await factories.buttonDBFactory(db, {
         clientId: client.id,
         displayName: '2',
         phoneNumber: unit2PhoneNumber,
-        buttonSerialNumber: unit2SerialNumber,
+        serialNumber: unit2SerialNumber,
       })
 
       sandbox.spy(imports.braveAlerter, 'startAlertSession')

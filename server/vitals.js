@@ -96,7 +96,7 @@ async function checkButtonBatteries() {
 
     for (const buttonsVital of buttonsVitals) {
       const currentTime = await db.getCurrentTime()
-      const button = buttonsVital.button
+      const button = buttonsVital.device
       const client = button.client
 
       if (button.isSendingVitals && client.isSendingVitals) {
@@ -190,7 +190,7 @@ async function checkButtonHeartbeat() {
     const buttonsVitals = await db.getRecentButtonsVitals()
 
     for (const buttonsVital of buttonsVitals) {
-      const button = buttonsVital.button
+      const button = buttonsVital.device
       const client = button.client
 
       if (button.isSendingVitals && client.isSendingVitals) {

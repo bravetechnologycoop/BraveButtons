@@ -1,11 +1,11 @@
 class ButtonsVital {
-  constructor(id, batteryLevel, createdAt, snr, rssi, button) {
+  constructor(id, batteryLevel, createdAt, snr, rssi, device) {
     this.id = id
     this.batteryLevel = batteryLevel
     this.createdAt = createdAt
     this.snr = snr
     this.rssi = rssi
-    this.button = button
+    this.device = device
   }
 }
 module.exports = ButtonsVital

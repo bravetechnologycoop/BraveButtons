@@ -5,7 +5,6 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 // In-house dependencies
 const { factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
-const { buttonDBFactory } = require('../../testingHelpers')
 
 // arbitrary number of active clients to generate
 const nActiveClients = 10
@@ -22,10 +21,10 @@ async function dbInsertActiveClients() {
     })
 
     // create a button for this client that is sending alerts and vitals
-    await buttonDBFactory(db, {
+    await factories.buttonDBFactory(db, {
       clientId: client.id,
       displayName: `Active Client Button ${index}`,
-      buttonSerialNumber: `active-client-button-${index}`,
+      serialNumber: `active-client-button-${index}`,
       isSendingAlerts: true,
       isSendingVitals: true,
     })
@@ -176,10 +175,10 @@ async function dbInsertInactiveClients() {
 
     if (options.clientHasButton) {
       // create a button for this client that is sending alerts and vitals
-      await buttonDBFactory(db, {
+      await factories.buttonDBFactory(db, {
         clientId: client.id,
         displayName: `Inactive Client Button ${index}`,
-        buttonSerialNumber: `inactive-client-button-${index}`,
+        serialNumber: `inactive-client-button-${index}`,
         isSendingAlerts: options.buttonIsSendingAlerts,
         isSendingVitals: options.buttonIsSendingVitals,
       })
