@@ -316,7 +316,7 @@ describe('Chatbot server', () => {
       sessions = await db.getAllSessionsWithButtonId(this.button2.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after new button press from a different unit').to.equal(CHATBOT_STATE.STARTED)
-      expect(sessions[0].button.id).to.equal(this.button2.id)
+      expect(sessions[0].device.id).to.equal(this.button2.id)
       expect(sessions[0].numberOfAlerts).to.equal(1)
       expect(sessions[0].respondedByPhoneNumber).to.equal(null)
       expect(sessions[0].respondedAt).to.equal(null)
