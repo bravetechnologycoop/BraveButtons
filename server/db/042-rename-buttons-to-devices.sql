@@ -35,9 +35,8 @@ BEGIN
         -- Disable the create_buttons_vitals_trigger trigger
         ALTER TABLE buttons_vitals DISABLE TRIGGER create_buttons_vitals_trigger;
         -- Rename button_id column to device_id, while maintaining foreign-key constraint for id column in devices
-        ALTER TABLE buttons_vitals DROP CONSTRAINT buttons_vitals_button_id_fkey;
         ALTER TABLE buttons_vitals RENAME COLUMN button_id TO device_id;
-        ALTER TABLE buttons_vitals ADD CONSTRAINT buttons_vitals_device_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id);
+        ALTER TABLE buttons_vitals RENAME CONSTRAINT buttons_vitals_button_id_fkey TO buttons_vitals_device_id_fkey;
         -- Enable the create_buttons_vitals_trigger trigger
         ALTER TABLE buttons_vitals ENABLE TRIGGER create_buttons_vitals_trigger;
         -- Replace the trigger to insert or update buttons_vitals_cache every time a new row is added to buttons_vitals
@@ -60,9 +59,8 @@ BEGIN
         -- Disable the set_buttons_vitals_cache_timestamp trigger
         ALTER TABLE buttons_vitals_cache DISABLE TRIGGER set_buttons_vitals_cache_timestamp;
         -- Rename button_id column to device_id, while maintaining foreign-key constraint for id column in devices
-        ALTER TABLE buttons_vitals_cache DROP CONSTRAINT buttons_vitals_cache_button_id_fkey;
         ALTER TABLE buttons_vitals_cache RENAME COLUMN button_id TO device_id;
-        ALTER TABLE buttons_vitals_cache ADD CONSTRAINT buttons_vitals_cache_device_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id);
+        ALTER TABLE buttons_vitals_cache RENAME CONSTRAINT buttons_vitals_cache_button_id_fkey to buttons_vitals_cache_device_id_fkey;
         -- Enable the set_buttons_vitals_cache_timestamp trigger
         ALTER TABLE buttons_vitals_cache ENABLE TRIGGER set_buttons_vitals_cache_timestamp;
         
@@ -73,9 +71,8 @@ BEGIN
         -- Add column is_resettable to table sessions, not null, defaulting to false
         ALTER TABLE sessions ADD COLUMN is_resettable BOOLEAN NOT NULL DEFAULT 'f';
         -- Rename button_id column to device_id, while maintaining foreign-key constraint for id column in devices
-        ALTER TABLE sessions DROP CONSTRAINT sessions_button_id_fkey;
         ALTER TABLE sessions RENAME COLUMN button_id TO device_id;
-        ALTER TABLE sessions ADD CONSTRAINT sessions_device_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id);
+        ALTER TABLE sessions RENAME CONSTRAINT sessions_button_id_fkey TO sessions_device_id_fkey;
         -- Enable the set_sessions_timestamp trigger
         ALTER TABLE sessions ENABLE TRIGGER set_sessions_timestamp;
 

@@ -40,7 +40,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     sandbox.stub(i18next, 't').returnsArg(0)
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
-    sandbox.stub(db, 'updateButtonsSentLowBatteryAlerts')
+    sandbox.stub(db, 'updateDevicesSentLowBatteryAlerts')
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')
@@ -80,7 +80,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the database', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).to.not.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).to.not.be.called
     })
   })
 
@@ -115,7 +115,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it("should update the button's sentLowBatteryAlertAt the database to null", async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).to.be.calledWithExactly(this.button.id, false)
+      expect(db.updateDevicesSentLowBatteryAlerts).to.be.calledWithExactly(this.button.id, false)
     })
   })
 
@@ -146,7 +146,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it("should not update the button's sentLowBatteryAlertAt the database to null", async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 
@@ -177,7 +177,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it("should not update the button's sentLowBatteryAlertAt the database to null", async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 
@@ -208,7 +208,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it("should not update the button's sentLowBatteryAlertAt the database to null", async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 
@@ -239,7 +239,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the database', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).to.not.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).to.not.be.called
     })
   })
 
@@ -274,7 +274,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).to.be.calledWithExactly(this.button.id, true)
+      expect(db.updateDevicesSentLowBatteryAlerts).to.be.calledWithExactly(this.button.id, true)
     })
   })
 
@@ -305,7 +305,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 
@@ -336,7 +336,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 
@@ -367,7 +367,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 
@@ -398,7 +398,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the database', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).to.not.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).to.not.be.called
     })
   })
 
@@ -433,7 +433,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).to.be.calledWithExactly(this.button.id, true)
+      expect(db.updateDevicesSentLowBatteryAlerts).to.be.calledWithExactly(this.button.id, true)
     })
   })
 
@@ -464,7 +464,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 
@@ -495,7 +495,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 
@@ -526,7 +526,7 @@ describe('vitals.js unit tests: checkButtonBatteries', () => {
 
     it('should not update the buttons sentLowBatteryAlertAt in the database to now', async () => {
       await vitals.checkButtonBatteries()
-      expect(db.updateButtonsSentLowBatteryAlerts).not.to.be.called
+      expect(db.updateDevicesSentLowBatteryAlerts).not.to.be.called
     })
   })
 })

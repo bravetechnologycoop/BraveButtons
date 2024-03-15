@@ -50,7 +50,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
 
     describe('when the button is pressed for the first time', async () => {
       beforeEach(async () => {
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(null)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -93,7 +93,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the the second time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 1, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -128,7 +128,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the the third time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 2, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -163,7 +163,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the multiple of 5 time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 14, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -209,7 +209,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
 
     describe('when the button is pressed for the first time', async () => {
       beforeEach(async () => {
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(null)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -242,7 +242,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the the second time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 1, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -275,7 +275,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the the third time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 2, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -308,7 +308,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the multiple of 5 time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 14, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -352,7 +352,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
 
     describe('when the button is pressed for the first time', async () => {
       beforeEach(async () => {
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(null)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -385,7 +385,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the the second time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 1, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -418,7 +418,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the the third time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 2, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -451,7 +451,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the multiple of 5 time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 14, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -495,7 +495,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
 
     describe('when the button is pressed for the first time', async () => {
       beforeEach(async () => {
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(null)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(null)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -528,7 +528,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the the second time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 1, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -561,7 +561,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the the third time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 2, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })
@@ -594,7 +594,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
     describe('when the button is pressed for the multiple of 5 time', async () => {
       beforeEach(async () => {
         this.session = factories.sessionFactory({ numberOfAlerts: 14, device: this.button })
-        sandbox.stub(db, 'getUnrespondedSessionWithButtonId').returns(this.session)
+        sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
       })

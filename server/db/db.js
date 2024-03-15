@@ -23,7 +23,7 @@ pool.on('error', err => {
 types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
 function createSessionFromRow(r, allDevices) {
-  const device = allDevices.filter(b => b.id === r.device_id)[0]
+  const device = allDevices.filter(d => d.id === r.device_id)[0]
 
   return new Session(
     r.id,
@@ -82,7 +82,7 @@ function createDeviceFromRow(r, allClients) {
 }
 
 function createButtonsVitalFromRow(r, allButtons) {
-  const device = allButtons.filter(b => b.id === r.device_id)[0]
+  const device = allButtons.filter(d => d.id === r.device_id)[0]
 
   return new ButtonsVital(r.id, r.battery_level, r.created_at, r.snr, r.rssi, device)
 }
@@ -189,7 +189,7 @@ async function getActiveClients(pgClient) {
         INNER JOIN (
           SELECT DISTINCT client_id AS id
           FROM devices
-          WHERE device_type = 'DEVICE_BUTTON'
+          WHERE device_type = $1
           AND is_sending_alerts
           AND is_sending_vitals
         ) AS b
@@ -198,7 +198,7 @@ async function getActiveClients(pgClient) {
         AND c.is_sending_vitals
         ORDER BY c.display_name;
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
@@ -216,13 +216,13 @@ async function getActiveClients(pgClient) {
 async function getButtons(pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getButtonWithSerialNumber',
+      'getButtons',
       `
       SELECT *
       FROM devices
-      WHERE device_type = 'DEVICE_BUTTON'
+      WHERE device_type = $1
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
@@ -262,10 +262,10 @@ async function getGateways(pgClient) {
   return []
 }
 
-async function getUnrespondedSessionWithButtonId(deviceId, pgClient) {
+async function getUnrespondedSessionWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getUnrespondedSessionWithButtonId',
+      'getUnrespondedSessionWithDeviceId',
       `
       SELECT *
       FROM sessions
@@ -298,10 +298,9 @@ async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responder
       `
       SELECT s.*
       FROM sessions AS s
-      LEFT JOIN devices AS b ON s.device_id = b.id
-      LEFT JOIN clients AS c ON b.client_id = c.id
-      WHERE b.device_type = 'DEVICE_BUTTON'
-      AND b.phone_number = $1
+      LEFT JOIN devices AS d ON s.device_id = d.id
+      LEFT JOIN clients AS c ON d.client_id = c.id
+      AND d.phone_number = $1
       AND $2 = ANY(c.responder_phone_numbers)
       ORDER BY created_at DESC
       LIMIT 1
@@ -322,10 +321,10 @@ async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responder
   return null
 }
 
-async function getAllSessionsWithButtonId(deviceId, pgClient) {
+async function getAllSessionsWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getAllSessionsWithButtonId',
+      'getAllSessionsWithDeviceId',
       `
       SELECT *
       FROM sessions
@@ -355,12 +354,12 @@ async function getRecentSessionsWithClientId(clientId, pgClient) {
       SELECT s.*
       FROM sessions AS s
       LEFT JOIN devices AS b on s.device_id = b.id
-      WHERE b.device_type = 'DEVICE_BUTTON'
-      AND b.client_id = $1
+      WHERE b.device_type = $1
+      AND b.client_id = $2
       ORDER BY created_at DESC
       LIMIT 40
       `,
-      [clientId],
+      [DEVICE_TYPE.DEVICE_BUTTON, clientId],
       pool,
       pgClient,
     )
@@ -384,11 +383,11 @@ async function getRecentButtonsVitals(pgClient) {
       SELECT b.id as device_id, bv.id, bv.battery_level, bv.rssi, bv.snr, bv.created_at
       FROM devices b
       LEFT JOIN buttons_vitals_cache bv ON b.id = bv.device_id
-      WHERE b.device_type = 'DEVICE_BUTTON'
+      WHERE b.device_type = $1
       AND b.serial_number like 'ac%'
       ORDER BY bv.created_at
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
@@ -412,12 +411,12 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
       SELECT b.id as device_id, bv.id, bv.battery_level, bv.rssi, bv.snr, bv.created_at
       FROM devices b
       LEFT JOIN buttons_vitals_cache bv ON b.id = bv.device_id
-      WHERE b.device_type = 'DEVICE_BUTTON'
-      AND b.client_id = $1
+      WHERE b.device_type = $1
+      AND b.client_id = $2
       AND b.serial_number like 'ac%'
       ORDER BY bv.created_at
       `,
-      [clientId],
+      [DEVICE_TYPE.DEVICE_BUTTON, clientId],
       pool,
       pgClient,
     )
@@ -672,8 +671,7 @@ async function getButtonWithSerialNumber(serialNumber, pgClient) {
       `
       SELECT *
       FROM devices
-      WHERE device_type = 'DEVICE_BUTTON'
-      AND serial_number = $1
+      WHERE serial_number = $1
       `,
       [serialNumber],
       pool,
@@ -708,10 +706,10 @@ async function createButton(
       'createButton',
       `
       INSERT INTO devices (device_type, client_id, display_name, phone_number, serial_number, is_displayed, is_sending_alerts, is_sending_vitals, sent_low_battery_alert_at, sent_vitals_alert_at)
-      VALUES ('DEVICE_BUTTON', $1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
       `,
-      [clientId, displayName, phoneNumber, serialNumber, isDisplayed, isSendingAlerts, isSendingVitals, sentLowBatteryAlertAt, sentVitalsAlertAt],
+      [DEVICE_TYPE.DEVICE_BUTTON, clientId, displayName, phoneNumber, serialNumber, isDisplayed, isSendingAlerts, isSendingVitals, sentLowBatteryAlertAt, sentVitalsAlertAt],
       pool,
       pgClient,
     )
@@ -734,9 +732,9 @@ async function clearButtons(pgClient) {
   try {
     await helpers.runQuery(
       'clearButtons',
-      `DELETE FROM devices WHERE device_type = 'DEVICE_BUTTON'
+      `DELETE FROM devices WHERE device_type = $1
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
@@ -858,8 +856,7 @@ async function getClientWithSessionId(sessionId, pgClient) {
       FROM sessions AS s
       LEFT JOIN devices AS b ON s.device_id = b.id
       LEFT JOIN clients AS c ON b.client_id = c.id 
-      WHERE b.device_type = 'DEVICE_BUTTON'
-      AND s.id = $1
+      WHERE s.id = $1
       `,
       [sessionId],
       pool,
@@ -1017,45 +1014,41 @@ async function updateGatewaySentVitalsAlerts(gatewayId, sentalerts, pgClient) {
   }
 }
 
-async function updateButtonsSentLowBatteryAlerts(deviceId, sentalerts, pgClient) {
+async function updateDevicesSentLowBatteryAlerts(deviceId, sentalerts, pgClient) {
   try {
     const query = sentalerts
       ? `
         UPDATE devices
         SET sent_low_battery_alert_at = NOW()
-        WHERE device_type = 'DEVICE_BUTTON'
-        AND id = $1
+        WHERE id = $1
       `
       : `
         UPDATE devices
         SET sent_low_battery_alert_at = NULL
-        WHERE device_type = 'DEVICE_BUTTON'
-        AND id = $1
+        WHERE id = $1
       `
 
-    await helpers.runQuery('updateButtonsSentLowBatteryAlerts', query, [deviceId], pool, pgClient)
+    await helpers.runQuery('updateDevicesSentLowBatteryAlerts', query, [deviceId], pool, pgClient)
   } catch (err) {
     helpers.logError(err.toString())
   }
 }
 
-async function updateButtonsSentVitalsAlerts(deviceId, sentalerts, pgClient) {
+async function updateDevicesSentVitalsAlerts(deviceId, sentalerts, pgClient) {
   try {
     const query = sentalerts
       ? `
         UPDATE devices
         SET sent_vitals_alert_at = NOW()
-        WHERE device_type = 'DEVICE_BUTTON'
-        AND id = $1
+        WHERE id = $1
       `
       : `
         UPDATE devices
         SET sent_vitals_alert_at = NULL
-        WHERE device_type = 'DEVICE_BUTTON'
-        AND id = $1
+        WHERE id = $1
       `
 
-    await helpers.runQuery('updateButtonSentVitalsAlerts', query, [deviceId], pool, pgClient)
+    await helpers.runQuery('updateDevicesSentVitalsAlerts', query, [deviceId], pool, pgClient)
   } catch (err) {
     helpers.logError(err.toString())
   }
@@ -1096,9 +1089,9 @@ async function getDataForExport(pgClient) {
         LEFT JOIN clients AS c ON c.id = b.client_id
         LEFT JOIN clients_extension x on x.client_id = c.id
         LEFT JOIN buttons_vitals_cache bv ON b.id = bv.device_id
-        WHERE b.device_type = 'DEVICE_BUTTON'
+        WHERE b.device_type = $1
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
@@ -1312,7 +1305,7 @@ module.exports = {
   createClient,
   createDevice,
   createSession,
-  getAllSessionsWithButtonId,
+  getAllSessionsWithDeviceId,
   getButtons,
   getButtonWithSerialNumber,
   getCurrentTime,
@@ -1332,13 +1325,13 @@ module.exports = {
   getRecentGatewaysVitalWithGatewayId,
   getRecentSessionsWithClientId,
   getSessionWithSessionId,
-  getUnrespondedSessionWithButtonId,
+  getUnrespondedSessionWithDeviceId,
   getDisconnectedGatewaysWithClient,
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,
   saveSession,
-  updateButtonsSentLowBatteryAlerts,
-  updateButtonsSentVitalsAlerts,
+  updateDevicesSentLowBatteryAlerts,
+  updateDevicesSentVitalsAlerts,
   updateGatewaySentVitalsAlerts,
 }

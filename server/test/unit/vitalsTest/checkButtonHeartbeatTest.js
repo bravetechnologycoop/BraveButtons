@@ -38,7 +38,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
     vitals.__set__('sendClientButtonStatusChanges', this.sendClientButtonStatusChangesStub)
 
     sandbox.stub(db, 'getCurrentTime').returns(currentDBDate)
-    sandbox.stub(db, 'updateButtonsSentVitalsAlerts')
+    sandbox.stub(db, 'updateDevicesSentVitalsAlerts')
     sandbox.stub(helpers, 'logSentry')
     sandbox.spy(helpers, 'logError')
     sandbox.spy(helpers, 'log')
@@ -69,7 +69,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should not update the database', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+        expect(db.updateDevicesSentVitalsAlerts).to.not.be.called
       })
     })
 
@@ -96,7 +96,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should update the buttons sentVitalsAlertAt in the database to now', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, true)
+        expect(db.updateDevicesSentVitalsAlerts).to.be.calledWithExactly(this.button.id, true)
       })
 
       it('should send client button status changes', async () => {
@@ -125,7 +125,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should not update the database', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+        expect(db.updateDevicesSentVitalsAlerts).to.not.be.called
       })
     })
 
@@ -154,7 +154,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it("should update the button's sentVitalsAlertAt the database to null", async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.be.calledWithExactly(this.button.id, false)
+        expect(db.updateDevicesSentVitalsAlerts).to.be.calledWithExactly(this.button.id, false)
       })
 
       it('should send client button status changes', async () => {
@@ -187,7 +187,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should not update the database', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+        expect(db.updateDevicesSentVitalsAlerts).to.not.be.called
       })
     })
 
@@ -328,7 +328,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should not update the database', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+        expect(db.updateDevicesSentVitalsAlerts).to.not.be.called
       })
     })
 
@@ -347,7 +347,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should not update the database', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+        expect(db.updateDevicesSentVitalsAlerts).to.not.be.called
       })
     })
 
@@ -370,7 +370,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should not update the database', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+        expect(db.updateDevicesSentVitalsAlerts).to.not.be.called
       })
     })
 
@@ -393,7 +393,7 @@ describe('vitals.js unit tests: checkButtonHeartbeat', () => {
 
       it('should not update the database', async () => {
         await vitals.checkButtonHeartbeat()
-        expect(db.updateButtonsSentVitalsAlerts).to.not.be.called
+        expect(db.updateDevicesSentVitalsAlerts).to.not.be.called
       })
     })
   })

@@ -35,7 +35,7 @@ async function handleValidRequest(button) {
       return
     }
 
-    let currentSession = await db.getUnrespondedSessionWithButtonId(button.id, pgClient)
+    let currentSession = await db.getUnrespondedSessionWithDeviceId(button.id, pgClient)
     const currentTime = await db.getCurrentTime(pgClient)
 
     if (currentSession === null || currentTime - currentSession.updatedAt >= helpers.getEnvVar('SESSION_RESET_TIMEOUT')) {

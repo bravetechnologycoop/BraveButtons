@@ -260,7 +260,7 @@ describe('Chatbot server', () => {
         .set('authorization', rakApiKeyPrimary)
         .send({ devEui: unit1SerialNumber, payload: 'Qw==' })
 
-      let sessions = await db.getAllSessionsWithButtonId(this.button1.id)
+      let sessions = await db.getAllSessionsWithDeviceId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after initial button press').to.equal(CHATBOT_STATE.STARTED)
       expect(sessions[0].respondedByPhoneNumber).to.equal(null)
@@ -273,7 +273,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_InitialStaffResponse)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
+      sessions = await db.getAllSessionsWithDeviceId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after initial staff response').to.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -286,7 +286,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_IncidentCategoryResponseFromOtherResponderPhone)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
+      sessions = await db.getAllSessionsWithDeviceId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after one of the other responders sent a message').to.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -299,7 +299,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_IncidentCategoryResponse)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
+      sessions = await db.getAllSessionsWithDeviceId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after staff have categorized the incident').to.equal(CHATBOT_STATE.COMPLETED)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -313,7 +313,7 @@ describe('Chatbot server', () => {
         .set('authorization', rakApiKeyPrimary)
         .send({ devEui: unit2SerialNumber, payload: 'Qw==' })
 
-      sessions = await db.getAllSessionsWithButtonId(this.button2.id)
+      sessions = await db.getAllSessionsWithDeviceId(this.button2.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after new button press from a different unit').to.equal(CHATBOT_STATE.STARTED)
       expect(sessions[0].device.id).to.equal(this.button2.id)
