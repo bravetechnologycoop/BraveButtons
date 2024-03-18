@@ -300,7 +300,7 @@ async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responder
       FROM sessions AS s
       LEFT JOIN devices AS d ON s.device_id = d.id
       LEFT JOIN clients AS c ON d.client_id = c.id
-      AND d.phone_number = $1
+      WHERE d.phone_number = $1
       AND $2 = ANY(c.responder_phone_numbers)
       ORDER BY created_at DESC
       LIMIT 1
