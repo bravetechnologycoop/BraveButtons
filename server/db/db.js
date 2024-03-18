@@ -2,7 +2,7 @@
 const { Pool, types } = require('pg')
 
 // In-house dependencies
-const { CHATBOT_STATE, Client, Device, helpers, Session } = require('brave-alert-lib')
+const { CHATBOT_STATE, Client, DEVICE_TYPE, Device, helpers, Session } = require('brave-alert-lib')
 const Gateway = require('../Gateway')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
@@ -709,7 +709,18 @@ async function createButton(
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON, clientId, displayName, phoneNumber, serialNumber, isDisplayed, isSendingAlerts, isSendingVitals, sentLowBatteryAlertAt, sentVitalsAlertAt],
+      [
+        DEVICE_TYPE.DEVICE_BUTTON,
+        clientId,
+        displayName,
+        phoneNumber,
+        serialNumber,
+        isDisplayed,
+        isSendingAlerts,
+        isSendingVitals,
+        sentLowBatteryAlertAt,
+        sentVitalsAlertAt,
+      ],
       pool,
       pgClient,
     )
