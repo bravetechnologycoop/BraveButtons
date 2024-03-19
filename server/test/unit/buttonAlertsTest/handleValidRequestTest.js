@@ -63,7 +63,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
         )
       })
 
-      it('should start a session', async () => {
+      it('should start a non-urgent session', async () => {
         expect(db.createSession).to.be.calledWith(
           this.button.id,
           null,
@@ -92,7 +92,11 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
 
     describe('when the button is pressed for the the second time', async () => {
       beforeEach(async () => {
-        this.session = factories.sessionFactory({ numberOfAlerts: 1, device: this.button })
+        this.session = factories.sessionFactory({
+          alertType: ALERT_TYPE.BUTTONS_NOT_URGENT,
+          numberOfAlerts: 1,
+          device: this.button,
+        })
         sandbox.stub(db, 'getUnrespondedSessionWithDeviceId').returns(this.session)
 
         await buttonAlerts.handleValidRequest(this.button)
@@ -111,6 +115,7 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       })
 
       it('should update the session', async () => {
+        this.session.alertType = ALERT_TYPE.BUTTONS_URGENT
         this.session.numberOfAlerts = 2
         this.session.buttonBatteryLevel = 75
         expect(db.saveSession).to.be.calledWith(this.session)
