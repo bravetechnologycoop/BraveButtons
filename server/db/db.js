@@ -734,7 +734,7 @@ async function createButton(
   return null
 }
 
-async function clearButtons(pgClient) {
+async function clearDevices(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear buttons database outside of a test environment!')
     return
@@ -742,10 +742,10 @@ async function clearButtons(pgClient) {
 
   try {
     await helpers.runQuery(
-      'clearButtons',
-      `DELETE FROM devices WHERE device_type = $1
+      'clearDevices',
+      `DELETE FROM devices
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON],
+      [],
       pool,
       pgClient,
     )
@@ -1001,7 +1001,7 @@ async function clearTables(pgClient) {
   await clearButtonsVitals(pgClient)
   await clearGateways(pgClient)
   await clearSessions(pgClient)
-  await clearButtons(pgClient)
+  await clearDevices(pgClient)
   await clearClients(pgClient)
 }
 
@@ -1301,10 +1301,10 @@ async function createDevice(
 
 module.exports = {
   beginTransaction,
-  clearButtons,
   clearButtonsVitals,
   clearButtonsVitalsCache,
   clearClients,
+  clearDevices,
   clearGateways,
   clearGatewaysVitals,
   clearGatewaysVitalsCache,
