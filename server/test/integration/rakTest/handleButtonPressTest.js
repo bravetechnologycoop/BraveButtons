@@ -9,7 +9,6 @@ const sinon = require('sinon')
 const { helpers, factories } = require('brave-alert-lib')
 const buttonAlerts = require('../../../buttonAlerts')
 const db = require('../../../db/db')
-const { buttonDBFactory } = require('../../testingHelpers')
 const { server } = require('../../../server')
 
 chai.use(chaiHttp)
@@ -132,18 +131,18 @@ describe('rak.js integration tests: handleButtonPress', () => {
 
   describe('POST QQ== (Button 1) with primary API key for existing Button', () => {
     beforeEach(async () => {
-      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const serialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
-      this.button = await buttonDBFactory(db, {
+      this.button = await factories.buttonDBFactory(db, {
         clientId: client.id,
-        buttonSerialNumber,
+        serialNumber,
       })
 
       this.response = await chai
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeyPrimary)
-        .send({ devEui: buttonSerialNumber, payload: 'QQ==' })
+        .send({ devEui: serialNumber, payload: 'QQ==' })
     })
 
     afterEach(async () => {
@@ -165,18 +164,18 @@ describe('rak.js integration tests: handleButtonPress', () => {
 
   describe('POST Qg== (Button 2) with primary API key for existing Button', () => {
     beforeEach(async () => {
-      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const serialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
-      this.button = await buttonDBFactory(db, {
+      this.button = await factories.buttonDBFactory(db, {
         clientId: client.id,
-        buttonSerialNumber,
+        serialNumber,
       })
 
       this.response = await chai
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeyPrimary)
-        .send({ devEui: buttonSerialNumber, payload: 'Qg==' })
+        .send({ devEui: serialNumber, payload: 'Qg==' })
     })
 
     afterEach(async () => {
@@ -198,18 +197,18 @@ describe('rak.js integration tests: handleButtonPress', () => {
 
   describe('POST Qw== (Button 3) with primary API key for existing Button', () => {
     beforeEach(async () => {
-      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const serialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
-      this.button = await buttonDBFactory(db, {
+      this.button = await factories.buttonDBFactory(db, {
         clientId: client.id,
-        buttonSerialNumber,
+        serialNumber,
       })
 
       this.response = await chai
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeyPrimary)
-        .send({ devEui: buttonSerialNumber, payload: 'Qw==' })
+        .send({ devEui: serialNumber, payload: 'Qw==' })
     })
 
     afterEach(async () => {
@@ -231,18 +230,18 @@ describe('rak.js integration tests: handleButtonPress', () => {
 
   describe('POST RA== (Button 4) with primary API key for existing Button', () => {
     beforeEach(async () => {
-      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const serialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
-      this.button = await buttonDBFactory(db, {
+      this.button = await factories.buttonDBFactory(db, {
         clientId: client.id,
-        buttonSerialNumber,
+        serialNumber,
       })
 
       this.response = await chai
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeyPrimary)
-        .send({ devEui: buttonSerialNumber, payload: 'RA==' })
+        .send({ devEui: serialNumber, payload: 'RA==' })
     })
 
     afterEach(async () => {
@@ -264,18 +263,18 @@ describe('rak.js integration tests: handleButtonPress', () => {
 
   describe('POST Qw== (Button 3) with secondary API key for existing Button', () => {
     beforeEach(async () => {
-      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const serialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
-      this.button = await buttonDBFactory(db, {
+      this.button = await factories.buttonDBFactory(db, {
         clientId: client.id,
-        buttonSerialNumber,
+        serialNumber,
       })
 
       this.response = await chai
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeySecondary)
-        .send({ devEui: buttonSerialNumber, payload: 'Qw==' })
+        .send({ devEui: serialNumber, payload: 'Qw==' })
     })
 
     afterEach(async () => {
@@ -299,18 +298,18 @@ describe('rak.js integration tests: handleButtonPress', () => {
     beforeEach(async () => {
       sandbox.spy(db, 'logButtonsVital')
 
-      const buttonSerialNumber = '7bj2n3f7dsf23fad'
+      const serialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
-      this.button = await buttonDBFactory(db, {
+      this.button = await factories.buttonDBFactory(db, {
         clientId: client.id,
-        buttonSerialNumber,
+        serialNumber,
       })
 
       this.response = await chai
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeyPrimary)
-        .send({ devEui: buttonSerialNumber, snr: 22.25, rssi: -70, payload: 'SFA=' })
+        .send({ devEui: serialNumber, snr: 22.25, rssi: -70, payload: 'SFA=' })
     })
 
     afterEach(async () => {

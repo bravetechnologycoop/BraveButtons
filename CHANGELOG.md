@@ -11,6 +11,20 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Database type `device_type_enum`, columns `device_type`, `locationid` to table `devices`, and column `is_resettable` to table `sessions` (CU-86791yyvg).
+
+### Changed
+
+- Database table `buttons` rename to `devices`, and column `button_serial_number` rename to `serial_number` for table `devices` (CU-86791yyvg).
+- Database column `button_id` rename to `device_id` for tables `buttons_vitals`, `buttons_vitals_cache`, `sessions` (CU-86791yyvg).
+- Various database indexes, constraints, and triggers for consistent naming (CU-86791yyvg).
+
+### Removed
+
+- Database table `notifications` (CU-86791yyvg).
+
 ## [13.7.1] - 2024-03-05
 
 ### Added

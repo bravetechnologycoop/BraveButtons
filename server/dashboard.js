@@ -109,7 +109,7 @@ async function renderClientDetailsPage(req, res) {
         const updatedAt = helpers.formatDateTimeForDashboard(recentSession.updatedAt)
         const respondedAt = recentSession.respondedAt !== null ? helpers.formatDateTimeForDashboard(recentSession.respondedAt) : ''
         viewParams.recentSessions.push({
-          unit: recentSession.button.displayName,
+          unit: recentSession.device.displayName,
           createdAt,
           updatedAt,
           chatbotState: recentSession.chatbotState,
@@ -153,16 +153,16 @@ async function renderClientVitalsPage(req, res) {
 
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
-        if (buttonsVital.button.isDisplayed) {
+        if (buttonsVital.device.isDisplayed) {
           viewParams.buttons.push({
-            unit: buttonsVital.button.displayName,
+            unit: buttonsVital.device.displayName,
             batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
             rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
             snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
             lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
             lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
-            isSendingAlerts: buttonsVital.button.isSendingAlerts && buttonsVital.button.client.isSendingAlerts,
-            isSendingVitals: buttonsVital.button.isSendingVitals && buttonsVital.button.client.isSendingVitals,
+            isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
+            isSendingVitals: buttonsVital.device.isSendingVitals && buttonsVital.device.client.isSendingVitals,
           })
         }
       }
@@ -204,18 +204,18 @@ async function renderVitalsPage(req, res) {
 
     const buttonsVitals = await db.getRecentButtonsVitals()
     for (const buttonsVital of buttonsVitals) {
-      if (buttonsVital.button.isDisplayed) {
+      if (buttonsVital.device.isDisplayed) {
         viewParams.buttons.push({
-          clientName: buttonsVital.button.client.displayName,
-          clientId: buttonsVital.button.client.id,
-          unit: buttonsVital.button.displayName,
+          clientName: buttonsVital.device.client.displayName,
+          clientId: buttonsVital.device.client.id,
+          unit: buttonsVital.device.displayName,
           batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
           rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
           snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
           lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
           lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
-          isSendingAlerts: buttonsVital.button.isSendingAlerts && buttonsVital.button.client.isSendingAlerts,
-          isSendingVitals: buttonsVital.button.isSendingVitals && buttonsVital.button.client.isSendingVitals,
+          isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
+          isSendingVitals: buttonsVital.device.isSendingVitals && buttonsVital.device.client.isSendingVitals,
         })
       }
     }

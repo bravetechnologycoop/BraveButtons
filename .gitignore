@@ -8,4 +8,4 @@ __pycache__
 pi_config.ini
 lambda/buttons-lambda.zip
 lambda/package
-.DS_Store
+**/.DS_Store

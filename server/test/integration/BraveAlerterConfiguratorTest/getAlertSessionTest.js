@@ -6,7 +6,6 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 const { CHATBOT_STATE, AlertSession, factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const BraveAlerterConfigurator = require('../../../BraveAlerterConfigurator')
-const { sessionDBFactory, buttonDBFactory } = require('../../testingHelpers')
 
 describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () => {
   beforeEach(async () => {
@@ -26,12 +25,12 @@ describe('BraveAlerterConfigurator.js integration tests: getAlertSession', () =>
       incidentCategories: this.installationIncidentCategories,
       language: this.language,
     })
-    const button = await buttonDBFactory(db, {
+    const button = await factories.buttonDBFactory(db, {
       clientId: client.id,
       displayName: '701',
     })
-    const session = await sessionDBFactory(db, {
-      buttonId: button.id,
+    const session = await factories.sessionDBFactory(db, {
+      deviceId: button.id,
       numberOfAlerts: 1,
       chatbotState: this.chatbotState,
       incidentCategory: this.sessionIncidentCategory,

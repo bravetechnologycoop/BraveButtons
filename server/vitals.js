@@ -96,7 +96,7 @@ async function checkButtonBatteries() {
 
     for (const buttonsVital of buttonsVitals) {
       const currentTime = await db.getCurrentTime()
-      const button = buttonsVital.button
+      const button = buttonsVital.device
       const client = button.client
 
       if (button.isSendingVitals && client.isSendingVitals) {
@@ -105,7 +105,7 @@ async function checkButtonBatteries() {
             const logMessage = `Low Battery: ${client.displayName} ${button.displayName} Button battery level is ${buttonsVital.batteryLevel}%.`
             helpers.logSentry(logMessage)
 
-            await db.updateButtonsSentLowBatteryAlerts(button.id, true)
+            await db.updateDevicesSentLowBatteryAlerts(button.id, true)
 
             sendNotification(
               i18next.t('buttonLowBatteryInitial', { lng: client.language, buttonDisplayName: button.displayName }),
@@ -113,7 +113,7 @@ async function checkButtonBatteries() {
               client.fromPhoneNumber,
             )
           } else if (differenceInSeconds(currentTime, button.sentLowBatteryAlertAt) > SUBSEQUENT_THRESHOLD) {
-            await db.updateButtonsSentLowBatteryAlerts(button.id, true)
+            await db.updateDevicesSentLowBatteryAlerts(button.id, true)
 
             sendNotification(
               i18next.t('buttonLowBatteryReminder', { lng: client.language, buttonDisplayName: button.displayName }),
@@ -125,7 +125,7 @@ async function checkButtonBatteries() {
           const logMessage = `Battery recharged: ${client.displayName} ${button.displayName} Button.`
           helpers.logSentry(logMessage)
 
-          await db.updateButtonsSentLowBatteryAlerts(button.id, false)
+          await db.updateDevicesSentLowBatteryAlerts(button.id, false)
 
           sendNotification(
             i18next.t('buttonLowBatteryNoLonger', { lng: client.language, buttonDisplayName: button.displayName }),
@@ -190,7 +190,7 @@ async function checkButtonHeartbeat() {
     const buttonsVitals = await db.getRecentButtonsVitals()
 
     for (const buttonsVital of buttonsVitals) {
-      const button = buttonsVital.button
+      const button = buttonsVital.device
       const client = button.client
 
       if (button.isSendingVitals && client.isSendingVitals) {
@@ -213,7 +213,7 @@ async function checkButtonHeartbeat() {
               // Store the disconnected button name
               clientButtonStatusChanges[client.id].disconnectedButtons.push(button.displayName)
             }
-            await db.updateButtonsSentVitalsAlerts(button.id, true)
+            await db.updateDevicesSentVitalsAlerts(button.id, true)
           }
           // TODO Also send a text message reminder once we know that these messages are reliable
         } else if (button.sentVitalsAlertAt !== null) {
@@ -228,7 +228,7 @@ async function checkButtonHeartbeat() {
           // Store the reconnected button name
           clientButtonStatusChanges[client.id].reconnectedButtons.push(button.displayName)
 
-          await db.updateButtonsSentVitalsAlerts(button.id, false)
+          await db.updateDevicesSentVitalsAlerts(button.id, false)
         }
       }
     }
