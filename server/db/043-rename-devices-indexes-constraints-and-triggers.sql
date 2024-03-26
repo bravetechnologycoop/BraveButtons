@@ -16,5 +16,9 @@ BEGIN
         ALTER INDEX registry_pkey RENAME TO devices_pkey;
         ALTER TABLE devices RENAME CONSTRAINT registry_installation_id_fkey TO devices_client_id_fkey;
         ALTER TRIGGER set_registry_timestamp ON devices RENAME TO set_devices_timestamp;
+
+        -- Update the migration ID of the last file to be successfully run to the migration ID of this file
+        INSERT INTO migrations (id)
+        VALUES (migrationId);
     END IF;
 END $migration$;

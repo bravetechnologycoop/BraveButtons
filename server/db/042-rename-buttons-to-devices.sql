@@ -64,7 +64,7 @@ BEGIN
         -- Enable the set_buttons_vitals_cache_timestamp trigger
         ALTER TABLE buttons_vitals_cache ENABLE TRIGGER set_buttons_vitals_cache_timestamp;
         
-        -- sessions table table changes
+        -- sessions table changes
 
         -- Disable the set_sessions_timestamp trigger
         ALTER TABLE sessions DISABLE TRIGGER set_sessions_timestamp;
