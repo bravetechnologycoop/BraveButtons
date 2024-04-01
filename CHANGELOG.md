@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [13.8.0] - 2024-04-01
+
 ### Added
 
 - Database type `device_type_enum`, columns `device_type`, `locationid` to table `devices`, and column `is_resettable` to table `sessions` (CU-86791yyvg).
@@ -716,7 +718,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...HEAD
+[13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
 [13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1
 [13.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...v13.7.0
 [13.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.5.0...v13.6.0
