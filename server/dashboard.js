@@ -93,7 +93,7 @@ async function renderClientDetailsPage(req, res) {
       return
     }
 
-    const recentSessions = await db.getRecentSessionsWithClientId(req.params.clientId)
+    const recentSessions = await db.getRecentButtonsSessionsWithClientId(req.params.clientId)
     const currentClient = await db.getClientWithId(req.params.clientId)
     const viewParams = {
       recentSessions: [],

@@ -190,7 +190,7 @@ async function dbInsertInactiveClients() {
   return clients
 }
 
-describe('db.js integration tests: getActiveClients', () => {
+describe('db.js integration tests: getActiveButtonsClients', () => {
   beforeEach(async () => {
     // ensure database is empty before starting each case
     await db.clearTables()
@@ -202,7 +202,7 @@ describe('db.js integration tests: getActiveClients', () => {
 
   describe('if there are no clients', () => {
     beforeEach(async () => {
-      this.clients = await db.getActiveClients()
+      this.clients = await db.getActiveButtonsClients()
     })
 
     it('should return an empty array', async () => {
@@ -213,7 +213,7 @@ describe('db.js integration tests: getActiveClients', () => {
   describe('if there are only active clients', () => {
     beforeEach(async () => {
       this.activeClients = await dbInsertActiveClients()
-      this.clients = await db.getActiveClients()
+      this.clients = await db.getActiveButtonsClients()
     })
 
     it('should return all of and only the active clients', async () => {
@@ -224,7 +224,7 @@ describe('db.js integration tests: getActiveClients', () => {
   describe('if there are only inactive clients', () => {
     beforeEach(async () => {
       this.inactiveClients = await dbInsertInactiveClients()
-      this.clients = await db.getActiveClients()
+      this.clients = await db.getActiveButtonsClients()
     })
 
     it('should return an empty array', async () => {
@@ -240,7 +240,7 @@ describe('db.js integration tests: getActiveClients', () => {
     beforeEach(async () => {
       this.activeClients = await dbInsertActiveClients()
       this.inactiveClients = await dbInsertInactiveClients()
-      this.clients = await db.getActiveClients()
+      this.clients = await db.getActiveButtonsClients()
     })
 
     it('should return all of and only the active clients', async () => {
