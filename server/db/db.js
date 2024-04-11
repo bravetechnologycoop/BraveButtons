@@ -11,7 +11,7 @@ const pool = new Pool({
   host: helpers.getEnvVar('PG_HOST'),
   port: helpers.getEnvVar('PG_PORT'),
   user: helpers.getEnvVar('PG_USER'),
-  database: helpers.getEnvVar('PG_USER'),
+  database: helpers.getEnvVar('PG_DATABASE'),
   password: helpers.getEnvVar('PG_PASSWORD'),
   ssl: { rejectUnauthorized: false },
 })

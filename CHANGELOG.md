@@ -11,6 +11,11 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Postgres configuration to allow separate database names and users, and new environment variable `PG_DATABASE` (CU-86791yyvg).
+- Development web server port from 8000 to 8001 in the event that the Sensor and Buttons server are running on the same machine (CU-86791yyvg).
+
 ## [13.8.0] - 2024-04-01
 
 ### Added
