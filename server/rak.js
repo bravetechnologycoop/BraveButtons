@@ -36,7 +36,7 @@ async function handleButtonPress(req, res) {
         return
       }
 
-      const button = await db.getButtonWithSerialNumber(devEui)
+      const button = await db.getDeviceWithSerialNumber(devEui)
 
       if (event[0] === EVENT_TYPE.HEARTBEAT && button !== null) {
         await db.logButtonsVital(button.id, event[1], snr, rssi)

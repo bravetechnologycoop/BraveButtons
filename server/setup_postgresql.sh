@@ -33,7 +33,7 @@ fi
 echo "Running PostgreSQL commands..."
 
 # Create the required PostgreSQL extensions
-sudo PGPASSWORD=$pg_password psql -U $pg_user -h $pg_host -p $pg_port -d $pg_dbname -v "ON_ERROR_STOP=1" --set=sslmode=require -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto"'
+PGPASSWORD=$pg_password psql -U $pg_user -h $pg_host -p $pg_port -d $pg_dbname -v "ON_ERROR_STOP=1" --set=sslmode=require -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto"'
 
 # Run SQL setup scripts
 for file in $(ls -v db/*.sql); do
