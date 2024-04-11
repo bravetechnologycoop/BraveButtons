@@ -24,10 +24,10 @@ else
   pg_port="${PG_PORT}"
 fi
 
-if [[ -z "${PG_USER}" ]]; then
+if [[ -z "${PG_DATABASE}" ]]; then
   pg_dbname=$5
 else
-  pg_dbname="${PG_USER}"
+  pg_dbname="${PG_DATABASE}"
 fi
 
 echo "Running PostgreSQL commands..."

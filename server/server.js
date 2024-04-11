@@ -42,7 +42,7 @@ let server
 
 if (helpers.isTestEnvironment()) {
   // local http server for testing
-  server = app.listen(8000)
+  server = app.listen(8001)
 } else {
   helpers.setupSentry(app, helpers.getEnvVar('SENTRY_DSN'), helpers.getEnvVar('SENTRY_ENVIRONMENT'), helpers.getEnvVar('SENTRY_RELEASE'))
   const httpsOptions = {
