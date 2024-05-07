@@ -13,8 +13,21 @@ const EVENT_TYPE = {
   BUTTON_PRESS_2: 66, // ASCII for 'B'
   BUTTON_PRESS_3: 67, // ASCII for 'C'
   BUTTON_PRESS_4: 68, // ASCII for 'D'
-  HEARTBEAT: 72, // ASCII for 'H'
+  HEARTBEAT: 72, // ASCII for 'H' 
+
+  BUTTON_PRESS_5: 49, // ASCII for 1
+  BUTTON_PRESS_6: 50,
+  BUTTON_PRESS_7: 51,
+  BUTTON_PRESS_8: 52,
 }
+
+// ASCII for 1 - 49
+// ASCII for 2 - 50
+// ASCII for 3 - 51
+// ASCII for 4 - 52
+
+// check if new or old? 
+// is 'H' still the same for heartbeat on the new buttons?
 
 const validateButtonPress = [Validator.body(['devEui', 'payload']).notEmpty(), Validator.header(['authorization']).notEmpty()]
 
@@ -40,7 +53,7 @@ async function handleButtonPress(req, res) {
 
       if (event[0] === EVENT_TYPE.HEARTBEAT && button !== null) {
         await db.logButtonsVital(button.id, event[1], snr, rssi)
-      } else if (event[0] === EVENT_TYPE.BUTTON_PRESS_4 || event[0] === EVENT_TYPE.BUTTON_PRESS_3) {
+      } else if (event[0] === EVENT_TYPE.BUTTON_PRESS_4 || event[0] === EVENT_TYPE.BUTTON_PRESS_3 || event[0]===EVENT_TYPE.BUTTON_PRESS_8 || event[0]===EVENT_TYPE.BUTTON_PRESS_7) {
         if (button === null) {
           const errorMessage = `Bad request to ${req.path}: DevEui is not registered: '${devEui}'`
           helpers.logError(errorMessage)
