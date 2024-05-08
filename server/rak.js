@@ -16,18 +16,11 @@ const EVENT_TYPE = {
   HEARTBEAT: 72, // ASCII for 'H' 
 
   BUTTON_PRESS_5: 49, // ASCII for 1
-  BUTTON_PRESS_6: 50,
-  BUTTON_PRESS_7: 51,
-  BUTTON_PRESS_8: 52,
+  BUTTON_PRESS_6: 50, // ASCII for 2
+  BUTTON_PRESS_7: 51, // ASCII for 3
+  BUTTON_PRESS_8: 52, // ASCII for 4
 }
 
-// ASCII for 1 - 49
-// ASCII for 2 - 50
-// ASCII for 3 - 51
-// ASCII for 4 - 52
-
-// check if new or old? 
-// is 'H' still the same for heartbeat on the new buttons?
 
 const validateButtonPress = [Validator.body(['devEui', 'payload']).notEmpty(), Validator.header(['authorization']).notEmpty()]
 
