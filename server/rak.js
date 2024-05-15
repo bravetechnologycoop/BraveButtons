@@ -13,7 +13,8 @@ const EVENT_TYPE = {
   BUTTON_PRESS_2: 66, // ASCII for 'B'
   BUTTON_PRESS_3: 67, // ASCII for 'C'
   BUTTON_PRESS_4: 68, // ASCII for 'D'
-  HEARTBEAT: 72, // ASCII for 'H' 
+  
+  HEARTBEAT: 72,      // ASCII for 'H' 
 
   BUTTON_PRESS_5: 49, // ASCII for 1
   BUTTON_PRESS_6: 50, // ASCII for 2

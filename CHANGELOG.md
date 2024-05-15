@@ -11,6 +11,12 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [13.9.0] - 2024-05-08
+
+### Added
+
+- Configured buttons for RAK7201v2, now version 2 buttons will send out alerts.
+
 ### Changed
 
 - Postgres configuration to allow separate database names and users, and new environment variable `PG_DATABASE` (CU-86791yyvg).
@@ -724,6 +730,7 @@ the code was deployed.
 - Initial pi.
 
 [unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...HEAD
+[13.9.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.9.0
 [13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
 [13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1
 [13.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...v13.7.0
