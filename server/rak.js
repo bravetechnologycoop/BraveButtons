@@ -9,17 +9,17 @@ const buttonAlerts = require('./buttonAlerts')
 const rakApiKeys = [helpers.getEnvVar('RAK_API_KEY_PRIMARY'), helpers.getEnvVar('RAK_API_KEY_SECONDARY')]
 
 const EVENT_TYPE = {
-  BUTTON_PRESS_1: 65, // ASCII for 'A'
-  BUTTON_PRESS_2: 66, // ASCII for 'B'
-  BUTTON_PRESS_3: 67, // ASCII for 'C'
-  BUTTON_PRESS_4: 68, // ASCII for 'D'
+  BUTTON_PRESS_A: 65, // ASCII for 'A'
+  BUTTON_PRESS_B: 66, // ASCII for 'B'
+  BUTTON_PRESS_C: 67, // ASCII for 'C'
+  BUTTON_PRESS_D: 68, // ASCII for 'D'
   
   HEARTBEAT: 72,      // ASCII for 'H' 
 
-  BUTTON_PRESS_5: 49, // ASCII for 1
-  BUTTON_PRESS_6: 50, // ASCII for 2
-  BUTTON_PRESS_7: 51, // ASCII for 3
-  BUTTON_PRESS_8: 52, // ASCII for 4
+  BUTTON_PRESS_1: 49, // ASCII for 1
+  BUTTON_PRESS_2: 50, // ASCII for 2
+  BUTTON_PRESS_3: 51, // ASCII for 3
+  BUTTON_PRESS_4: 52, // ASCII for 4
 }
 
 
@@ -47,7 +47,7 @@ async function handleButtonPress(req, res) {
 
       if (event[0] === EVENT_TYPE.HEARTBEAT && button !== null) {
         await db.logButtonsVital(button.id, event[1], snr, rssi)
-      } else if (event[0] === EVENT_TYPE.BUTTON_PRESS_4 || event[0] === EVENT_TYPE.BUTTON_PRESS_3 || event[0]===EVENT_TYPE.BUTTON_PRESS_8 || event[0]===EVENT_TYPE.BUTTON_PRESS_7) {
+      } else if (event[0] === EVENT_TYPE.BUTTON_PRESS_D || event[0] === EVENT_TYPE.BUTTON_PRESS_C || event[0]===EVENT_TYPE.BUTTON_PRESS_4 || event[0]===EVENT_TYPE.BUTTON_PRESS_3) {
         if (button === null) {
           const errorMessage = `Bad request to ${req.path}: DevEui is not registered: '${devEui}'`
           helpers.logError(errorMessage)

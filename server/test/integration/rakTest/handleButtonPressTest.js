@@ -397,7 +397,7 @@ describe('rak.js integration tests: handleButtonPress', () => {
     })
   })
 
-  describe('POST Aw== (Button 3 V2) with secondary API key for existing Button', () => {
+  describe('POST Mw== (Button 3 V2) with secondary API key for existing Button', () => {
     beforeEach(async () => {
       const serialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
@@ -410,7 +410,7 @@ describe('rak.js integration tests: handleButtonPress', () => {
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeySecondary)
-        .send({ devEui: serialNumber, payload: 'Aw==' })
+        .send({ devEui: serialNumber, payload: 'Mw==' })
     })
 
     afterEach(async () => {
@@ -430,7 +430,7 @@ describe('rak.js integration tests: handleButtonPress', () => {
     })
   })
 
-  describe('POST BA== (Button 4 V2) with secondary API key for existing Button', () => {
+  describe('POST NA== (Button 4 V2) with secondary API key for existing Button', () => {
     beforeEach(async () => {
       const serialNumber = '7bj2n3f7dsf23fad'
       const client = await factories.clientDBFactory(db)
@@ -443,7 +443,7 @@ describe('rak.js integration tests: handleButtonPress', () => {
         .request(server)
         .post('/rak_button_press')
         .set('authorization', rakApiKeySecondary)
-        .send({ devEui: serialNumber, payload: 'BA==' })
+        .send({ devEui: serialNumber, payload: 'NA==' })
     })
 
     afterEach(async () => {

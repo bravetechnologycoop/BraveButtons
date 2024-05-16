@@ -11,7 +11,7 @@ the code was deployed.
 
 ## [Unreleased]
 
-## [13.9.0] - 2024-05-08
+## [XX.X.X] - 2024-XX-XX
 
 ### Added
 
@@ -730,7 +730,7 @@ the code was deployed.
 - Initial pi.
 
 [unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...HEAD
-[13.9.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.9.0
+[XX.X.X]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...vXX.X.X
 [13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
 [13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1
 [13.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...v13.7.0
