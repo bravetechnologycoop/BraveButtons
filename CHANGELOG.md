@@ -15,7 +15,7 @@ the code was deployed.
 
 ### Added
 
-- Configured buttons for RAK7201v2, now version 2 buttons will send out alerts (86dte4ejq).
+- Configured buttons for RAK7201v2, now version 2 buttons will send out alerts (CU-86dte4ejq).
 
 ### Changed
 
