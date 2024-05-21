@@ -462,4 +462,70 @@ describe('rak.js integration tests: handleButtonPress', () => {
       expect(buttonAlerts.handleValidRequest).to.be.calledWithExactly(this.button)
     })
   })
+
+  describe('POST MQ== (Button 1 V2) with secondary API key for existing Button', () => {
+    beforeEach(async () => {
+      const serialNumber = '7bj2n3f7dsf23fad'
+      const client = await factories.clientDBFactory(db)
+      this.button = await factories.buttonDBFactory(db, {
+        clientId: client.id,
+        serialNumber,
+      })
+
+      this.response = await chai
+        .request(server)
+        .post('/rak_button_press')
+        .set('authorization', rakApiKeySecondary)
+        .send({ devEui: serialNumber, payload: 'MQ==' })
+    })
+
+    afterEach(async () => {
+      await db.clearTables()
+    })
+
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
+    })
+
+    it('should not log any errors', () => {
+      expect(helpers.logError).not.to.be.called
+    })
+
+    it('should handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).not.to.be.calledWithExactly(this.button)
+    })
+  })
+
+  describe('POST Mg== (Button 2 V2) with secondary API key for existing Button', () => {
+    beforeEach(async () => {
+      const serialNumber = '7bj2n3f7dsf23fad'
+      const client = await factories.clientDBFactory(db)
+      this.button = await factories.buttonDBFactory(db, {
+        clientId: client.id,
+        serialNumber,
+      })
+
+      this.response = await chai
+        .request(server)
+        .post('/rak_button_press')
+        .set('authorization', rakApiKeySecondary)
+        .send({ devEui: serialNumber, payload: 'Mg==' })
+    })
+
+    afterEach(async () => {
+      await db.clearTables()
+    })
+
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
+    })
+
+    it('should not log any errors', () => {
+      expect(helpers.logError).not.to.be.called
+    })
+
+    it('should handle the button press', () => {
+      expect(buttonAlerts.handleValidRequest).not.to.be.calledWithExactly(this.button)
+    })
+  })
 })
