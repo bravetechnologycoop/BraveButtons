@@ -9,16 +9,11 @@ const buttonAlerts = require('./buttonAlerts')
 const rakApiKeys = [helpers.getEnvVar('RAK_API_KEY_PRIMARY'), helpers.getEnvVar('RAK_API_KEY_SECONDARY')]
 
 const EVENT_TYPE = {
-
-
   BUTTON_PRESS_A: 65, // ASCII for 'A'
   BUTTON_PRESS_B: 66, // ASCII for 'B'
   BUTTON_PRESS_C: 67, // ASCII for 'C'
   BUTTON_PRESS_D: 68, // ASCII for 'D'
-
   HEARTBEAT: 72, // ASCII for 'H'
-
-
   BUTTON_PRESS_1: 49, // ASCII for 1
   BUTTON_PRESS_2: 50, // ASCII for 2
   BUTTON_PRESS_3: 51, // ASCII for 3

@@ -11,8 +11,6 @@ the code was deployed.
 
 ## [Unreleased]
 
-## [XX.X.X] - 2024-XX-XX
-
 ### Added
 
 - Configured buttons for RAK7201v2, now version 2 buttons will send out alerts (CU-86dte4ejq).
@@ -730,7 +728,6 @@ the code was deployed.
 - Initial pi.
 
 [unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...HEAD
-[XX.X.X]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...vXX.X.X
 [13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
 [13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1
 [13.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...v13.7.0

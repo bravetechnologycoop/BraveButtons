@@ -627,9 +627,6 @@ describe('buttonAlerts.js unit tests: handleValidRequest', () => {
       it('should not send an alert session update', async () => {
         expect(this.sendAlertSessionUpdateStub).not.to.be.called
       })
-
-     
-
     })
   })
 })
