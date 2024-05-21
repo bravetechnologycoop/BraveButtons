@@ -47,13 +47,6 @@ async function handleButtonPress(req, res) {
  
       } else if (event[0] === EVENT_TYPE.BUTTON_PRESS_D || event[0] === EVENT_TYPE.BUTTON_PRESS_C || event[0]===EVENT_TYPE.BUTTON_PRESS_4 || event[0]===EVENT_TYPE.BUTTON_PRESS_3) {
 
-      } else if (
-        event[0] === EVENT_TYPE.BUTTON_PRESS_D ||
-        event[0] === EVENT_TYPE.BUTTON_PRESS_C ||
-        event[0] === EVENT_TYPE.BUTTON_PRESS_4 ||
-        event[0] === EVENT_TYPE.BUTTON_PRESS_3
-      ) {
-
         if (button === null) {
           const errorMessage = `Bad request to ${req.path}: DevEui is not registered: '${devEui}'`
           helpers.logError(errorMessage)
