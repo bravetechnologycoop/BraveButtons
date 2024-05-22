@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Configured buttons for RAK7201v2, now version 2 buttons will send out alerts (CU-86dte4ejq).
+
 ### Changed
 
 - Postgres configuration to allow separate database names and users, and new environment variable `PG_DATABASE` (CU-86791yyvg).
