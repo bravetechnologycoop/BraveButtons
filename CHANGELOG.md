@@ -13,6 +13,7 @@ the code was deployed.
 
 ### Added
 
+- Added a column titled 'locationId' into the buttons database (CU-86dtm6em1).
 - Configured buttons for RAK7201v2, now version 2 buttons will send out alerts (CU-86dte4ejq).
 
 ### Changed
