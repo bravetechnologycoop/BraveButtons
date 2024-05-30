@@ -13,7 +13,7 @@ BEGIN
     IF migrationId - lastSuccessfulMigrationId = 1 THEN
 
         ALTER TABLE buttons
-        ADD COLUMN locationId SERIAL;
+        ADD COLUMN locationId VARCHAR(50);
 
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
         INSERT INTO migrations (id)
