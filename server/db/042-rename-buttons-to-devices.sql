@@ -2,6 +2,8 @@ DO $migration$
     DECLARE migrationId INT;
     DECLARE lastSuccessfulMigrationId INT;
 BEGIN
+
+    RAISE NOTICE 'STARTING SCRIPT 42';
     -- The migration ID of this file
     migrationId := 42;
 
@@ -11,6 +13,8 @@ BEGIN
 
     -- Only execute this script if its migration ID is next after the last successful migration ID
     IF migrationId - lastSuccessfulMigrationId = 1 THEN
+
+        RAISE NOTICE 'STARTING SCRIPT 42 AFATER IF';
         -- buttons table changes
 
         -- Disable the set_registry_timestamp trigger
