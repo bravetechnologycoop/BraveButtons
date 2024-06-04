@@ -13,6 +13,10 @@ the code was deployed.
 
 ### Added
 
+- Wrote a new migration script 44 to fix the mistake of RSSI and SNR not being in the trigger function in script 42 (CU-86dtk5h8k).
+
+### Added
+
 - Configured buttons for RAK7201v2, now version 2 buttons will send out alerts (CU-86dte4ejq).
 
 ### Changed
