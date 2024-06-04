@@ -30,7 +30,7 @@ BEGIN
                 snr = NEW.snr;
             RETURN NEW;
         END;
-	    $t$;
+        $t$;
 
         -- Replace the old trigger with the new one
         CREATE OR REPLACE TRIGGER create_buttons_vitals_trigger
