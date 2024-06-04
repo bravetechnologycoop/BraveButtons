@@ -12,8 +12,8 @@ BEGIN
     -- Only execute this script if its migration ID is next after the last successful migration ID
     IF migrationId - lastSuccessfulMigrationId = 1 THEN
 
-        -- Disable the create_buttons_vitals_trigger trigger
-        ALTER TABLE buttons_vitals DISABLE TRIGGER create_buttons_vitals_trigger;
+        -- Delete the create_buttons_vitals_trigger trigger
+        DROP TRIGGER IF EXISTS create_buttons_vitals_trigger ON buttons_vitals;
 
         -- Re-create trigger with new columns
         CREATE OR REPLACE FUNCTION create_buttons_vitals_trigger_fn()
@@ -33,7 +33,7 @@ BEGIN
         $t$;
 
         -- Replace the old trigger with the new one
-        CREATE OR REPLACE TRIGGER create_buttons_vitals_trigger
+        CREATE TRIGGER create_buttons_vitals_trigger
         BEFORE INSERT OR UPDATE ON buttons_vitals
         FOR EACH ROW EXECUTE PROCEDURE create_buttons_vitals_trigger_fn();
 
