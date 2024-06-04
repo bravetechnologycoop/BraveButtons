@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [13.9.0] - 2024-06-04
+
 ### Added
 
 - Wrote a new migration script 44 to fix the mistake of RSSI and SNR not being in the trigger function in script 42 (CU-86dtk5h8k).
@@ -728,7 +730,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.9.0...HEAD
+[13.9.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...v13.9.0
 [13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
 [13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1
 [13.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...v13.7.0
