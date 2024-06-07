@@ -96,22 +96,6 @@
 
 1. if appropriate, send a Feature Change Announcement email to the clients
 
-# How to deploy a new version of the Lambda function
-
-1. cd into the `lambda` directory
-
-1. run `./setup_lambda.sh`
-
-1. login to the AWS account for the envrionment where you want to deploy the version
-
-1. navigate to Lambda --> Functions
-
-1. click on 'lora-parse'
-
-1. click on 'Upload from' --> .zip file
-
-1. upload the newly generated file `lambda/buttons_lambda.zip`
-
 # Dev Deployment
 
 ## 1. Update the Environment Variables (if necessary)
@@ -141,6 +125,22 @@
    1. on the production Buttons server (access using ssh):
 
       1. run `pm2 logs`
+
+# How to deploy a new version of the Lambda function
+
+1. cd into the `lambda` directory
+
+1. run `./setup_lambda.sh`
+
+1. login to the AWS account for the envrionment where you want to deploy the version
+
+1. navigate to Lambda --> Functions
+
+1. click on 'lora-parse'
+
+1. click on 'Upload from' --> .zip file
+
+1. upload the newly generated file `lambda/buttons_lambda.zip`
 
 # How to set up a local server dev environment
 
