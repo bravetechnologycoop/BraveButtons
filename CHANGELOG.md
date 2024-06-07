@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Dev deployment steps in the README (CU-86dqu45n1).
+
 ## [13.9.0] - 2024-06-04
 
 ### Added

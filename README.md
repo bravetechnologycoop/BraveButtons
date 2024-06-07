@@ -112,6 +112,36 @@
 
 1. upload the newly generated file `lambda/buttons_lambda.zip`
 
+# Dev Deployment
+
+## 1. Update the Environment Variables (if necessary)
+
+1. on the dev Buttons server (access using ssh):
+
+   1. update the values in `~/BraveButtons/server/.env`
+
+## 2. Deploy the server on Dev
+
+1. on the dev Buttons server (access using ssh):
+
+   1. cd into the `BraveButtons/server` directory
+
+   1. shut down the server process and ensure that environment variables are not cached: `pm2 kill`
+
+   1. pull the latest code from your branch: `git checkout <your branch> && git pull origin <your branch>`
+
+   1. run the server setup script: `sudo ./setup_server.sh ./.env`
+
+## 3. Verify
+
+1. open the production dashboard and confirm that everything appears to be working normally
+
+1. Verify that the logs look reasonable
+
+   1. on the production Buttons server (access using ssh):
+
+      1. run `pm2 logs`
+
 # How to set up a local server dev environment
 
 1. clone this repository
