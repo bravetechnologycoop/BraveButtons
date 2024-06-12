@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Updated npm package `braces` to fix pull request vulnerability. 
+
 ## [13.9.0] - 2024-06-04
 
 ### Added
