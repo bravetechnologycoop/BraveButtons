@@ -116,16 +116,6 @@
 
    1. run the server setup script: `sudo ./setup_server.sh ./.env`
 
-## 3. Verify
-
-1. open the production dashboard and confirm that everything appears to be working normally
-
-1. Verify that the logs look reasonable
-
-   1. on the production Buttons server (access using ssh):
-
-      1. run `pm2 logs`
-
 # How to deploy a new version of the Lambda function
 
 1. cd into the `lambda` directory
