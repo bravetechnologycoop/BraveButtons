@@ -13,7 +13,7 @@ the code was deployed.
 
 ### Changed
 
-- Updated npm package `braces` to fix pull request vulnerability. 
+- Updated npm package `braces` to fix pull request vulnerability (CU-86dtu06ga). 
 
 ## [13.9.0] - 2024-06-04
 
