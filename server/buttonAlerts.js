@@ -4,6 +4,8 @@ const { t } = require('i18next')
 // In-house dependencies
 const { ALERT_TYPE, helpers, CHATBOT_STATE } = require('brave-alert-lib')
 const db = require('./db/db')
+const Gateway = require('./Gateway')
+const GatewaysVital = require('./GatewaysVital')
 
 const SUBSEQUENT_URGENT_MESSAGE_THRESHOLD = 2 * 60 * 1000
 
@@ -24,6 +26,12 @@ async function handleValidRequest(button) {
   // Don't start any sessions if this Button or Client is not sending alerts
   if (!button.isSendingAlerts || !button.client.isSendingAlerts) {
     return
+  }
+
+  // Do not send alerts if client's gateway is offline
+  // for all of a client's buttons, if gateway is offline, disable alerts
+  if(GatewaysVital.lastSeenAt>15){
+    !button.isSendingAlerts
   }
 
   let pgClient
