@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Added migration script to index the locationId column in the devices table. (CU-86dtm6em1)
+
 ## [13.9.0] - 2024-06-04
 
 ### Added
