@@ -28,12 +28,6 @@ async function handleValidRequest(button) {
     return
   }
 
-  // Do not send alerts if client's gateway is offline
-  // for all of a client's buttons, if gateway is offline, disable alerts
-  if(GatewaysVital.lastSeenAt>15){
-    !button.isSendingAlerts
-  }
-
   let pgClient
 
   try {
