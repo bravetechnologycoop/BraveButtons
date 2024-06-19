@@ -50,6 +50,7 @@ else
             echo "  Display Name: $unit"
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
+            echo "  Locationid: $locationid"
 
             sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, locationid, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', '$locationid', 't', 'f', 'f', 'DEVICE_BUTTON');"
         fi
