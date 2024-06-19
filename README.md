@@ -96,6 +96,26 @@
 
 1. if appropriate, send a Feature Change Announcement email to the clients
 
+# Dev Deployment
+
+## 1. Update the Environment Variables (if necessary)
+
+1. on the dev Buttons server (access using ssh):
+
+   1. update the values in `~/BraveButtons/server/.env`
+
+## 2. Deploy the server on Dev
+
+1. on the dev Buttons server (access using ssh):
+
+   1. cd into the `BraveButtons/server` directory
+
+   1. shut down the server process and ensure that environment variables are not cached: `pm2 kill`
+
+   1. pull the latest code from your branch: `git checkout <your branch> && git pull origin <your branch>`
+
+   1. run the server setup script: `sudo ./setup_server.sh ./.env`
+
 # How to deploy a new version of the Lambda function
 
 1. cd into the `lambda` directory
