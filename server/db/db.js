@@ -1229,8 +1229,7 @@ async function getDisconnectedGatewaysWithClient(client, pgClient) {
       SELECT *
       FROM gateways g
       WHERE g.client_id = $1
-      AND g.sent_vitals_alert_at IS NULL
-      AND g.is_sending_vitals = true
+      AND g.sent_vitals_alert_at IS NOT NULL
       `,
       [client.id],
       pool,

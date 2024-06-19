@@ -13,7 +13,11 @@ the code was deployed.
 
 ### Added
 
-- Added migration script to index the locationId column in the devices table. (CU-86dtm6em1)
+- Added migration script to index the locationId column in the devices table (CU-86dtm6em1).
+
+### Changed
+
+- Updated npm package `braces` to fix pull request vulnerability (CU-86dtu06ga). 
 
 ## [13.9.0] - 2024-06-04
 
