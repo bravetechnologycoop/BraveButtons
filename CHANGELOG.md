@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Dev deployment steps in the README (CU-86dqu45n1).
+
 ### Changed
 
 - Updated npm package `braces` to fix pull request vulnerability (CU-86dtu06ga). 
