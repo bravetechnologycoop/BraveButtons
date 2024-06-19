@@ -306,3 +306,5 @@ module.exports = {
   submitLogin,
   submitLogout,
 }
+
+// TEST
