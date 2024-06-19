@@ -10,9 +10,9 @@ if [[ $EUID > 0 ]]; then
     exit 1
 elif [[ ! -n "$6" ]]; then
     echo ""
-    echo "Usage: $0 path_to_.env_file new_client_name responder_phone_numbers fallback_phone_numbers from_phone_number path_to_buttons_csv"
+    echo "Usage: $0 path_to_.env_file new_client_name responder_phone_numbers fallback_phone_numbers from_phone_number path_to_buttons_csv locationid"
     echo "" 
-    echo "Example: $0 ./../.env NewClient '{+16041234567,+16049876541}' '{+17781234567,+17789876543}' +18881112222 ./add_buttons.csv.example"
+    echo "Example: $0 ./../.env NewClient '{+16041234567,+16049876541}' '{+17781234567,+17789876543}' +18881112222 ./add_buttons.csv.example Library_1"
     echo ""
     echo "The buttons CSV file"
     echo "MUST have the header 'unit,phone_number,button_serial_number'"
@@ -39,7 +39,8 @@ else
     echo "  Responder Phones: $3"
     echo "  Fallback Phones: $4"
     echo "  From Phone: $5"
-    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO clients (display_name, responder_phone_numbers, fallback_phone_numbers, from_phone_number, is_displayed, is_sending_alerts, is_sending_vitals) VALUES ('$2', '$3', '$4', '$5', 't', 'f', 'f');"
+    echo "  Locationid: $6"
+    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO clients (display_name, responder_phone_numbers, fallback_phone_numbers, from_phone_number, locationid, is_displayed, is_sending_alerts, is_sending_vitals) VALUES ('$2', '$3', '$4', '$5', '$6', 't', 'f', 'f');"
 
     client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE created_at = (SELECT MAX(created_at) FROM clients);")
 
@@ -50,9 +51,9 @@ else
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
 
-            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', 't', 'f', 'f', 'DEVICE_BUTTON');"
+            sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, locationid, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', '$locationid', 't', 'f', 'f', 'DEVICE_BUTTON');"
         fi
-    done < $6
+    done < $7
 
     cd $original_dir
 fi
