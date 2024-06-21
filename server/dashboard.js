@@ -16,10 +16,10 @@ const landingPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/lan
 const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.mst`, 'utf-8')
 const vitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/vitals.mst`, 'utf-8')
 
-const rssiBadThreshold = -170
-const rssiOkThreshold = -85
-const snrBadThreshold = 10
-const snrOkThreshold = 15
+const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
+const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
+const snrBadThreshold = helpers.getEnvVar('SNR_BAD_THRESHOLD')
+const snrGoodThreshold = helpers.getEnvVar('SNR_GOOD_THRESHOLD')
 
 function setupDashboardSessions(app) {
   app.use(cookieParser())
@@ -159,18 +159,16 @@ async function renderClientVitalsPage(req, res) {
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
         if (buttonsVital.device.isDisplayed) {
-
           let signalStrength = 'Ok'
 
           let rssiClass = 'text-warning'
           if (buttonsVital.rssi !== null) {
             if (buttonsVital.rssi < rssiBadThreshold) {
               rssiClass = 'text-danger'
-            } else if (buttonsVital.rssi > rssiOkThreshold) {
+            } else if (buttonsVital.rssi > rssiGoodThreshold) {
               rssiClass = 'text-success'
             }
-          }
-          else {
+          } else {
             rssiClass = 'text-danger'
             signalStrength = 'Unknown'
           }
@@ -179,7 +177,7 @@ async function renderClientVitalsPage(req, res) {
           if (buttonsVital.snr !== null) {
             if (buttonsVital.snr < snrBadThreshold) {
               snrClass = 'text-danger'
-            } else if (buttonsVital.snr > snrOkThreshold) {
+            } else if (buttonsVital.snr > snrGoodThreshold) {
               snrClass = 'text-success'
             }
           } else {
@@ -253,7 +251,7 @@ async function renderVitalsPage(req, res) {
         if (buttonsVital.rssi !== null) {
           if (buttonsVital.rssi < rssiBadThreshold) {
             rssiClass = 'text-danger'
-          } else if (buttonsVital.rssi > rssiOkThreshold) {
+          } else if (buttonsVital.rssi > rssiGoodThreshold) {
             rssiClass = 'text-success'
           }
         } else {
@@ -265,7 +263,7 @@ async function renderVitalsPage(req, res) {
         if (buttonsVital.snr !== null) {
           if (buttonsVital.snr < snrBadThreshold) {
             snrClass = 'text-danger'
-          } else if (buttonsVital.snr > snrOkThreshold) {
+          } else if (buttonsVital.snr > snrGoodThreshold) {
             snrClass = 'text-success'
           }
         } else {
