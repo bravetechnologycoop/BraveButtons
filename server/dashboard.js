@@ -159,7 +159,6 @@ async function renderClientVitalsPage(req, res) {
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
         if (buttonsVital.device.isDisplayed) {
-
           let rssiClass = 'text-warning'
           if (buttonsVital.rssi !== null) {
             if (buttonsVital.rssi < rssiBadThreshold) {
@@ -178,14 +177,13 @@ async function renderClientVitalsPage(req, res) {
             }
           }
 
-
           viewParams.buttons.push({
             unit: buttonsVital.device.displayName,
             batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
             rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
             snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
-            rssiClass: rssClass,
-            snrClass: snrClass,
+            rssiClass,
+            snrClass,
             lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
             lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
             isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
@@ -232,24 +230,23 @@ async function renderVitalsPage(req, res) {
     const buttonsVitals = await db.getRecentButtonsVitals()
     for (const buttonsVital of buttonsVitals) {
       if (buttonsVital.device.isDisplayed) {
-
         let rssiClass = 'text-warning'
-          if (buttonsVital.rssi !== null) {
-            if (buttonsVital.rssi < rssiBadThreshold) {
-              rssiClass = 'text-danger'
-            } else if (buttonsVital.rssi > rssiOkThreshold) {
-              rssiClass = 'text-success'
-            }
+        if (buttonsVital.rssi !== null) {
+          if (buttonsVital.rssi < rssiBadThreshold) {
+            rssiClass = 'text-danger'
+          } else if (buttonsVital.rssi > rssiOkThreshold) {
+            rssiClass = 'text-success'
           }
+        }
 
-          let snrClass = 'text-warning'
-          if (buttonsVital.snr !== null) {
-            if (buttonsVital.snr < snrBadThreshold) {
-              snrClass = 'text-danger'
-            } else if (buttonsVital.snr > snrOkThreshold) {
-              snrClass = 'text-success'
-            }
+        let snrClass = 'text-warning'
+        if (buttonsVital.snr !== null) {
+          if (buttonsVital.snr < snrBadThreshold) {
+            snrClass = 'text-danger'
+          } else if (buttonsVital.snr > snrOkThreshold) {
+            snrClass = 'text-success'
           }
+        }
 
         viewParams.buttons.push({
           clientName: buttonsVital.device.client.displayName,
@@ -258,8 +255,8 @@ async function renderVitalsPage(req, res) {
           batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
           rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
           snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
-          rssiClass: rssiClass,
-          snrClass: snrClass,
+          rssiClass,
+          snrClass,
           lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
           lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
           isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
