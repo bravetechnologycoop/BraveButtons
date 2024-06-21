@@ -160,19 +160,19 @@ async function renderClientVitalsPage(req, res) {
       for (const buttonsVital of buttonsVitals) {
         if (buttonsVital.device.isDisplayed) {
           let rssiClass = 'text-warning'
-            if (buttonsVital.rssi < rssiBadThreshold || buttonsVital.snr === null) {
-              rssiClass = 'text-danger'
-            } else if (buttonsVital.rssi > rssiGoodThreshold) {
-              rssiClass = 'text-success'
-            }
+          if (buttonsVital.rssi < rssiBadThreshold || buttonsVital.snr === null) {
+            rssiClass = 'text-danger'
+          } else if (buttonsVital.rssi > rssiGoodThreshold) {
+            rssiClass = 'text-success'
+          }
 
           let snrClass = 'text-warning'
-            if (buttonsVital.snr < snrBadThreshold || buttonsVital.snr === null) {
-              snrClass = 'text-danger'
-            } else if (buttonsVital.snr > snrGoodThreshold) {
-              snrClass = 'text-success'
-            }
-          
+          if (buttonsVital.snr < snrBadThreshold || buttonsVital.snr === null) {
+            snrClass = 'text-danger'
+          } else if (buttonsVital.snr > snrGoodThreshold) {
+            snrClass = 'text-success'
+          }
+
           let signalStrength = 'Ok'
           if (buttonsVital.snr === null || buttonsVital.rssi === null) {
             signalStrength = 'Unknown'
@@ -237,27 +237,27 @@ async function renderVitalsPage(req, res) {
     for (const buttonsVital of buttonsVitals) {
       if (buttonsVital.device.isDisplayed) {
         let rssiClass = 'text-warning'
-            if (buttonsVital.rssi < rssiBadThreshold || buttonsVital.snr === null) {
-              rssiClass = 'text-danger'
-            } else if (buttonsVital.rssi > rssiGoodThreshold) {
-              rssiClass = 'text-success'
-            }
+        if (buttonsVital.rssi < rssiBadThreshold || buttonsVital.snr === null) {
+          rssiClass = 'text-danger'
+        } else if (buttonsVital.rssi > rssiGoodThreshold) {
+          rssiClass = 'text-success'
+        }
 
-          let snrClass = 'text-warning'
-            if (buttonsVital.snr < snrBadThreshold || buttonsVital.snr === null) {
-              snrClass = 'text-danger'
-            } else if (buttonsVital.snr > snrGoodThreshold) {
-              snrClass = 'text-success'
-            }
-          
-          let signalStrength = 'Ok'
-          if (buttonsVital.snr === null || buttonsVital.rssi === null) {
-            signalStrength = 'Unknown'
-          } else if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
-            signalStrength = 'Bad'
-          } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
-            signalStrength = 'Good'
-          }
+        let snrClass = 'text-warning'
+        if (buttonsVital.snr < snrBadThreshold || buttonsVital.snr === null) {
+          snrClass = 'text-danger'
+        } else if (buttonsVital.snr > snrGoodThreshold) {
+          snrClass = 'text-success'
+        }
+
+        let signalStrength = 'Ok'
+        if (buttonsVital.snr === null || buttonsVital.rssi === null) {
+          signalStrength = 'Unknown'
+        } else if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
+          signalStrength = 'Bad'
+        } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
+          signalStrength = 'Good'
+        }
 
         viewParams.buttons.push({
           clientName: buttonsVital.device.client.displayName,
