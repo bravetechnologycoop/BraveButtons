@@ -177,6 +177,13 @@ async function renderClientVitalsPage(req, res) {
             }
           }
 
+          let signalStrength = 'Ok'
+          if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
+            signalStrength = 'Bad'
+          } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
+            signalStrength = 'Good'
+          }
+
           viewParams.buttons.push({
             unit: buttonsVital.device.displayName,
             batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
@@ -184,6 +191,7 @@ async function renderClientVitalsPage(req, res) {
             snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
             rssiClass,
             snrClass,
+            signalStrength: signalStrength,
             lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
             lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
             isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
@@ -248,6 +256,13 @@ async function renderVitalsPage(req, res) {
           }
         }
 
+        let signalStrength = 'Ok'
+          if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
+            signalStrength = 'Bad'
+          } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
+            signalStrength = 'Good'
+          }
+
         viewParams.buttons.push({
           clientName: buttonsVital.device.client.displayName,
           clientId: buttonsVital.device.client.id,
@@ -257,6 +272,7 @@ async function renderVitalsPage(req, res) {
           snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
           rssiClass,
           snrClass,
+          signalStrength: signalStrength,
           lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
           lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
           isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
