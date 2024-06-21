@@ -17,7 +17,7 @@ const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.m
 const vitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/vitals.mst`, 'utf-8')
 
 const rssiThreshold = -70;
-const snrThreshold = 20;
+const snrThreshold = 7;
 
 function setupDashboardSessions(app) {
   app.use(cookieParser())
