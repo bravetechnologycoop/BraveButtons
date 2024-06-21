@@ -159,6 +159,9 @@ async function renderClientVitalsPage(req, res) {
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
         if (buttonsVital.device.isDisplayed) {
+
+          let signalStrength = 'Ok'
+
           let rssiClass = 'text-warning'
           if (buttonsVital.rssi !== null) {
             if (buttonsVital.rssi < rssiBadThreshold) {
@@ -166,6 +169,10 @@ async function renderClientVitalsPage(req, res) {
             } else if (buttonsVital.rssi > rssiOkThreshold) {
               rssiClass = 'text-success'
             }
+          }
+          else {
+            rssiClass = 'text-danger'
+            signalStrength = 'Unknown'
           }
 
           let snrClass = 'text-warning'
@@ -175,9 +182,11 @@ async function renderClientVitalsPage(req, res) {
             } else if (buttonsVital.snr > snrOkThreshold) {
               snrClass = 'text-success'
             }
+          } else {
+            snrClass = 'text-danger'
+            signalStrength = 'Unknown'
           }
 
-          let signalStrength = 'Ok'
           if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
             signalStrength = 'Bad'
           } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
@@ -238,6 +247,8 @@ async function renderVitalsPage(req, res) {
     const buttonsVitals = await db.getRecentButtonsVitals()
     for (const buttonsVital of buttonsVitals) {
       if (buttonsVital.device.isDisplayed) {
+        let signalStrength = 'Ok'
+
         let rssiClass = 'text-warning'
         if (buttonsVital.rssi !== null) {
           if (buttonsVital.rssi < rssiBadThreshold) {
@@ -245,6 +256,9 @@ async function renderVitalsPage(req, res) {
           } else if (buttonsVital.rssi > rssiOkThreshold) {
             rssiClass = 'text-success'
           }
+        } else {
+          rssiClass = 'text-danger'
+          signalStrength = 'Unknown'
         }
 
         let snrClass = 'text-warning'
@@ -254,9 +268,11 @@ async function renderVitalsPage(req, res) {
           } else if (buttonsVital.snr > snrOkThreshold) {
             snrClass = 'text-success'
           }
+        } else {
+          snrClass = 'text-danger'
+          signalStrength = 'Unknown'
         }
 
-        let signalStrength = 'Ok'
         if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
           signalStrength = 'Bad'
         } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
