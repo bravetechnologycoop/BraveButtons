@@ -67,6 +67,7 @@
                             <th scope="col">Battery Level</th>
                             <th scope="col">RSSI</th>
                             <th scope="col">SNR</th>
+                            <th scope="col">Signal Strength</th>
                             <th scope="col">Last Seen</th>
                             <th scope="col">Sends Alerts?</th>
                             <th scope="col">Sends Vitals?</th>

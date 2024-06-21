@@ -159,33 +159,24 @@ async function renderClientVitalsPage(req, res) {
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
         if (buttonsVital.device.isDisplayed) {
-          let signalStrength = 'Ok'
-
           let rssiClass = 'text-warning'
-          if (buttonsVital.rssi !== null) {
-            if (buttonsVital.rssi < rssiBadThreshold) {
+            if (buttonsVital.rssi < rssiBadThreshold || buttonsVital.snr === null) {
               rssiClass = 'text-danger'
             } else if (buttonsVital.rssi > rssiGoodThreshold) {
               rssiClass = 'text-success'
             }
-          } else {
-            rssiClass = 'text-danger'
-            signalStrength = 'Unknown'
-          }
 
           let snrClass = 'text-warning'
-          if (buttonsVital.snr !== null) {
-            if (buttonsVital.snr < snrBadThreshold) {
+            if (buttonsVital.snr < snrBadThreshold || buttonsVital.snr === null) {
               snrClass = 'text-danger'
             } else if (buttonsVital.snr > snrGoodThreshold) {
               snrClass = 'text-success'
             }
-          } else {
-            snrClass = 'text-danger'
+          
+          let signalStrength = 'Ok'
+          if (buttonsVital.snr === null || buttonsVital.rssi === null) {
             signalStrength = 'Unknown'
-          }
-
-          if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
+          } else if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
             signalStrength = 'Bad'
           } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
             signalStrength = 'Good'
@@ -245,37 +236,28 @@ async function renderVitalsPage(req, res) {
     const buttonsVitals = await db.getRecentButtonsVitals()
     for (const buttonsVital of buttonsVitals) {
       if (buttonsVital.device.isDisplayed) {
-        let signalStrength = 'Ok'
-
         let rssiClass = 'text-warning'
-        if (buttonsVital.rssi !== null) {
-          if (buttonsVital.rssi < rssiBadThreshold) {
-            rssiClass = 'text-danger'
-          } else if (buttonsVital.rssi > rssiGoodThreshold) {
-            rssiClass = 'text-success'
-          }
-        } else {
-          rssiClass = 'text-danger'
-          signalStrength = 'Unknown'
-        }
+            if (buttonsVital.rssi < rssiBadThreshold || buttonsVital.snr === null) {
+              rssiClass = 'text-danger'
+            } else if (buttonsVital.rssi > rssiGoodThreshold) {
+              rssiClass = 'text-success'
+            }
 
-        let snrClass = 'text-warning'
-        if (buttonsVital.snr !== null) {
-          if (buttonsVital.snr < snrBadThreshold) {
-            snrClass = 'text-danger'
-          } else if (buttonsVital.snr > snrGoodThreshold) {
-            snrClass = 'text-success'
+          let snrClass = 'text-warning'
+            if (buttonsVital.snr < snrBadThreshold || buttonsVital.snr === null) {
+              snrClass = 'text-danger'
+            } else if (buttonsVital.snr > snrGoodThreshold) {
+              snrClass = 'text-success'
+            }
+          
+          let signalStrength = 'Ok'
+          if (buttonsVital.snr === null || buttonsVital.rssi === null) {
+            signalStrength = 'Unknown'
+          } else if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
+            signalStrength = 'Bad'
+          } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
+            signalStrength = 'Good'
           }
-        } else {
-          snrClass = 'text-danger'
-          signalStrength = 'Unknown'
-        }
-
-        if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
-          signalStrength = 'Bad'
-        } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
-          signalStrength = 'Good'
-        }
 
         viewParams.buttons.push({
           clientName: buttonsVital.device.client.displayName,
