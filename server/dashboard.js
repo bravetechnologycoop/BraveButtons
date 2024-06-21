@@ -16,6 +16,9 @@ const landingPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/lan
 const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.mst`, 'utf-8')
 const vitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/vitals.mst`, 'utf-8')
 
+const rssiThreshold = -70;
+const snrThreshold = 20;
+
 function setupDashboardSessions(app) {
   app.use(cookieParser())
 
@@ -159,6 +162,8 @@ async function renderClientVitalsPage(req, res) {
             batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
             rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
             snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
+            rssiClass: buttonsVital.rssi !== null && buttonsVital.rssi < rssiThreshold ? 'text-danger' : 'text-success',
+            snrClass: buttonsVital.snr !== null && buttonsVital.snr < snrThreshold ? 'text-danger' : 'text-success',
             lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
             lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
             isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
@@ -212,6 +217,8 @@ async function renderVitalsPage(req, res) {
           batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
           rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
           snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
+          rssiClass: buttonsVital.rssi !== null && buttonsVital.rssi < rssiThreshold ? 'text-danger' : 'text-success',
+            snrClass: buttonsVital.snr !== null && buttonsVital.snr < snrThreshold ? 'text-danger' : 'text-success',
           lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
           lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
           isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
