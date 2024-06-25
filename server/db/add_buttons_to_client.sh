@@ -41,7 +41,7 @@ else
         exit 1
     fi
 
-    while IFS=",", read -r unit phone_number button_serial_number; do
+    while IFS=",", read -r unit phone_number button_serial_number locationid; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
             echo "Adding button"
             echo "  Display Name: $unit"
