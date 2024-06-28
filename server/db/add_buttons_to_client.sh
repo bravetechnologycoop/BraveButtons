@@ -25,6 +25,8 @@ else
     while IFS="=" read -r name value; do
         if [[ "$name" == "PG_USER" ]]; then
             PG_USER="$value"
+        if [[ "$name" == "PG_DATABASE" ]]; then
+            PG_DATABASE="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
             PG_PASSWORD="$value"
         elif [[ "$name" == "PG_HOST" ]]; then
@@ -34,7 +36,7 @@ else
         fi
     done < $1
 
-    client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE display_name = '$2';")
+    client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_DATABASE --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE display_name = '$2';")
 
     if [[ -z "$client_id" ]]; then
         echo "couldn't find a client with the given client name $2"
@@ -48,7 +50,7 @@ else
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
 
-        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', 't', 'f', 'f', 'DEVICE_BUTTON');"
+        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_DATABASE --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', 't', 'f', 'f', 'DEVICE_BUTTON');"
         fi
     done < $3
 
