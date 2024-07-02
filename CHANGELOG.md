@@ -13,6 +13,7 @@ the code was deployed.
 
 ### Added
 
+- Added migration script to index the locationId column in the devices table (CU-86dtm6em1).
 - Dev deployment steps in the README (CU-86dqu45n1).
 - New column in the dashboard that shows signal strength (CU-86dttbgmh).
 - Colours (red, green or yellow) for RSSI and SNR values on the dashboard to show connection strength (CU-86dttbgmh).
