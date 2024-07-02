@@ -25,7 +25,7 @@ else
     while IFS="=" read -r name value; do
         if [[ "$name" == "PG_USER" ]]; then
             PG_USER="$value"
-        if [[ "$name" == "PG_DATABASE" ]]; then
+        elif [[ "$name" == "PG_DATABASE" ]]; then
             PG_DATABASE="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
             PG_PASSWORD="$value"
@@ -43,14 +43,15 @@ else
         exit 1
     fi
 
-    while IFS=",", read -r unit phone_number button_serial_number; do
+    while IFS=",", read -r unit phone_number button_serial_number locationid; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
             echo "Adding button"
             echo "  Display Name: $unit"
             echo "  Phone Number: $phone_number"
             echo "  Serial Number: $button_serial_number"
+            echo "  Locationid: $locationid"
 
-        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_DATABASE --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', 't', 'f', 'f', 'DEVICE_BUTTON');"
+        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_DATABASE --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, locationid, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', '$locationid', 't', 'f', 'f', 'DEVICE_BUTTON');"
         fi
     done < $3
 
