@@ -15,10 +15,15 @@ the code was deployed.
 
 - Added migration script to index the locationId column in the devices table (CU-86dtm6em1).
 - Dev deployment steps in the README (CU-86dqu45n1).
+- New column in the dashboard that shows signal strength (CU-86dttbgmh).
+- Colours (red, green or yellow) for RSSI and SNR values on the dashboard to show connection strength (CU-86dttbgmh).
+- Added threshold values for RSSI and SNR values as environment variables (CU-86dttbgmh).
 
 ### Changed
 
 - Updated npm package `braces` to fix pull request vulnerability (CU-86dtu06ga). 
+- Updated `renderVitalsPage` and `renderClientVitalsPage` in `dashboard.js` to include rssi and snr threshold values (CU-86dttbgmh).
+- Updated `renderVitalsPage` and `renderClientVitalsPage` in `dashboard.js` to include rssi and snr threshold logic (CU-86dttbgmh).
 
 ## [13.9.0] - 2024-06-04
 
