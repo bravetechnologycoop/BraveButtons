@@ -67,6 +67,14 @@ jobs:
       - name: Install dependencies
         working-directory: ./server
         run: npm ci
+
+      - name: Check environment variables
+        run: |
+          echo "PG_USER=$PG_USER"
+          echo "PG_DATABASE=$PG_DATABASE"
+          echo "PG_PASSWORD=$PG_PASSWORD"
+          echo "PG_PORT=$PG_PORT"
+          echo "PG_HOST=$PG_HOST"
       
       - name: Set up PSQL
         run: |
@@ -84,7 +92,7 @@ jobs:
       #     done
 
       - name: Set up database
-        # working-directory: ./server
+        working-directory: ./server
         run: |
           sudo -u postgres psql -p $PG_PORT -c "CREATE ROLE $PG_USER PASSWORD '$PG_PASSWORD' LOGIN"
           sudo -u postgres createdb -p $PG_PORT -O $PG_USER $PG_DATABASE
