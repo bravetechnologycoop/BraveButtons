@@ -75,7 +75,7 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update
           sudo apt-get install -y postgresql-12 postgresql-client-12
-          sudo setvice postgresql restart
+          sudo service postgresql restart
 
       # - name: Wait for PostgreSQL to be ready
       #   run: |
