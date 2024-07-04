@@ -75,7 +75,6 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update
           sudo apt-get install -y postgresql-12 postgresql-client-12
-          sudo service postgresql restart
 
       # - name: Wait for PostgreSQL to be ready
       #   run: |
@@ -86,7 +85,11 @@ jobs:
 
       - name: Set up database
         working-directory: ./server
-        run: bash setup_postgresql_local_dev.sh
+        run: |
+          sudo -u postgres psql -p $PG_PORT -c "CREATE ROLE $PG_USER PASSWORD '$PG_PASSWORD' LOGIN"
+          sudo -u postgres createdb -p $PG_PORT -O $PG_USER $PG_DATABASE
+          sudo -u postgres psql -p $PG_PORT -d $PG_DATABASE -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto"'
+          ./setup_postgresql.sh $PG_PASSWORD $PG_USER $PG_HOST $PG_PORT $PG_DATABASE
 
       - name: Run security audit
         working-directory: ./server
