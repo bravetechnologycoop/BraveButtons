@@ -50,9 +50,8 @@ jobs:
           node-version-file: ./.nvmrc
 
       - name: Install dependencies
-        run: |
-          cd server
-          npm ci
+        working-directory: ./server
+        run: npm ci
       
       - name: Set up PSQL
         run: |
@@ -67,11 +66,14 @@ jobs:
         run: bash setup_postgresql_local_dev.sh
 
       - name: Run security audit
+        working-directory: ./server
         if: github.event_name == 'pull_request'
         run: npx audit-ci --config ./audit-ci.json
 
       - name: Run Linter
+        working-directory: ./server
         run: npm run lint
 
       - name: Run tests
+        working-directory: ./server
         run: sudo env "PATH=$PATH" npm run test
