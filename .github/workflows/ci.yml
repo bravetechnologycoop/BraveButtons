@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+jobs:
+  server:
+    name: Server
+    runs-on: ubuntu-latest
+
+    env:
+      WEB_USERNAME_TEST: TravisDashboardUsername
+      PASSWORD_TEST: TravisDashboardPassword
+      SECRET_TEST: TravisCookieSecret
+      DOMAIN_TEST: chatbot-dev.brave.coop
+      PG_USER_TEST: brave
+      PG_DATABASE_TEST: bravebuttons
+      PG_PASSWORD_TEST: travispassword
+      PG_PORT_TEST: 5433
+      PG_HOST_TEST: localhost
+      PG_USER: brave
+      PG_DATABASE: bravebuttons
+      PG_PASSWORD: travispassword
+      PG_PORT: 5433
+      PG_HOST: localhost
+      RESPONDER_PHONE_TEST: +15005550006
+      STAFF_PHONE_TEST: +15005550006
+      TWILIO_SID_TEST: ${{ secrets.TWILIO_SID_TEST }}
+      TWILIO_TOKEN_TEST: ${{ secrets.TWILIO_TOKEN_TEST }}
+      PGVER: 12
+      PGPORT: 5433
+      SESSION_RESET_TIMEOUT_TEST: 7200000
+      RADIO_BRIDGE_API_KEY_PRIMARY_TEST: primaryKey
+      RADIO_BRIDGE_API_KEY_SECONDARY_TEST: secondaryKey
+      RAK_API_KEY_PRIMARY_TEST: rakKey1
+      RAK_API_KEY_SECONDARY_TEST: rakKey2
+      PA_API_KEY_PRIMARY_TEST: bravePrimaryKey
+      PA_API_KEY_SECONDARY_TEST: braveSecondaryKey
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: ./server/.nvmrc
+
+      - name: Install dependencies
+        run: |
+          cd server
+          npm ci
+      
+      - name: Set up PSQL
+        run: sudo apt-get install -y postgresql-12 postgresql-client-12
+
+      - name: Set up database
+        run: bash setup_postgresql_local_dev.sh
+
+      - name: Run security audit
+        if: github.event_name == 'pull_request'
+        run: npx audit-ci --config ./audit-ci.json
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run tests
+        run: sudo env "PATH=$PATH" npm run test
