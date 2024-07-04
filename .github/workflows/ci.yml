@@ -42,12 +42,12 @@ jobs:
 
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version-file: ./server/.nvmrc
+          node-version-file: ./.nvmrc
 
       - name: Install dependencies
         run: |
