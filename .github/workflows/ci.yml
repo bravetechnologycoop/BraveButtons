@@ -185,6 +185,10 @@ jobs:
           echo "PG_PASSWORD=$PG_PASSWORD"
           echo "PG_PORT=$PG_PORT"
           echo "PG_HOST=$PG_HOST"
+      
+      - name: Start PostgreSQL Service
+        run: |
+          sudo service postgresql start
 
       - name: Wait for PostgreSQL to be ready
         run: |
@@ -193,23 +197,9 @@ jobs:
             sleep 1
           done
 
-      - name: Debug PostgreSQL status
-        run: sudo service postgresql status
-
-      - name: Debug environment variables
-        run: env
-
       - name: Set up database
         working-directory: ./server
-        run: |
-          sudo chmod +x setup_postgresql_local_dev.sh
-          sudo ./setup_postgresql_local_dev.sh
-        env:
-          PG_USER: brave
-          PG_DATABASE: bravebuttons
-          PG_PASSWORD: travispassword
-          PG_PORT: 5433
-          PG_HOST: localhost
+        run: sudo bash setup_postgresql_local_dev.sh
 
       - name: Run security audit
         working-directory: ./server
