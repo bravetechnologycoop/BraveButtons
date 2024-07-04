@@ -1,113 +1,3 @@
-# name: CI
-
-# on:
-#   push:
-#     branches: ['*']
-#   pull_request:
-#     branches: ['*']
-
-# jobs:
-#   server:
-#     name: Server
-#     runs-on: ubuntu-latest
-
-#     # services:
-#     #   postgres:
-#     #     image: postgres:12
-#     #     env:
-#     #       POSTGRES_USER: brave
-#     #       POSTGRES_DB: bravebuttons
-#     #       POSTGRES_PASSWORD: travispassword
-#     #     ports:
-#     #       - 5433:5432
-#     #     options: >-
-#     #       --health-cmd "pg_isready -U brave -d bravebuttons"
-#     #       --health-interval 10s
-#     #       --health-timeout 5s
-#     #       --health-retries 5
-
-#     env:
-#       WEB_USERNAME_TEST: TravisDashboardUsername
-#       PASSWORD_TEST: TravisDashboardPassword
-#       SECRET_TEST: TravisCookieSecret
-#       DOMAIN_TEST: chatbot-dev.brave.coop
-#       PG_USER_TEST: brave
-#       PG_DATABASE_TEST: bravebuttons
-#       PG_PASSWORD_TEST: travispassword
-#       PG_PORT_TEST: 5433
-#       PG_HOST_TEST: localhost
-#       PG_USER: brave
-#       PG_DATABASE: bravebuttons
-#       PG_PASSWORD: travispassword
-#       PG_PORT: 5433
-#       PG_HOST: localhost
-#       RESPONDER_PHONE_TEST: +15005550006
-#       STAFF_PHONE_TEST: +15005550006
-#       TWILIO_SID_TEST: ${{ secrets.TWILIO_SID_TEST }}
-#       TWILIO_TOKEN_TEST: ${{ secrets.TWILIO_TOKEN_TEST }}
-#       PGVER: 12
-#       PGPORT: 5433
-#       SESSION_RESET_TIMEOUT_TEST: 7200000
-#       RADIO_BRIDGE_API_KEY_PRIMARY_TEST: primaryKey
-#       RADIO_BRIDGE_API_KEY_SECONDARY_TEST: secondaryKey
-#       RAK_API_KEY_PRIMARY_TEST: rakKey1
-#       RAK_API_KEY_SECONDARY_TEST: rakKey2
-#       PA_API_KEY_PRIMARY_TEST: bravePrimaryKey
-#       PA_API_KEY_SECONDARY_TEST: braveSecondaryKey
-
-#     steps:
-#       - name: Check out the repo
-#         uses: actions/checkout@v4
-
-#       - name: Set up Node
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version-file: ./.nvmrc
-
-#       - name: Install dependencies
-#         working-directory: ./server
-#         run: npm ci
-
-#       # - name: Check environment variables
-#       #   run: |
-#       #     echo "PG_USER=$PG_USER"
-#       #     echo "PG_DATABASE=$PG_DATABASE"
-#       #     echo "PG_PASSWORD=$PG_PASSWORD"
-#       #     echo "PG_PORT=$PG_PORT"
-#       #     echo "PG_HOST=$PG_HOST"
-      
-#       - name: Set up PSQL
-#         run: |
-#           echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-#           wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
-#           echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-#           sudo apt-get update
-#           sudo apt-get install -y postgresql-12 postgresql-client-12
-
-#       # - name: Wait for PostgreSQL to be ready
-#       #   run: |
-#       #     until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
-#       #       echo "Waiting for PostgreSQL to be ready..."
-#       #       sleep 1
-#       #     done
-
-#       - name: Set up database
-#         working-directory: ./server
-#         run: bash setup_postgresql_local_dev.sh
-
-#       - name: Run security audit
-#         working-directory: ./server
-#         if: github.event_name == 'pull_request'
-#         run: npx audit-ci --config ./audit-ci.json
-
-#       - name: Run Linter
-#         working-directory: ./server
-#         run: npm run lint
-
-#       - name: Run tests
-#         working-directory: ./server
-#         run: sudo env "PATH=$PATH" npm run test
-
 name: CI
 
 on:
@@ -186,9 +76,13 @@ jobs:
           echo "PG_PORT=$PG_PORT"
           echo "PG_HOST=$PG_HOST"
       
-      - name: Start PostgreSQL Service
-        run: |
-          sudo service postgresql start
+      # - name: Set up PSQL
+      #   run: |
+      #     echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+      #     wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+      #     echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+      #     sudo apt-get update
+      #     sudo apt-get install -y postgresql-12 postgresql-client-12
 
       - name: Wait for PostgreSQL to be ready
         run: |
@@ -199,7 +93,9 @@ jobs:
 
       - name: Set up database
         working-directory: ./server
-        run: sudo bash setup_postgresql_local_dev.sh
+        run: |
+          chmod +x setup_postgresql_local_dev.sh
+          ./setup_postgresql_local_dev.sh
 
       - name: Run security audit
         working-directory: ./server
@@ -212,4 +108,4 @@ jobs:
 
       - name: Run tests
         working-directory: ./server
-        run: sudo env "PATH=$PATH" npm run test
+        run: npm run test
