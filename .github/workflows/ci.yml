@@ -56,8 +56,8 @@ jobs:
       
       - name: Set up PSQL
         run: |
-        sudo apt-get update
-        sudo apt-get install -y postgresql-12 postgresql-client-12
+          sudo apt-get update
+          sudo apt-get install -y postgresql-12 postgresql-client-12
 
       - name: Set up database
         run: bash setup_postgresql_local_dev.sh
