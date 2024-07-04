@@ -94,9 +94,7 @@ jobs:
 
       - name: Set up database
         working-directory: ./server
-        run: |
-          sudo chmod +x setup_postgresql_local_dev.sh
-          sudo ./setup_postgresql_local_dev.sh
+        run: ./setup_postgresql_local_dev.sh
 
       - name: Run security audit
         working-directory: ./server
@@ -109,4 +107,4 @@ jobs:
 
       - name: Run tests
         working-directory: ./server
-        run: sudo env "PATH=$PATH" npm run test
+        run: npm run test
