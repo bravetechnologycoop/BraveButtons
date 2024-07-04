@@ -68,13 +68,13 @@ jobs:
         working-directory: ./server
         run: npm ci
 
-      - name: Check environment variables
-        run: |
-          echo "PG_USER=$PG_USER"
-          echo "PG_DATABASE=$PG_DATABASE"
-          echo "PG_PASSWORD=$PG_PASSWORD"
-          echo "PG_PORT=$PG_PORT"
-          echo "PG_HOST=$PG_HOST"
+      # - name: Check environment variables
+      #   run: |
+      #     echo "PG_USER=$PG_USER"
+      #     echo "PG_DATABASE=$PG_DATABASE"
+      #     echo "PG_PASSWORD=$PG_PASSWORD"
+      #     echo "PG_PORT=$PG_PORT"
+      #     echo "PG_HOST=$PG_HOST"
       
       - name: Set up PSQL
         run: |
@@ -93,9 +93,7 @@ jobs:
 
       - name: Set up database
         working-directory: ./server
-        run: |
-          sudo chmod +x setup_postgresql_local_dev.sh
-          sudo ./setup_postgresql_local_dev.sh
+        run: bash setup_postgresql_local_dev.sh
 
       - name: Run security audit
         working-directory: ./server
