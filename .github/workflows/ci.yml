@@ -11,20 +11,20 @@ jobs:
     name: Server
     runs-on: ubuntu-latest
 
-    # services:
-    #   postgres:
-    #     image: postgres:12
-    #     env:
-    #       POSTGRES_USER: brave
-    #       POSTGRES_DB: bravebuttons
-    #       POSTGRES_PASSWORD: travispassword
-    #     ports:
-    #       - 5433:5432
-    #     options: >-
-    #       --health-cmd "pg_isready -U brave -d bravebuttons"
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: brave
+          POSTGRES_DB: bravebuttons
+          POSTGRES_PASSWORD: travispassword
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U brave -d bravebuttons"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     env:
       WEB_USERNAME_TEST: TravisDashboardUsername
@@ -76,20 +76,20 @@ jobs:
           echo "PG_PORT=$PG_PORT"
           echo "PG_HOST=$PG_HOST"
       
-      - name: Set up PSQL
-        run: |
-          echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-          wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-          sudo apt-get update
-          sudo apt-get install -y postgresql-12 postgresql-client-12
-
-      # - name: Wait for PostgreSQL to be ready
+      # - name: Set up PSQL
       #   run: |
-      #     until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
-      #       echo "Waiting for PostgreSQL to be ready..."
-      #       sleep 1
-      #     done
+      #     echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+      #     wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+      #     echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+      #     sudo apt-get update
+      #     sudo apt-get install -y postgresql-12 postgresql-client-12
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 1
+          done
 
       - name: Set up database
         working-directory: ./server
