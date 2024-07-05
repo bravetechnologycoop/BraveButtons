@@ -19,7 +19,7 @@ jobs:
           POSTGRES_DB: bravebuttons
           POSTGRES_PASSWORD: travispassword
         ports:
-          - 5432:5433
+          - 5433:5432
         options: >-
           --health-cmd "pg_isready -U brave -d bravebuttons"
           --health-interval 10s
@@ -35,12 +35,12 @@ jobs:
       PG_DATABASE_TEST: bravebuttons
       PG_PASSWORD_TEST: travispassword
       PG_PORT_TEST: 5433
-      PG_HOST_TEST: 5432
+      PG_HOST_TEST: localhost
       PG_USER: brave
       PG_DATABASE: bravebuttons
       PG_PASSWORD: travispassword
       PG_PORT: 5433
-      PG_HOST: 5432
+      PG_HOST: localhost
       RESPONDER_PHONE_TEST: +15005550006
       STAFF_PHONE_TEST: +15005550006
       TWILIO_SID_TEST: ${{ secrets.TWILIO_SID_TEST }}
@@ -81,13 +81,15 @@ jobs:
       #     echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
       #     wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
       #     echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-      #     sudo apt-get update
-      #     sudo apt-get install -y postgresql-12 postgresql-client-12
+          # sudo apt-get update
+          # sudo apt-get install -y postgresql-12 postgresql-client-12
 
       - name: Wait for PostgreSQL to be ready
         run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-12 postgresql-client-12
           sudo service postgresql restart
-          until pg_isready -h 5432 -p 5433 -U brave -d bravebuttons; do
+          until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
             echo "Waiting for PostgreSQL to be ready..."
             sleep 1
           done
