@@ -94,7 +94,9 @@ jobs:
 
       - name: Set up database
         working-directory: ./server
-        run: ./setup_postgresql_local_dev.sh
+        run: |
+          sudo service postgresql restart
+          ./setup_postgresql_local_dev.sh
 
       - name: Run security audit
         working-directory: ./server
