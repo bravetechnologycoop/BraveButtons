@@ -86,26 +86,26 @@ jobs:
       #     sudo apt-get update
       #     sudo apt-get install -y postgresql-12 postgresql-client-12
 
-      - name: Wait for PostgreSQL to be ready
-        run: |
-          sudo service postgresql restart
-          until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
-            echo "Waiting for PostgreSQL to be ready..."
-            sleep 1
-          done
+      # - name: Wait for PostgreSQL to be ready
+      #   run: |
+      #     sudo service postgresql restart
+      #     until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
+      #       echo "Waiting for PostgreSQL to be ready..."
+      #       sleep 1
+      #     done
 
       - name: Set up database
         working-directory: ./server
         run: |
           ./setup_postgresql_local_dev.sh
 
-      - name: Wait for PostgreSQL to be ready
-        run: |
-          sudo service postgresql restart
-          until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
-            echo "Waiting for PostgreSQL to be ready..."
-            sleep 1
-          done
+      # - name: Wait for PostgreSQL to be ready
+      #   run: |
+      #     sudo service postgresql restart
+      #     until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
+      #       echo "Waiting for PostgreSQL to be ready..."
+      #       sleep 1
+      #     done
 
       - name: Run security audit
         working-directory: ./server
