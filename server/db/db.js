@@ -13,7 +13,7 @@ const pool = new Pool({
   user: helpers.getEnvVar('PG_USER'),
   database: helpers.getEnvVar('PG_DATABASE'),
   password: helpers.getEnvVar('PG_PASSWORD'),
-  ssl: false, //{ rejectUnauthorized: false },
+  ssl: false, // { rejectUnauthorized: false },
 })
 
 pool.on('error', err => {
