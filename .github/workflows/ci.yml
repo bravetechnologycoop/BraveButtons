@@ -76,18 +76,16 @@ jobs:
           echo "PG_PORT=$PG_PORT"
           echo "PG_HOST=$PG_HOST"
       
-      # - name: Set up PSQL
-      #   run: |
-      #     echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-      #     wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
-      #     echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-          # sudo apt-get update
-          # sudo apt-get install -y postgresql-12 postgresql-client-12
+      - name: Set up PSQL
+        run: |
+          echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-12 postgresql-client-12
 
       - name: Wait for PostgreSQL to be ready
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-12 postgresql-client-12
           sudo service postgresql restart
           until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
             echo "Waiting for PostgreSQL to be ready..."
