@@ -118,4 +118,4 @@ jobs:
 
       - name: Run tests
         working-directory: ./server
-        run: sudo env "PATH=$PATH" npm run test
+        run: npm run test
