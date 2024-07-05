@@ -94,9 +94,6 @@ jobs:
 
       - name: Set up database
         working-directory: ./server
-        env:
-          POSTGRES_DB: bravebuttons
-          POSTGRES_PASSWORD: travispassword
         run: ./setup_postgresql_local_dev.sh
 
       - name: Run security audit
