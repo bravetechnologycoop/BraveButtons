@@ -19,7 +19,7 @@ jobs:
           POSTGRES_DB: bravebuttons
           POSTGRES_PASSWORD: travispassword
         ports:
-          - 5433:localhost
+          - 5433:tcp
         options: >-
           --health-cmd "pg_isready -U brave -d bravebuttons"
           --health-interval 10s
