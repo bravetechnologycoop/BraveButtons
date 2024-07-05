@@ -9,6 +9,12 @@ Please note that the date associated with a release is the date the code
 was committed to the `main` branch. This is not necessarily the date that
 the code was deployed.
 
+## Unreleased
+
+### Added
+
+- Added Github Actions file `CI.yml` in `.github/workflows` to run along with Travis CI (CU-86dthadwg).
+
 ## [13.10.0] - 2024-07-02
 
 ### Added
