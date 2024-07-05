@@ -19,7 +19,7 @@ jobs:
           POSTGRES_DB: bravebuttons
           POSTGRES_PASSWORD: travispassword
         ports:
-          - 5433:5432
+          - 5433:5433
         options: >-
           --health-cmd "pg_isready -U brave -d bravebuttons"
           --health-interval 10s
@@ -86,7 +86,7 @@ jobs:
 
       - name: Wait for PostgreSQL to be ready
         run: |
-          sudo service postgresql start
+          sudo service postgresql restart
           until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
             echo "Waiting for PostgreSQL to be ready..."
             sleep 1
