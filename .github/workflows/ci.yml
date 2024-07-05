@@ -54,7 +54,7 @@ jobs:
       RAK_API_KEY_SECONDARY_TEST: rakKey2
       PA_API_KEY_PRIMARY_TEST: bravePrimaryKey
       PA_API_KEY_SECONDARY_TEST: braveSecondaryKey
-      PGSSLMODE: require
+      # PGSSLMODE: require
 
     steps:
       - name: Check out the repo
@@ -76,7 +76,7 @@ jobs:
           echo "PG_PASSWORD=$PG_PASSWORD"
           echo "PG_PORT=$PG_PORT"
           echo "PG_HOST=$PG_HOST"
-          echo "PGSSLMODE=$PGSSLMODE"
+        # echo "PGSSLMODE=$PGSSLMODE"
       
       # - name: Set up PSQL
       #   run: |
