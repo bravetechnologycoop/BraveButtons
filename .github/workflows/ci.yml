@@ -1,31 +1,19 @@
 name: CI
 
+# ensures that it runs on all branches
 on:
   push:
     branches: ['*']
   pull_request:
     branches: ['*']
 
+# OS
 jobs:
   server:
     name: Server
     runs-on: ubuntu-latest
 
-    # services:
-    #   postgres:
-    #     image: postgres:12
-    #     env:
-    #       POSTGRES_USER: brave
-    #       POSTGRES_DB: bravebuttons
-    #       POSTGRES_PASSWORD: travispassword
-    #     ports:
-    #       - 5433:5432
-    #     options: >-
-    #       --health-cmd "pg_isready -U brave -d bravebuttons"
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
-
+    # define environment variables
     env:
       WEB_USERNAME_TEST: TravisDashboardUsername
       PASSWORD_TEST: TravisDashboardPassword
@@ -41,9 +29,13 @@ jobs:
       PG_PASSWORD: travispassword
       PG_PORT: 5433
       PG_HOST: localhost
+      # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
       RESPONDER_PHONE_TEST: +15005550006
+      # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
       STAFF_PHONE_TEST: +15005550006
+      # TWILIO_SID_TEST (from https://www.twilio.com/console/voice/project/test-credentials)
       TWILIO_SID_TEST: ${{ secrets.TWILIO_SID_TEST }}
+      # TWILIO_TOKEN_TEST (from https://www.twilio.com/console/voice/project/test-credentials)
       TWILIO_TOKEN_TEST: ${{ secrets.TWILIO_TOKEN_TEST }}
       PGVER: 12
       PGPORT: 5433
@@ -54,7 +46,6 @@ jobs:
       RAK_API_KEY_SECONDARY_TEST: rakKey2
       PA_API_KEY_PRIMARY_TEST: bravePrimaryKey
       PA_API_KEY_SECONDARY_TEST: braveSecondaryKey
-      # PGSSLMODE: require
 
     steps:
       - name: Check out the repo
@@ -63,21 +54,14 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: ./.nvmrc
+          node-version-file: ./.nvmrc # node version specified in .nvmrc
 
+      # install dependencies
       - name: Install dependencies
         working-directory: ./server
         run: npm ci
-
-      # - name: Check environment variables
-      #   run: |
-      #     echo "PG_USER=$PG_USER"
-      #     echo "PG_DATABASE=$PG_DATABASE"
-      #     echo "PG_PASSWORD=$PG_PASSWORD"
-      #     echo "PG_PORT=$PG_PORT"
-      #     echo "PG_HOST=$PG_HOST"
-        # echo "PGSSLMODE=$PGSSLMODE"
       
+      # install database
       - name: Set up PSQL
         run: |
           echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
@@ -86,6 +70,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-12 postgresql-client-12
 
+      # ensures that the database is ready before continuing
       - name: Wait for PostgreSQL to be ready
         run: |
           sudo service postgresql restart
@@ -94,28 +79,24 @@ jobs:
             sleep 1
           done
 
+      # setup database
       - name: Set up database
         working-directory: ./server
         run: |
           ./setup_postgresql_local_dev.sh
 
-      # - name: Wait for PostgreSQL to be ready
-      #   run: |
-      #     sudo service postgresql restart
-      #     until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
-      #       echo "Waiting for PostgreSQL to be ready..."
-      #       sleep 1
-      #     done
-
+      # runs security audit
       - name: Run security audit
         working-directory: ./server
         if: github.event_name == 'pull_request'
         run: npx audit-ci --config ./audit-ci.json
 
+      # runs linter
       - name: Run Linter
         working-directory: ./server
         run: npm run lint
 
+      # runs unit tests
       - name: Run tests
         working-directory: ./server
         run: npm run test
