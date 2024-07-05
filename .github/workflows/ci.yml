@@ -96,7 +96,7 @@ jobs:
         working-directory: ./server
         run: |
           sudo service postgresql restart
-          ./setup_postgresql_local_dev.sh
+          sudo ./setup_postgresql_local_dev.sh
 
       - name: Run security audit
         working-directory: ./server
