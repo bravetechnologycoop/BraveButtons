@@ -19,7 +19,7 @@ jobs:
           POSTGRES_DB: bravebuttons
           POSTGRES_PASSWORD: travispassword
         ports:
-          - 5433:tcp
+          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U brave -d bravebuttons"
           --health-interval 10s
@@ -34,19 +34,19 @@ jobs:
       PG_USER_TEST: brave
       PG_DATABASE_TEST: bravebuttons
       PG_PASSWORD_TEST: travispassword
-      PG_PORT_TEST: 5433
+      PG_PORT_TEST: 5432
       PG_HOST_TEST: localhost
       PG_USER: brave
       PG_DATABASE: bravebuttons
       PG_PASSWORD: travispassword
-      PG_PORT: 5433
+      PG_PORT: 5432
       PG_HOST: localhost
       RESPONDER_PHONE_TEST: +15005550006
       STAFF_PHONE_TEST: +15005550006
       TWILIO_SID_TEST: ${{ secrets.TWILIO_SID_TEST }}
       TWILIO_TOKEN_TEST: ${{ secrets.TWILIO_TOKEN_TEST }}
       PGVER: 12
-      PGPORT: 5433
+      PGPORT: 5432
       SESSION_RESET_TIMEOUT_TEST: 7200000
       RADIO_BRIDGE_API_KEY_PRIMARY_TEST: primaryKey
       RADIO_BRIDGE_API_KEY_SECONDARY_TEST: secondaryKey
@@ -87,7 +87,7 @@ jobs:
       - name: Wait for PostgreSQL to be ready
         run: |
           sudo service postgresql restart
-          until pg_isready -h localhost -p 5433 -U brave -d bravebuttons; do
+          until pg_isready -h localhost -p 5432 -U brave -d bravebuttons; do
             echo "Waiting for PostgreSQL to be ready..."
             sleep 1
           done
