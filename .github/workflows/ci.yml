@@ -48,16 +48,16 @@ jobs:
       PA_API_KEY_SECONDARY_TEST: braveSecondaryKey
 
     steps:
-      - name: Check out the repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: ./.nvmrc # node version specified in .nvmrc
 
       # install dependencies
-      - name: Install dependencies
+      - name: Install npm dependencies
         working-directory: ./server
         run: npm ci
       
@@ -70,7 +70,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-12 postgresql-client-12
 
-      # ensures that the database is ready before continuing
+      # Ensure that the database is ready before continuing
       - name: Wait for PostgreSQL to be ready
         run: |
           sudo service postgresql restart
@@ -86,7 +86,7 @@ jobs:
           ./setup_postgresql_local_dev.sh
 
       # runs security audit
-      - name: Run security audit
+      - name: Run security Audit
         working-directory: ./server
         if: github.event_name == 'pull_request'
         run: npx audit-ci --config ./audit-ci.json
@@ -97,6 +97,6 @@ jobs:
         run: npm run lint
 
       # runs unit tests
-      - name: Run tests
+      - name: Run Tests
         working-directory: ./server
         run: npm run test
