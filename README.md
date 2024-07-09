@@ -1,4 +1,4 @@
-# BraveButtons [![Build Status](https://app.travis-ci.com/bravetechnologycoop/BraveButtons.svg?branch=main)](https://app.travis-ci.com/bravetechnologycoop/BraveButtons)
+# BraveButtons [![Build Status](https://github.com/bravetechnologycoop/BraveButtons/actions/workflows/ci.yml/badge.svg)](https://github.com/bravetechnologycoop/BraveButtons/actions/workflows/ci.yml)
 
 # Production Deployment
 
@@ -227,35 +227,17 @@ FROM migrations
 ORDER BY id;
 ```
 
-# How to add or change an encrypted Travis environment variable
+# How to add or change an encrypted Github Actions environment variable
 
-Reference: https://docs.travis-ci.com/user/environment-variables/#encrypting-environment-variables
+Reference: https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
 
-1. Download the Travis CLI `gem install travis`
+1. Go to the GitHub repo in your web browser
 
-1. cd to anywhere in this repo
+1. Go to the settings page
 
-1. temporarily create a personal access token on GitHub https://github.com/settings/tokens with the following permissions:
+1. Under the **Security** section, click on **Secrets and variables**, then click **Actions**
 
-   - `repo`
-   - `read:packages`
-   - `read:org`
-   - `read:public_key`
-   - `read:repo_hook`
-   - `user`
-   - `read:discussion`
-   - `read:enterprise`
-
-1. login using `travis login --pro --github-token <token from github>`
-
-1. For a given `VAR_NAME` that you want to have value `secret_value`, run
-   `travis encrypt --pro VAR_NAME=secret_value`
-   which will ask for your GitHub username and password and then
-   output your encrypted variable
-
-1. Copy the encrypted variable into `.travis.yml`
-
-1. Delete your personal access token from GitHub
+1. Under **Repository secrets**, click **New repository secret** or edit an existing one with the pen symbol
 
 # How to run a migration script
 
