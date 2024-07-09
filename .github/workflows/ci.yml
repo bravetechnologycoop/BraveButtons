@@ -88,7 +88,7 @@ jobs:
       # runs security audit
       - name: Run security audit
         working-directory: ./server
-        if: github.event_name == 'pull request'
+        if: github.event_name == 'pull_request'
         run: npx audit-ci --config ./audit-ci.json
 
       # runs linter
