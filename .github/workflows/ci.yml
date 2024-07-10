@@ -4,8 +4,6 @@ name: CI
 on:
   push:
     branches: ['*']
-  pull_request:
-    branches: ['*']
 
 # OS
 jobs:
@@ -48,16 +46,16 @@ jobs:
       PA_API_KEY_SECONDARY_TEST: braveSecondaryKey
 
     steps:
-      - name: Check out the repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: ./.nvmrc # node version specified in .nvmrc
 
       # install dependencies
-      - name: Install dependencies
+      - name: Install npm dependencies
         working-directory: ./server
         run: npm ci
       
@@ -88,11 +86,10 @@ jobs:
       # runs security audit
       - name: Run security audit
         working-directory: ./server
-        if: github.event_name == 'pull_request'
         run: npx audit-ci --config ./audit-ci.json
 
       # runs linter
-      - name: Run Linter
+      - name: Run linter
         working-directory: ./server
         run: npm run lint
 
