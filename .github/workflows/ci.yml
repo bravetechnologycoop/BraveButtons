@@ -68,7 +68,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-12 postgresql-client-12
 
-      # ensures that the database is ready before continuing
+      # Ensure that the database is ready before continuing
       - name: Wait for PostgreSQL to be ready
         run: |
           sudo service postgresql restart
@@ -84,7 +84,7 @@ jobs:
           ./setup_postgresql_local_dev.sh
 
       # runs security audit
-      - name: Run security audit
+      - name: Run security Audit
         working-directory: ./server
         run: npx audit-ci --config ./audit-ci.json
 
@@ -94,6 +94,6 @@ jobs:
         run: npm run lint
 
       # runs unit tests
-      - name: Run tests
+      - name: Run Tests
         working-directory: ./server
         run: npm run test
