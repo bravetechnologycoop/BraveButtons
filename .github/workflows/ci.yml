@@ -84,7 +84,7 @@ jobs:
           ./setup_postgresql_local_dev.sh
 
       # runs security audit
-      - name: Run security Audit
+      - name: Run security audit
         working-directory: ./server
         run: npx audit-ci --config ./audit-ci.json
 
