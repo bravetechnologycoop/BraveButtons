@@ -14,12 +14,14 @@ the code was deployed.
 ### Added
 
 - Added Github Actions file `CI.yml` in `.github/workflows` to run along with Travis CI (CU-86dthadwg).
+- Added a button in `clientVitals.mst` and `vitals.mst` to show and hide RSSI and SNR values (CU-86du4cpm8). 
 
 ### Changed
 
 - Removed `.travis.yml` file to stop using Travis CI (CU-86dthadwg).
 - Changed Build Status badge in the README (CU-86dthadwg).
 - Changed README instructions for adding encrypted variables for Travis to instructions for adding secrets in Github Actions (CU-86dthadwg).
+- Changed `clientVitals.mst` and `vitals.mst` to have RSSI and SNR values hidden by default (CU-86du4cpm8).
 
 ## [13.10.0] - 2024-07-02
 
