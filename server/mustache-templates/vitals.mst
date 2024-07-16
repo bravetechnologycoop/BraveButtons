@@ -100,25 +100,28 @@
 
             signalStrengthCells.forEach(cell => {
             cell.addEventListener('click', function () {
-                const targetUnit = cell.getAttribute('data-target');
-                const rssiValue = document.querySelector(`.${targetUnit}-rssi`);
-                const snrValue = document.querySelector(`.${targetUnit}-snr`);
+                const rssiValues = document.querySelectorAll('.rssi-value');
+                const snrValues = document.querySelectorAll('.snr-value');
                 const rssiHeader = document.querySelector('.rssi-header');
                 const snrHeader = document.querySelector('.snr-header');
 
-                if (rssiValue && snrValue) {
-                const isVisible = rssiValue.style.display === 'table-cell';
-                rssiValue.style.display = isVisible ? 'none' : 'table-cell';
-                snrValue.style.display = isVisible ? 'none' : 'table-cell';
+                isHeaderVisible = !isHeaderVisible;
 
-                isHeaderVisible = !isVisible;
+                rssiValues.forEach(rssiValue => {
+                rssiValue.style.display = isHeaderVisible ? 'table-cell' : 'none';
+                });
+
+                snrValues.forEach(snrValue => {
+                snrValue.style.display = isHeaderVisible ? 'table-cell' : 'none';
+                });
+
                 rssiHeader.style.display = isHeaderVisible ? 'table-cell' : 'none';
                 snrHeader.style.display = isHeaderVisible ? 'table-cell' : 'none';
-                }
             });
             });
         });
     </script>
+
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

@@ -103,21 +103,23 @@
 
             signalStrengthCells.forEach(cell => {
             cell.addEventListener('click', function () {
-                const targetUnit = cell.getAttribute('data-target');
-                const rssiValue = document.querySelector(`.${targetUnit}-rssi`);
-                const snrValue = document.querySelector(`.${targetUnit}-snr`);
+                const rssiValues = document.querySelectorAll('.rssi-value');
+                const snrValues = document.querySelectorAll('.snr-value');
                 const rssiHeader = document.querySelector('.rssi-header');
                 const snrHeader = document.querySelector('.snr-header');
 
-                if (rssiValue && snrValue) {
-                const isVisible = rssiValue.style.display === 'table-cell';
-                rssiValue.style.display = isVisible ? 'none' : 'table-cell';
-                snrValue.style.display = isVisible ? 'none' : 'table-cell';
+                isHeaderVisible = !isHeaderVisible;
 
-                isHeaderVisible = !isVisible;
+                rssiValues.forEach(rssiValue => {
+                rssiValue.style.display = isHeaderVisible ? 'table-cell' : 'none';
+                });
+
+                snrValues.forEach(snrValue => {
+                snrValue.style.display = isHeaderVisible ? 'table-cell' : 'none';
+                });
+
                 rssiHeader.style.display = isHeaderVisible ? 'table-cell' : 'none';
                 snrHeader.style.display = isHeaderVisible ? 'table-cell' : 'none';
-                }
             });
             });
         });
