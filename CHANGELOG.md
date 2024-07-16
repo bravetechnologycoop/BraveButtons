@@ -9,6 +9,18 @@ Please note that the date associated with a release is the date the code
 was committed to the `main` branch. This is not necessarily the date that
 the code was deployed.
 
+## Unreleased
+
+### Added
+
+- Added Github Actions file `CI.yml` in `.github/workflows` to run along with Travis CI (CU-86dthadwg).
+
+### Changed
+
+- Removed `.travis.yml` file to stop using Travis CI (CU-86dthadwg).
+- Changed Build Status badge in the README (CU-86dthadwg).
+- Changed README instructions for adding encrypted variables for Travis to instructions for adding secrets in Github Actions (CU-86dthadwg).
+
 ## [13.10.0] - 2024-07-02
 
 ### Added
