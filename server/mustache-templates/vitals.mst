@@ -65,8 +65,8 @@
                             <th scope="col">Client</th>
                             <th scope="col">Unit</th>
                             <th scope="col">Battery Level</th>
-                            <th scope="col">RSSI</th>
-                            <th scope="col">SNR</th>
+                            <th scope="col" class="rssi-header" style="display: none;">RSSI</th>
+                            <th scope="col" class="snr-header" style="display: none;">SNR</th>
                             <th scope="col">Signal Strength</th>
                             <th scope="col">Last Seen</th>
                             <th scope="col">Sends Alerts?</th>
@@ -94,23 +94,30 @@
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const signalStrengthCells = document.querySelectorAll('.signal-strength');
+        document.addEventListener('DOMContentLoaded', function () {
+            const signalStrengthCells = document.querySelectorAll('.signal-strength');
+            let isHeaderVisible = false;
 
-        signalStrengthCells.forEach(cell => {
-          cell.addEventListener('click', function () {
-            const targetUnit = cell.getAttribute('data-target');
-            const rssiValue = document.querySelector(`.${targetUnit}-rssi`);
-            const snrValue = document.querySelector(`.${targetUnit}-snr`);
+            signalStrengthCells.forEach(cell => {
+            cell.addEventListener('click', function () {
+                const targetUnit = cell.getAttribute('data-target');
+                const rssiValue = document.querySelector(`.${targetUnit}-rssi`);
+                const snrValue = document.querySelector(`.${targetUnit}-snr`);
+                const rssiHeader = document.querySelector('.rssi-header');
+                const snrHeader = document.querySelector('.snr-header');
 
-            if (rssiValue && snrValue) {
-              const isVisible = rssiValue.style.display === 'table-cell';
-              rssiValue.style.display = isVisible ? 'none' : 'table-cell';
-              snrValue.style.display = isVisible ? 'none' : 'table-cell';
-            }
-          });
+                if (rssiValue && snrValue) {
+                const isVisible = rssiValue.style.display === 'table-cell';
+                rssiValue.style.display = isVisible ? 'none' : 'table-cell';
+                snrValue.style.display = isVisible ? 'none' : 'table-cell';
+
+                isHeaderVisible = !isVisible;
+                rssiHeader.style.display = isHeaderVisible ? 'table-cell' : 'none';
+                snrHeader.style.display = isHeaderVisible ? 'table-cell' : 'none';
+                }
+            });
+            });
         });
-      });
     </script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
