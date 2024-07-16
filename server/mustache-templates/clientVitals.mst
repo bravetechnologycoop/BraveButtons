@@ -78,9 +78,9 @@
                                 <tr class="table-data">
                                     <th scope="row">{{unit}}</th>
                                     <td>{{batteryLevel}}</td>
-                                    <td class="{{rssiClass}}">{{rssi}}</td>
-                                    <td class="{{snrClass}}">{{snr}}</td>
-                                    <td>{{signalStrength}}</td>
+                                    <td class="rssi-value {{rssiClass}} {{unit}}-rssi" style="display: none;">{{rssi}}</td>
+                                    <td class="snr-value {{snrClass}} {{unit}}-snr" style="display: none;">{{snr}}</td>
+                                    <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}" class="signal-strength" data-target="{{unit}}">{{signalStrength}}</td>
                                     <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
                                     <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                                     <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
@@ -96,6 +96,25 @@
         </div>
     </div>
     
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const signalStrengthCells = document.querySelectorAll('.signal-strength');
+
+        signalStrengthCells.forEach(cell => {
+          cell.addEventListener('click', function () {
+            const targetUnit = cell.getAttribute('data-target');
+            const rssiValue = document.querySelector(`.${targetUnit}-rssi`);
+            const snrValue = document.querySelector(`.${targetUnit}-snr`);
+
+            if (rssiValue && snrValue) {
+              const isVisible = rssiValue.style.display === 'table-cell';
+              rssiValue.style.display = isVisible ? 'none' : 'table-cell';
+              snrValue.style.display = isVisible ? 'none' : 'table-cell';
+            }
+          });
+        });
+      });
+    </script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
