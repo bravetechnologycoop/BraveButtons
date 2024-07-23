@@ -18,19 +18,19 @@ function configureRoutes(app) {
 
   // new to-be-implemented API routes
   app.get('/api/clients', api.authorize, api.handleGetClients)
-  app.get('/api/clients/:clientId', api.validateGetClient, api.authorize, api.handleGetClient)
-  app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, api.authorize, api.handleGetClientButtons)
-  app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, api.authorize, api.handleGetClientButton)
-  app.get('/api/clients/:clientId/buttons/:buttonId/sessions', api.validateGetClientButtonSessions, api.authorize, api.handleGetClientButtonSessions)
-  app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, api.authorize, api.handleGetClientGateways)
-  app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, api.authorize, api.handleGetClientGateway)
-  app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, api.authorize, api.handleGetClientVitals)
   app.post('/api/clients', api.validateCreateClient, api.authorize, api.handleCreateClient)
-  app.post('/api/clients/:clientId/buttons', api.validateCreateClientButton, api.authorize, api.handleCreateClientButton)
-  app.post('/api/clients/:clientId/gateways', api.validateCreateClientGateway, api.authorize, api.handleCreateClientGateway)
+  app.get('/api/clients/:clientId', api.validateGetClient, api.authorize, api.handleGetClient)
   app.put('/api/clients/:clientId', api.validateUpdateClient, api.authorize, api.handleUpdateClient)
+  app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, api.authorize, api.handleGetClientButtons)
+  app.post('/api/clients/:clientId/buttons', api.validateCreateClientButton, api.authorize, api.handleCreateClientButton)
+  app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, api.authorize, api.handleGetClientButton)
   app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, api.authorize, api.handleUpdateClientButton)
+  app.get('/api/clients/:clientId/sessions', api.validateGetClientSessions, api.authorize, api.handleGetClientSessions)
+  app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, api.authorize, api.handleGetClientGateways)
+  app.post('/api/clients/:clientId/gateways', api.validateCreateClientGateway, api.authorize, api.handleCreateClientGateway)
+  app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, api.authorize, api.handleGetClientGateway)
   app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, api.authorize, api.handleUpdateClientGateway)
+  app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, api.authorize, api.handleGetClientVitals)
 
   // non-client specific vitals: are these useful?
   // Johnny: haven't really used them. Good to have a glance and see which devices are down?
