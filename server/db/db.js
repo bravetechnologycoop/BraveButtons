@@ -2,8 +2,7 @@
 const { Pool, types } = require('pg')
 
 // In-house dependencies
-const { ALERT_TYPE, CHATBOT_STATE, Client, helpers, Session } = require('brave-alert-lib')
-const Button = require('../Button')
+const { CHATBOT_STATE, Client, DEVICE_TYPE, Device, helpers, Session } = require('brave-alert-lib')
 const Gateway = require('../Gateway')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
@@ -12,7 +11,7 @@ const pool = new Pool({
   host: helpers.getEnvVar('PG_HOST'),
   port: helpers.getEnvVar('PG_PORT'),
   user: helpers.getEnvVar('PG_USER'),
-  database: helpers.getEnvVar('PG_USER'),
+  database: helpers.getEnvVar('PG_DATABASE'),
   password: helpers.getEnvVar('PG_PASSWORD'),
   ssl: { rejectUnauthorized: false },
 })
@@ -23,30 +22,69 @@ pool.on('error', err => {
 
 types.setTypeParser(types.builtins.NUMERIC, value => parseFloat(value))
 
-function createSessionFromRow(r, allButtons) {
-  const button = allButtons.filter(b => b.id === r.button_id)[0]
+function createSessionFromRow(r, allDevices) {
+  const device = allDevices.filter(d => d.id === r.device_id)[0]
 
-  // prettier-ignore
-  return new Session(r.id, r.chatbot_state, r.alert_type, r.number_of_alerts, r.created_at, r.updated_at, r.incident_category, r.responded_at, r.responded_by_phone_number, button)
+  return new Session(
+    r.id,
+    r.chatbot_state,
+    r.alert_type,
+    r.number_of_alerts,
+    r.created_at,
+    r.updated_at,
+    r.incident_category,
+    r.responded_at,
+    r.responded_by_phone_number,
+    r.is_resettable,
+    device,
+  )
 }
 
 function createClientFromRow(r) {
-  // prettier-ignore
-  return new Client(r.id, r.display_name, r.responder_phone_numbers, r.reminder_timeout, r.fallback_phone_numbers, r.from_phone_number, r.fallback_timeout, r.heartbeat_phone_numbers, r.incident_categories, r.is_displayed, r.is_sending_alerts, r.is_sending_vitals, r.language, r.created_at, r.updated_at)
+  return new Client(
+    r.id,
+    r.display_name,
+    r.responder_phone_numbers,
+    r.reminder_timeout,
+    r.fallback_phone_numbers,
+    r.from_phone_number,
+    r.fallback_timeout,
+    r.heartbeat_phone_numbers,
+    r.incident_categories,
+    r.is_displayed,
+    r.is_sending_alerts,
+    r.is_sending_vitals,
+    r.language,
+    r.created_at,
+    r.updated_at,
+  )
 }
 
-function createButtonFromRow(r, allClients) {
+function createDeviceFromRow(r, allClients) {
   const client = allClients.filter(c => c.id === r.client_id)[0]
 
-  // prettier-ignore
-  return new Button(r.id, r.display_name, r.phone_number, r.created_at, r.updated_at, r.button_serial_number, r.is_displayed, r.is_sending_alerts, r.is_sending_vitals, r.sent_low_battery_alert_at, r.sent_vitals_alert_at, client)
+  return new Device(
+    r.id,
+    r.device_type,
+    r.locationid,
+    r.phone_number,
+    r.display_name,
+    r.serial_number,
+    r.sent_low_battery_alert_at,
+    r.sent_vitals_alert_at,
+    r.created_at,
+    r.updated_at,
+    r.is_displayed,
+    r.is_sending_alerts,
+    r.is_sending_vitals,
+    client,
+  )
 }
 
 function createButtonsVitalFromRow(r, allButtons) {
-  const button = allButtons.filter(b => b.id === r.button_id)[0]
+  const device = allButtons.filter(d => d.id === r.device_id)[0]
 
-  // prettier-ignore
-  return new ButtonsVital(r.id, r.battery_level, r.created_at, r.snr, r.rssi, button)
+  return new ButtonsVital(r.id, r.battery_level, r.created_at, r.snr, r.rssi, device)
 }
 
 function createGatewayFromRow(r, allClients) {
@@ -73,7 +111,7 @@ async function beginTransaction() {
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
     await pgClient.query(
-      'LOCK TABLE sessions, buttons, clients, migrations, gateways, gateways_vitals, gateways_vitals_cache, buttons_vitals, buttons_vitals_cache',
+      'LOCK TABLE sessions, devices, clients, migrations, gateways, gateways_vitals, gateways_vitals_cache, buttons_vitals, buttons_vitals_cache',
     )
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
@@ -135,29 +173,32 @@ async function getClients(pgClient) {
       return results.rows.map(createClientFromRow)
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getClients query: ${err.toString()}`)
   }
 
   return []
 }
 
-async function getActiveClients(pgClient) {
+async function getActiveButtonsClients(pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getActiveClients',
+      'getActiveButtonsClients',
       `
         SELECT c.*
         FROM clients c
         INNER JOIN (
           SELECT DISTINCT client_id AS id
-          FROM buttons
-          WHERE is_sending_alerts AND is_sending_vitals
+          FROM devices
+          WHERE device_type = $1
+          AND is_sending_alerts
+          AND is_sending_vitals
         ) AS b
         ON c.id = b.id
-        WHERE c.is_sending_alerts AND c.is_sending_vitals
+        WHERE c.is_sending_alerts
+        AND c.is_sending_vitals
         ORDER BY c.display_name;
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
@@ -168,29 +209,30 @@ async function getActiveClients(pgClient) {
 
     return await Promise.all(results.rows.map(r => createClientFromRow(r)))
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getActiveButtonsClients query: ${err.toString()}`)
   }
 }
 
 async function getButtons(pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getButtonWithSerialNumber',
+      'getButtons',
       `
       SELECT *
-      FROM buttons
+      FROM devices
+      WHERE device_type = $1
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
 
     if (results.rows.length > 0) {
       const allClients = await getClients(pgClient)
-      return results.rows.map(r => createButtonFromRow(r, allClients))
+      return results.rows.map(r => createDeviceFromRow(r, allClients))
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getButtons query: ${err.toString()}`)
   }
 
   return []
@@ -214,26 +256,26 @@ async function getGateways(pgClient) {
       return results.rows.map(r => createGatewayFromRow(r, allClients))
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getGateways query: ${err.toString()}`)
   }
 
   return []
 }
 
-async function getUnrespondedSessionWithButtonId(buttonId, pgClient) {
+async function getUnrespondedSessionWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getUnrespondedSessionWithButtonId',
+      'getUnrespondedSessionWithDeviceId',
       `
       SELECT *
       FROM sessions
-      WHERE button_id = $1
+      WHERE device_id = $1
       AND chatbot_state != $2
       AND chatbot_state != $3
       ORDER BY created_at
       DESC LIMIT 1
       `,
-      [buttonId, CHATBOT_STATE.WAITING_FOR_CATEGORY, CHATBOT_STATE.COMPLETED],
+      [deviceId, CHATBOT_STATE.WAITING_FOR_CATEGORY, CHATBOT_STATE.COMPLETED],
       pool,
       pgClient,
     )
@@ -243,7 +285,7 @@ async function getUnrespondedSessionWithButtonId(buttonId, pgClient) {
       return createSessionFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getUnrespondedSessionWithDeviceId query: ${err.toString()}`)
   }
 
   return null
@@ -256,9 +298,9 @@ async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responder
       `
       SELECT s.*
       FROM sessions AS s
-      LEFT JOIN buttons AS b ON s.button_id = b.id
-      LEFT JOIN clients AS c ON b.client_id = c.id
-      WHERE b.phone_number = $1
+      LEFT JOIN devices AS d ON s.device_id = d.id
+      LEFT JOIN clients AS c ON d.client_id = c.id
+      WHERE d.phone_number = $1
       AND $2 = ANY(c.responder_phone_numbers)
       ORDER BY created_at DESC
       LIMIT 1
@@ -273,22 +315,22 @@ async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responder
       return createSessionFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getMostRecentSessionWithPhoneNumbers query: ${err.toString()}`)
   }
 
   return null
 }
 
-async function getAllSessionsWithButtonId(buttonId, pgClient) {
+async function getAllSessionsWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getAllSessionsWithButtonId',
+      'getAllSessionsWithDeviceId',
       `
       SELECT *
       FROM sessions
-      WHERE button_id = $1
+      WHERE device_id = $1
       `,
-      [buttonId],
+      [deviceId],
       pool,
       pgClient,
     )
@@ -298,25 +340,26 @@ async function getAllSessionsWithButtonId(buttonId, pgClient) {
       return results.rows.map(r => createSessionFromRow(r, allButtons))
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getAllSessionsWithDeviceId query: ${err.toString()}`)
   }
 
   return []
 }
 
-async function getRecentSessionsWithClientId(clientId, pgClient) {
+async function getRecentButtonsSessionsWithClientId(clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getRecentSessionsWithClientId',
+      'getRecentButtonsSessionsWithClientId',
       `
       SELECT s.*
       FROM sessions AS s
-      LEFT JOIN buttons AS b on s.button_id = b.id
-      WHERE b.client_id = $1
+      LEFT JOIN devices AS b on s.device_id = b.id
+      WHERE b.device_type = $1
+      AND b.client_id = $2
       ORDER BY created_at DESC
       LIMIT 40
       `,
-      [clientId],
+      [DEVICE_TYPE.DEVICE_BUTTON, clientId],
       pool,
       pgClient,
     )
@@ -326,7 +369,7 @@ async function getRecentSessionsWithClientId(clientId, pgClient) {
       return results.rows.map(r => createSessionFromRow(r, allButtons))
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getRecentButtonsSessionsWithClientId query: ${err.toString()}`)
   }
 
   return []
@@ -337,13 +380,14 @@ async function getRecentButtonsVitals(pgClient) {
     const results = await helpers.runQuery(
       'getRecentButtonsVitals',
       `
-      SELECT b.id as button_id, bv.id, bv.battery_level, bv.rssi, bv.snr, bv.created_at
-      FROM buttons b
-      LEFT JOIN buttons_vitals_cache bv ON b.id = bv.button_id
-      WHERE b.button_serial_number like 'ac%'
+      SELECT b.id as device_id, bv.id, bv.battery_level, bv.rssi, bv.snr, bv.created_at
+      FROM devices b
+      LEFT JOIN buttons_vitals_cache bv ON b.id = bv.device_id
+      WHERE b.device_type = $1
+      AND b.serial_number like 'ac%'
       ORDER BY bv.created_at
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
@@ -353,7 +397,7 @@ async function getRecentButtonsVitals(pgClient) {
       return results.rows.map(r => createButtonsVitalFromRow(r, allButtons))
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getRecentButtonsVitals query: ${err.toString()}`)
   }
 
   return []
@@ -364,14 +408,15 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
     const results = await helpers.runQuery(
       'getRecentButtonsVitalsWithClientId',
       `
-      SELECT b.id as button_id, bv.id, bv.battery_level, bv.rssi, bv.snr, bv.created_at
-      FROM buttons b
-      LEFT JOIN buttons_vitals_cache bv ON b.id = bv.button_id
-      WHERE b.client_id = $1
-      AND b.button_serial_number like 'ac%'
+      SELECT b.id as device_id, bv.id, bv.battery_level, bv.rssi, bv.snr, bv.created_at
+      FROM devices b
+      LEFT JOIN buttons_vitals_cache bv ON b.id = bv.device_id
+      WHERE b.device_type = $1
+      AND b.client_id = $2
+      AND b.serial_number like 'ac%'
       ORDER BY bv.created_at
       `,
-      [clientId],
+      [DEVICE_TYPE.DEVICE_BUTTON, clientId],
       pool,
       pgClient,
     )
@@ -381,7 +426,7 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
       return results.rows.map(r => createButtonsVitalFromRow(r, allButtons))
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getRecentButtonsVitalsWithClientId query: ${err.toString()}`)
   }
 
   return []
@@ -407,7 +452,7 @@ async function getRecentGatewaysVitals(pgClient) {
       return results.rows.map(r => createGatewaysVitalFromRow(r, allGateways))
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getRecentGatewaysVitals query: ${err.toString()}`)
   }
 
   return []
@@ -434,7 +479,7 @@ async function getRecentGatewaysVitalsWithClientId(clientId, pgClient) {
       return results.rows.map(r => createGatewaysVitalFromRow(r, allGateways))
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getRecentGatewaysVitalsWithClientId query: ${err.toString()}`)
   }
 
   return []
@@ -461,7 +506,7 @@ async function getRecentGatewaysVitalWithGatewayId(gatewayId, pgClient) {
     const allGateways = await getGateways(pgClient)
     return createGatewaysVitalFromRow(results.rows[0], allGateways)
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getRecentGatewaysVitalWithGatewayId query: ${err.toString()}`)
   }
 
   return []
@@ -486,32 +531,61 @@ async function getSessionWithSessionId(sessionId, pgClient) {
       return createSessionFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getSessionWithSessionId query: ${err.toString()}`)
   }
 
   return null
 }
 
-async function createSession(buttonId, chatbotState, incidentCategory, respondedAt, respondedByPhoneNumber, pgClient) {
+async function createSession(
+  deviceId,
+  incidentCategory,
+  chatbotState,
+  alertType,
+  createdAt,
+  respondedAt,
+  respondedByPhoneNumber,
+  isResettable,
+  pgClient,
+) {
   try {
-    const results = await helpers.runQuery(
-      'createSession',
-      `
-      INSERT INTO sessions (button_id, chatbot_state, alert_type, number_of_alerts, responded_at, incident_category, responded_by_phone_number) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING *
-      `,
-      [buttonId, chatbotState, ALERT_TYPE.BUTTONS_NOT_URGENT, 1, respondedAt, incidentCategory, respondedByPhoneNumber],
-      pool,
-      pgClient,
-    )
+    if (createdAt !== undefined) {
+      const results = await helpers.runQuery(
+        'createSession',
+        `
+        INSERT INTO sessions (device_id, incident_category, chatbot_state, alert_type, created_at, responded_at, responded_by_phone_number, is_resettable)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+        `,
+        [deviceId, incidentCategory, chatbotState, alertType, createdAt, respondedAt, respondedByPhoneNumber, isResettable],
+        pool,
+        pgClient,
+      )
 
-    if (results.rows.length > 0) {
-      const allButtons = await getButtons(pgClient)
-      return createSessionFromRow(results.rows[0], allButtons)
+      if (results.rows.length > 0) {
+        const allButtons = await getButtons(pgClient)
+        return createSessionFromRow(results.rows[0], allButtons)
+      }
+    } else {
+      const results = await helpers.runQuery(
+        'createSession',
+        `
+        INSERT INTO sessions (device_id, incident_category, chatbot_state, alert_type, responded_at, responded_by_phone_number, is_resettable)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING *
+        `,
+        [deviceId, incidentCategory, chatbotState, alertType, respondedAt, respondedByPhoneNumber, isResettable],
+        pool,
+        pgClient,
+      )
+
+      if (results.rows.length > 0) {
+        const allButtons = await getButtons(pgClient)
+        return createSessionFromRow(results.rows[0], allButtons)
+      }
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the createSession query: ${err.toString()}`)
   }
 
   return null
@@ -539,11 +613,11 @@ async function saveSession(session, pgClient) {
       'saveSessionUpdate',
       `
       UPDATE sessions
-      SET button_id = $1, chatbot_state = $2, alert_type=$3, number_of_alerts = $4, incident_category = $5, responded_at = $6, responded_by_phone_number = $7
+      SET device_id = $1, chatbot_state = $2, alert_type=$3, number_of_alerts = $4, incident_category = $5, responded_at = $6, responded_by_phone_number = $7
       WHERE id = $8
       `,
       [
-        session.button.id,
+        session.device.id,
         session.chatbotState,
         session.alertType,
         session.numberOfAlerts,
@@ -556,7 +630,7 @@ async function saveSession(session, pgClient) {
       pgClient,
     )
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the saveSession query: ${err.toString()}`)
   }
 }
 
@@ -586,18 +660,18 @@ async function clearSessions(pgClient) {
       pgClient,
     )
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the clearSessions query: ${err.toString()}`)
   }
 }
 
-async function getButtonWithSerialNumber(serialNumber, pgClient) {
+async function getDeviceWithSerialNumber(serialNumber, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getButtonWithSerialNumber',
+      'getDeviceWithSerialNumber',
       `
       SELECT *
-      FROM buttons
-      WHERE button_serial_number = $1
+      FROM devices
+      WHERE serial_number = $1
       `,
       [serialNumber],
       pool,
@@ -606,10 +680,10 @@ async function getButtonWithSerialNumber(serialNumber, pgClient) {
 
     if (results.rows.length > 0) {
       const allClients = await getClients(pgClient)
-      return createButtonFromRow(results.rows[0], allClients)
+      return createDeviceFromRow(results.rows[0], allClients)
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getDeviceWithSerialNumber query: ${err.toString()}`)
   }
 
   return null
@@ -619,7 +693,7 @@ async function createButton(
   clientId,
   displayName,
   phoneNumber,
-  buttonSerialNumber,
+  serialNumber,
   isDisplayed,
   isSendingAlerts,
   isSendingVitals,
@@ -631,15 +705,16 @@ async function createButton(
     const results = await helpers.runQuery(
       'createButton',
       `
-      INSERT INTO buttons (client_id, display_name, phone_number, button_serial_number, is_displayed, is_sending_alerts, is_sending_vitals, sent_low_battery_alert_at, sent_vitals_alert_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      INSERT INTO devices (device_type, client_id, display_name, phone_number, serial_number, is_displayed, is_sending_alerts, is_sending_vitals, sent_low_battery_alert_at, sent_vitals_alert_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
       `,
       [
+        DEVICE_TYPE.DEVICE_BUTTON,
         clientId,
         displayName,
         phoneNumber,
-        buttonSerialNumber,
+        serialNumber,
         isDisplayed,
         isSendingAlerts,
         isSendingVitals,
@@ -651,15 +726,15 @@ async function createButton(
     )
 
     const allClients = await getClients(pgClient)
-    return createButtonFromRow(results.rows[0], allClients)
+    return createDeviceFromRow(results.rows[0], allClients)
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the createButton query: ${err.toString()}`)
   }
 
   return null
 }
 
-async function clearButtons(pgClient) {
+async function clearDevices(pgClient) {
   if (!helpers.isTestEnvironment()) {
     helpers.log('warning - tried to clear buttons database outside of a test environment!')
     return
@@ -667,15 +742,15 @@ async function clearButtons(pgClient) {
 
   try {
     await helpers.runQuery(
-      'clearButtons',
-      `DELETE FROM buttons
+      'clearDevices',
+      `DELETE FROM devices
       `,
       [],
       pool,
       pgClient,
     )
   } catch (err) {
-    helpers.log(err.toString())
+    helpers.logError(`Error running the clearDevices query: ${err.toString()}`)
   }
 }
 
@@ -722,7 +797,7 @@ async function createClient(
 
     return createClientFromRow(results.rows[0])
   } catch (err) {
-    helpers.log(err.toString())
+    helpers.logError(`Error running the createClient query: ${err.toString()}`)
   }
 
   return null
@@ -755,7 +830,7 @@ async function clearClients(pgClient) {
       pgClient,
     )
   } catch (err) {
-    helpers.log(err.toString())
+    helpers.logError(`Error running the clearClients query: ${err.toString()}`)
   }
 }
 
@@ -777,7 +852,7 @@ async function getClientWithId(id, pgClient) {
       return createClientFromRow(results.rows[0])
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getClientWithId query: ${err.toString()}`)
   }
 
   return null
@@ -790,7 +865,7 @@ async function getClientWithSessionId(sessionId, pgClient) {
       `
       SELECT c.*
       FROM sessions AS s
-      LEFT JOIN buttons AS b ON s.button_id = b.id
+      LEFT JOIN devices AS b ON s.device_id = b.id
       LEFT JOIN clients AS c ON b.client_id = c.id 
       WHERE s.id = $1
       `,
@@ -803,7 +878,7 @@ async function getClientWithSessionId(sessionId, pgClient) {
       return createClientFromRow(results.rows[0])
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getClientWithSessionId query: ${err.toString()}`)
   }
 
   return null
@@ -826,7 +901,7 @@ async function clearButtonsVitals(pgClient) {
       pgClient,
     )
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the clearButtonsVitals query: ${err.toString()}`)
   }
 }
 
@@ -847,7 +922,7 @@ async function clearButtonsVitalsCache(pgClient) {
       pgClient,
     )
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the clearButtonsVitalsCache query: ${err.toString()}`)
   }
 }
 
@@ -868,7 +943,7 @@ async function clearGateways(pgClient) {
       pgClient,
     )
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the clearGateways query: ${err.toString()}`)
   }
 }
 
@@ -889,7 +964,7 @@ async function clearGatewaysVitals(pgClient) {
       pgClient,
     )
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the clearGatewaysVitals query: ${err.toString()}`)
   }
 }
 
@@ -910,7 +985,7 @@ async function clearGatewaysVitalsCache(pgClient) {
       pgClient,
     )
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the clearGatewaysVitalsCache query: ${err.toString()}`)
   }
 }
 
@@ -926,7 +1001,7 @@ async function clearTables(pgClient) {
   await clearButtonsVitals(pgClient)
   await clearGateways(pgClient)
   await clearSessions(pgClient)
-  await clearButtons(pgClient)
+  await clearDevices(pgClient)
   await clearClients(pgClient)
 }
 
@@ -946,47 +1021,47 @@ async function updateGatewaySentVitalsAlerts(gatewayId, sentalerts, pgClient) {
 
     await helpers.runQuery('updateGatewaySentVitalsAlerts', query, [gatewayId], pool, pgClient)
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the updateGatewaySentVitalsAlerts query: ${err.toString()}`)
   }
 }
 
-async function updateButtonsSentLowBatteryAlerts(buttonId, sentalerts, pgClient) {
+async function updateDevicesSentLowBatteryAlerts(deviceId, sentalerts, pgClient) {
   try {
     const query = sentalerts
       ? `
-        UPDATE buttons
+        UPDATE devices
         SET sent_low_battery_alert_at = NOW()
         WHERE id = $1
       `
       : `
-        UPDATE buttons
+        UPDATE devices
         SET sent_low_battery_alert_at = NULL
         WHERE id = $1
       `
 
-    await helpers.runQuery('updateButtonsSentLowBatteryAlerts', query, [buttonId], pool, pgClient)
+    await helpers.runQuery('updateDevicesSentLowBatteryAlerts', query, [deviceId], pool, pgClient)
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the updateDevicesSentLowBatteryAlerts query: ${err.toString()}`)
   }
 }
 
-async function updateButtonsSentVitalsAlerts(buttonId, sentalerts, pgClient) {
+async function updateDevicesSentVitalsAlerts(deviceId, sentalerts, pgClient) {
   try {
     const query = sentalerts
       ? `
-        UPDATE buttons
+        UPDATE devices
         SET sent_vitals_alert_at = NOW()
         WHERE id = $1
       `
       : `
-        UPDATE buttons
+        UPDATE devices
         SET sent_vitals_alert_at = NULL
         WHERE id = $1
       `
 
-    await helpers.runQuery('updateButtonSentVitalsAlerts', query, [buttonId], pool, pgClient)
+    await helpers.runQuery('updateDevicesSentVitalsAlerts', query, [deviceId], pool, pgClient)
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the updateDevicesSentVitalsAlerts query: ${err.toString()}`)
   }
 }
 
@@ -1014,39 +1089,40 @@ async function getDataForExport(pgClient) {
         '' AS "Button Battery Level",
         TO_CHAR(b.created_at, 'yyyy-MM-dd HH24:mi:ss') AS "Date Button Created",
         TO_CHAR(b.updated_at, 'yyyy-MM-dd HH24:mi:ss') AS "Button Last Updated",
-        b.button_serial_number AS "Button Serial Number",
+        b.serial_number AS "Button Serial Number",
         TO_CHAR(s.responded_at, 'yyyy-MM-dd HH24:mi:ss') AS "Session Responded At",
         s.responded_by_phone_number AS "Session Responded By",
         x.country AS "Country",
         x.country_subdivision AS "Country Subdivision",
         x.building_type AS "Building Type"
       FROM sessions AS s
-        LEFT JOIN buttons AS b ON s.button_id = b.id
+        LEFT JOIN devices AS b ON s.device_id = b.id
         LEFT JOIN clients AS c ON c.id = b.client_id
         LEFT JOIN clients_extension x on x.client_id = c.id
-        LEFT JOIN buttons_vitals_cache bv ON b.id = bv.button_id
+        LEFT JOIN buttons_vitals_cache bv ON b.id = bv.device_id
+        WHERE b.device_type = $1
       `,
-      [],
+      [DEVICE_TYPE.DEVICE_BUTTON],
       pool,
       pgClient,
     )
 
     return results.rows
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getDataForExport query: ${err.toString()}`)
   }
 }
 
-async function logButtonsVital(buttonId, batteryLevel, snr, rssi, pgClient) {
+async function logButtonsVital(deviceId, batteryLevel, snr, rssi, pgClient) {
   try {
     const results = await helpers.runQuery(
       'logButtonsVital',
       `
-      INSERT INTO buttons_vitals (button_id, battery_level, snr, rssi)
+      INSERT INTO buttons_vitals (device_id, battery_level, snr, rssi)
       VALUES ($1, $2, $3, $4)
       RETURNING *
       `,
-      [buttonId, batteryLevel, snr, rssi],
+      [deviceId, batteryLevel, snr, rssi],
       pool,
       pgClient,
     )
@@ -1056,7 +1132,7 @@ async function logButtonsVital(buttonId, batteryLevel, snr, rssi, pgClient) {
       return createButtonsVitalFromRow(results.rows[0], allButtons)
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the logButtonsVital query: ${err.toString()}`)
   }
 
   return null
@@ -1081,7 +1157,7 @@ async function logGatewaysVital(gatewayId, lastSeenAt, pgClient) {
       return createGatewaysVitalFromRow(results.rows[0], allGateways)
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the logGatewaysVital query: ${err.toString()}`)
   }
 
   return null
@@ -1101,7 +1177,7 @@ async function getCurrentTime(pgClient) {
 
     return results.rows[0].now
   } catch (err) {
-    helpers.log(err.toString())
+    helpers.logError(`Error running the getCurrentTime query: ${err.toString()}`)
   }
 }
 
@@ -1153,8 +1229,7 @@ async function getDisconnectedGatewaysWithClient(client, pgClient) {
       SELECT *
       FROM gateways g
       WHERE g.client_id = $1
-      AND g.sent_vitals_alert_at IS NULL
-      AND g.is_sending_vitals = true
+      AND g.sent_vitals_alert_at IS NOT NULL
       `,
       [client.id],
       pool,
@@ -1169,274 +1244,55 @@ async function getDisconnectedGatewaysWithClient(client, pgClient) {
       return []
     }
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the getDisconnectedGatewaysWithClient query: ${err.toString()}`)
   }
 
   return null
 }
 
-async function getButtonWithId(id, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getButtonWithId',
-      `
-      SELECT *
-      FROM buttons
-      WHERE id = $1
-      `,
-      [id],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      const allClients = await getClients(pgClient)
-      return createButtonFromRow(results.rows[0], allClients)
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return null
-}
-
-async function getButtonsWithClientId(clientId, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getButtonsWithClientId',
-      `
-      SELECT *
-      FROM buttons
-      WHERE client_id = $1
-      `,
-      [clientId],
-      pool,
-      pgClient,
-    )
-
-    if (results !== undefined && results.rows.length > 0) {
-      const client = await getClientWithId(clientId)
-      return results.rows.map(r => createButtonFromRow(r, [client]))
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return []
-}
-
-async function getRecentSessionsWithButtonId(buttonId, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getRecentSessionsWithButtonId',
-      `
-      SELECT s.*
-      FROM sessions AS s
-      LEFT JOIN buttons AS b on s.button_id = b.id
-      WHERE b.id = $1
-      ORDER BY created_at DESC
-      LIMIT 40
-      `,
-      [buttonId],
-      pool,
-      pgClient,
-    )
-
-    if (results !== undefined && results.rows.length > 0) {
-      const allClients = await getClients(pgClient)
-      return results.rows.map(r => createSessionFromRow(r, allClients))
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return []
-}
-
-async function getGatewayWithId(id, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getButtonWithId',
-      `
-      SELECT *
-      FROM gateways
-      WHERE id = $1
-      `,
-      [id],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      const allClients = await getClients(pgClient)
-      return createGatewayFromRow(results.rows[0], allClients)
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return null
-}
-
-async function getGatewaysWithClientId(clientId, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getGatewaysWithClientId',
-      `
-      SELECT *
-      FROM gateways
-      WHERE client_id = $1
-      `,
-      [clientId],
-      pool,
-      pgClient,
-    )
-
-    if (results !== undefined && results.rows.length > 0) {
-      const client = await getClientWithId(clientId)
-      return results.rows.map(r => createGatewayFromRow(r, [client]))
-    }
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return []
-}
-
-async function createGateway(gatewayId, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'createGateway',
-      `
-      INSERT INTO gateways (id, client_id, display_name, sent_vitals_alert_at, is_displayed, is_sending_vitals)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
-      `,
-      [gatewayId, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals],
-      pool,
-      pgClient,
-    )
-
-    const allClients = await getClients(pgClient)
-    return createGatewayFromRow(results.rows[0], allClients)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return null
-}
-
-async function updateButton(
+async function createDevice(
+  deviceType,
   clientId,
-  displayName,
+  locationid,
   phoneNumber,
-  buttonSerialNumber,
-  isDisplayed,
-  isSendingAlerts,
-  isSendingVitals,
-  buttonId,
-  pgClient,
-) {
-  try {
-    const results = await helpers.runQuery(
-      'udateButton',
-      `
-      UPDATE buttons
-      SET client_d=$1, display_name=$2, phone_number=$3, button_serial_number=$4, is_displayed=$5, is_sending_alerts=$6, is_sending_vitals=$7
-      WHERE id=$8
-      RETURNING *
-      `,
-      [clientId, displayName, phoneNumber, buttonSerialNumber, isDisplayed, isSendingAlerts, isSendingVitals, buttonId],
-      pool,
-      pgClient,
-    )
-
-    const allClients = await getClients(pgClient)
-    return createButtonFromRow(results.rows[0], allClients)
-  } catch (err) {
-    helpers.logError(err.toString())
-  }
-
-  return null
-}
-
-async function updateClient(
   displayName,
-  fromPhoneNumber,
-  responderPhoneNumbers,
-  reminderTimeout,
-  fallbackPhoneNumbers,
-  fallbackTimeout,
-  heartbeatPhoneNumbers,
-  incidentCategories,
+  serialNumber,
+  sentLowBatteryAlertAt,
+  sentVitalsAlertAt,
   isDisplayed,
   isSendingAlerts,
   isSendingVitals,
-  language,
-  clientId,
   pgClient,
 ) {
   try {
     const results = await helpers.runQuery(
-      'updateClient',
+      'createButton',
       `
-      UPDATE clients
-      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12
-      WHERE id = $13
+      INSERT INTO devices (device_type, client_id, locationid, phone_number, display_name, serial_number, sent_low_battery_alert_at, sent_vitals_alert_at, is_displayed, is_sending_alerts, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
       `,
       [
+        deviceType,
+        clientId,
+        locationid,
+        phoneNumber,
         displayName,
-        fromPhoneNumber,
-        responderPhoneNumbers,
-        reminderTimeout,
-        fallbackPhoneNumbers,
-        fallbackTimeout,
-        heartbeatPhoneNumbers,
-        incidentCategories,
+        serialNumber,
+        sentLowBatteryAlertAt,
+        sentVitalsAlertAt,
         isDisplayed,
         isSendingAlerts,
         isSendingVitals,
-        language,
-        clientId,
       ],
       pool,
       pgClient,
     )
 
-    if (results === undefined || results.rows.length === 0) {
-      return null
-    }
-
-    helpers.log(`Client '${displayName}' successfully updated`)
-
-    return await createClientFromRow(results.rows[0])
-  } catch (err) {
-    helpers.log(err.toString())
-  }
-
-  return null
-}
-
-async function updateGateway(clientId, displayName, isDisplayed, isSendingVitals, gatewayId, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'updateGateway',
-      `
-      UPDATE gateways
-      SET client_id=$1, display_name=$2, is_displayed=$3, is_sending_vitals=$4
-      WHERE id=$5
-      RETURNING *
-      `,
-      [clientId, displayName, isDisplayed, isSendingVitals, gatewayId],
-      pool,
-      pgClient,
-    )
-
     const allClients = await getClients(pgClient)
-    return createGatewayFromRow(results.rows[0], allClients)
+    return createDeviceFromRow(results.rows[0], allClients)
   } catch (err) {
-    helpers.logError(err.toString())
+    helpers.logError(`Error running the createButton query: ${err.toString()}`)
   }
 
   return null
@@ -1444,10 +1300,10 @@ async function updateGateway(clientId, displayName, isDisplayed, isSendingVitals
 
 module.exports = {
   beginTransaction,
-  clearButtons,
   clearButtonsVitals,
   clearButtonsVitalsCache,
   clearClients,
+  clearDevices,
   clearGateways,
   clearGatewaysVitals,
   clearGatewaysVitalsCache,
@@ -1457,43 +1313,35 @@ module.exports = {
   commitTransaction,
   createButton,
   createClient,
-  createGateway,
+  createDevice,
   createSession,
-  getActiveClients,
-  getAllSessionsWithButtonId,
+  getActiveButtonsClients,
+  getAllSessionsWithDeviceId,
   getButtons,
-  getButtonsWithClientId,
-  getButtonWithId,
-  getButtonWithSerialNumber,
+  getClients,
   getCurrentTime,
   getCurrentTimeForHealthCheck,
-  getClients,
   getClientWithId,
   getClientWithSessionId,
   getDataForExport,
+  getDeviceWithSerialNumber,
   getDisconnectedGatewaysWithClient,
   getGateways,
-  getGatewayWithId,
-  getGatewaysWithClientId,
   getMostRecentSessionWithPhoneNumbers,
   getPool,
+  getRecentButtonsSessionsWithClientId,
   getRecentButtonsVitals,
   getRecentButtonsVitalsWithClientId,
   getRecentGatewaysVitals,
   getRecentGatewaysVitalsWithClientId,
   getRecentGatewaysVitalWithGatewayId,
-  getRecentSessionsWithButtonId,
-  getRecentSessionsWithClientId,
   getSessionWithSessionId,
-  getUnrespondedSessionWithButtonId,
+  getUnrespondedSessionWithDeviceId,
   logButtonsVital,
   logGatewaysVital,
   rollbackTransaction,
   saveSession,
-  updateButton,
-  updateButtonsSentLowBatteryAlerts,
-  updateButtonsSentVitalsAlerts,
-  updateClient,
-  updateGateway,
+  updateDevicesSentLowBatteryAlerts,
+  updateDevicesSentVitalsAlerts,
   updateGatewaySentVitalsAlerts,
 }

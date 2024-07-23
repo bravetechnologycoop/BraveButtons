@@ -11,7 +11,6 @@ const { CHATBOT_STATE, factories, helpers } = require('brave-alert-lib')
 chai.use(chaiHttp)
 chai.use(sinonChai)
 
-const { buttonDBFactory } = require('../testingHelpers')
 const imports = require('../../server')
 
 const server = imports.server
@@ -74,17 +73,17 @@ describe('Chatbot server', () => {
         fallbackTimeout: 2,
         fromPhoneNumber: '+15005550006',
       })
-      this.button1 = await buttonDBFactory(db, {
+      this.button1 = await factories.buttonDBFactory(db, {
         clientId: client.id,
         displayName: '1',
         phoneNumber: unit1PhoneNumber,
-        buttonSerialNumber: unit1SerialNumber,
+        serialNumber: unit1SerialNumber,
       })
-      this.button2 = await buttonDBFactory(db, {
+      this.button2 = await factories.buttonDBFactory(db, {
         clientId: client.id,
         displayName: '2',
         phoneNumber: unit2PhoneNumber,
-        buttonSerialNumber: unit2SerialNumber,
+        serialNumber: unit2SerialNumber,
       })
 
       sandbox.spy(imports.braveAlerter, 'startAlertSession')
@@ -261,7 +260,7 @@ describe('Chatbot server', () => {
         .set('authorization', rakApiKeyPrimary)
         .send({ devEui: unit1SerialNumber, payload: 'Qw==' })
 
-      let sessions = await db.getAllSessionsWithButtonId(this.button1.id)
+      let sessions = await db.getAllSessionsWithDeviceId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after initial button press').to.equal(CHATBOT_STATE.STARTED)
       expect(sessions[0].respondedByPhoneNumber).to.equal(null)
@@ -274,7 +273,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_InitialStaffResponse)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
+      sessions = await db.getAllSessionsWithDeviceId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after initial staff response').to.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -287,7 +286,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_IncidentCategoryResponseFromOtherResponderPhone)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
+      sessions = await db.getAllSessionsWithDeviceId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after one of the other responders sent a message').to.equal(CHATBOT_STATE.WAITING_FOR_CATEGORY)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -300,7 +299,7 @@ describe('Chatbot server', () => {
         .send(twilioMessageUnit1_IncidentCategoryResponse)
       expect(response).to.have.status(200)
 
-      sessions = await db.getAllSessionsWithButtonId(this.button1.id)
+      sessions = await db.getAllSessionsWithDeviceId(this.button1.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after staff have categorized the incident').to.equal(CHATBOT_STATE.COMPLETED)
       expect(sessions[0].respondedByPhoneNumber).to.equal(installationResponderPhoneNumbers[0])
@@ -314,10 +313,10 @@ describe('Chatbot server', () => {
         .set('authorization', rakApiKeyPrimary)
         .send({ devEui: unit2SerialNumber, payload: 'Qw==' })
 
-      sessions = await db.getAllSessionsWithButtonId(this.button2.id)
+      sessions = await db.getAllSessionsWithDeviceId(this.button2.id)
       expect(sessions.length).to.equal(1)
       expect(sessions[0].chatbotState, 'state after new button press from a different unit').to.equal(CHATBOT_STATE.STARTED)
-      expect(sessions[0].button.id).to.equal(this.button2.id)
+      expect(sessions[0].device.id).to.equal(this.button2.id)
       expect(sessions[0].numberOfAlerts).to.equal(1)
       expect(sessions[0].respondedByPhoneNumber).to.equal(null)
       expect(sessions[0].respondedAt).to.equal(null)

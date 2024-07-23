@@ -16,6 +16,8 @@ else
     while IFS="=" read -r name value; do
         if [[ "$name" == "PG_USER" ]]; then
             export PG_USER="$value"
+        elif [[ "$name" == "PG_DATABASE" ]]; then
+            export PG_DATABASE="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
             export PG_PASSWORD="$value"
         elif [[ "$name" == "PG_HOST" ]]; then

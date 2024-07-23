@@ -16,6 +16,11 @@ const landingPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/lan
 const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.mst`, 'utf-8')
 const vitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/vitals.mst`, 'utf-8')
 
+const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
+const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
+const snrBadThreshold = helpers.getEnvVar('SNR_BAD_THRESHOLD')
+const snrGoodThreshold = helpers.getEnvVar('SNR_GOOD_THRESHOLD')
+
 function setupDashboardSessions(app) {
   app.use(cookieParser())
 
@@ -93,7 +98,7 @@ async function renderClientDetailsPage(req, res) {
       return
     }
 
-    const recentSessions = await db.getRecentSessionsWithClientId(req.params.clientId)
+    const recentSessions = await db.getRecentButtonsSessionsWithClientId(req.params.clientId)
     const currentClient = await db.getClientWithId(req.params.clientId)
     const viewParams = {
       recentSessions: [],
@@ -109,7 +114,7 @@ async function renderClientDetailsPage(req, res) {
         const updatedAt = helpers.formatDateTimeForDashboard(recentSession.updatedAt)
         const respondedAt = recentSession.respondedAt !== null ? helpers.formatDateTimeForDashboard(recentSession.respondedAt) : ''
         viewParams.recentSessions.push({
-          unit: recentSession.button.displayName,
+          unit: recentSession.device.displayName,
           createdAt,
           updatedAt,
           chatbotState: recentSession.chatbotState,
@@ -153,16 +158,42 @@ async function renderClientVitalsPage(req, res) {
 
       const buttonsVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
       for (const buttonsVital of buttonsVitals) {
-        if (buttonsVital.button.isDisplayed) {
+        if (buttonsVital.device.isDisplayed) {
+          let rssiClass = 'text-warning'
+          if (buttonsVital.rssi < rssiBadThreshold || buttonsVital.snr === null) {
+            rssiClass = 'text-danger'
+          } else if (buttonsVital.rssi > rssiGoodThreshold) {
+            rssiClass = 'text-success'
+          }
+
+          let snrClass = 'text-warning'
+          if (buttonsVital.snr < snrBadThreshold || buttonsVital.snr === null) {
+            snrClass = 'text-danger'
+          } else if (buttonsVital.snr > snrGoodThreshold) {
+            snrClass = 'text-success'
+          }
+
+          let signalStrength = 'Ok'
+          if (buttonsVital.snr === null || buttonsVital.rssi === null) {
+            signalStrength = 'Unknown'
+          } else if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
+            signalStrength = 'Bad'
+          } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
+            signalStrength = 'Good'
+          }
+
           viewParams.buttons.push({
-            unit: buttonsVital.button.displayName,
+            unit: buttonsVital.device.displayName,
             batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
             rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
             snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
+            rssiClass,
+            snrClass,
+            signalStrength,
             lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
             lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
-            isSendingAlerts: buttonsVital.button.isSendingAlerts && buttonsVital.button.client.isSendingAlerts,
-            isSendingVitals: buttonsVital.button.isSendingVitals && buttonsVital.button.client.isSendingVitals,
+            isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
+            isSendingVitals: buttonsVital.device.isSendingVitals && buttonsVital.device.client.isSendingVitals,
           })
         }
       }
@@ -204,18 +235,44 @@ async function renderVitalsPage(req, res) {
 
     const buttonsVitals = await db.getRecentButtonsVitals()
     for (const buttonsVital of buttonsVitals) {
-      if (buttonsVital.button.isDisplayed) {
+      if (buttonsVital.device.isDisplayed) {
+        let rssiClass = 'text-warning'
+        if (buttonsVital.rssi < rssiBadThreshold || buttonsVital.snr === null) {
+          rssiClass = 'text-danger'
+        } else if (buttonsVital.rssi > rssiGoodThreshold) {
+          rssiClass = 'text-success'
+        }
+
+        let snrClass = 'text-warning'
+        if (buttonsVital.snr < snrBadThreshold || buttonsVital.snr === null) {
+          snrClass = 'text-danger'
+        } else if (buttonsVital.snr > snrGoodThreshold) {
+          snrClass = 'text-success'
+        }
+
+        let signalStrength = 'Ok'
+        if (buttonsVital.snr === null || buttonsVital.rssi === null) {
+          signalStrength = 'Unknown'
+        } else if (rssiClass === 'text-danger' || snrClass === 'text-danger') {
+          signalStrength = 'Bad'
+        } else if (rssiClass === 'text-success' && snrClass === 'text-success') {
+          signalStrength = 'Good'
+        }
+
         viewParams.buttons.push({
-          clientName: buttonsVital.button.client.displayName,
-          clientId: buttonsVital.button.client.id,
-          unit: buttonsVital.button.displayName,
+          clientName: buttonsVital.device.client.displayName,
+          clientId: buttonsVital.device.client.id,
+          unit: buttonsVital.device.displayName,
           batteryLevel: buttonsVital.batteryLevel !== null ? buttonsVital.batteryLevel : 'unknown',
           rssi: buttonsVital.rssi !== null ? buttonsVital.rssi : 'unknown',
           snr: buttonsVital.snr !== null ? buttonsVital.snr : 'unknown',
+          rssiClass,
+          snrClass,
+          signalStrength,
           lastSeenAt: buttonsVital.createdAt !== null ? helpers.formatDateTimeForDashboard(buttonsVital.createdAt) : 'Never',
           lastSeenAgo: buttonsVital.createdAt !== null ? await helpers.generateCalculatedTimeDifferenceString(buttonsVital.createdAt, db) : 'Never',
-          isSendingAlerts: buttonsVital.button.isSendingAlerts && buttonsVital.button.client.isSendingAlerts,
-          isSendingVitals: buttonsVital.button.isSendingVitals && buttonsVital.button.client.isSendingVitals,
+          isSendingAlerts: buttonsVital.device.isSendingAlerts && buttonsVital.device.client.isSendingAlerts,
+          isSendingVitals: buttonsVital.device.isSendingVitals && buttonsVital.device.client.isSendingVitals,
         })
       }
     }

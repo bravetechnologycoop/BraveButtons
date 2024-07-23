@@ -5,7 +5,6 @@ const { afterEach, beforeEach, describe, it } = require('mocha')
 // In-house dependencies
 const { factories } = require('brave-alert-lib')
 const db = require('../../../db/db')
-const { buttonDBFactory } = require('../../testingHelpers')
 
 // arbitrary number of active clients to generate
 const nActiveClients = 10
@@ -22,10 +21,10 @@ async function dbInsertActiveClients() {
     })
 
     // create a button for this client that is sending alerts and vitals
-    await buttonDBFactory(db, {
+    await factories.buttonDBFactory(db, {
       clientId: client.id,
       displayName: `Active Client Button ${index}`,
-      buttonSerialNumber: `active-client-button-${index}`,
+      serialNumber: `active-client-button-${index}`,
       isSendingAlerts: true,
       isSendingVitals: true,
     })
@@ -176,10 +175,10 @@ async function dbInsertInactiveClients() {
 
     if (options.clientHasButton) {
       // create a button for this client that is sending alerts and vitals
-      await buttonDBFactory(db, {
+      await factories.buttonDBFactory(db, {
         clientId: client.id,
         displayName: `Inactive Client Button ${index}`,
-        buttonSerialNumber: `inactive-client-button-${index}`,
+        serialNumber: `inactive-client-button-${index}`,
         isSendingAlerts: options.buttonIsSendingAlerts,
         isSendingVitals: options.buttonIsSendingVitals,
       })
@@ -191,7 +190,7 @@ async function dbInsertInactiveClients() {
   return clients
 }
 
-describe('db.js integration tests: getActiveClients', () => {
+describe('db.js integration tests: getActiveButtonsClients', () => {
   beforeEach(async () => {
     // ensure database is empty before starting each case
     await db.clearTables()
@@ -203,7 +202,7 @@ describe('db.js integration tests: getActiveClients', () => {
 
   describe('if there are no clients', () => {
     beforeEach(async () => {
-      this.clients = await db.getActiveClients()
+      this.clients = await db.getActiveButtonsClients()
     })
 
     it('should return an empty array', async () => {
@@ -214,7 +213,7 @@ describe('db.js integration tests: getActiveClients', () => {
   describe('if there are only active clients', () => {
     beforeEach(async () => {
       this.activeClients = await dbInsertActiveClients()
-      this.clients = await db.getActiveClients()
+      this.clients = await db.getActiveButtonsClients()
     })
 
     it('should return all of and only the active clients', async () => {
@@ -225,7 +224,7 @@ describe('db.js integration tests: getActiveClients', () => {
   describe('if there are only inactive clients', () => {
     beforeEach(async () => {
       this.inactiveClients = await dbInsertInactiveClients()
-      this.clients = await db.getActiveClients()
+      this.clients = await db.getActiveButtonsClients()
     })
 
     it('should return an empty array', async () => {
@@ -241,7 +240,7 @@ describe('db.js integration tests: getActiveClients', () => {
     beforeEach(async () => {
       this.activeClients = await dbInsertActiveClients()
       this.inactiveClients = await dbInsertInactiveClients()
-      this.clients = await db.getActiveClients()
+      this.clients = await db.getActiveButtonsClients()
     })
 
     it('should return all of and only the active clients', async () => {

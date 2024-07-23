@@ -42,7 +42,7 @@ let server
 
 if (helpers.isTestEnvironment()) {
   // local http server for testing
-  server = app.listen(8000)
+  server = app.listen(8001)
 } else {
   helpers.setupSentry(app, helpers.getEnvVar('SENTRY_DSN'), helpers.getEnvVar('SENTRY_ENVIRONMENT'), helpers.getEnvVar('SENTRY_RELEASE'))
   const httpsOptions = {
@@ -52,7 +52,8 @@ if (helpers.isTestEnvironment()) {
   server = https.createServer(httpsOptions, app).listen(443)
   setInterval(vitals.checkGatewayHeartbeat, 5 * 60 * 1000)
   setInterval(vitals.checkButtonBatteries, 5 * 60 * 1000)
-  setInterval(vitals.checkButtonHeartbeat, 5 * 60 * 1000)
+  const minutesBetweenHeartbeatChecks = parseInt(helpers.getEnvVar('VITALS_MINUTES_BETWEEN_HEARTBEAT_CHECKS'), 10)
+  setInterval(vitals.checkButtonHeartbeat, minutesBetweenHeartbeatChecks * 60 * 1000)
   helpers.log('brave server listening on port 443')
 }
 

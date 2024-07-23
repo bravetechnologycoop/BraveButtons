@@ -96,7 +96,7 @@ async function checkButtonBatteries() {
 
     for (const buttonsVital of buttonsVitals) {
       const currentTime = await db.getCurrentTime()
-      const button = buttonsVital.button
+      const button = buttonsVital.device
       const client = button.client
 
       if (button.isSendingVitals && client.isSendingVitals) {
@@ -105,7 +105,7 @@ async function checkButtonBatteries() {
             const logMessage = `Low Battery: ${client.displayName} ${button.displayName} Button battery level is ${buttonsVital.batteryLevel}%.`
             helpers.logSentry(logMessage)
 
-            await db.updateButtonsSentLowBatteryAlerts(button.id, true)
+            await db.updateDevicesSentLowBatteryAlerts(button.id, true)
 
             sendNotification(
               i18next.t('buttonLowBatteryInitial', { lng: client.language, buttonDisplayName: button.displayName }),
@@ -113,7 +113,7 @@ async function checkButtonBatteries() {
               client.fromPhoneNumber,
             )
           } else if (differenceInSeconds(currentTime, button.sentLowBatteryAlertAt) > SUBSEQUENT_THRESHOLD) {
-            await db.updateButtonsSentLowBatteryAlerts(button.id, true)
+            await db.updateDevicesSentLowBatteryAlerts(button.id, true)
 
             sendNotification(
               i18next.t('buttonLowBatteryReminder', { lng: client.language, buttonDisplayName: button.displayName }),
@@ -125,7 +125,7 @@ async function checkButtonBatteries() {
           const logMessage = `Battery recharged: ${client.displayName} ${button.displayName} Button.`
           helpers.logSentry(logMessage)
 
-          await db.updateButtonsSentLowBatteryAlerts(button.id, false)
+          await db.updateDevicesSentLowBatteryAlerts(button.id, false)
 
           sendNotification(
             i18next.t('buttonLowBatteryNoLonger', { lng: client.language, buttonDisplayName: button.displayName }),
@@ -147,25 +147,35 @@ async function checkButtonBatteries() {
 // - reconnectedButtons: An array of button display names that refer to buttons that have recently reconnected
 function sendClientButtonStatusChanges(clientButtonStatusChanges) {
   // Loop through each client to create the Twilio messages
-  Object.values(clientButtonStatusChanges).forEach(({ client, disconnectedButtons, reconnectedButtons }) => {
-    let message = [i18next.t('buttonStatusChangeStart', { lng: client.language, clientDisplayName: client.displayName })]
+  Object.values(clientButtonStatusChanges).forEach(buttonStatusChanges => {
+    const disconnectedButtons =
+      buttonStatusChanges.disconnectedButtons.length > 0 ? buttonStatusChanges.disconnectedButtons.sort().join(', ') : undefined
+    const reconnectedButtons =
+      buttonStatusChanges.reconnectedButtons.length > 0 ? buttonStatusChanges.reconnectedButtons.sort().join(', ') : undefined
+    let translation
 
-    if (disconnectedButtons.length > 0) {
-      const buttonDisplayNames = disconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.push(i18next.t('buttonStatusChangeDisconnected', { lng: client.language, buttonDisplayNames }))
+    if (disconnectedButtons !== undefined && reconnectedButtons !== undefined) {
+      translation = 'buttonStatusChangeDisconnectedAndReconnected'
+    } else if (disconnectedButtons !== undefined) {
+      translation = 'buttonStatusChangeDisconnected'
+    } else {
+      // NOTE: all client button status changes must have either disconnected or reconnected buttons
+      // therefore, if there are no disconnected buttons, there mustbe reconnected buttons
+      translation = 'buttonStatusChangeReconnected'
     }
 
-    if (reconnectedButtons.length > 0) {
-      const buttonDisplayNames = reconnectedButtons.sort().join(', ') // sorted alphabetically
-      message.push(i18next.t('buttonStatusChangeReconnected', { lng: client.language, buttonDisplayNames }))
-    }
+    const message = i18next.t(translation, {
+      lng: buttonStatusChanges.client.language,
+      clientDisplayName: buttonStatusChanges.client.displayName,
+      disconnectedButtons,
+      reconnectedButtons,
+    })
 
-    // join the message parts with spaces
-    message = message.join(' ')
+    // send the button status changes to the client's heartbeat and responder phone numbers
+    const recipients = [...buttonStatusChanges.client.heartbeatPhoneNumbers, ...buttonStatusChanges.client.responderPhoneNumbers]
 
-    // send SMS text messages to each of the client's heartbeat phone numbers
-    client.heartbeatPhoneNumbers.forEach(phoneNumber => {
-      twilioHelpers.sendTwilioMessage(phoneNumber, client.fromPhoneNumber, message)
+    recipients.forEach(phoneNumber => {
+      twilioHelpers.sendTwilioMessage(phoneNumber, buttonStatusChanges.client.fromPhoneNumber, message)
     })
   })
 }
@@ -180,7 +190,7 @@ async function checkButtonHeartbeat() {
     const buttonsVitals = await db.getRecentButtonsVitals()
 
     for (const buttonsVital of buttonsVitals) {
-      const button = buttonsVital.button
+      const button = buttonsVital.device
       const client = button.client
 
       if (button.isSendingVitals && client.isSendingVitals) {
@@ -203,7 +213,7 @@ async function checkButtonHeartbeat() {
               // Store the disconnected button name
               clientButtonStatusChanges[client.id].disconnectedButtons.push(button.displayName)
             }
-            await db.updateButtonsSentVitalsAlerts(button.id, true)
+            await db.updateDevicesSentVitalsAlerts(button.id, true)
           }
           // TODO Also send a text message reminder once we know that these messages are reliable
         } else if (button.sentVitalsAlertAt !== null) {
@@ -218,7 +228,7 @@ async function checkButtonHeartbeat() {
           // Store the reconnected button name
           clientButtonStatusChanges[client.id].reconnectedButtons.push(button.displayName)
 
-          await db.updateButtonsSentVitalsAlerts(button.id, false)
+          await db.updateDevicesSentVitalsAlerts(button.id, false)
         }
       }
     }

@@ -11,6 +11,63 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Added migration script to index the locationId column in the devices table (CU-86dtm6em1).
+- Dev deployment steps in the README (CU-86dqu45n1).
+- New column in the dashboard that shows signal strength (CU-86dttbgmh).
+- Colours (red, green or yellow) for RSSI and SNR values on the dashboard to show connection strength (CU-86dttbgmh).
+- Added threshold values for RSSI and SNR values as environment variables (CU-86dttbgmh).
+
+### Changed
+
+- Updated npm package `braces` to fix pull request vulnerability (CU-86dtu06ga). 
+- Updated `renderVitalsPage` and `renderClientVitalsPage` in `dashboard.js` to include rssi and snr threshold values (CU-86dttbgmh).
+- Updated `renderVitalsPage` and `renderClientVitalsPage` in `dashboard.js` to include rssi and snr threshold logic (CU-86dttbgmh).
+
+## [13.9.0] - 2024-06-04
+
+### Added
+
+- Wrote a new migration script 44 to fix the mistake of RSSI and SNR not being in the trigger function in script 42 (CU-86dtk5h8k).
+- Configured buttons for RAK7201v2, now version 2 buttons will send out alerts (CU-86dte4ejq).
+
+### Changed
+
+- Postgres configuration to allow separate database names and users, and new environment variable `PG_DATABASE` (CU-86791yyvg).
+- Development web server port from 8000 to 8001 in the event that the Sensor and Buttons server are running on the same machine (CU-86791yyvg).
+
+## [13.8.0] - 2024-04-01
+
+### Added
+
+- Database type `device_type_enum`, columns `device_type`, `locationid` to table `devices`, and column `is_resettable` to table `sessions` (CU-86791yyvg).
+
+### Changed
+
+- Database table `buttons` rename to `devices`, and column `button_serial_number` rename to `serial_number` for table `devices` (CU-86791yyvg).
+- Database column `button_id` rename to `device_id` for tables `buttons_vitals`, `buttons_vitals_cache`, `sessions` (CU-86791yyvg).
+- Various database indexes, constraints, and triggers for consistent naming (CU-86791yyvg).
+
+### Removed
+
+- Database table `notifications` (CU-86791yyvg).
+
+## [13.7.1] - 2024-03-05
+
+### Added
+
+- `VITALS_MINUTES_BETWEEN_HEARTBEAT_CHECKS` environment variable to specify the frequency of vitals heartbeat checks in minutes (CU-86drtj00f).
+
+## [13.7.0] - 2024-02-27
+
+### Changed
+
+- English-French bilingual translations for button status changes (CU-860raw0d7).
+- Method of translation for button status changes (CU-860raw0d7).
+
+## [13.6.0] - 2024-02-06
+
 ### Removed
 
 - Session model (moved to brave-alert-lib) (CU-86791yyvg).
@@ -20,9 +77,8 @@ the code was deployed.
 - BraveAlerterConfigurator to reject the RESET state (CU-860r8k57h).
 - `num_button_presses` column to be renamed to `number_of_alerts` to match BraveSensor (CU-86791yyvg).
 - Button status changes Sentry log to become Twilio text messages (CU-860raw0d7).
-- Travis CI PostgreSQL port from 5433 to 5432.
 
-## [13.5.0] - 2023-01-04
+## [13.5.0] - 2024-01-04
 
 ### Removed
 
@@ -688,7 +744,12 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.5.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.9.0...HEAD
+[13.9.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...v13.9.0
+[13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
+[13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1
+[13.7.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.6.0...v13.7.0
+[13.6.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.5.0...v13.6.0
 [13.5.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.4.0...v13.5.0
 [13.4.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.3.0...v13.4.0
 [13.3.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.2.0...v13.3.0

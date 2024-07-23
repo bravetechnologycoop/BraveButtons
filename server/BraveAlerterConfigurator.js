@@ -26,9 +26,9 @@ class BraveAlerterConfigurator {
         return null
       }
 
-      const incidentCategoryKeys = this.createIncidentCategoryKeys(session.button.client.incidentCategories)
+      const incidentCategoryKeys = this.createIncidentCategoryKeys(session.device.client.incidentCategories)
 
-      const client = session.button.client
+      const client = session.device.client
       alertSession = new AlertSession(
         session.id,
         session.chatbotState,
@@ -47,9 +47,9 @@ class BraveAlerterConfigurator {
   }
 
   async createAlertSessionFromSession(session) {
-    const incidentCategoryKeys = this.createIncidentCategoryKeys(session.button.client.incidentCategories)
+    const incidentCategoryKeys = this.createIncidentCategoryKeys(session.device.client.incidentCategories)
 
-    const client = session.button.client
+    const client = session.device.client
     return new AlertSession(
       session.id,
       session.chatbotState,
@@ -112,7 +112,7 @@ class BraveAlerterConfigurator {
           }
 
           if (alertSession.incidentCategoryKey) {
-            session.incidentCategory = session.button.client.incidentCategories[alertSession.incidentCategoryKey]
+            session.incidentCategory = session.device.client.incidentCategories[alertSession.incidentCategoryKey]
           }
 
           if (alertSession.alertState === CHATBOT_STATE.WAITING_FOR_CATEGORY && session.respondedAt === null) {
