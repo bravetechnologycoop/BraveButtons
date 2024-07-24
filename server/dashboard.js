@@ -78,7 +78,7 @@ async function submitLogout(req, res) {
 
 async function renderDashboardPage(req, res) {
   try {
-    const clients = await db.getClients()
+    const clients = await getClientsWithUnits()
 
     const viewParams = { clients: clients.filter(client => client.isDisplayed) }
 
