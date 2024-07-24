@@ -350,6 +350,14 @@ async function submitLogin(req, res) {
   }
 }
 
+async function getClientsWithUnits() {
+  const clients = await db.getClients()
+  for (const client of clients) {
+    client.units = await db.getUnitsByClientId(client.id)
+  }
+  return clients
+}
+
 module.exports = {
   downloadCsv,
   redirectToHomePage,
@@ -362,4 +370,12 @@ module.exports = {
   setupDashboardSessions,
   submitLogin,
   submitLogout,
+}
+
+// this is a test just to see if it displays it in the dashboard, will implement code at a later date
+async function getUnitsByClientId(clientId) {
+  return [
+    { unitName: 'Unit 1'},
+    { unitName: 'Unit 2'}
+  ]
 }

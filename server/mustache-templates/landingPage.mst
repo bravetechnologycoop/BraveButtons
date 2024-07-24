@@ -24,6 +24,7 @@
                     <thead>
                         <tr class="table-header" scope="row">
                             <th scope="col">Client</th>
+                            <th scope="col">Units</th>
                             <th scope="col">Sends Alerts?</th>
                             <th scope="col">Sends Vitals?</th>
                         </tr>
@@ -32,6 +33,13 @@
                     {{#clients}}
                         <tr class="table-data">
                             <th scope="row"><a href="/clients/{{id}}">{{displayName}}</a></th>
+                            <td>
+                                <ul>
+                                {{#units}}
+                                    <li>{{unitName}}</li>
+                                {{/units}}
+                                </ul>
+                            </td>
                             <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                             <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
                         </tr>
