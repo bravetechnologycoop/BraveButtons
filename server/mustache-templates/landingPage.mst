@@ -24,6 +24,8 @@
                     <thead>
                         <tr class="table-header" scope="row">
                             <th scope="col">Client</th>
+                            <th scope="col"><h5>Location</h5></th>
+                            <th scope="col"><h5>Last Session Started</h5></th>
                             <th scope="col">Sends Alerts?</th>
                             <th scope="col">Sends Vitals?</th>
                         </tr>
@@ -32,9 +34,20 @@
                     {{#clients}}
                         <tr class="table-data">
                             <th scope="row"><a href="/clients/{{id}}">{{displayName}}</a></th>
+                            <td></td>
+                            <td></td>
                             <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                             <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
                         </tr>
+                        {{#locations}}
+                            <tr class="table-data">
+                                <td></td>
+                                <th scope="row"><a href="TODO: insert link for button name here">{{name}}</a></th>
+                                <td>{{sessionStart}}</td>
+                                <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
+                                <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
+                            </tr>
+                        {{/locations}}
                     {{/clients}}
                     </tbody>
                 </table>
@@ -42,6 +55,13 @@
         </div>
     </div>
     
+    <script>
+        function reloadPage() {
+            location.reload(true)
+        }
+        setInterval(reloadPage, 30000)
+    </script>
+
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
