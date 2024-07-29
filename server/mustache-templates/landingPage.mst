@@ -32,7 +32,7 @@
                     </thead>
                     <tbody>
                     {{#clients}}
-                        <tr class="table-data">
+                        <tr class="table-data table-secondary">
                             <th scope="row"><a href="/clients/{{id}}">{{displayName}}</a></th>
                             <td></td>
                             <td></td>
