@@ -9,7 +9,7 @@ Please note that the date associated with a release is the date the code
 was committed to the `main` branch. This is not necessarily the date that
 the code was deployed.
 
-## [Unreleased]
+## [13.10.0] - 2024-07-02
 
 ### Added
 
@@ -24,6 +24,7 @@ the code was deployed.
 - Updated npm package `braces` to fix pull request vulnerability (CU-86dtu06ga). 
 - Updated `renderVitalsPage` and `renderClientVitalsPage` in `dashboard.js` to include rssi and snr threshold values (CU-86dttbgmh).
 - Updated `renderVitalsPage` and `renderClientVitalsPage` in `dashboard.js` to include rssi and snr threshold logic (CU-86dttbgmh).
+- Disabled vitals for buttons with offline gateways (CU-86dtkwpn9).
 
 ## [13.9.0] - 2024-06-04
 
@@ -744,7 +745,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.9.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.10.0...HEAD
+[13.10.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.9.0...v13.10.0
 [13.9.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...v13.9.0
 [13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
 [13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1

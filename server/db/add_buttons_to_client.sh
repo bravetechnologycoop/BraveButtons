@@ -25,6 +25,8 @@ else
     while IFS="=" read -r name value; do
         if [[ "$name" == "PG_USER" ]]; then
             PG_USER="$value"
+        elif [[ "$name" == "PG_DATABASE" ]]; then
+            PG_DATABASE="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
             PG_PASSWORD="$value"
         elif [[ "$name" == "PG_HOST" ]]; then
@@ -34,13 +36,14 @@ else
         fi
     done < $1
 
-    client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE display_name = '$2';")
+    client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_DATABASE --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE display_name = '$2';")
 
     if [[ -z "$client_id" ]]; then
         echo "couldn't find a client with the given client name $2"
         exit 1
     fi
 
+    while IFS=",", read -r unit phone_number button_serial_number locationid; do
     while IFS=",", read -r unit phone_number button_serial_number locationid; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
             echo "Adding button"
@@ -49,7 +52,7 @@ else
             echo "  Serial Number: $button_serial_number"
             echo "  Locationid: $locationid"
 
-        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, locationid, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', '$locationid', 't', 'f', 'f', 'DEVICE_BUTTON');"
+        sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO devices (serial_number, display_name, phone_number, client_id, is_displayed, is_sending_alerts, is_sending_vitals, device_type) VALUES (LOWER('$button_serial_number'), '$unit', '$phone_number', '$client_id', 't', 'f', 'f', 'DEVICE_BUTTON');"
         fi
     done < $3
 

@@ -25,6 +25,8 @@ else
     while IFS="=" read -r name value; do
         if [[ "$name" == "PG_USER" ]]; then
             PG_USER="$value"
+        elif [[ "$name" == "PG_DATABASE" ]]; then
+            PG_DATABASE="$value"
         elif [[ "$name" == "PG_PASSWORD" ]]; then
             PG_PASSWORD="$value"
         elif [[ "$name" == "PG_HOST" ]]; then
@@ -39,10 +41,11 @@ else
     echo "  Responder Phones: $3"
     echo "  Fallback Phones: $4"
     echo "  From Phone: $5"
-    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -c "INSERT INTO clients (display_name, responder_phone_numbers, fallback_phone_numbers, from_phone_number, is_displayed, is_sending_alerts, is_sending_vitals) VALUES ('$2', '$3', '$4', '$5', 't', 'f', 'f');"
+    sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_DATABASE --set=sslmode=require -c "INSERT INTO clients (display_name, responder_phone_numbers, fallback_phone_numbers, from_phone_number, is_displayed, is_sending_alerts, is_sending_vitals) VALUES ('$2', '$3', '$4', '$5', 't', 'f', 'f');"
 
     client_id=$(sudo PGPASSWORD=$PG_PASSWORD psql -U $PG_USER -h $PG_HOST -p $PG_PORT -d $PG_USER --set=sslmode=require -qtAX -c "SELECT id FROM clients WHERE created_at = (SELECT MAX(created_at) FROM clients);")
 
+    while IFS=",", read -r unit phone_number button_serial_number locationid; do
     while IFS=",", read -r unit phone_number button_serial_number locationid; do
         if [[ "$phone_number" != "phone_number" && "$phone_number" != "" ]]; then
             echo "Adding button"
