@@ -1213,6 +1213,33 @@ async function getCurrentTimeForHealthCheck() {
   }
 }
 
+//FIXME: do this function
+async function getMostRecentSessionWithDevice(device, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getMostRecentSessionWithDevice',
+      `
+      SELECT *
+      FROM sessions
+      WHERE device_id = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+      `,
+      [device.id],
+      pool,
+      pgClient,
+    )
+
+    if (results == undefined || results.rows.length === 0) {
+      return null
+    }
+
+    return createSessionFromRow(results.rows[0], [device])
+  } catch (err) {
+    helpers.logError(`Error running the getMostRecentSessionWithDevice query: ${err.toString()}`)
+  }
+}
+
 async function close() {
   try {
     await pool.end()
