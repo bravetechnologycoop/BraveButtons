@@ -39,7 +39,7 @@
                             <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                             <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
                         </tr>
-                        {{#locations}}
+                        {{#buttons}}
                             <tr class="table-data">
                                 <td></td>
                                 <th scope="row"><a>{{name}}</a></th>
@@ -47,7 +47,7 @@
                                 <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                                 <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
                             </tr>
-                        {{/locations}}
+                        {{/buttons}}
                     {{/clients}}
                     </tbody>
                 </table>
