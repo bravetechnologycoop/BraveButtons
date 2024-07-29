@@ -76,20 +76,37 @@ async function submitLogout(req, res) {
   }
 }
 
-// TODO: add new things here for the new info in the dashboard
+// TODO: finish this funciton
 async function renderDashboardPage(req, res) {
   try {
     const displayedClients = (await db.getClients()).filter(client => client.isDisplayed)
     const allDisplayedButtons = (await db.getButtons()).filter(button => button.isDisplayed)
 
+    // FIXME: is this needed?
     for (const button of allDisplayedButtons) {
-      // TODO: fill this in for time
+      const recentSession = await db.getMostRecentSessionWithDevice(button)
+      if (recentSession !== null) {
+        const sessionCreatedAt = Date.parse(recentSession.createdAt)
+        const timeSinceLastSession = await helpers.generateCalculatedTimeDifferenceString(sessionCreatedAt, db)
+        button.sessionStart = timeSinceLastSession
+      }
     }
 
+    for (const client of displayedClients) {
+      client.buttons = allDisplayedButtons
+        .filter(button => button.client.id === client.id)
+        .map(button => {
+          return {
+            name: button.displayName,
+            id: button.id,
+            sessionStart: button.sessionStart,
+          }
+        })
+    }
 
     // TODO: figure out how alerts and vitals are gotten for clients???
 
-    const viewParams = { clients: displayedClients, }
+    const viewParams = { clients: displayedClients }
 
     res.send(Mustache.render(landingPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {

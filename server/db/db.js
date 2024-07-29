@@ -1213,7 +1213,7 @@ async function getCurrentTimeForHealthCheck() {
   }
 }
 
-//FIXME: do this function
+// FIXME: do this function
 async function getMostRecentSessionWithDevice(device, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1230,7 +1230,7 @@ async function getMostRecentSessionWithDevice(device, pgClient) {
       pgClient,
     )
 
-    if (results == undefined || results.rows.length === 0) {
+    if (results === undefined || results.rows.length === 0) {
       return null
     }
 
@@ -1371,4 +1371,5 @@ module.exports = {
   updateDevicesSentLowBatteryAlerts,
   updateDevicesSentVitalsAlerts,
   updateGatewaySentVitalsAlerts,
+  getMostRecentSessionWithDevice,
 }
