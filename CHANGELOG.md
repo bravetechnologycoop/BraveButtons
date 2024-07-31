@@ -13,7 +13,7 @@ the code was deployed.
 
 ### Added
 
-- Added migration script to insert `Organization`, `Funder`, and `PostalCode` columns into the clients database (CU-86du6jp33).
+- Added migration script to insert `organization`, `funder`, and `postal_code` columns into the clients_extention table (CU-86du6jp33).
 - Added Github Actions file `CI.yml` in `.github/workflows` to run along with Travis CI (CU-86dthadwg).
 - Added a button in `clientVitals.mst` and `vitals.mst` to show and hide RSSI and SNR values (CU-86du4cpm8). 
 
