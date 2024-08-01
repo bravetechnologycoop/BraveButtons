@@ -13,6 +13,7 @@ the code was deployed.
 
 ### Added
 
+- Added migration script to change the default value in the `incident_categories` column to `{"Overdose Event","No One Inside","Occupant Responded","None of the Above"}` (CU-86du7hv9b)
 - Added Github Actions file `CI.yml` in `.github/workflows` to run along with Travis CI (CU-86dthadwg).
 - Added a button in `clientVitals.mst` and `vitals.mst` to show and hide RSSI and SNR values (CU-86du4cpm8). 
 
