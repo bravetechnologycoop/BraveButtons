@@ -8,6 +8,7 @@ const { Parser } = require('json2csv')
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
+const { getAlertTypeDisplayName } = require('brave-alert-lib/lib/helpers')
 
 const clientPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientPage.mst`, 'utf-8')
 const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientVitals.mst`, 'utf-8')
@@ -76,13 +77,11 @@ async function submitLogout(req, res) {
   }
 }
 
-// TODO: finish this funciton
 async function renderDashboardPage(req, res) {
   try {
     const displayedClients = (await db.getClients()).filter(client => client.isDisplayed)
     const allDisplayedButtons = (await db.getButtons()).filter(button => button.isDisplayed)
 
-    // FIXME: is this needed?
     for (const button of allDisplayedButtons) {
       const recentSession = await db.getMostRecentSessionWithDevice(button)
       if (recentSession !== null) {
@@ -104,13 +103,53 @@ async function renderDashboardPage(req, res) {
         })
     }
 
-    // TODO: figure out how alerts and vitals are gotten for clients???
-
     const viewParams = { clients: displayedClients }
 
     res.send(Mustache.render(landingPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
     helpers.logError(err)
+    res.status(500).send()
+  }
+}
+
+// TODO: do this function
+async function renderLocationDetailsPage(req, res) {
+  try {
+    // Needed for the navigation bar
+    const clients = await db.getClients()
+    const button = null // FIXME: do getLocationWithDeviceId in db
+    const recentSessions = null // FIXME: do getHistoryOfSessions in db
+
+    const viewParams = {
+      clients: clients.filter(client => client.isDisplayed),
+      recentSessions: [],
+      currentButton: button,
+      clientid: button.client.id,
+    }
+
+    for (const recentSession of recentSessions) {
+      const createdAt = recentSession.createdAt
+      const updatedAt = recentSession.updatedAt
+
+      viewParams.recentSessions.push({
+        // FIXME: add variables here, do i need alertType?
+        createdAt,
+        updatedAt,
+        incidentCategory: recentSession.incidentCategory,
+        id: db.getMostRecentSessionWithPhoneNumbers.id,
+        chatbotState: recentSession.chatbotState,
+        numberOfAlerts: recentSession.numberOfAlerts,
+        alertType: getAlertTypeDisplayName(recentSession.alertType),
+        respondedAt: recentSession.respondedAt,
+        respondedByPhoneNumber: recentSession.respondedByPhoneNumber,
+      })
+    }
+
+
+    // FIXME: figure out navigation
+    res.send(Mustache.render(locationsDashboardTemplate, viewParams, { nav: navPartial, css: locationsCSSPartial }))
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()
   }
 }
