@@ -138,7 +138,7 @@ async function renderButtonDetailsPage(req, res) {
         createdAt,
         updatedAt,
         incidentCategory: recentSession.incidentCategory,
-        id: db.getMostRecentSessionWithPhoneNumbers.id,
+        id: recentSession.id,
         chatbotState: recentSession.chatbotState,
         numberOfAlerts: recentSession.numberOfAlerts,
         alertType: getAlertTypeDisplayName(recentSession.alertType),
