@@ -119,8 +119,8 @@ async function renderButtonDetailsPage(req, res) {
   try {
     // Needed for the navigation bar
     const clients = await db.getClients()
-    const button = db.getButtonWithDeviceId(req.params.id) // FIXME: do getLocationWithDeviceId in db
-    const recentSessions = db.getHistoryOfSessions(req.params.id) // FIXME: do getHistoryOfSessions in db
+    const button = await db.getButtonWithDeviceId(req.params.id) 
+    const recentSessions = await db.getHistoryOfSessions(req.params.id) 
 
     const viewParams = {
       clients: clients.filter(client => client.isDisplayed),
