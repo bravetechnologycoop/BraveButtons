@@ -25,7 +25,6 @@
                 <table class="table table-striped table-sm">
                     <thead>
                         <tr class="table-header" scope="row">
-                            <-- TODO: do this -->
                             <th scope="col">Session ID</th>
                             <th scope="col">Created At</th>
                             <th scope="col">Updated At</th>
@@ -38,18 +37,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{#recentSessions}}
-                            <-- TODO: this too -->
-                            <th scope="row">{{id}}</th>
-                            <td>{{createdAt}}</td>
-                            <td>{{updatedAt}}</td>
-                            <td>{{respondedAt}}</td>
-                            <td>{{respondedBy}}</td>
-                            <td>{{numberOfAlerts}}</td>
-                            <td>{{alertType}}</td>
-                            <td>{{chatbotState}}</td>
-                            <td>{{incidentCategory}}</td>
-                        {{/recentSessions}}
+
                     </tbody>
                 </table>
             </div>
