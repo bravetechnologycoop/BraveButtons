@@ -321,6 +321,33 @@ async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responder
   return null
 }
 
+async function getHistoryOfSessions(deviceId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getHistoryOfSessions',
+      `
+      SELECT *
+      FROM sessions
+      WHERE device_id = $1
+      ORDER BY created_at DESC
+      LIMIT 200
+      `,
+      [deviceId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined) {
+      return null
+    }
+
+    const allButtons = await getButtons(pgClient)
+    return results.rows.map(r => createSessionFromRow(r, allButtons))
+  } catch (err) {
+    helpers.logError(`Error running the getHistoryOfSessions query: ${err.toString()}`)
+  }
+}
+
 async function getAllSessionsWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -684,6 +711,33 @@ async function getDeviceWithSerialNumber(serialNumber, pgClient) {
     }
   } catch (err) {
     helpers.logError(`Error running the getDeviceWithSerialNumber query: ${err.toString()}`)
+  }
+
+  return null
+}
+
+async function getButtonWithDeviceId(deviceId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithDeviceId',
+      `
+      SELECT *
+      FROM devices
+      WHERE id = $1
+      `,
+      [deviceId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the getButtonWithDeviceId query: ${err.toString()}`)
   }
 
   return null
@@ -1352,9 +1406,11 @@ module.exports = {
   getClientWithSessionId,
   getDataForExport,
   getDeviceWithSerialNumber,
+  getButtonWithDeviceId,
   getDisconnectedGatewaysWithClient,
   getGateways,
   getMostRecentSessionWithPhoneNumbers,
+  getHistoryOfSessions,
   getPool,
   getRecentButtonsSessionsWithClientId,
   getRecentButtonsVitals,

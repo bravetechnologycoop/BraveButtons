@@ -13,6 +13,7 @@ function configureRoutes(app) {
   app.get('/login', dashboard.renderLoginPage)
   app.get('/logout', dashboard.submitLogout)
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
+  app.get('/buttons/:id', dashboard.sessionChecker, dashboard.renderButtonDetailsPage)
 
   app.post('/login', dashboard.submitLogin)
   app.post('/pa/aws-device-registration', pa.validateAwsDeviceRegistration, googleHelpers.paAuthorize, pa.handleAwsDeviceRegistration)

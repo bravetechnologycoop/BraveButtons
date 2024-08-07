@@ -7,8 +7,8 @@ const { Parser } = require('json2csv')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
-const db = require('./db/db')
 const { getAlertTypeDisplayName } = require('brave-alert-lib/lib/helpers')
+const db = require('./db/db')
 
 const clientPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientPage.mst`, 'utf-8')
 const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientVitals.mst`, 'utf-8')
@@ -16,6 +16,8 @@ const landingCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/landi
 const landingPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/landingPage.mst`, 'utf-8')
 const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.mst`, 'utf-8')
 const vitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/vitals.mst`, 'utf-8')
+const locationsDashboardTemplate = fs.readFileSync(`${__dirname}/mustache-templates/locationsDashboard.mst`, 'utf-8')
+const locationsCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/locationsCSSPartial.mst`, 'utf-8')
 
 const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
 const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
@@ -107,18 +109,18 @@ async function renderDashboardPage(req, res) {
 
     res.send(Mustache.render(landingPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
-    helpers.logError(err)
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()
   }
 }
 
 // TODO: do this function
-async function renderLocationDetailsPage(req, res) {
+async function renderButtonDetailsPage(req, res) {
   try {
     // Needed for the navigation bar
     const clients = await db.getClients()
-    const button = null // FIXME: do getLocationWithDeviceId in db
-    const recentSessions = null // FIXME: do getHistoryOfSessions in db
+    const button = db.getButtonWithDeviceId(req.params.id) // FIXME: do getLocationWithDeviceId in db
+    const recentSessions = db.getHistoryOfSessions(req.params.id) // FIXME: do getHistoryOfSessions in db
 
     const viewParams = {
       clients: clients.filter(client => client.isDisplayed),
@@ -144,7 +146,6 @@ async function renderLocationDetailsPage(req, res) {
         respondedByPhoneNumber: recentSession.respondedByPhoneNumber,
       })
     }
-
 
     // FIXME: figure out navigation
     res.send(Mustache.render(locationsDashboardTemplate, viewParams, { nav: navPartial, css: locationsCSSPartial }))
@@ -421,6 +422,7 @@ module.exports = {
   renderClientDetailsPage,
   renderClientVitalsPage,
   renderDashboardPage,
+  renderButtonDetailsPage,
   renderLoginPage,
   renderVitalsPage,
   sessionChecker,

@@ -42,7 +42,7 @@
                         {{#buttons}}
                             <tr class="table-data">
                                 <td></td>
-                                <th scope="row"><a>{{name}}</a></th>
+                                <th scope="row"><a href="/locations/{{id}}">{{name}}</a></th>
                                 <td>{{sessionStart}}</td>
                                 <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                                 <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
