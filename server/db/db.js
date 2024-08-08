@@ -330,7 +330,7 @@ async function getHistoryOfSessions(deviceId, pgClient) {
       FROM sessions
       WHERE device_id = $1
       ORDER BY created_at DESC
-      LIMIT 50
+      LIMIT 200
       `,
       [deviceId],
       pool,
