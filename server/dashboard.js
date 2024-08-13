@@ -4,6 +4,7 @@ const Mustache = require('mustache')
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const { Parser } = require('json2csv')
+const { t } = require('i18next')
 
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
@@ -141,7 +142,7 @@ async function renderButtonDetailsPage(req, res) {
         id: recentSession.id,
         chatbotState: recentSession.chatbotState,
         numberOfAlerts: recentSession.numberOfAlerts,
-        alertType: getAlertTypeDisplayName(recentSession.alertType),
+        alertType: getAlertTypeDisplayName(recentSession.alertType, button.client.language, t),
         respondedAt: recentSession.respondedAt,
         respondedByPhoneNumber: recentSession.respondedByPhoneNumber,
       })

@@ -16,7 +16,7 @@
     {{> nav}}
     <div class="content-area">
         <div class="content-wrapper">
-        {{#currentLocation}}
+        {{#currentButton}}
             <h3>{{displayName}}</h3>
 
             <a href="" class="btn btn-secondary btn-sm" role="button">View Client</a>
@@ -51,13 +51,13 @@
                     </tbody>
                 </table>
             </div>
-        {{/currentLocation}}
-        {{^currentLocation}}
+        {{/currentButton}}
+        {{^currentButton}}
             <h5>
                 Sorry, this location does not appear to exist.
                 Please find its client from the dropdown menu.
             </h5>
-        {{/currentLocation}}
+        {{/currentButton}}
         </div>
     </div>
 
