@@ -115,7 +115,6 @@ async function renderDashboardPage(req, res) {
   }
 }
 
-// TODO: do this function
 async function renderButtonDetailsPage(req, res) {
   try {
     // Needed for the navigation bar
@@ -135,7 +134,7 @@ async function renderButtonDetailsPage(req, res) {
       const updatedAt = recentSession.updatedAt
 
       viewParams.recentSessions.push({
-        // FIXME: add variables here, do i need alertType?
+        // FIXME: change this to have actually good information (see old clients page)
         createdAt,
         updatedAt,
         incidentCategory: recentSession.incidentCategory,
@@ -148,7 +147,6 @@ async function renderButtonDetailsPage(req, res) {
       })
     }
 
-    // FIXME: figure out navigation
     res.send(Mustache.render(locationsDashboardTemplate, viewParams, { nav: navPartial, css: locationsCSSPartial }))
   } catch (err) {
     helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
