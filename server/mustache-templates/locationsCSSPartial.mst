@@ -10,7 +10,7 @@
         border-radius: 5px;
     }
 
-    .navbar, .btn-logout {
+    .navbar, .btn-navbar {
         background-color: rgb(0, 184, 184);
         font-size: 20px;
     }
@@ -36,7 +36,7 @@
         opacity: .75;
     }
 
-    .btn-logout, .btn-logout > a {
+    .btn-navbar, .btn-navbar > a {
         width: auto;
         text-decoration: none;
     }    
