@@ -39,7 +39,7 @@
                         <tbody>
                         {{#buttons}}
                             <tr class="table-data">
-                                <th scope="row"><a href="/locations/{{id}}">{{name}}</a></th>
+                                <th scope="row"><a href="/buttons/{{id}}">{{name}}</a></th>
                                 <td>{{sessionStart}}</td>
                                 <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                                 <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
