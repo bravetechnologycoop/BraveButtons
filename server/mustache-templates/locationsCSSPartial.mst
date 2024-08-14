@@ -88,7 +88,7 @@
 
     @media screen and (max-width: 770px) {
 
-        .navbar, .btn-logout, h3 {
+        .navbar, .btn-navbar, h3 {
             font-size: 1em; 
             font-weight: 900;
         }
@@ -126,7 +126,7 @@
             padding-top: 0%;
         }
 
-        .btn-logout {
+        .btn-navbar {
             padding-right: 0%;
         }
 

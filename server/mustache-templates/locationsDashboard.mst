@@ -38,15 +38,17 @@
                     </thead>
                     <tbody>
                         {{#recentSessions}}
-                            <th scope="row">{{id}}</th>
-                            <td>{{createdAt}}</td>
-                            <td>{{updatedAt}}</td>
-                            <td>{{respondedAt}}</td>
-                            <td>{{respondedBy}}</td>
-                            <td>{{numberOfAlerts}}</td>
-                            <td>{{alertType}}</td>
-                            <td>{{chatbotState}}</td>
-                            <td>{{incidentCategory}}</td>
+                            <tr class="table-data">
+                                <th scope="row">{{id}}</th>
+                                <td>{{createdAt}}</td>
+                                <td>{{updatedAt}}</td>
+                                <td>{{respondedAt}}</td>
+                                <td>{{respondedBy}}</td>
+                                <td>{{numberOfAlerts}}</td>
+                                <td>{{alertType}}</td>
+                                <td>{{chatbotState}}</td>
+                                <td>{{incidentCategory}}</td>
+                            </tr>
                         {{/recentSessions}}
                     </tbody>
                 </table>
