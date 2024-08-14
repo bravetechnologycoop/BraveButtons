@@ -743,6 +743,34 @@ async function getButtonWithDeviceId(deviceId, pgClient) {
   return null
 }
 
+async function getButtonsFromClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getLocationsFromClientId',
+      `
+      SELECT *
+      FROM devices
+      WHERE client_id = $1
+      AND device_type = $2
+      ORDER BY display_name
+      `,
+      [clientId, DEVICE_TYPE.DEVICE_BUTTON],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined) {
+      helpers.logError(`Error: No button with client ID ${clientId} key exists`)
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return results.rows.map(r => createDeviceFromRow(r, allClients))
+  } catch (err) {
+    helpers.logError(`Error running the getButtonsFromClientId query: ${err.toString()}`)
+  }
+}
+
 async function createButton(
   clientId,
   displayName,
@@ -1407,6 +1435,7 @@ module.exports = {
   getDataForExport,
   getDeviceWithSerialNumber,
   getButtonWithDeviceId,
+  getButtonsFromClientId,
   getDisconnectedGatewaysWithClient,
   getGateways,
   getMostRecentSessionWithPhoneNumbers,
