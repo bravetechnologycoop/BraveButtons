@@ -204,13 +204,14 @@ async function renderButtonDetailsPage(req, res) {
 async function renderClientDetailsPage(req, res) {
   try {
     const clients = await db.getClients()
+
     const currentClient = clients.find(client => client.id === req.params.id)
 
     const buttons = await db.getButtonsFromClientId(currentClient.id)
 
     for (const button of buttons) {
       const recentSession = await db.getMostRecentSessionWithDevice(button)
-      if (recentSession != null) {
+      if (recentSession !== null) {
         const sessionCreatedAt = Date.parse(recentSession.createdAt)
         const timeSinceLastSession = await helpers.generateCalculatedTimeDifferenceString(sessionCreatedAt, db)
         button.sessionStart = timeSinceLastSession

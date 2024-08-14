@@ -746,7 +746,7 @@ async function getButtonWithDeviceId(deviceId, pgClient) {
 async function getButtonsFromClientId(clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
-      'getLocationsFromClientId',
+      'getButtonsFromClientId',
       `
       SELECT *
       FROM devices
