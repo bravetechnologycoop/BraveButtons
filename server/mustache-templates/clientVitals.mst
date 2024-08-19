@@ -20,10 +20,9 @@
             {{#currentClientName}}
                 <h3>{{currentClientName}} Vitals</h3>
                 
-                <!-- TODO: don't forget to add routing here once edit client page is up -->
                 <!-- its currentClientId here instead of Id because this page remained unchanged when updating the buttons dashboard to be more useful, please keep that in mind when editing this page -->
                 <a href="/clients/{{currentClientId}}" class="btn btn-secondary btn-sm" role="button">View Sessions</a>
-                <a href="" class="btn btn-secondary btn-sm ml-1" role="button">Edit Client</a>
+                <a href="/clients/{{currentClientId}}/edit" class="btn btn-secondary btn-sm ml-1" role="button">Edit Client</a>
                 <br>
                 <br>
 

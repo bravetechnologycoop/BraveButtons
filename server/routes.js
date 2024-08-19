@@ -22,7 +22,7 @@ function configureRoutes(app) {
   app.post('/pa/message-clients', pa.validateMessageClients, googleHelpers.paAuthorize, pa.handleMessageClients)
   app.post('/pa/health', pa.validateCheckDatabaseConnection, googleHelpers.paAuthorize, pa.handleCheckDatabaseConnection)
   app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
-  app.post('/clients/:id', dashboard.validateEditClient, dashboard.submitUpdateClient)
+  app.post('/clients/:id', dashboard.validateUpdateClient, dashboard.submitUpdateClient)
 }
 
 module.exports = {

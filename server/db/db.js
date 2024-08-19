@@ -951,7 +951,7 @@ async function getClientExtensionWithClientId(clientId, pgClient) {
       'getCLientExtensionWithClientId',
       `
       SELECT *
-      FROM client_extension
+      FROM clients_extension
       WHERE client_id = $1
       `,
       [clientId],
@@ -1354,10 +1354,10 @@ async function getMostRecentSessionWithDevice(device, pgClient) {
 async function updateClient(
   displayName,
   fromPhoneNumber,
-  responderPhoneNumber,
+  responderPhoneNumbers,
   reminderTimeout,
   fallbackPhoneNumbers,
-  fallback_timeout,
+  fallbackTimeout,
   heartbeatPhoneNumbers,
   incidentCategories,
   isDisplayed,
@@ -1402,8 +1402,34 @@ async function updateClient(
     helpers.log(`Client '${displayName}' successfully updated`)
 
     return await createClientFromRow(results.rows[0])
-  } catch(err) {
+  } catch (err) {
     helpers.logError(`Error running the updateClient query: ${err.toString()}`)
+  }
+}
+
+async function createClientExtension(clientId, country, countrySubdivision, buildingType, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createClientExtension',
+      `
+      INSERT INTO clients_extension (client_id, country, country_subdivision, building_type)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *
+      `,
+      [clientId, country, countrySubdivision, buildingType],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`New client extension inserted into database for client ${clientId}`)
+
+    return createClientExtensionFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the createClientExtension query: ${err.toString()}`)
   }
 }
 
@@ -1572,5 +1598,6 @@ module.exports = {
   updateGatewaySentVitalsAlerts,
   getMostRecentSessionWithDevice,
   updateClient,
+  createClientExtension,
   updateClientExtension,
 }

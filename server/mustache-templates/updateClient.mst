@@ -138,6 +138,10 @@
                 <br>
                 <button type="submit" class="btn btn-primary btn-large">Submit</button>
             </form>
+            {{/currentClient}}
+            {{^currentClient}}
+                <h5>Sorry, this client does not appear to exist. Please select an option from the dropdown and then the "edit" button if you would like to update an existing client.</h5>
+            {{/currentClient}}
         </div>
     </div>
 

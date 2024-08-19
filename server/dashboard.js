@@ -11,7 +11,6 @@ const { t } = require('i18next')
 const { helpers } = require('brave-alert-lib')
 const { getAlertTypeDisplayName } = require('brave-alert-lib/lib/helpers')
 const db = require('./db/db')
-const { errorMonitor } = require('events')
 
 const clientPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientPage.mst`, 'utf-8')
 const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientVitals.mst`, 'utf-8')
@@ -221,14 +220,14 @@ async function renderUpdateClientPage(req, res) {
       },
     }
 
-    res.send(Mustache.render(updateClientTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial /* TODO: make css */ }))
+    res.send(Mustache.render(updateClientTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
   } catch (err) {
     helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()
   }
 }
 
-const validateEditClient = [
+const validateUpdateClient = [
   Validator.body([
     'displayName',
     'responderPhoneNumbers',
@@ -254,47 +253,47 @@ async function submitUpdateClient(req, res) {
     }
 
     const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
-  
+
     if (validationErrors.isEmpty()) {
       const clients = await db.getClients()
       const data = req.body
 
       for (const client of clients) {
-        if (client.displayName === data.displayName && client.id !== req.param.id) {
+        if (client.displayName === data.displayName && client.id !== req.params.id) {
           const errorMessage = `Client Display Name already exists: ${data.displayName}`
           helpers.log(errorMessage)
           return res.status(409).send(errorMessage)
         }
       }
 
-      const newResponderPhoneNumbers = 
+      const newResponderPhoneNumbers =
         data.responderPhoneNumbers && data.responderPhoneNumbers.trim() !== ''
           ? data.responderPhoneNumbers.split(',').map(phone => phone.trim())
           : null
       const newHeartbeatPhoneNumbers =
-        data.newHeartbeatPhoneNumbers !== undefined && data.newHeartbeatPhoneNumbers.trim() !== ''
-          ? data.newHeartbeatPhoneNumbers.split(',').map(phone => phone.trim())
+        data.heartbeatPhoneNumbers !== undefined && data.heartbeatPhoneNumbers.trim() !== ''
+          ? data.heartbeatPhoneNumbers.split(',').map(phone => phone.trim())
           : []
 
-        await db.updateClient(
-          data.displayName,
-          data.fromPhoneNumber,
-          newResponderPhoneNumbers,
-          data.reminderTimeout,
-          data.fallbackPhoneNumbers.split(',').map(phone => phone.trim()),
-          data.fallbackTimeout,
-          newHeartbeatPhoneNumbers,
-          data.incidentCategories.split(',').map(category => category.trim()),
-          data.isDisplayed,
-          data.isSendingAlerts,
-          data.isSendingVitals,
-          data.language,
-          req.params.id,
-        )
+      await db.updateClient(
+        data.displayName,
+        data.fromPhoneNumber,
+        newResponderPhoneNumbers,
+        data.reminderTimeout,
+        data.fallbackPhoneNumbers.split(',').map(phone => phone.trim()),
+        data.fallbackTimeout,
+        newHeartbeatPhoneNumbers,
+        data.incidentCategories.split(',').map(category => category.trim()),
+        data.isDisplayed,
+        data.isSendingAlerts,
+        data.isSendingVitals,
+        data.language,
+        req.params.id,
+      )
 
-        await db.updateClientExtension(data.country || null, data.countrySubdivision || null, data.buildingType || null, req.params.id) 
+      await db.updateClientExtension(data.country || null, data.countrySubdivision || null, data.buildingType || null, req.params.id)
 
-        res.redirect(`/clients/${req.params.id}`)
+      res.redirect(`/clients/${req.params.id}`)
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.log(errorMessage)
@@ -576,5 +575,5 @@ module.exports = {
   submitLogin,
   submitLogout,
   submitUpdateClient,
-  validateEditClient,
+  validateUpdateClient,
 }
