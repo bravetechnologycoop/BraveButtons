@@ -211,8 +211,11 @@ async function renderUpdateClientPage(req, res) {
 
     const viewParams = {
       clients: clients.filter(client => client.isDisplayed),
-      currentClient: { // FIXME: do i even need this since country isn't in buttons
+      currentClient: {
         ...currentClient,
+        country: clientExtension.country || '',
+        countrySubdivision: clientExtension.countrySubdivision || '',
+        buildingType: clientExtension.buildingType || '',
       },
     }
 
@@ -481,6 +484,7 @@ async function submitLogin(req, res) {
 module.exports = {
   downloadCsv,
   redirectToHomePage,
+  renderUpdateClientPage,
   renderClientDetailsPage,
   renderClientVitalsPage,
   renderDashboardPage,

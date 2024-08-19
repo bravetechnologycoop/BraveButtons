@@ -18,7 +18,7 @@
     <div class="content-area">
         <div class="content-wrapper">
             {{#currentClient}}
-            <h4 class="no-buttons">Edit Client: {{displayName}}</h4> <!-- TODO: check classes for these tags -->
+            <h4 class="no-buttons">Edit Client: {{displayName}}</h4>
             <br>
             <form class="needs-validation" action="/clients/{{id}}" method="POST">
                 <div class="form-group row justify-content-start row-no-gutters">
@@ -48,7 +48,7 @@
                     </div>
                 </div>
                 <div class="form-group row justify-content-start row-no-gutters">
-                    <label for="fromPhoneNumber" class="col-sm-3 col-form-label">From Phone Number:</label> <!-- FIXME: I don't think this exists for buttons -->
+                    <label for="fromPhoneNumber" class="col-sm-3 col-form-label">From Phone Number:</label>
                     <div class="col-sm-5">
                         <input type="text" class="form-control" name="fromPhoneNumber" value="{{fromPhoneNumber}}" required pattern="[+][1]\d{10}">
                         <small id="phoneHelp" class="form-text text-muted">+1 in front and no dashes or other delimiters, please (eg. +14445556789)</small>

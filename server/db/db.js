@@ -6,6 +6,7 @@ const { CHATBOT_STATE, Client, DEVICE_TYPE, Device, helpers, Session } = require
 const Gateway = require('../Gateway')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
+const ClientExtension = require('../ClientExtension')
 
 const pool = new Pool({
   host: helpers.getEnvVar('PG_HOST'),
@@ -58,6 +59,10 @@ function createClientFromRow(r) {
     r.created_at,
     r.updated_at,
   )
+}
+
+function createClientExtensionFromRow(r) {
+  return new ClientExtension(r.client_id, r.country, r.country_subdivision, r.building_type, r.created_at, r.updated_at)
 }
 
 function createDeviceFromRow(r, allClients) {
@@ -940,6 +945,30 @@ async function getClientWithId(id, pgClient) {
   return null
 }
 
+async function getClientExtensionWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getCLientExtensionWithClientId',
+      `
+      SELECT *
+      FROM client_extension
+      WHERE client_id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return createClientExtensionFromRow({}) // return empty ClientExtension object
+    }
+
+    return createClientExtensionFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the getClientExtensionWithClientId query: ${err.toString()}`)
+  }
+}
+
 async function getClientWithSessionId(sessionId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1426,6 +1455,7 @@ module.exports = {
   createSession,
   getActiveButtonsClients,
   getAllSessionsWithDeviceId,
+  getClientExtensionWithClientId,
   getButtons,
   getClients,
   getCurrentTime,
