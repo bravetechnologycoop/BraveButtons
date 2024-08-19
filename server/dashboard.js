@@ -209,11 +209,11 @@ async function renderNewClientPage(req, res) {
   try {
     // Needed for navigation bar
     const clients = await db.getClients()
-    const viewParams = {clients: clients.filter(client => client.isDisplayed)}
+    const viewParams = { clients: clients.filter(client => client.isDisplayed) }
 
-    res.send(Mustache.render(newClientTemplate, viewParams, {nav: navPartial, css: buttonFormCSSPartial }))
+    res.send(Mustache.render(newClientTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
   } catch (err) {
-    helpers.logError(`Error calling ${req,path}: ${err.toString()}`)
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()
   }
 }
