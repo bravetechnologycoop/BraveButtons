@@ -1351,6 +1351,90 @@ async function getMostRecentSessionWithDevice(device, pgClient) {
   }
 }
 
+async function updateClient(
+  displayName,
+  fromPhoneNumber,
+  responderPhoneNumber,
+  reminderTimeout,
+  fallbackPhoneNumbers,
+  fallback_timeout,
+  heartbeatPhoneNumbers,
+  incidentCategories,
+  isDisplayed,
+  isSendingAlerts,
+  isSendingVitals,
+  language,
+  clientId,
+  pgClient,
+) {
+  try {
+    const results = await helpers.runQuery(
+      'updateClient',
+      `
+      UPDATE clients
+      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12
+      WHERE id = $13
+      RETURNING *
+      `,
+      [
+        displayName,
+        fromPhoneNumber,
+        responderPhoneNumbers,
+        reminderTimeout,
+        fallbackPhoneNumbers,
+        fallbackTimeout,
+        heartbeatPhoneNumbers,
+        incidentCategories,
+        isDisplayed,
+        isSendingAlerts,
+        isSendingVitals,
+        language,
+        clientId,
+      ],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Client '${displayName}' successfully updated`)
+
+    return await createClientFromRow(results.rows[0])
+  } catch(err) {
+    helpers.logError(`Error running the updateClient query: ${err.toString()}`)
+  }
+}
+
+async function updateClientExtension(country, countrySubdivision, buildingType, clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'updateClientExtension',
+      `
+      UPDATE clients_extension
+      SET country = $1, country_subdivision = $2, building_type = $3
+      WHERE client_id = $4
+      RETURNING *
+      `,
+      [country, countrySubdivision, buildingType, clientId],
+      pool,
+      pgClient,
+    )
+
+    // NOTE: this shouldn't happen, as insertion into clients_extension is a trigger for insertion into clients, but it's good to be safe!
+    if (results === undefined || results.rows.length === 0) {
+      return await createClientExtension(clientId, country, countrySubdivision, buildingType)
+    }
+
+    helpers.log(`Client extension for client ${clientId} successfully updated`)
+
+    return createClientExtensionFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the updateClientExtension query: ${err.toString()}`)
+  }
+}
+
 async function close() {
   try {
     await pool.end()
@@ -1487,4 +1571,6 @@ module.exports = {
   updateDevicesSentVitalsAlerts,
   updateGatewaySentVitalsAlerts,
   getMostRecentSessionWithDevice,
+  updateClient,
+  updateClientExtension,
 }

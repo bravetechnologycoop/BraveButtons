@@ -22,7 +22,7 @@
                 
                 <!-- TODO: add href here once the other pages are done -->
                 <a href="/clients/{{id}}/vitals" class="btn btn-secondary btn-sm" role="button">View Vitals</a>
-                <a href="" class="btn btn-secondary btn-sm ml-1" role="button">Edit Client</a>
+                <a href="/clients/{{id}}/edit" class="btn btn-secondary btn-sm ml-1" role="button">Edit Client</a>
                 <br>
                 <br>
 

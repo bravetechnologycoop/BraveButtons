@@ -14,6 +14,7 @@ function configureRoutes(app) {
   app.get('/logout', dashboard.submitLogout)
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
   app.get('/buttons/:id', dashboard.sessionChecker, dashboard.renderButtonDetailsPage)
+  app.get('/clients/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateClientPage)
 
   app.post('/login', dashboard.submitLogin)
   app.post('/pa/aws-device-registration', pa.validateAwsDeviceRegistration, googleHelpers.paAuthorize, pa.handleAwsDeviceRegistration)
@@ -21,6 +22,7 @@ function configureRoutes(app) {
   app.post('/pa/message-clients', pa.validateMessageClients, googleHelpers.paAuthorize, pa.handleMessageClients)
   app.post('/pa/health', pa.validateCheckDatabaseConnection, googleHelpers.paAuthorize, pa.handleCheckDatabaseConnection)
   app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
+  app.post('/clients/:id', dashboard.validateEditClient, dashboard.submitUpdateClient)
 }
 
 module.exports = {
