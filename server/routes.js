@@ -6,6 +6,7 @@ const rak = require('./rak')
 
 function configureRoutes(app) {
   app.get('/', dashboard.sessionChecker, dashboard.redirectToHomePage)
+  app.get('/clients/new', dashboard.sessionChecker, dashboard.renderNewClientPage) // Must be configured before /clients/:id
   app.get('/dashboard', dashboard.sessionChecker, dashboard.renderDashboardPage)
   app.get('/clients/:id', dashboard.sessionChecker, dashboard.renderClientDetailsPage)
   app.get('/clients/:clientId/vitals', dashboard.sessionChecker, dashboard.renderClientVitalsPage)
@@ -16,6 +17,7 @@ function configureRoutes(app) {
   app.get('/buttons/:id', dashboard.sessionChecker, dashboard.renderButtonDetailsPage)
   app.get('/clients/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateClientPage)
 
+  app.post('/clients', dashboard.validateNewClient, dashboard.submitNewClient)
   app.post('/login', dashboard.submitLogin)
   app.post('/pa/aws-device-registration', pa.validateAwsDeviceRegistration, googleHelpers.paAuthorize, pa.handleAwsDeviceRegistration)
   app.post('/pa/buttons-twilio-number', pa.validateButtonsTwilioNumber, googleHelpers.paAuthorize, pa.handleButtonsTwilioNumber)

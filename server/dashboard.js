@@ -22,6 +22,7 @@ const locationsDashboardTemplate = fs.readFileSync(`${__dirname}/mustache-templa
 const locationsCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/locationsCSSPartial.mst`, 'utf-8')
 const updateClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateClient.mst`, 'utf-8')
 const buttonFormCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/buttonFormCSSPartial.mst`, 'utf-8')
+const newClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newClient.mst`, 'utf-8')
 
 const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
 const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
@@ -204,6 +205,19 @@ async function renderButtonDetailsPage(req, res) {
 //   }
 // }
 
+async function renderNewClientPage(req, res) {
+  try {
+    // Needed for navigation bar
+    const clients = await db.getClients()
+    const viewParams = {clients: clients.filter(client => client.isDisplayed)}
+
+    res.send(Mustache.render(newClientTemplate, viewParams, {nav: navPartial, css: buttonFormCSSPartial }))
+  } catch (err) {
+    helpers.logError(`Error calling ${req,path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
 async function renderUpdateClientPage(req, res) {
   try {
     const clients = await db.getClients()
@@ -221,6 +235,74 @@ async function renderUpdateClientPage(req, res) {
     }
 
     res.send(Mustache.render(updateClientTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
+const validateNewClient = [
+  Validator.body(['displayName', 'responderPhoneNumbers', 'fallbackPhoneNumbers', 'fromPhoneNumber', 'language', 'incidentCategories'])
+    .trim()
+    .notEmpty(),
+  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
+]
+
+async function submitNewClient(req, res) {
+  try {
+    if (!req.session.user || !req.cookies.user_sid) {
+      helpers.logError('Unauthorized')
+      res.status(401).send()
+      return
+    }
+
+    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+    if (validationErrors.isEmpty()) {
+      const clients = await db.getClients()
+      const data = req.body
+
+      for (const client of clients) {
+        if (client.displayName === data.displayName) {
+          const errorMessage = `Client Display Name already exists: ${data.displayName}`
+          helpers.log(errorMessage)
+          return res.status(409).send(errorMessage)
+        }
+      }
+
+      const newResponderPhoneNumbers =
+        data.responderPhoneNumbers && data.responderPhoneNumbers.trim() !== ''
+          ? data.responderPhoneNumbers.split(',').map(phone => phone.trim())
+          : null
+      const newHeartbeatPhoneNumbers =
+        data.heartbeatPhoneNumbers !== undefined && data.heartbeatPhoneNumbers.trim() !== ''
+          ? data.heartbeatPhoneNumbers.split(',').map(phone => phone.trim())
+          : []
+
+      const newClient = await db.createClient(
+        data.displayName,
+        newResponderPhoneNumbers,
+        data.reminderTimeout,
+        data.fallbackPhoneNumbers.split(',').map(phone => phone.trim()),
+        data.fromPhoneNumber,
+        data.fallbackTimeout,
+        newHeartbeatPhoneNumbers,
+        data.incidentCategories.split(',').map(category => category.trim()),
+        true,
+        false,
+        false,
+        data.language,
+      )
+
+      // create a client extension row for the newly created client
+      await db.updateClientExtension(data.country || null, data.countrySubdivision || null, data.buildingType || null, newClient.id)
+
+      res.redirect(`/clients/${newClient.id}`)
+    } else {
+      const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
+      helpers.log(errorMessage)
+      res.status(400).send(errorMessage)
+    }
   } catch (err) {
     helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()
@@ -563,6 +645,7 @@ async function submitLogin(req, res) {
 module.exports = {
   downloadCsv,
   redirectToHomePage,
+  renderNewClientPage,
   renderUpdateClientPage,
   renderClientDetailsPage,
   renderClientVitalsPage,
@@ -574,6 +657,8 @@ module.exports = {
   setupDashboardSessions,
   submitLogin,
   submitLogout,
+  submitNewClient,
   submitUpdateClient,
+  validateNewClient,
   validateUpdateClient,
 }
