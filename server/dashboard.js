@@ -19,6 +19,8 @@ const navPartial = fs.readFileSync(`${__dirname}/mustache-templates/navPartial.m
 const vitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/vitals.mst`, 'utf-8')
 const locationsDashboardTemplate = fs.readFileSync(`${__dirname}/mustache-templates/locationsDashboard.mst`, 'utf-8')
 const locationsCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/locationsCSSPartial.mst`, 'utf-8')
+const updateClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateClient.mst`, 'utf-8')
+const buttonFormCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/locationFormCSSPartial.mst`, 'utf-8')
 
 const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
 const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
@@ -200,6 +202,26 @@ async function renderButtonDetailsPage(req, res) {
 //     res.status(500).send()
 //   }
 // }
+
+async function renderUpdateClientPage(req, res) {
+  try {
+    const clients = await db.getClients()
+    const currentClient = clients.find(client => client.id === req.params.id)
+    const clientExtension = null // TODO: make the function for this
+
+    const viewParams = {
+      clients: clients.filter(client => client.isDisplayed),
+      currentClient: { // FIXME: do i even need this since country isn't in buttons
+        ...currentClient,
+      },
+    }
+
+    res.send(Mustache.render(updateClientTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial /* TODO: make css */ }))
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
 
 async function renderClientDetailsPage(req, res) {
   try {

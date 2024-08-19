@@ -1,0 +1,109 @@
+<style>
+    body {
+        background-color: rgb(247, 249, 250);
+        margin: 0px;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .navbar-toggler {
+        border: 2px solid rgba(255, 255, 255, .4);
+        border-radius: 5px;
+    }
+
+    .navbar, .btn-logout {
+        background-color: rgb(0, 184, 184);
+        font-size: 20px;
+    }
+
+    .nav-item a {
+        color: rgb(247, 249, 250);
+    }
+
+    .dropdown,
+    .dropdown-toggle,
+    .dropdown-menu {
+        width: 100%;	
+    }
+
+    .nav-link.dropdown-item {
+        color: rgb(88, 88, 91);
+        overflow: hidden; 
+        white-space: nowrap; 
+        text-overflow: ellipsis;
+    }
+
+    .no-buttons {
+        opacity: .75;
+    }
+
+    .btn-logout, .btn-logout > a {
+        width: auto;
+        text-decoration: none;
+    }    
+
+    #navbar-brand {
+        font-size: 24px;
+        color: rgb(247, 249, 250);
+    }
+
+    .content-area {
+        background-color: rgb(247, 249, 250);
+        color: rgb(88, 88, 91);
+    }
+
+    .content-wrapper {
+        margin-left: 7%;
+        margin-right: 7%;
+        margin-top: 5%;
+        margin-bottom: 5%;
+    }
+
+    @media screen and (max-width: 770px) {
+
+        .navbar, .btn-logout, h3 {
+            font-size: 1em; 
+            font-weight: 900;
+        }
+
+        #navbar-brand {
+            font-size: 4.5vw;
+            font-weight: 700;
+        }
+
+        .nav-item {
+            text-align: right;
+        }
+
+        .navbar-toggler {
+            border: none;
+        }
+
+        .dropdown-menu {
+            background-color: rgb(0, 184, 184);
+            border: none;
+            padding-right: 3%;
+        }
+
+        .nav-link.dropdown-item {
+            color: rgb(247, 249, 250);
+            text-align: right;
+        }
+
+        .nav-link.dropdown-item:hover {
+            color: white;
+            background-color: rgb(0, 200, 200);
+        }
+
+        .dropdown-menu.show {
+            padding-top: 0%;
+        }
+
+        .btn-logout {
+            padding-right: 0%;
+        }
+
+        table {
+            font-size: 1.8vw;
+        }
+    }
+</style>
