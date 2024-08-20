@@ -19,6 +19,7 @@ the code was deployed.
 
 ### Changed
 
+- Reworded button connection changes in `common.en.json`, changed wording from 'there has been' to 'there were' (CU-86drtnekh).
 - Removed `.travis.yml` file to stop using Travis CI (CU-86dthadwg).
 - Changed Build Status badge in the README (CU-86dthadwg).
 - Changed README instructions for adding encrypted variables for Travis to instructions for adding secrets in Github Actions (CU-86dthadwg).
