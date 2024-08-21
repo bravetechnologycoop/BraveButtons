@@ -11,7 +11,6 @@ const { t } = require('i18next')
 const { helpers } = require('brave-alert-lib')
 const { getAlertTypeDisplayName } = require('brave-alert-lib/lib/helpers')
 const db = require('./db/db')
-const { error } = require('console')
 
 const clientPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientPage.mst`, 'utf-8')
 const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientVitals.mst`, 'utf-8')
@@ -248,13 +247,9 @@ async function submitNewGateway(req, res) {
         return res.status(400).send(errorMessage)
       }
 
-      const newGateway = await db.createGatewayFromBrowserForm(
-        data.gatewayId,
-        data.clientId,
-        data.displayName,
-      )
+      const newGateway = await db.createGatewayFromBrowserForm(data.gatewayId, data.clientId, data.displayName)
 
-      res.redicrect(`/clients/${newGateway.clientId}`) // TODO: figure out where to redirect 
+      res.redicrect(`/clients/${newGateway.clientId}`) // TODO: figure out where to redirect
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.log(errorMessage)

@@ -1470,13 +1470,7 @@ async function createGatewayFromBrowserForm(gatewayId, clientId, displayName, pg
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
       `,
-      [
-        gatewayId,
-        clientId,
-        displayName,
-        true,
-        false,
-      ],
+      [gatewayId, clientId, displayName, true, false],
       pool,
       pgClient,
     )
