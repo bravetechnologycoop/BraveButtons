@@ -267,6 +267,34 @@ async function getGateways(pgClient) {
   return []
 }
 
+// Retrieves the gateway corresponding to a given gatewway ID
+async function getGatewayWithGatewayId(gatewayId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getGatewayWithGatewayId',
+      `
+      SELECT *
+      FROM gateways
+      WHERE id = $1
+      `,
+      [gatewayId],
+      pool,
+      pgClient
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the getGatewayWithGatewayId query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getUnrespondedSessionWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1605,6 +1633,7 @@ module.exports = {
   getButtonsFromClientId,
   getDisconnectedGatewaysWithClient,
   getGateways,
+  getGatewayWithGatewayId,
   getMostRecentSessionWithPhoneNumbers,
   getHistoryOfSessions,
   getPool,

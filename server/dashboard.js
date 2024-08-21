@@ -265,15 +265,16 @@ async function submitNewGateway(req, res) {
 async function renderUpdateGatewayPage(req, res) {
   try {
     const clients = await db.getClients()
-    const gateway = null // TODO: do function getGatewayWithGatewayId
+    const gateway = await db.getGatewayWithGatewayId(req.params.id) // TODO: figure out what goes here
   
     const viewParams = {
+      currentGateway: gateway,
       clients: clients
         .filter(client => client.isDisplayed)
         .map(client => {
           return {
             ...client,
-            selected: client.id === gateway.client.id
+            selected: client.id === gateway.client.id,
           }
         }),
     }

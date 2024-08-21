@@ -21,9 +21,9 @@
             <br>
             <form class="needs-validation" action="/gateways/{{gatewayId}}" method="POST">
                 <div class="form-group row justify-content-start row-no-gutters">
-                    <label for="gatewayId" class="col-sm-3 col-form-label">Gateway ID:</label>
+                    <label for="id" class="col-sm-3 col-form-label">Gateway ID:</label>
                     <div class="col-sm-5">
-                        <input type="text" class="form-control" name="gatewayId" value="{{gatewayId}}" disabled>
+                        <input type="text" class="form-control" name="id" value="{{id}}" disabled>
                     </div>
                 </div>
 
@@ -56,7 +56,7 @@
             </form>
             {{/currentGateway}}
             {{^currentGateway}}
-                <h5>Sorry, this location does not appear to exist.</h5>
+                <h5>Sorry, this gateway does not appear to exist.</h5>
             {{/currentGateway}}
         </div>
     </div>
