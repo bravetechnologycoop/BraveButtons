@@ -58,6 +58,10 @@
 
             <p>We expect all these Last Seen values to be less than 1 hour for all active RAK buttons</p>
 
+            <div>
+                <button id="toggle-signal-values" class="btn btn-primary">Show Signal Values</button>
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-striped table-sm">
                     <thead>
@@ -65,8 +69,8 @@
                             <th scope="col">Client</th>
                             <th scope="col">Unit</th>
                             <th scope="col">Battery Level</th>
-                            <th scope="col">RSSI</th>
-                            <th scope="col">SNR</th>
+                            <th scope="col" class="rssi-header" style="display: none;">RSSI</th>
+                            <th scope="col" class="snr-header" style="display: none;">SNR</th>
                             <th scope="col">Signal Strength</th>
                             <th scope="col">Last Seen</th>
                             <th scope="col">Sends Alerts?</th>
@@ -79,9 +83,9 @@
                                 <th scope="row"><a href="/clients/{{clientId}}">{{clientName}}</a></th>
                                 <th scope="row">{{unit}}</th>
                                 <td>{{batteryLevel}}</td>
-                                <td class="{{rssiClass}}">{{rssi}}</td>
-                                <td class="{{snrClass}}">{{snr}}</td>
-                                <td>{{signalStrength}}</td>
+                                <td class="rssi-value {{rssiClass}} {{unit}}-rssi" style="display: none;">{{rssi}}</td>
+                                <td class="snr-value {{snrClass}} {{unit}}-snr" style="display: none;">{{snr}}</td>
+                                <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}" class="signal-strength" data-target="{{unit}}">{{signalStrength}}</td>
                                 <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
                                 <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                                 <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
@@ -92,6 +96,29 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleButton = document.getElementById('toggle-signal-values');
+            let areValuesVisible = false;
+            toggleButton.addEventListener('click', function () {
+            const rssiValues = document.querySelectorAll('.rssi-value');
+            const snrValues = document.querySelectorAll('.snr-value');
+            const rssiHeader = document.querySelector('.rssi-header');
+            const snrHeader = document.querySelector('.snr-header');
+            areValuesVisible = !areValuesVisible;
+            rssiValues.forEach(rssiValue => {
+                rssiValue.style.display = areValuesVisible ? 'table-cell' : 'none';
+            });
+            snrValues.forEach(snrValue => {
+                snrValue.style.display = areValuesVisible ? 'table-cell' : 'none';
+            });
+            rssiHeader.style.display = areValuesVisible ? 'table-cell' : 'none';
+            snrHeader.style.display = areValuesVisible ? 'table-cell' : 'none';
+            toggleButton.textContent = areValuesVisible ? 'Hide Signal Values' : 'Show Signal Values';
+            });
+        });
+    </script>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
