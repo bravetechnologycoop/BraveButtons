@@ -16,6 +16,7 @@ function configureRoutes(app) {
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
   app.get('/buttons/:id', dashboard.sessionChecker, dashboard.renderButtonDetailsPage)
   app.get('/clients/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateClientPage)
+  app.get('/gateways/new', dashboard.sessionChecker, dashboard.renderNewGatewayPage)
 
   app.post('/clients', dashboard.validateNewClient, dashboard.submitNewClient)
   app.post('/login', dashboard.submitLogin)

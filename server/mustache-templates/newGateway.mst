@@ -14,6 +14,7 @@
     </head>
 
     <body>
+        {{> nav}}
         <div class="content-area">
             <div class="content-wrapper">
                 <h4 class="no-locations">Add a Gateway</h4>
@@ -45,11 +46,10 @@
                                 {{/clients}}
                             </select>
                         </div>
-                        <br>
-                        <p><em>*** Remember: New Gateways are set to be Displayed, to not send Alerts, and to not send Vitals Messages ***</em></p>
-                        <button type="submit" class="btn btn-primary btn-large">Submit</button>
                     </div>
-
+                    <br>
+                    <p><em>*** Remember: New Gateways are set to be Displayed, to not send Alerts, and to not send Vitals Messages ***</em></p>
+                    <button type="submit" class="btn btn-primary btn-large">Submit</button>
                 </form>
             </div>
         </div>

@@ -23,6 +23,7 @@ const locationsCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/loc
 const updateClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateClient.mst`, 'utf-8')
 const buttonFormCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/buttonFormCSSPartial.mst`, 'utf-8')
 const newClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newClient.mst`, 'utf-8')
+const newGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newGateway.mst`, 'utf-8')
 
 const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
 const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
@@ -204,6 +205,18 @@ async function renderButtonDetailsPage(req, res) {
 //     res.status(500).send()
 //   }
 // }
+
+async function renderNewGatewayPage(req, res) {
+  try {
+    const clients = await db.getClients()
+    const viewParams = { clients: clients.filter(client => client.isDisplayed) }
+
+    res.send(Mustache.render(newGatewayTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
 
 async function renderNewClientPage(req, res) {
   try {
@@ -645,6 +658,7 @@ async function submitLogin(req, res) {
 module.exports = {
   downloadCsv,
   redirectToHomePage,
+  renderNewGatewayPage,
   renderNewClientPage,
   renderUpdateClientPage,
   renderClientDetailsPage,
