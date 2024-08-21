@@ -24,6 +24,7 @@ const updateClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/up
 const buttonFormCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/buttonFormCSSPartial.mst`, 'utf-8')
 const newClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newClient.mst`, 'utf-8')
 const newGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newGateway.mst`, 'utf-8')
+const updateGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateGateway.mst`, 'utf-8')
 
 const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
 const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
@@ -255,6 +256,29 @@ async function submitNewGateway(req, res) {
       helpers.log(errorMessage)
       res.status(400).send(errorMessage)
     }
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
+async function renderUpdateGatewayPage(req, res) {
+  try {
+    const clients = await db.getClients()
+    const gateway = null // TODO: do function getGatewayWithGatewayId
+  
+    const viewParams = {
+      clients: clients
+        .filter(client => client.isDisplayed)
+        .map(client => {
+          return {
+            ...client,
+            selected: client.id === gateway.client.id
+          }
+        }),
+    }
+
+    res.send(Mustache.render(updateGatewayTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial}))
   } catch (err) {
     helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()
@@ -702,6 +726,7 @@ module.exports = {
   downloadCsv,
   redirectToHomePage,
   renderNewGatewayPage,
+  renderUpdateGatewayPage,
   renderNewClientPage,
   renderUpdateClientPage,
   renderClientDetailsPage,
