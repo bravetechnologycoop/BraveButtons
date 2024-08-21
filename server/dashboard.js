@@ -265,7 +265,7 @@ async function submitNewGateway(req, res) {
 async function renderUpdateGatewayPage(req, res) {
   try {
     const clients = await db.getClients()
-    const gateway = await db.getGatewayWithGatewayId(req.params.id) // TODO: figure out what goes here
+    const gateway = await db.getGatewayWithGatewayId(req.params.id) 
 
     const viewParams = {
       currentGateway: gateway,
@@ -285,6 +285,12 @@ async function renderUpdateGatewayPage(req, res) {
     res.status(500).send()
   }
 }
+
+// TODO: this function
+const validateUpdateGateway = Validator.body([
+  'displayName',
+  ''
+])
 
 async function renderNewClientPage(req, res) {
   try {
