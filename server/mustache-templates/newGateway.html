@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <title>Brave Button Dashboard: New Gateway</title>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        
+        {{> css}}
+    </head>
+
+    <body>
+        <div class="content-area">
+            <div class="content-wrapper">
+                <h4 class="no-locations">Add a Gateway</h4>
+                <h6> Please fill in the form below. Any fields not seen here will be filled in with default values on submission and can be modified by clicking the "edit" button on the next screen.</h6>
+                <br> <!-- TODO: add action, label -->
+                <form class="needs-validation" action="/gateways" method="POST">
+
+                    <div class="form-group row justify-content-start row-no-gutters">
+                        <label for="gatewayId" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="gatewayId" placeholder="Gateway ID" required pattern="^[\S]+$">
+                            <small id="gatewayIdHelp" class="form-text text-muted">No spaces, please</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group row justify-content-start row-no-gutters">
+                        <label for="displayName" class="col-sm-3 col-form-label">Display Name:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="displayName" placeholder="Display Name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group row justify-content-start row-no-gutters">
+                        <label for="clientId" class="col-sm-3 col-form-label">Client:</label>
+                        <div class="col-sm-5">
+                            <select class="form-control" name="clientId" required>
+                                {{#clients}}
+                                    <option value="{{id}}">{{displayName}}</option>
+                                {{/clients}}
+                            </select>
+                        </div>
+                        <br>
+                        <p><em>*** Remember: New Gateways are set to be Displayed, to not send Alerts, and to not send Vitals Messages ***</em></p>
+                        <button type="submit" class="btn btn-primary btn-large">Submit</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    </body>
+</html>
