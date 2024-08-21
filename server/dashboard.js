@@ -249,7 +249,7 @@ async function submitNewGateway(req, res) {
 
       const newGateway = await db.createGatewayFromBrowserForm(data.gatewayId, data.clientId, data.displayName)
 
-      res.redicrect(`/clients/${newGateway.clientId}`) // TODO: figure out where to redirect
+      res.redirect(`/clients/${newGateway.client.id}`) // TODO: figure out where to redirect
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.log(errorMessage)

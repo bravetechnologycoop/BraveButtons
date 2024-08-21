@@ -26,7 +26,7 @@ function configureRoutes(app) {
   app.post('/pa/health', pa.validateCheckDatabaseConnection, googleHelpers.paAuthorize, pa.handleCheckDatabaseConnection)
   app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
   app.post('/clients/:id', dashboard.validateUpdateClient, dashboard.submitUpdateClient)
-  app.post('gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
+  app.post('/gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
 }
 
 module.exports = {
