@@ -1,5 +1,22 @@
 # BraveButtons [![Build Status](https://github.com/bravetechnologycoop/BraveButtons/actions/workflows/ci.yml/badge.svg)](https://github.com/bravetechnologycoop/BraveButtons/actions/workflows/ci.yml)
 
+# Table of Contents
+
+1. [Production Deployment](#production-deployment)
+1. [Dev Deployment](#dev-deployment)
+1. [How to deploy a new version of the Lambda function](#how-to-deploy-a-new-version-of-the-lambda-function)
+1. [How to set up a local server dev environment](#how-to-set-up-a-local-server-dev-environment)
+1. [How to run the linter](#how-to-run-the-linter)
+1. [How to configure new Buttons](#how-to-configure-new-buttons)
+1. [How to check the logs](#how-to-check-the-logs)
+1. [How to add a PostgreSQL migration script](#how-to-add-a-postgresql-migration-script)
+1. [How to access a remote database](#how-to-access-a-remote-database)
+1. [How to view which migration scripts have been run and when](#how-to-view-which-migration-scripts-have-been-run-and-when)
+1. [How to add or change an encrypted Github Actions environment variable](#how-to-add-or-change-an-encrypted-github-actions-environment-variable)
+1. [How to run a migration script](#how-to-run-a-migration-script)
+1. [How to migrate data from one PostgreSQL database to another](#how-to-migrate-data-from-one-postgresql-database-to-another)
+1. [How to migrate passwords and API keys for offboarding](#how-to-migrate-passwords-and-api-keys-for-offboarding)
+
 # Production Deployment
 
 ## 1. Update git to reflect the new release
@@ -262,3 +279,25 @@ or save it to an intervening file, and then input this file to the database
 `PGPASSWORD=password psql -U db_user -h dbhost.com -p 12345 -d targetdatabase --set=sslmode=require < bravedata.sql`
 
 When performing a migration, make sure to connect directly to the target database rather than through a connection pool.
+
+# How to migrate passwords and API keys for offboarding
+
+## Twilio Token
+
+1. Reset the `TWILIO_TOKEN` environment variable.
+
+## Dashboard Password
+
+1. Reset the `PASSWORD` environment variable.
+
+## Database Password
+
+1. Reset the `PG_PASSWORD` environment variable.
+
+## RAK API Key
+
+1. Reset the `RAK_API_KEY_PRIMARY` environment variable.
+
+## PA API Key
+
+1. Reset the `PA_API_KEY_PRIMARY` environment variable.
