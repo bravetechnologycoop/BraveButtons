@@ -11,6 +11,7 @@ const { t } = require('i18next')
 const { helpers } = require('brave-alert-lib')
 const { getAlertTypeDisplayName } = require('brave-alert-lib/lib/helpers')
 const db = require('./db/db')
+const { error } = require('console')
 
 const clientPageTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientPage.mst`, 'utf-8')
 const clientVitalsTemplate = fs.readFileSync(`${__dirname}/mustache-templates/clientVitals.mst`, 'utf-8')
@@ -139,7 +140,6 @@ async function renderButtonDetailsPage(req, res) {
       const updatedAt = recentSession.updatedAt
 
       viewParams.recentSessions.push({
-        // FIXME: change this to have actually good information (see old clients page)
         createdAt,
         updatedAt,
         incidentCategory: recentSession.incidentCategory,
@@ -212,6 +212,54 @@ async function renderNewGatewayPage(req, res) {
     const viewParams = { clients: clients.filter(client => client.isDisplayed) }
 
     res.send(Mustache.render(newGatewayTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
+const validateNewGateway = Validator.body(['gatewayId', 'displayName', 'clientId']).trim().notEmpty()
+
+async function submitNewGateway(req, res) {
+  try {
+    if (!req.session.user || !req.cookies.user_sid) {
+      helpers.logError('Unauthorized')
+      res.status(401).send()
+      return
+    }
+
+    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+    if (validationErrors.isEmpty()) {
+      const allGateways = await db.getGateways()
+      const data = req.body
+
+      for (const gateway of allGateways) {
+        if (gateway.id === data.gatewayId) {
+          helpers.log('Gateway ID already exists')
+          return res.status(400).send('Gateway ID already exists')
+        }
+      }
+
+      const client = await db.getClientWithId(data.clientId)
+      if (client === null) {
+        const errorMessage = `Client ID '${data.clientId} does not exist`
+        helpers.log(errorMessage)
+        return res.status(400).send(errorMessage)
+      }
+
+      const newGateway = await db.createGatewayFromBrowserForm(
+        data.gatewayId,
+        data.clientId,
+        data.displayName,
+      )
+
+      res.redicrect(`/clients/${newGateway.clientId}`) // TODO: figure out where to redirect 
+    } else {
+      const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
+      helpers.log(errorMessage)
+      res.status(400).send(errorMessage)
+    }
   } catch (err) {
     helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()
@@ -673,6 +721,8 @@ module.exports = {
   submitLogout,
   submitNewClient,
   submitUpdateClient,
+  submitNewGateway,
   validateNewClient,
   validateUpdateClient,
+  validateNewGateway,
 }

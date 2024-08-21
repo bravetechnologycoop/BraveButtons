@@ -1461,6 +1461,39 @@ async function updateClientExtension(country, countrySubdivision, buildingType, 
   }
 }
 
+async function createGatewayFromBrowserForm(gatewayId, clientId, displayName, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createGatewayFromBrowserForm',
+      `
+      INSERT INTO gateways(id, client_id, display_name, is_displayed, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [
+        gatewayId,
+        clientId,
+        displayName,
+        true,
+        false,
+      ],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`New gateway inserted into database ${gatewayId}`)
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the createGatwayFromBrowserForm query: ${err.toString()}`)
+  }
+}
+
 async function close() {
   try {
     await pool.end()
@@ -1600,4 +1633,5 @@ module.exports = {
   updateClient,
   createClientExtension,
   updateClientExtension,
+  createGatewayFromBrowserForm,
 }
