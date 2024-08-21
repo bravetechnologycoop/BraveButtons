@@ -17,12 +17,12 @@
 // Third-party dependencies
 const Validator = require('express-validator')
 
-// brave API keys for accessing the buttons API
-const braveApiKeys = [helpers.getEnvVar('BRAVE_API_KEY_PRIMARY'), helpers.getEnvVar('BRAVE_API_KEY_SECONDARY')]
-
 // In-house dependencies
 const { helpers } = require('brave-alert-lib')
 const db = require('./db/db')
+
+// brave API key (currently the PA API key) for accessing the buttons API
+const braveApiKey = helpers.getEnvVar('PA_API_KEY_PRIMARY')
 
 // authorize function - using Brave API keys
 // NOTE: a route's validation should PRECEED the authorize function, and a route's handler should PROCEED the authorize function;
@@ -32,7 +32,7 @@ async function authorize(req, res, next) {
     // get Authorization header of request
     const { authorization } = req.headers
 
-    if (braveApiKeys.includes(authorization)) {
+    if (authorization === braveApiKey) {
       // check for validation errors
       const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
@@ -165,7 +165,7 @@ async function handleGetClients(req, res) {
 const validateGetClientButton = Validator.param(['clientId', 'buttonId']).notEmpty()
 
 async function handleGetClientButton(req, res) {
-  const button = await db.getButtonWithId(req.params.buttonId)
+  const button = await db.getDeviceWithIds(req.params.buttonId, req.params.clientId)
 
   // Couldn't get the button; Not found.
   if (!button || button.client.id !== req.params.clientId) {
@@ -198,20 +198,8 @@ async function handleGetClientButtons(req, res) {
 const validateGetClientSessions = Validator.param(['clientId']).notEmpty()
 
 async function handleGetClientSessions(req, res) {
-  //const button = await db.getButtonWithId(req.params.buttonId)
-  const button = []
-
-  // check that this button exists and is owned by the specified client
-  // NOTE: if clientId is invalid, then the query will fail and return null
-  if (!button || button.client.id !== req.params.clientId) {
-    res.status(404).send({ status: 'error', message: 'Not Found' })
-
-    return
-  }
-
-  const sessions = await db.getRecentSessionsWithButtonId(req.params.buttonId)
-
-  res.status(200).send({ status: 'success', data: sessions })
+  // TODO
+  res.status(200).send({ status: 'success', data: [] })
 }
 
 const validateGetClientGateway = Validator.param(['clientId', 'gatewayId']).notEmpty()

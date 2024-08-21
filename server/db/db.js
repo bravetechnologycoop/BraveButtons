@@ -1298,6 +1298,31 @@ async function createDevice(
   return null
 }
 
+async function getDeviceWithIds(deviceId, clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getDeviceWithIds',
+      `
+      SELECT *
+      FROM devices
+      WHERE id = $1
+      `,
+      [deviceId],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      const client = await getClientWithId(clientId, pgClient)
+      return createDeviceFromRow(results.rows[0], [client])
+    }
+  } catch (err) {
+    helpers.logError(`Error running the getDeviceWithSerialNumber query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 module.exports = {
   beginTransaction,
   clearButtonsVitals,
@@ -1324,6 +1349,7 @@ module.exports = {
   getCurrentTime,
   getCurrentTimeForHealthCheck,
   getDataForExport,
+  getDeviceWithIds,
   getDeviceWithSerialNumber,
   getDisconnectedGatewaysWithClient,
   getGateways,

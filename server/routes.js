@@ -6,7 +6,7 @@ const pa = require('./pa')
 const rak = require('./rak')
 
 function configureRoutes(app) {
-  // to-be-deprecated routes: keep these until the PA dashboard is complete
+  // to-be-deprecated mustache routes
   app.get('/', dashboard.sessionChecker, dashboard.redirectToHomePage)
   app.get('/dashboard', dashboard.sessionChecker, dashboard.renderDashboardPage)
   app.get('/clients/:clientId?', dashboard.sessionChecker, dashboard.renderClientDetailsPage)
@@ -16,7 +16,7 @@ function configureRoutes(app) {
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
   app.post('/login', dashboard.submitLogin)
 
-  // new to-be-implemented API routes
+  // to-be-used API routes
   app.get('/api/clients', api.authorize, api.handleGetClients)
   app.post('/api/clients', api.validateCreateClient, api.authorize, api.handleCreateClient)
   app.get('/api/clients/:clientId', api.validateGetClient, api.authorize, api.handleGetClient)
