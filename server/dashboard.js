@@ -266,7 +266,7 @@ async function renderUpdateGatewayPage(req, res) {
   try {
     const clients = await db.getClients()
     const gateway = await db.getGatewayWithGatewayId(req.params.id) // TODO: figure out what goes here
-  
+
     const viewParams = {
       currentGateway: gateway,
       clients: clients
@@ -279,7 +279,7 @@ async function renderUpdateGatewayPage(req, res) {
         }),
     }
 
-    res.send(Mustache.render(updateGatewayTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial}))
+    res.send(Mustache.render(updateGatewayTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
   } catch (err) {
     helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()

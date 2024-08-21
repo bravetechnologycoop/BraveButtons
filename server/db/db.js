@@ -279,7 +279,7 @@ async function getGatewayWithGatewayId(gatewayId, pgClient) {
       `,
       [gatewayId],
       pool,
-      pgClient
+      pgClient,
     )
 
     if (results === undefined || results.rows.length === 0) {
