@@ -264,6 +264,9 @@ When performing a migration, make sure to connect directly to the target databas
 
 In all of the following tutorials, please reset the 1password entries where they exist.
 
+Make sure to turn off either the development or production environment as you are doing the password migrations,
+messaging clients before and after the downtime using PA.
+
 ## Twilio Token
 
 The same Twilio token is used between the development and production buttons servers, so replace the environment variable in both servers.
@@ -293,12 +296,31 @@ Likewise, the password for the bravetest user should be used for the development
 1. Click on the three dots to the right of the **braveprod** user and click **Reset Password**.
 1. When reset, click on **show** next to the **braveprod** user and copy the password.
 1. Repeat the previous two steps for the **bravetest** user (development server).
-1. Reset the `PG_PASSWORD` environment variable to the new user passwords.
+1. Set the `PG_PASSWORD` environment variable to the new user password per environment.
 
 ## RAK API Key
 
-1. Reset the `RAK_API_KEY_PRIMARY` environment variable.
+Note: there are different RAK API keys between the production and development servers.
+
+Repeat the following steps for the dev bravedevices AWS dashboard as well as the aws-buttons-prod AWS dashboard.
+
+1. Log in to the AWS app dashboard, and select ButtonsAdministrators under **bravedevices** (prod first).
+1. Open the **Lambda** service.
+1. Select the **lora-parse** lambda function.
+1. Select the **Configuration** tab.
+1. Click on **Edit** next to the Environment variables menu (top-right).
+1. Generate a new RAK API key with [a password generator](https://1password.com/password-generator).
+1. Change the value of **RAK_API_KEY** to the newly generated API key.
+1. Set the `RAK_API_KEY_PRIMARY` environment variable to the new API key for the respective env.
 
 ## PA API Key
 
-1. Reset the `PA_API_KEY_PRIMARY` environment variable.
+1. Go to [DigitalOcean](https://cloud.digitalocean.com/login) and log in.
+1. Go to **App Platform** from the manage menu (left).
+1. Go to the **particle-accelerator** page from the list of apps (centre).
+1. Open the **Settings** tab.
+1. Open the **particle-accelerator** component.
+1. Scroll down to **environment variables**, and click **Edit**.
+1. Generate **three** new Brave API keys with [a password generator](https://1password.com/password-generator).
+1. Note these API keys down, as they will be used for the Sensor password migration too, in all three environments.
+1. Reset the `PA_API_KEY_PRIMARY` environment variable for the development and production environments according to the values generated.
