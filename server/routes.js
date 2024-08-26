@@ -28,6 +28,7 @@ function configureRoutes(app) {
   app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
   app.post('/clients/:id', dashboard.validateUpdateClient, dashboard.submitUpdateClient)
   app.post('/gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
+  app.post('/gateways/:id', dashboard.validateUpdateGateway, dashboard.submitUpdateGateway)
 }
 
 module.exports = {

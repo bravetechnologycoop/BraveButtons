@@ -250,7 +250,7 @@ async function submitNewGateway(req, res) {
 
       const newGateway = await db.createGatewayFromBrowserForm(data.gatewayId, data.clientId, data.displayName)
 
-      res.redirect(`/clients/${newGateway.client.id}`) // TODO: figure out where to redirect
+      res.redirect(`/clients/${newGateway.client.id}/vitals`) 
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.log(errorMessage)
@@ -286,11 +286,55 @@ async function renderUpdateGatewayPage(req, res) {
   }
 }
 
-// TODO: this function
 const validateUpdateGateway = Validator.body([
-  'displayName',
-  ''
+  'gatewayId',
+  'clientId',
+  'isSendingVitals',
+  'isDisplayed',
 ])
+.trim()
+.notEmpty()
+
+async function submitUpdateGateway(req, res) {
+  try {
+    if (!req.session.user || !req.cookies.user_sid) {
+      helpers.logError('Unauthorized')
+      res.status(401).send()
+      return
+    }
+
+    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+    // TODO: error is here
+    if (validationErrors.isEmpty()) {
+      const data = req.body
+      gatewayId.id = req.params.id // FIXME: this might be wrong
+
+      const client = await db.getClientWithId(data.clientId)
+      helpers.log(client)
+      if (client === null) {
+        const errorMessage = `Client ID '${data.clientId}' does not exist`
+        return res.status(400).send(errorMessage)
+      }
+
+      await db.updateGateway(
+        data.clientId,
+        data.isSendingVitals === 'true',
+        data.isDisplayed === 'true',
+        data.gatewayId,
+      )
+
+      res.redirect(`/clients/${data.clientId}/vitals`)
+    } else {
+      const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
+      helpers.log(errorMessage)
+      res.status(400).send(errorMessage)
+    }
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
 
 async function renderNewClientPage(req, res) {
   try {
@@ -749,7 +793,9 @@ module.exports = {
   submitNewClient,
   submitUpdateClient,
   submitNewGateway,
+  submitUpdateGateway,
   validateNewClient,
   validateUpdateClient,
   validateNewGateway,
+  validateUpdateGateway,
 }

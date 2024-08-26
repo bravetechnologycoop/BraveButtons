@@ -51,7 +51,7 @@
                                     <td>{{name}}</td>
                                     <td data-toggle="tooltip" data-placement="top" title="{{lastSeenAt}}">{{lastSeenAgo}}</td>
                                     <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
-                                    <td><a href="/gateways/{{id}}/edit">Edit Button</a></td>
+                                    <td><a href="/gateways/{{id}}/edit">Edit Gateway</a></td>
                                 </tr>
                             {{/gateways}}
                         </tbody>

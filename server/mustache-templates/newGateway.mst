@@ -19,7 +19,7 @@
             <div class="content-wrapper">
                 <h4 class="no-locations">Add a Gateway</h4>
                 <h6> Please fill in the form below. Any fields not seen here will be filled in with default values on submission and can be modified by clicking the "edit" button on the next screen.</h6>
-                <br> <!-- TODO: add action, label -->
+                <br>
                 <form class="needs-validation" action="/gateways" method="POST">
 
                     <div class="form-group row justify-content-start row-no-gutters">

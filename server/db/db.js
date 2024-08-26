@@ -1516,6 +1516,41 @@ async function createGatewayFromBrowserForm(gatewayId, clientId, displayName, pg
   }
 }
 
+async function updateGateway(
+  clientId,
+  isSendingVitals,
+  isDisplayed,
+  gatewayId,
+) {
+  try {
+    const results = await helpers.runQuery(
+      'updateGateway',
+      `
+      UPDATE gateways
+      SET
+        client_id = $1,
+        is_sending_vitals = $2,
+        is_displayed = $3
+      WHERE id = $4
+      RETURNING *
+      `,
+      [clientId, isSendingVitals, isDisplayed, gatewayId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Location '${deviceId}' successfully updated`)
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the updateLocation query: ${err.toString()}`)
+  }
+}
+
 async function close() {
   try {
     await pool.end()
@@ -1654,6 +1689,7 @@ module.exports = {
   updateGatewaySentVitalsAlerts,
   getMostRecentSessionWithDevice,
   updateClient,
+  updateGateway,
   createClientExtension,
   updateClientExtension,
   createGatewayFromBrowserForm,
