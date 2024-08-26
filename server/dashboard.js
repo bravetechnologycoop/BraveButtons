@@ -250,7 +250,7 @@ async function submitNewGateway(req, res) {
 
       const newGateway = await db.createGatewayFromBrowserForm(data.gatewayId, data.clientId, data.displayName)
 
-      res.redirect(`/clients/${newGateway.client.id}/vitals`) 
+      res.redirect(`/clients/${newGateway.client.id}/vitals`)
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.log(errorMessage)
@@ -265,7 +265,7 @@ async function submitNewGateway(req, res) {
 async function renderUpdateGatewayPage(req, res) {
   try {
     const clients = await db.getClients()
-    const gateway = await db.getGatewayWithGatewayId(req.params.id) 
+    const gateway = await db.getGatewayWithGatewayId(req.params.id)
 
     const viewParams = {
       currentGateway: gateway,
@@ -286,14 +286,7 @@ async function renderUpdateGatewayPage(req, res) {
   }
 }
 
-const validateUpdateGateway = Validator.body([
-  'gatewayId',
-  'clientId',
-  'isSendingVitals',
-  'isDisplayed',
-])
-.trim()
-.notEmpty()
+const validateUpdateGateway = Validator.body(['gatewayId', 'clientId', 'isSendingVitals', 'isDisplayed']).trim().notEmpty()
 
 async function submitUpdateGateway(req, res) {
   try {
@@ -308,7 +301,7 @@ async function submitUpdateGateway(req, res) {
     // TODO: error is here
     if (validationErrors.isEmpty()) {
       const data = req.body
-      gatewayId.id = req.params.id // FIXME: this might be wrong
+      data.gatewayId = req.params.id // FIXME: this might be wrong
 
       const client = await db.getClientWithId(data.clientId)
       helpers.log(client)
@@ -317,12 +310,7 @@ async function submitUpdateGateway(req, res) {
         return res.status(400).send(errorMessage)
       }
 
-      await db.updateGateway(
-        data.clientId,
-        data.isSendingVitals === 'true',
-        data.isDisplayed === 'true',
-        data.gatewayId,
-      )
+      await db.updateGateway(data.clientId, data.isSendingVitals === 'true', data.isDisplayed === 'true', data.gatewayId)
 
       res.redirect(`/clients/${data.clientId}/vitals`)
     } else {

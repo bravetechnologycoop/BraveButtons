@@ -1516,12 +1516,7 @@ async function createGatewayFromBrowserForm(gatewayId, clientId, displayName, pg
   }
 }
 
-async function updateGateway(
-  clientId,
-  isSendingVitals,
-  isDisplayed,
-  gatewayId,
-) {
+async function updateGateway(clientId, isSendingVitals, isDisplayed, gatewayId, pgClient) {
   try {
     const results = await helpers.runQuery(
       'updateGateway',
@@ -1543,7 +1538,7 @@ async function updateGateway(
       return null
     }
 
-    helpers.log(`Location '${deviceId}' successfully updated`)
+    helpers.log(`Location '${gatewayId}' successfully updated`)
     const allClients = await getClients(pgClient)
     return createGatewayFromRow(results.rows[0], allClients)
   } catch (err) {
