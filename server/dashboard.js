@@ -25,6 +25,7 @@ const buttonFormCSSPartial = fs.readFileSync(`${__dirname}/mustache-templates/bu
 const newClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newClient.mst`, 'utf-8')
 const newGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newGateway.mst`, 'utf-8')
 const updateGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateGateway.mst`, 'utf-8')
+const updateButtonTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateButton.mst`, 'utf-8')
 
 const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
 const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
@@ -205,6 +206,86 @@ async function renderButtonDetailsPage(req, res) {
 //     res.status(500).send()
 //   }
 // }
+
+async function renderUpdateButtonPage(req, res) {
+  try {
+    const clients = await db.getClients()
+    const button = await db.getButtonWithDeviceId(req.params.id)
+
+    const viewParams = {
+      currentButton: button,
+      clients: clients
+        .filter(client => client.isDisplayed)
+        .map(client => {
+          return {
+            ...client,
+            selected: client.id === button.client.id,
+          }
+        }),
+    }
+
+    res.send(Mustache.render(updateButtonTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
+const validateUpdateButton = Validator.body([
+  'displayName',
+  'serialNumber',
+  'phoneNumber',
+  'isDisplayed',
+  'isSendingAlerts',
+  'isSendingVitals',
+  'clientId',
+])
+  .trim()
+  .notEmpty()
+
+async function submitUpdateButton(req, res) {
+  try {
+    if (!req.session.user || !req.cookies.user_sid) {
+      helpers.logError('Unauthorized')
+      res.status(401).send()
+      return
+    }
+
+    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+    if (validationErrors.isEmpty()) {
+      const data = req.body
+      data.deviceId = req.params.id
+
+      const client = await db.getClientWithId(data.clientId)
+      if (client === null) {
+        const errorMessage = `Client ID '${data.clientId}' does not exist`
+        helpers.log(errorMessage)
+        return res.status(400).send(errorMessage)
+      }
+
+      await db.updateButton(
+        data.displayName,
+        data.serialNumber,
+        data.phoneNumber,
+        data.isDisplayed === 'true',
+        data.isSendingAlerts === 'true',
+        data.isSendingVitals === 'true',
+        data.clientId,
+        data.deviceId,
+      )
+
+      res.redirect(`/buttons/${data.deviceId}`)
+    } else {
+      const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
+      helpers.log(errorMessage)
+      res.status(400).send(errorMessage)
+    }
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
 
 async function renderNewGatewayPage(req, res) {
   try {
@@ -774,6 +855,7 @@ module.exports = {
   renderButtonDetailsPage,
   renderLoginPage,
   renderVitalsPage,
+  renderUpdateButtonPage,
   sessionChecker,
   setupDashboardSessions,
   submitLogin,
@@ -782,8 +864,10 @@ module.exports = {
   submitUpdateClient,
   submitNewGateway,
   submitUpdateGateway,
+  submitUpdateButton,
   validateNewClient,
   validateUpdateClient,
   validateNewGateway,
   validateUpdateGateway,
+  validateUpdateButton,
 }

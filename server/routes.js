@@ -15,6 +15,7 @@ function configureRoutes(app) {
   app.get('/logout', dashboard.submitLogout)
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
   app.get('/buttons/:id', dashboard.sessionChecker, dashboard.renderButtonDetailsPage)
+  app.get('/buttons/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateButtonPage)
   app.get('/clients/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateClientPage)
   app.get('/gateways/new', dashboard.sessionChecker, dashboard.renderNewGatewayPage)
   app.get('/gateways/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateGatewayPage)
@@ -29,6 +30,7 @@ function configureRoutes(app) {
   app.post('/clients/:id', dashboard.validateUpdateClient, dashboard.submitUpdateClient)
   app.post('/gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
   app.post('/gateways/:id', dashboard.validateUpdateGateway, dashboard.submitUpdateGateway)
+  app.post('/buttons/:id', dashboard.validateUpdateButton, dashboard.submitUpdateButton)
 }
 
 module.exports = {

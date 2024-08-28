@@ -1516,6 +1516,40 @@ async function createGatewayFromBrowserForm(gatewayId, clientId, displayName, pg
   }
 }
 
+async function updateButton(displayName, serialNumber, phoneNumber, isDisplayed, isSendingAlerts, isSendingVitals, clientId, deviceId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'updateButton',
+      `
+      UPDATE devices
+      SET
+        display_name = $1,
+        serial_number = $2,
+        phone_number = $3,
+        is_displayed = $4,
+        is_sending_alerts = $5,
+        is_sending_vitals = $6,
+        client_id = $7
+      WHERE id = $8
+      RETURNING *
+      `,
+      [displayName, serialNumber, phoneNumber, isDisplayed, isSendingAlerts, isSendingVitals, clientId, deviceId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Location '${deviceId}' successfully updated`)
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the updateButton query: ${err.toString()}`)
+  }
+}
+
 async function updateGateway(clientId, isSendingVitals, isDisplayed, gatewayId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1685,6 +1719,7 @@ module.exports = {
   getMostRecentSessionWithDevice,
   updateClient,
   updateGateway,
+  updateButton,
   createClientExtension,
   updateClientExtension,
   createGatewayFromBrowserForm,
