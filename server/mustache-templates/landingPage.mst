@@ -24,18 +24,14 @@
                     <thead>
                         <tr class="table-header" scope="row">
                             <th scope="col">Client</th>
-                            <th scope="col"><h5>Location</h5></th>
-                            <th scope="col"><h5>Last Session Started</h5></th>
                             <th scope="col">Sends Alerts?</th>
                             <th scope="col">Sends Vitals?</th>
                         </tr>
                     </thead>
                     <tbody>
                     {{#clients}}
-                        <tr class="table-data table-secondary">
+                        <tr class="table-data">
                             <th scope="row"><a href="/clients/{{id}}">{{displayName}}</a></th>
-                            <td></td>
-                            <td></td>
                             <td>{{#isSendingAlerts}}y{{/isSendingAlerts}}{{^isSendingAlerts}}NOPE{{/isSendingAlerts}}</td>
                             <td>{{#isSendingVitals}}y{{/isSendingVitals}}{{^isSendingVitals}}NOPE{{/isSendingVitals}}</td>
                         </tr>
