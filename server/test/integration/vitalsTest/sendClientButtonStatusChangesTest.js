@@ -68,7 +68,7 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
           phoneNumber,
           fromPhoneNumber,
-          'There has been connection changes for the buttons at Client A. The following buttons have disconnected: ButtonA, ButtonB.',
+          'There were connection changes for the buttons at Client A. The following buttons have disconnected: ButtonA, ButtonB.',
         )
       })
     })
@@ -79,7 +79,7 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
           phoneNumber,
           fromPhoneNumber,
-          'There has been connection changes for the buttons at Client B. The following buttons have reconnected: ButtonA, ButtonB.',
+          'There were connection changes for the buttons at Client B. The following buttons have reconnected: ButtonA, ButtonB.',
         )
       })
     })
@@ -90,7 +90,7 @@ describe('vitals.js integration tests: sendClientButtonStatusChanges', () => {
         expect(twilioHelpers.sendTwilioMessage).to.be.calledWith(
           phoneNumber,
           fromPhoneNumber,
-          'There has been connection changes for the buttons at Client C. The following buttons have disconnected: ButtonA. The following buttons have reconnected: ButtonB.',
+          'There were connection changes for the buttons at Client C. The following buttons have disconnected: ButtonA. The following buttons have reconnected: ButtonB.',
         )
       })
     })
