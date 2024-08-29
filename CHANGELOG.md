@@ -13,6 +13,7 @@ the code was deployed.
 
 ### Added
 
+- New REST API routes (still require test cases before further use) (CU-86dugzyzh).
 - Added `ClientExtension.js` with class `ClientExtension` to be used in adding and editing clients.
 - Added device dashboard page with `locationsDashboard.mst` mustache file.
 - Added new CSS for the device dashboard page in `locationsCSSPartial.mst`.
