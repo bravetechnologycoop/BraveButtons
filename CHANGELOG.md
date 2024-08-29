@@ -11,6 +11,52 @@ the code was deployed.
 
 ## Unreleased
 
+### Added
+
+- Added `ClientExtension.js` with class `ClientExtension` to be used in adding and editing clients.
+- Added device dashboard page with `locationsDashboard.mst` mustache file.
+- Added new CSS for the device dashboard page in `locationsCSSPartial.mst`.
+- Added update client page with `updateClient.mst` mustache file.
+- Added `renderUpdateClient` function in `dashboard.js` to render the mustache file.
+- Added `validateUpdateClient` function in `dashboard.js` to validate the update client form.
+- Added `submitUpdateClient` function in `dashboard.js` to submit the update client form.
+- Added new client page with `newClient.mst` mustache file.
+- Added `renderNewClientPage` function in `dashboard.js` to render the mustache file.
+- Added `validateNewClient` function in `dashboard.js` to validate the new client form.
+- Added `submitNewClient` function in `dashboard.js` to submit the new client form.
+- Added update gateway page with `updateGateway.mst` mustache file.
+- Added `renderUpdateGatewayPage` function in `dashboard.js` to render the mustache file.
+- Added `validateUpdateGateway` function in `dashboard.js` to validate the update gateway form.
+- Added `submitUpdateGateway` function in `dashboard.js` to submit the update gateway form.
+- Added new gateway page with `newGateway.mst` mustache file.
+- Added `renderNewGatewayPage` function in `dashboard.js` to render the mustache file.
+- Added `validateNewGateway` function in `dashboard.js` to validate the new gateway form.
+- Added `submitNewGateway` function in `dashboard.js` to submit the new gateway form.
+- Added update button page with `updateButton.mst` mustache file.
+- Added `renderUpdateButtonPage` function in `dashboard.js` to render the mustache file.
+- Added `validateUpdateButton` function in `dashboard.js` to validate the update button form.
+- Added `submitUpdateButton` function in `dashboard.js` to submit the update button form.
+- Added `buttonFormCSSPartial.mst` that has all the CSS for every form page in the dashboard.
+- Added `New Clients` and `New Gateway` buttons to the nav bar.
+- Added `Edit Gateway` buttons to the vitals page next to each gateway.
+- Added several new routing to route pages into each other in `routes.js`.
+- Added function `createClientExtensionFromRow` in `db,js` for new pages.
+- Added function `getGatewayWithGatewayId` in `db,js` for new pages.
+- Added function `getHistoryOfSessions` in `db,js` for new pages.
+- Added function `getButtonWithDeviceId` in `db,js` for new pages.
+- Added function `getClientExtensionWithClientId` in `db,js` for new pages.
+- Added function `getMostRecentSessionWithDevice` in `db,js` for new pages.
+- Added function `updateClient` in `db,js` for new pages.
+- Added function `createClientExtension` in `db,js` for new pages.
+- Added function `updateClientExtension` in `db,js` for new pages.
+- Added function `createGatewayFromBrowserForm` in `db,js` for new pages.
+- Added function `updateButton` in `db,js` for new pages.
+- Added function `updateGateway` in `db,js` for new pages.
+
+### Changed
+- Changed `clientPage.mst` to show all current client buttons instead of all vitals.
+- Changed `renderButtonDetailsPage` function in `dashboard.js` to reflect new page changes for the client page
+
 ## [13.11.0] - 2024-08-20
 
 ### Added
