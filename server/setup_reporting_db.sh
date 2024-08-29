@@ -48,15 +48,14 @@ else # file exists
 	read answer
 	use_existing=$answer
 
-	if [ answer = "Y" ]; then
+	if [ $answer = "Y" ]; then
 		printf "OK - Won't download again.\n"
 	else
 		printf "OK - Downloading again.\n"
-		rm /tmp/button_reporting_db.sql
 	fi
 fi
 
-if [ use_existing != "Y" ]; then
+if [ $use_existing != "Y" ]; then
 	printf "Note: The following password prompt is for the source database.\n"
 
 	# dump all tables except button_vitals and gateway_vitals (too large) into /tmp/button_reporting_db.sql
