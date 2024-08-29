@@ -11,13 +11,17 @@ the code was deployed.
 
 ## Unreleased
 
+## [13.11.0] - 2024-08-20
+
 ### Added
 
+- Added migration script to insert `organization`, `funder`, and `postal_code` columns into the clients_extention table (CU-86du6jp33).
 - Added Github Actions file `CI.yml` in `.github/workflows` to run along with Travis CI (CU-86dthadwg).
 - Added a button in `clientVitals.mst` and `vitals.mst` to show and hide RSSI and SNR values (CU-86du4cpm8). 
 
 ### Changed
 
+- Reworded button connection changes in `common.en.json`, changed wording from 'there has been' to 'there were' (CU-86drtnekh).
 - Removed `.travis.yml` file to stop using Travis CI (CU-86dthadwg).
 - Changed Build Status badge in the README (CU-86dthadwg).
 - Changed README instructions for adding encrypted variables for Travis to instructions for adding secrets in Github Actions (CU-86dthadwg).
@@ -759,7 +763,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.10.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.11.0...HEAD
+[13.11.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.10.0...v13.11.0
 [13.10.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.9.0...v13.10.0
 [13.9.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...v13.9.0
 [13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
