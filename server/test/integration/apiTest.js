@@ -32,19 +32,19 @@ describe('api.js integration tests', () => {
   })
 
   describe('for authorization', () => {
-    it.only('should accept an authorized request (200)', async () => {
+    it('should accept an authorized request (200)', async () => {
       const res = await getRequest('/api/clients')
       expect(res).to.have.status(200)
       expect(helpers.logError).not.to.be.called
     })
 
-    it.only('should reject an unauthorized request (401)', async () => {
+    it('should reject an unauthorized request (401)', async () => {
       const res = await chai.request(server).get('/api/clients').set('authorization', 'badApiKey')
       expect(res).to.have.status(401)
       expect(helpers.logError).to.be.calledWith('Unauthorized request to /api/clients.')
     })
 
-    it.only('should reject a bad request (401)', async () => {
+    it('should reject a bad request (401)', async () => {
       const res = await chai.request(server).get('/api/clients')
       expect(res).to.have.status(401)
       expect(helpers.logError).to.be.calledWith('Unauthorized request to /api/clients.')
@@ -57,7 +57,7 @@ describe('api.js integration tests', () => {
       this.client2 = await factories.clientDBFactory(db, { displayName: 'client2' })
     })
 
-    it.only('should return an array of clients', async () => {
+    it('should return an array of clients', async () => {
       const res = await getRequest('/api/clients')
       expect(JSON.stringify(res.body)).to.equal(
         JSON.stringify({
