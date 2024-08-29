@@ -19,11 +19,18 @@
             {{#currentGateway}}
             <h4 class="no-locations">Edit Gateway: {{displayName}}</h4>
             <br>
-            <form class="needs-validation" action="/gateways/{{gatewayId}}" method="POST">
+            <form class="needs-validation" action="/gateways/{{id}}" method="POST">
                 <div class="form-group row justify-content-start row-no-gutters">
-                    <label for="id" class="col-sm-3 col-form-label">Gateway ID:</label>
+                    <label for="gatewayId" class="col-sm-3 col-form-label">Gateway ID:</label>
                     <div class="col-sm-5">
-                        <input type="text" class="form-control" name="id" value="{{id}}" disabled>
+                        <input type="text" class="form-control" name="gatewayId" value="{{id}}" disabled>
+                    </div>
+                </div>
+
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="displayName" class="col-sm-3 col-form-label">Display Name:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="displayName" value="{{displayName}}">
                     </div>
                 </div>
 

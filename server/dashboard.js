@@ -90,28 +90,6 @@ async function submitLogout(req, res) {
 async function renderDashboardPage(req, res) {
   try {
     const displayedClients = (await db.getClients()).filter(client => client.isDisplayed)
-    const allDisplayedButtons = (await db.getButtons()).filter(button => button.isDisplayed)
-
-    for (const button of allDisplayedButtons) {
-      const recentSession = await db.getMostRecentSessionWithDevice(button)
-      if (recentSession !== null) {
-        const sessionCreatedAt = Date.parse(recentSession.createdAt)
-        const timeSinceLastSession = await helpers.generateCalculatedTimeDifferenceString(sessionCreatedAt, db)
-        button.sessionStart = timeSinceLastSession
-      }
-    }
-
-    for (const client of displayedClients) {
-      client.buttons = allDisplayedButtons
-        .filter(button => button.client.id === client.id)
-        .map(button => {
-          return {
-            name: button.displayName,
-            id: button.id,
-            sessionStart: button.sessionStart,
-          }
-        })
-    }
 
     const viewParams = { clients: displayedClients }
 
@@ -159,53 +137,6 @@ async function renderButtonDetailsPage(req, res) {
     res.status(500).send()
   }
 }
-
-// TODO: delete old function vvv
-// async function renderClientDetailsPage(req, res) {
-//   try {
-//     const clients = await db.getClients()
-
-//     if (typeof req.params.clientId !== 'string') {
-//       res.redirect(`/clients/${clients[0].id}`)
-//       return
-//     }
-
-//     const recentSessions = await db.getRecentButtonsSessionsWithClientId(req.params.clientId)
-//     const currentClient = await db.getClientWithId(req.params.clientId)
-//     const viewParams = {
-//       recentSessions: [],
-//       clients: clients.filter(client => client.isDisplayed),
-//     }
-
-//     if (currentClient !== null) {
-//       viewParams.currentClientId = currentClient.id
-//       viewParams.currentClientName = currentClient.displayName
-
-//       for (const recentSession of recentSessions) {
-//         const createdAt = helpers.formatDateTimeForDashboard(recentSession.createdAt)
-//         const updatedAt = helpers.formatDateTimeForDashboard(recentSession.updatedAt)
-//         const respondedAt = recentSession.respondedAt !== null ? helpers.formatDateTimeForDashboard(recentSession.respondedAt) : ''
-//         viewParams.recentSessions.push({
-//           unit: recentSession.device.displayName,
-//           createdAt,
-//           updatedAt,
-//           chatbotState: recentSession.chatbotState,
-//           numberOfAlerts: recentSession.numberOfAlerts.toString(),
-//           incidentCategory: recentSession.incidentCategory,
-//           respondedAt,
-//           respondedByPhoneNumber: recentSession.respondedByPhoneNumber,
-//         })
-//       }
-//     } else {
-//       viewParams.viewMessage = 'No client to display'
-//     }
-
-//     res.send(Mustache.render(clientPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
-//   } catch (err) {
-//     helpers.logError(err)
-//     res.status(500).send()
-//   }
-// }
 
 async function renderUpdateButtonPage(req, res) {
   try {
@@ -367,7 +298,7 @@ async function renderUpdateGatewayPage(req, res) {
   }
 }
 
-const validateUpdateGateway = Validator.body(['gatewayId', 'clientId', 'isSendingVitals', 'isDisplayed']).trim().notEmpty()
+const validateUpdateGateway = Validator.body(['displayName', 'clientId', 'isSendingVitals', 'isDisplayed']).notEmpty()
 
 async function submitUpdateGateway(req, res) {
   try {
@@ -379,24 +310,21 @@ async function submitUpdateGateway(req, res) {
 
     const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
-    // TODO: error is here
     if (validationErrors.isEmpty()) {
       const data = req.body
-      data.gatewayId = req.params.id // FIXME: this might be wrong
+      data.gatewayId = req.params.id
 
       const client = await db.getClientWithId(data.clientId)
-      helpers.log(client)
       if (client === null) {
         const errorMessage = `Client ID '${data.clientId}' does not exist`
         return res.status(400).send(errorMessage)
       }
 
-      await db.updateGateway(data.clientId, data.isSendingVitals === 'true', data.isDisplayed === 'true', data.gatewayId)
+      await db.updateGateway(data.clientId, data.isSendingVitals === 'true', data.isDisplayed === 'true', data.gatewayId, data.displayName)
 
       res.redirect(`/clients/${data.clientId}/vitals`)
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
-      helpers.log(errorMessage)
       res.status(400).send(errorMessage)
     }
   } catch (err) {

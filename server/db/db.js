@@ -1352,7 +1352,6 @@ async function getCurrentTimeForHealthCheck() {
   }
 }
 
-// FIXME: do this function
 async function getMostRecentSessionWithDevice(device, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1550,7 +1549,7 @@ async function updateButton(displayName, serialNumber, phoneNumber, isDisplayed,
   }
 }
 
-async function updateGateway(clientId, isSendingVitals, isDisplayed, gatewayId, pgClient) {
+async function updateGateway(clientId, isSendingVitals, isDisplayed, gatewayId, displayName, pgClient) {
   try {
     const results = await helpers.runQuery(
       'updateGateway',
@@ -1559,11 +1558,12 @@ async function updateGateway(clientId, isSendingVitals, isDisplayed, gatewayId, 
       SET
         client_id = $1,
         is_sending_vitals = $2,
-        is_displayed = $3
-      WHERE id = $4
+        is_displayed = $3,
+        display_name = $4
+      WHERE id = $5
       RETURNING *
       `,
-      [clientId, isSendingVitals, isDisplayed, gatewayId],
+      [clientId, isSendingVitals, isDisplayed, displayName, gatewayId],
       pool,
       pgClient,
     )

@@ -19,7 +19,8 @@
         {{#currentButton}}
             <h3>{{displayName}}</h3>
 
-            <a href="" class="btn btn-secondary btn-sm" role="button">View Client</a>
+            <a href="/buttons/{{id}}/edit" class="btn btn-secondary btn-sm" role="button">Edit Button</a>
+            <a href="/clients/{{clientid}}" class="btn btn-secondary btn-sm" role="button">View Client</a>
             <br>
             <div class="table-responsive">
                 <table class="table table-striped table-sm">
