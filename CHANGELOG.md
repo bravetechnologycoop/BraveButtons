@@ -11,6 +11,10 @@ the code was deployed.
 
 ## Unreleased
 
+### Added
+
+- New REST API routes (still require test cases before further use) (CU-86dugzyzh).
+
 ## [13.11.0] - 2024-08-20
 
 ### Added
