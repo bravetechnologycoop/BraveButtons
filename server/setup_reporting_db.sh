@@ -29,7 +29,7 @@ printf "Note: the source database should be a clone of the production database, 
 printf "Please look over the connection strings for the source and destination databases.\n"
 printf "Are you sure you want to proceed? (Y/n) "
 read answer
-if [ $answer != "Y" ]; then
+if [ "$answer" != "Y" ]; then
 	printf "OK - Won't do anything then.\n"
 	exit
 fi
@@ -48,19 +48,19 @@ else # file exists
 	read answer
 	use_existing=$answer
 
-	if [ $answer = "Y" ]; then
+	if [ "$answer" = "Y" ]; then
 		printf "OK - Won't download again.\n"
 	else
 		printf "OK - Downloading again.\n"
 	fi
 fi
 
-if [ $use_existing != "Y" ]; then
+if [ "$use_existing" != "Y" ]; then
 	printf "Note: The following password prompt is for the source database.\n"
 
 	# dump all tables except button_vitals and gateway_vitals (too large) into /tmp/button_reporting_db.sql
 	# NOTE: the --clean option prepends the insert queries with drop queries to "clean" the necessary tables from the reporting db
-	pg_dump $src_db -U $src_user -h $src_host -p $src_port -f /tmp/button_reporting_db.sql --clean --if-exists -T button_vitals -T gateway_vitals
+	pg_dump $src_db -U $src_user -h $src_host -p $src_port -f /tmp/button_reporting_db.sql --clean --if-exists -T public.buttons_vitals -T public.gateways_vitals
 fi
 
 printf "Note: The following password prompt is for the destination database.\n"
