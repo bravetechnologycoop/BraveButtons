@@ -14,7 +14,7 @@ the code was deployed.
 ### Added
 
 - Added city, projects to clients_extension (CU-86du6jp33)
-- Added migration script to change the default value in the `incident_categories` column to `{"Overdose Event","No One Inside","Occupant Responded","None of the Above"}` (CU-86du7hv9b)
+- Added migration script to change the default value in the `incident_categories` column to `{"Overdose Event","Safer Use","Conflict Resolution","Test"}` (CU-86du7hv9b)
 - Added migration script to insert `organization`, `funder`, and `postal_code` columns into the `clients_extention` table (CU-86du6jp33).
 - New REST API routes (still require test cases before further use) (CU-86dugzyzh).
 
