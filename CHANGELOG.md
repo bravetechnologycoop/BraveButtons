@@ -11,6 +11,8 @@ the code was deployed.
 
 ## Unreleased
 
+## [13.12.0] - 2024-09-12
+
 ### Added
 
 - Added city, projects to clients_extension (CU-86du6jp33)
@@ -769,9 +771,10 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.11.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.12.0...HEAD
+[13.12.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.11.0...v13.12.0
 [13.11.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.10.0...v13.11.0
-[13.10.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.9.0...v13.10.0
+[13.10.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.9.0...v13.10.0git
 [13.9.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.8.0...v13.9.0
 [13.8.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.1...v13.8.0
 [13.7.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.7.0...v13.7.1
