@@ -53,19 +53,13 @@
 
    1. update the values in `~/BraveButtons/server/.env`
 
-## 3. Notify the client Responder Phones
+## 3. Notify the Client Responder Phones
 
-1. send a text message to all of the Responder phones letting them know that you are doing some routine maintenance, there will be downtime, and that you will notify them when everything is back to normal again.
+1. sign into the [particle-accelerator](https://pa.brave.coop/)
 
-   1. verify that all the active Buttons clients are in the the Twilio Studio Flow "Buttons deployment started notification". Make any necessary updates and Publish
+1. go to message clients and select "Buttons" as the product
 
-   1. use the Flow by hitting the designated `POST` endpoint with
-
-      - Basic auth username = Twilio account SID
-      - Basic auth password = Twilio auth token
-      - form-data Body
-        - To: The phone number to send the final confirmation text to (i.e. your phone number)
-        - From: Any number in the format +12223334444 (we don't use this number for anything, but Twilio will complain if it's missing or incorrectly formatted)
+1. send a downtime message to all the active clients letting them know that you are doing some routine maintenance, there will be downtime, and that you will notify them when everything is back to normal again.
 
 ## 4. Deploy the server on Production
 
@@ -89,23 +83,15 @@
 
       1. run `pm2 logs`
 
-## 6. Notify the client Responder Phones
+## 6. Notify the Client Responder Phones
 
-1. the Twilio Studio Flow "Buttons deployment completed notification"
+1. go back to the [particle-accelerator](https://pa.brave.coop/) and login
 
-1. send a text message to all of the Responder phones letting them know that everything is back to normal
+1. go to message clients and select "Buttons" as the product
 
-   1. verify that all the active Buttons clients are in the the Twilio Studio Flow "Buttons deployment completed notification". Make any necessary updates and Publish
+1. send a uptime message to all the active clients letting them know that the routine maintenance is done and everything is back to normal again. 
 
-   1. use the Flow by hitting the designated `POST` endpoint with
-
-      - Basic auth username = Twilio account SID
-      - Basic auth password = Twilio auth token
-      - form-data Body
-        - To: The phone number to send the final confirmation text to (i.e. your phone number)
-        - From: Any number in the format +12223334444 (we don't use this number for anything, but Twilio will complain if it's missing or incorrectly formatted)
-
-## 8. Celebrate
+## 7. Celebrate
 
 1. send a message to the `#buttons-aa-general` Slack channel letting everyone know that the deployment is finished and list the changes in this deployment from the `CHANGELOG`
 
