@@ -11,6 +11,10 @@ the code was deployed.
 
 ## Unreleased
 
+### Changed 
+
+- Updated the .env.example and README for Buttons (CU-86duebt59)
+
 ## [13.12.0] - 2024-09-12
 
 ### Added
