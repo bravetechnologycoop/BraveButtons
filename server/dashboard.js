@@ -457,7 +457,7 @@ const validateUpdateClient = [
 async function submitUpdateClient(req, res) {
   try {
     if (!req.session.user || !req.cookies.user_sid) {
-      helpers.logError('Unauthorzed')
+      helpers.logError('Unauthorized')
       res.status(401).send()
       return
     }
