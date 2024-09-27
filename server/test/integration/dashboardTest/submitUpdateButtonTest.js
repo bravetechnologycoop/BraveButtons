@@ -238,24 +238,24 @@ describe('dashboard.js Integration Tests: submitUpdateButton', () => {
       helpers.log.resetHistory()
 
       this.response = await this.agent.post(`/buttons/${this.test1.id}`).send({})
+    })
 
-      afterEach(() => {
-        this.agent.close()
-      })
+    afterEach(() => {
+      this.agent.close()
+    })
 
-      it('should return 400', () => {
-        expect(this.response).to.have.status(400)
-      })
+    it('should return 400', () => {
+      expect(this.response).to.have.status(400)
+    })
 
-      it('should not update the button in the database', () => {
-        expect(db.updateButton).to.not.have.been.called
-      })
+    it('should not update the button in the database', () => {
+      expect(db.updateButton).to.not.have.been.called
+    })
 
-      it('should log the error', () => {
-        expect(helpers.log).to.have.been.calledWith(
-          `Bad request to /buttons/${this.test1.id}: displayName (Invalid value),serialNumber (Invalid value),phoneNumber (Invalid value),isDisplayed (Invalid value),isSendingAlerts (Invalid value),isSendingVitals (Invalid value),clientId (Invalid value)`,
-        )
-      })
+    it('should log the error', () => {
+      expect(helpers.log).to.have.been.calledWith(
+        `Bad request to /buttons/${this.test1.id}: displayName (Invalid value),serialNumber (Invalid value),phoneNumber (Invalid value),isDisplayed (Invalid value),isSendingAlerts (Invalid value),isSendingVitals (Invalid value),clientId (Invalid value)`,
+      )
     })
   })
 })
