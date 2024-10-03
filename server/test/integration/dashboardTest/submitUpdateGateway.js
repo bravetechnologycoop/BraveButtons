@@ -25,5 +25,24 @@ describe('dashboard.js integration tests: submitUpdateGateway', () => {
         sandbox.spy(db, 'updateGateway')
 
         // TODO: figure out how to test gateways without a factories
+        this.testGatewayIdForEdit = 'test1'
+
+        await db.clearTables()
+
+        this.client = await factories.clientDBFactory(db)
+        this.test1 = await factories.gatewayDBFactory(db, {
+            gatewayid: this.testGatewayIdForEdit,
+            clientId: this.client.id,
+        })
+
+        this.agent = chai.request.agent(server)
     })
+
+    afterEach(async () => {
+        sandbox.restore()
+        await db.clearTables
+        this.agent.close()
+    })
+
+    describe
 })
