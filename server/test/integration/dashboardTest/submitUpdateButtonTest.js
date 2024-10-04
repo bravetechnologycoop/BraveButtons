@@ -68,7 +68,7 @@ describe('dashboard.js Integration Tests: submitUpdateButton', () => {
       expect(this.response).to.have.status(200)
     })
 
-    it('should update the location in the database', async () => {
+    it('should update the button in the database', async () => {
       const updatedButton = await db.getButtonWithDeviceId(this.test1.id)
 
       expect(updatedButton.displayName).to.equal(this.goodRequest.displayName)

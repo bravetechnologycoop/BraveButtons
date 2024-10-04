@@ -6,7 +6,7 @@
   "dependencies": {
     "@aws-sdk/client-iot": "^3.624.0",
     "@aws-sdk/client-iot-wireless": "^3.624.0",
-    "brave-alert-lib": "github:bravetechnologycoop/brave-alert-lib#v14.0.2",
+    "brave-alert-lib": "github:bravetechnologycoop/brave-alert-lib#v15.0.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "express": "^4.19.2",
