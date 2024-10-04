@@ -1665,6 +1665,33 @@ async function createDevice(
   return null
 }
 
+async function createGateway(clientId, id, displayName, isDisplayed, isSendingVitals, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createGateway',
+      `
+      INSERT INTO gateways (id, client_id, display_name, is_displayed, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [id, clientId, displayName, isDisplayed, isSendingVitals,],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the createGateway query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getDeviceWithIds(deviceId, clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1707,6 +1734,7 @@ module.exports = {
   createClient,
   createDevice,
   createSession,
+  createGateway,
   getActiveButtonsClients,
   getAllSessionsWithDeviceId,
   getClientExtensionWithClientId,

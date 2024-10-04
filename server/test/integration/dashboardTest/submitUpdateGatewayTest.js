@@ -9,7 +9,6 @@ const { beforeEach, afterEach, describe, it } = require('mocha')
 const { factories, helpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { server } = require('../../../server')
-const { isSendingVitals, isDisplayed } = require('./submitUpdateClientTest')
 
 // Setup chai
 chai.use(chaiHttp)
@@ -21,58 +20,58 @@ const sandbox = sinon.createSandbox()
 const expect = chai.expect
 
 describe('dashboard.js Integration Tests: submitUpdateGateway', () => {
+  beforeEach(async () => {
+    sandbox.spy(helpers, 'log')
+    sandbox.spy(helpers, 'logError')
+    sandbox.spy(db, 'updateGateway')
+
+    this.testGatewayIdForEdit = '123e4567-e89b-12d3-a456-426614174000'
+
+    await db.clearTables()
+
+    this.client = await factories.clientDBFactory(db)
+    this.test1 = await factories.gatewayDBFactory(db, {
+      id: this.testGatewayIdForEdit,
+      clientId: this.client.id,
+    })
+
+    this.agent = chai.request.agent(server)
+  })
+
+  afterEach(async () => {
+    sandbox.restore()
+    await db.clearTables
+    this.agent.close()
+  })
+
+  describe('for a request that contains all valid non-empty fields', () => {
     beforeEach(async () => {
-        sandbox.spy(helpers, 'log')
-        sandbox.spy(helpers, 'logError')
-        sandbox.spy(db, 'updateGateway')
+      await this.agent.post('/login').send({
+        username: helpers.getEnvVar('WEB_USERNAME'),
+        password: helpers.getEnvVar('PASSWORD'),
+      })
 
-        this.testGatewayIdForEdit = 'test1'
+      this.goodRequest = {
+        displayName: 'New Name',
+        isDisplayed: 'true',
+        isSendingVitals: 'false',
+        clientId: this.client.id,
+      }
 
-        await db.clearTables()
-
-        this.client = await factories.clientDBFactory(db)
-        this.test1 = await factories.gatewayDBFactory(db, {
-            id: this.testGatewayIdForEdit,
-            clientId: this.client.id,
-        })
-
-        this.agent = chai.request.agent(server)
+      this.response = await this.agent.post(`/gateways/${this.test1.id}`).send(this.goodRequest)
     })
 
-    afterEach(async () => {
-        sandbox.restore()
-        await db.clearTables
-        this.agent.close()
+    it('should return 200', () => {
+      expect(this.response).to.have.status(200)
     })
 
-    describe('for a request that contains all valid non-empty fields', () => {
-        beforeEach(async () => {
-            await this.agent.post('/login').send({
-                username: helpers.getEnvVar('WEB_USERNAME'),
-                password: helpers.getEnvVar('PASSWORD'),
-            })
+    it('should update the gateway in the database', async () => {
+      const updatedGateway = await db.getGatewayWithGatewayId(this.test1.id)
 
-            this.goodRequest = {
-                displayName: 'New Name',
-                isDisplayed: 'true',
-                isSendingVitals: 'false',
-                clientId: this.client.id,
-            }
-
-            this.response = await this.agent.post(`/gatewyays/${this.test1.id}`).send(this.goodRequest)
-        })
-
-        it('should return 200', () => {
-            expect(this.response).to.have.status(200)
-        })
-
-        it('should update the gateway in the database', async () => {
-            const updatedGateway = await db.getGatewayWithGatewayId(this.test1.id)
-
-            expect(updatedGateway.displayName).to.equal(this.goodRequest.displayName)
-            expect(updatedGateway.isDisplayed).to.equal(this.goodRequest.isDisplayed)
-            expect(updatedGateway.isSendingVitals).to.be.false
-            expect(updatedGateway.clientId).to.equal(this.goodRequest.clientId)
-        })
+      expect(updatedGateway.displayName).to.equal(this.goodRequest.displayName)
+      expect(updatedGateway.isDisplayed).to.equal(this.goodRequest.isDisplayed)
+      expect(updatedGateway.isSendingVitals).to.be.false
+      expect(updatedGateway.client.id).to.equal(this.goodRequest.clientId)
     })
+  })
 })
