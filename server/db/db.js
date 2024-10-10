@@ -62,7 +62,19 @@ function createClientFromRow(r) {
 }
 
 function createClientExtensionFromRow(r) {
-  return new ClientExtension(r.client_id, r.country, r.country_subdivision, r.building_type, r.created_at, r.updated_at)
+  return new ClientExtension(
+    r.client_id,
+    r.country,
+    r.country_subdivision,
+    r.building_type,
+    r.created_at,
+    r.updated_at,
+    r.organization,
+    r.funder,
+    r.postal_code,
+    r.city,
+    r.project,
+  )
 }
 
 function createDeviceFromRow(r, allClients) {
@@ -1434,16 +1446,16 @@ async function updateClient(
   }
 }
 
-async function createClientExtension(clientId, country, countrySubdivision, buildingType, pgClient) {
+async function createClientExtension(clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createClientExtension',
       `
-      INSERT INTO clients_extension (client_id, country, country_subdivision, building_type)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO clients_extension (client_id, country, country_subdivision, building_type, organization, funder, postal_code, city, project)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
       `,
-      [clientId, country, countrySubdivision, buildingType],
+      [clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project],
       pool,
       pgClient,
     )
@@ -1460,24 +1472,24 @@ async function createClientExtension(clientId, country, countrySubdivision, buil
   }
 }
 
-async function updateClientExtension(country, countrySubdivision, buildingType, clientId, pgClient) {
+async function updateClientExtension(clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project, pgClient) {
   try {
     const results = await helpers.runQuery(
       'updateClientExtension',
       `
       UPDATE clients_extension
-      SET country = $1, country_subdivision = $2, building_type = $3
-      WHERE client_id = $4
+      SET country = $2, country_subdivision = $3, building_type = $4, organization = $5, funder = $6, postal_code = $7, city = $8, project = $9
+      WHERE client_id = $1
       RETURNING *
       `,
-      [country, countrySubdivision, buildingType, clientId],
+      [clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project],
       pool,
       pgClient,
     )
 
     // NOTE: this shouldn't happen, as insertion into clients_extension is a trigger for insertion into clients, but it's good to be safe!
     if (results === undefined || results.rows.length === 0) {
-      return await createClientExtension(clientId, country, countrySubdivision, buildingType)
+      return await createClientExtension(clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project)
     }
 
     helpers.log(`Client extension for client ${clientId} successfully updated`)
