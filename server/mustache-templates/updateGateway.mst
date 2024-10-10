@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Brave Button Dashboard: Edit Gateway</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    {{> css}}
+</head>
+<body>
+    {{> nav}}
+    <div class="content-area">
+        <div class="content-wrapper">
+            {{#currentGateway}}
+            <h4 class="no-locations">Edit Gateway: {{displayName}}</h4>
+            <br>
+            <form class="needs-validation" action="/gateways/{{id}}" method="POST">
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="gatewayId" class="col-sm-3 col-form-label">Gateway ID:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="gatewayId" value="{{id}}" disabled>
+                    </div>
+                </div>
+
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="displayName" class="col-sm-3 col-form-label">Display Name:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="displayName" value="{{displayName}}">
+                    </div>
+                </div>
+
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="clientId" class="col-sm-3 col-form-label">Client:</label>
+                    <div class="col-sm-5">
+                        <select class="form-control" name="clientId" required>
+                            {{#clients}}
+                                <option {{#selected}} selected {{/selected}} value="{{id}}">{{displayName}}</option>
+                            {{/clients}}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="isDisplayed" class="col-sm-3 col-form-label">Is this displayed on the Dashboard by default?</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="isDisplayed" value="{{isDisplayed}}" required pattern="(true|false)">
+                        <small id="isDisplayedHelp" class="form-text text-muted">"true" or "false"</small>
+                    </div>
+                </div>
+
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="isSendingVitals" class="col-sm-3 col-form-label">Does this client send vitals messages?</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="isSendingVitals" value="{{isSendingVitals}}" required pattern="(true|false)">
+                        <small id="isSendingVitalsHelp" class="form-text text-muted">"true" or "false"</small>
+                    </div>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary btn-large">Submit</button>
+            </form>
+            {{/currentGateway}}
+            {{^currentGateway}}
+                <h5>Sorry, this gateway does not appear to exist.</h5>
+            {{/currentGateway}}
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
