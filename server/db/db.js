@@ -1686,7 +1686,7 @@ async function createGateway(clientId, id, displayName, isDisplayed, isSendingVi
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
       `,
-      [id, clientId, displayName, isDisplayed, isSendingVitals,],
+      [id, clientId, displayName, isDisplayed, isSendingVitals],
       pool,
       pgClient,
     )

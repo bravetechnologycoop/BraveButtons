@@ -431,7 +431,6 @@ async function submitNewClient(req, res) {
       )
 
       // create a client extension row for the newly created client
-      await db.updateClientExtension(data.country || null, data.countrySubdivision || null, data.buildingType || null, newClient.id)
       await db.updateClientExtension(
         newClient.id,
         data.country || null,
