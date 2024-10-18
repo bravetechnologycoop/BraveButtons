@@ -23,7 +23,7 @@
                 <form class="needs-validation" action="/gateways" method="POST">
 
                     <div class="form-group row justify-content-start row-no-gutters">
-                        <label for="gatewayId" class="col-sm-3 col-form-label"></label>
+                        <label for="gatewayId" class="col-sm-3 col-form-label">Gateway ID:</label>
                         <div class="col-sm-5">
                             <input type="text" class="form-control" name="gatewayId" placeholder="Gateway ID" required pattern="^[\S]+$">
                             <small id="gatewayIdHelp" class="form-text text-muted">No spaces, please</small>
