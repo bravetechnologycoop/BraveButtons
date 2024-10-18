@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Brave Button Dashboard: New Client</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    {{> css}}
+</head>
+
+<body>
+    {{> nav}}
+    <div class="content-area">
+        <div class="content-wrapper">
+            <h4 class="no-locations">Add A Client</h4>
+            <h6> Please fill in the form below. Any fields not seen here will be filled in with default values on submission and can be modified by clicking the "edit" button on the next screen.</h6>
+            <br>
+            <form class="needs-validation" action="/clients" method="POST">
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="displayName" class="col-sm-3 col-form-label">Display Name:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="displayName" placeholder="Display Name" required>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="responderPhoneNumbers" class="col-sm-3 col-form-label">Responder Phone Numbers:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="responderPhoneNumbers" value="+1" required pattern="[+][1]\d{10}([,][+][1]\d{10})*">
+                        <small id="responderPhoneNumbersHelp" class="form-text text-muted">Each phone number has +1 in front and separated by commas with no dashes or spaces, please (eg. +14445556789,+12223334444,+11231231234)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="fallbackPhoneNumbers" class="col-sm-3 col-form-label">Fallback Phone Numbers:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="fallbackPhoneNumbers" value="{{fallbackPhoneNumbers}}" required pattern="[+][1]\d{10}([,][+][1]\d{10})*">
+                        <small id="fallbackPhoneNumbersHelp" class="form-text text-muted">Each phone number has +1 in front and separated by commas with no dashes or spaces, please (eg. +14445556789,+12223334444,+11231231234)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="fromPhoneNumber" class="col-sm-3 col-form-label">From Phone Number:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="fromPhoneNumber" value="+1" required pattern="[+][1]\d{10}">
+                        <small id="phoneHelp" class="form-text text-muted">+1 in front and no dashes or other delimiters, please (eg. +14445556789)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="heartbeatPhoneNumbers" class="col-sm-3 col-form-label">Heartbeat Phone Numbers:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="heartbeatPhoneNumbers" value="{{heartbeatPhoneNumbers}}" pattern="[+][1]\d{10}([,][+][1]\d{10})*">
+                        <small id="heartbeatPhoneNumbersHelp" class="form-text text-muted">Each phone number has +1 in front and separated by commas with no dashes or spaces, please (eg. +14445556789,+12223334444,+11231231234)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="language" class="col-sm-3 col-form-label">Language:</label>
+                    <div class="col-sm-5">
+                        <select class="form-control" name="language" id="languageSelector" required>
+                            <option value='en'>English</option>
+                            <option value='es_us'>Spanish</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="incidentCategories" class="col-sm-3 col-form-label">Incident Categories:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="incidentCategories" value="No One Inside,Person responded,Overdose,None of the above" id="incidentCategoriesInput" required>
+                        <small id="incidentCategoriesHelp" class="form-text text-muted">Each incident category is separated by commas with no quotes, please (eg. No One Inside,Person responded,Overdose,None of the above)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="reminderTimeout" class="col-sm-3 col-form-label">Reminder Message Timeout (secs):</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="reminderTimeout" placeholder="Reminder Message Timeout (secs)" value="{{reminderTimeout}}" required>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="fallbackTimeout" class="col-sm-3 col-form-label">Fallback Message Timeout (secs):</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="fallbackTimeout" placeholder="Fallback Message Timeout (secs)" value="{{fallbackTimeout}}" required>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="country" class="col-sm-3 col-form-label">Country</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="country" placeholder="Country">
+                        <small id="isSendingVitalsHelp" class="form-text text-muted">e.g., "Canada" or "USA"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="countrySubdivision" class="col-sm-3 col-form-label">Country Subdivision</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="countrySubdivision" placeholder="Country Subdivision">
+                        <small id="isSendingVitalsHelp" class="form-text text-muted">e.g., "BC" or "OH"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="buildingType" class="col-sm-3 col-form-label">Building Type</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="buildingType" placeholder="Building Type">
+                        <small id="isSendingVitalsHelp" class="form-text text-muted">e.g., "Housing: Shelter" or "Medical: Community Health Care Facility"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="organization" class="col-sm-3 col-form-label">Organization</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="organization" placeholder="Organization">
+                    </div>
+                </div>   
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="funder" class="col-sm-3 col-form-label">Funder</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="funder" placeholder="Funder">
+                    </div>
+                </div>   
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="postalCode" class="col-sm-3 col-form-label">Postal Code</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="postalCode" placeholder="Postal Code">
+                    </div>
+                </div>   
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="city" class="col-sm-3 col-form-label">City</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="city" placeholder="City">
+                    </div>
+                </div>   
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="project" class="col-sm-3 col-form-label">Project</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="project" placeholder="Project">
+                    </div>
+                </div>
+                <br>
+                <p><em>*** Remember: New Clients are set to be Displayed, to not send Alerts, and to not send Vitals Messages ***</em></p>
+                <button type="submit" class="btn btn-primary btn-large">Submit</button>
+              </form>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>

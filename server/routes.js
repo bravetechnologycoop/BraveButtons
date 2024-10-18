@@ -8,12 +8,20 @@ const rak = require('./rak')
 function configureRoutes(app) {
   // to-be-deprecated mustache routes
   app.get('/', dashboard.sessionChecker, dashboard.redirectToHomePage)
+  app.get('/clients/new', dashboard.sessionChecker, dashboard.renderNewClientPage) // Must be configured before /clients/:id
   app.get('/dashboard', dashboard.sessionChecker, dashboard.renderDashboardPage)
-  app.get('/clients/:clientId?', dashboard.sessionChecker, dashboard.renderClientDetailsPage)
+  app.get('/clients/:id', dashboard.sessionChecker, dashboard.renderClientDetailsPage)
   app.get('/clients/:clientId/vitals', dashboard.sessionChecker, dashboard.renderClientVitalsPage)
   app.get('/login', dashboard.renderLoginPage)
   app.get('/logout', dashboard.submitLogout)
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
+  app.get('/buttons/:id', dashboard.sessionChecker, dashboard.renderButtonDetailsPage)
+  app.get('/buttons/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateButtonPage)
+  app.get('/clients/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateClientPage)
+  app.get('/gateways/new', dashboard.sessionChecker, dashboard.renderNewGatewayPage)
+  app.get('/gateways/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateGatewayPage)
+
+  app.post('/clients', dashboard.validateNewClient, dashboard.submitNewClient)
   app.post('/login', dashboard.submitLogin)
 
   // to-be-used API routes
@@ -46,6 +54,10 @@ function configureRoutes(app) {
   // other routes
   app.get('/export-data', dashboard.sessionChecker, dashboard.downloadCsv)
   app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
+  app.post('/clients/:id', dashboard.validateUpdateClient, dashboard.submitUpdateClient)
+  app.post('/gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
+  app.post('/gateways/:id', dashboard.validateUpdateGateway, dashboard.submitUpdateGateway)
+  app.post('/buttons/:id', dashboard.validateUpdateButton, dashboard.submitUpdateButton)
 }
 
 module.exports = {

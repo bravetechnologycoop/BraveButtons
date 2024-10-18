@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Brave Buttons Dashboard: Edit Client</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    {{> css}}
+</head>
+
+<body>
+    {{ > nav}}
+    <div class="content-area">
+        <div class="content-wrapper">
+            {{#currentClient}}
+            <h4 class="no-buttons">Edit Client: {{displayName}}</h4>
+            <br>
+            <form class="needs-validation" action="/clients/{{id}}" method="POST">
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="id" class="col-sm-3 col-form-label">ID:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="id" value="{{id}}" disabled>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="displayName" class="col-sm-3 col-form-label">Display Name:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="displayName" placeholder="Display Name" value="{{displayName}}" required>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="responderPhoneNumbers" class="col-sm-3 col-form-label">Responder Phone Numbers:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="responderPhoneNumbers" value="{{responderPhoneNumbers}}" required pattern="[+][1]\d{10}([,][+][1]\d{10})*">
+                        <small id="responderPhoneNumbersHelp" class="form-text text-muted">Each phone number has +1 in front and separated by commas with no dashes or spaces, please (eg. +14445556789,+12223334444,+11231231234)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="fallbackPhoneNumbers" class="col-sm-3 col-form-label">Fallback Phone Numbers:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="fallbackPhoneNumbers" value="{{fallbackPhoneNumbers}}" required pattern="[+][1]\d{10}([,][+][1]\d{10})*">
+                        <small id="fallbackPhoneNumbersHelp" class="form-text text-muted">Each phone number has +1 in front and separated by commas with no dashes or spaces, please (eg. +14445556789,+12223334444,+11231231234)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="fromPhoneNumber" class="col-sm-3 col-form-label">From Phone Number:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="fromPhoneNumber" value="{{fromPhoneNumber}}" required pattern="[+][1]\d{10}">
+                        <small id="phoneHelp" class="form-text text-muted">+1 in front and no dashes or other delimiters, please (eg. +14445556789)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="heartbeatPhoneNumbers" class="col-sm-3 col-form-label">Heartbeat Phone Numbers:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="heartbeatPhoneNumbers" value="{{heartbeatPhoneNumbers}}" pattern="[+][1]\d{10}([,][+][1]\d{10})*">
+                        <small id="heartbeatPhoneNumbersHelp" class="form-text text-muted">Each phone number has +1 in front and separated by commas with no dashes or spaces, please (eg. +14445556789,+12223334444,+11231231234)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                <label for="language" class="col-sm-3 col-form-label">Select Language:</label>
+                    <div class="col-sm-5">
+                      <select class="form-control" id="language" name="language">
+                            <script>
+                            var languageValue = '{{language}}'; 
+                            document.getElementById('language').innerHTML = `
+                                <option value="es_us" ${languageValue === 'es_us' ? 'selected' : ''}>Spanish</option>
+                                <option value="en" ${languageValue === 'en' ? 'selected' : ''}>English</option>`;
+                            </script>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="incidentCategories" class="col-sm-3 col-form-label">Incident Categories:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="incidentCategories" value="{{incidentCategories}}" required>
+                        <small id="incidentCategoriesHelp" class="form-text text-muted">Each incident category is separated by commas with no quotes, please (eg. No One Inside,Person responded,Overdose,None of the above)</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="reminderTimeout" class="col-sm-3 col-form-label">Reminder Message Timeout (secs):</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="reminderTimeout" placeholder="Reminder Message Timeout (secs)" value="{{reminderTimeout}}" required>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="fallbackTimeout" class="col-sm-3 col-form-label">Fallback Message Timeout (secs):</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="fallbackTimeout" placeholder="Fallback Message Timeout (secs)" value="{{fallbackTimeout}}" required>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="isDisplayed" class="col-sm-3 col-form-label">Is this displayed on the Dashboard by default?</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="isDisplayed" value="{{isDisplayed}}" required pattern="(true|false)">
+                        <small id="isDisplayedHelp" class="form-text text-muted">"true" or "false"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="isSendingAlerts" class="col-sm-3 col-form-label">Does this client send alert messages?</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="isSendingAlerts" value="{{isSendingAlerts}}" required pattern="(true|false)">
+                        <small id="isSendingAlertsHelp" class="form-text text-muted">"true" or "false"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="isSendingVitals" class="col-sm-3 col-form-label">Does this client send vitals messages?</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="isSendingVitals" value="{{isSendingVitals}}" required pattern="(true|false)">
+                        <small id="isSendingVitalsHelp" class="form-text text-muted">"true" or "false"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="country" class="col-sm-3 col-form-label">Country</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="country" placeholder="Country" value="{{country}}">
+                        <small id="isSendingVitalsHelp" class="form-text text-muted">e.g., "Canada" or "USA"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="countrySubdivision" class="col-sm-3 col-form-label">Country Subdivision</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="countrySubdivision" placeholder="Country Subdivision" value="{{countrySubdivision}}">
+                        <small id="isSendingVitalsHelp" class="form-text text-muted">e.g., "BC" or "OH"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="buildingType" class="col-sm-3 col-form-label">Building Type</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="buildingType" placeholder="Building Type" value="{{buildingType}}">
+                        <small id="isSendingVitalsHelp" class="form-text text-muted">e.g., "Housing: Shelter" or "Medical: Community Health Care Facility"</small>
+                    </div>
+                </div>
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="organization" class="col-sm-3 col-form-label">Organization</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="organization" placeholder="Organization" value="{{organization}}">
+                    </div>
+                </div>   
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="funder" class="col-sm-3 col-form-label">Funder</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="funder" placeholder="Funder" value="{{funder}}">
+                    </div>
+                </div>   
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="postalCode" class="col-sm-3 col-form-label">Postal Code</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="postalCode" placeholder="Postal Code" value="{{postalCode}}">
+                    </div>
+                </div>   
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="city" class="col-sm-3 col-form-label">City</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="city" placeholder="City" value="{{city}}">
+                    </div>
+                </div>   
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="project" class="col-sm-3 col-form-label">Project</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="project" placeholder="Project" value="{{project}}">
+                    </div>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary btn-large">Submit</button>
+            </form>
+            {{/currentClient}}
+            {{^currentClient}}
+                <h5>Sorry, this client does not appear to exist. Please select an option from the dropdown and then the "edit" button if you would like to update an existing client.</h5>
+            {{/currentClient}}
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
