@@ -25,7 +25,7 @@
                     <div class="form-group row justify-content-start row-no-gutters">
                         <label for="gatewayId" class="col-sm-3 col-form-label">Gateway ID:</label>
                         <div class="col-sm-5">
-                            <input type="text" class="form-control" name="gatewayId" placeholder="Gateway ID" required pattern="^[\S]+$">
+                            <input type="text" class="form-control" name="gatewayId" placeholder="Gateway ID" required pattern="^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$">
                             <small id="gatewayIdHelp" class="form-text text-muted">No spaces, please</small>
                         </div>
                     </div>
