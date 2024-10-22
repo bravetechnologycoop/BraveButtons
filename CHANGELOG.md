@@ -9,20 +9,12 @@ Please note that the date associated with a release is the date the code
 was committed to the `main` branch. This is not necessarily the date that
 the code was deployed.
 
-## Unreleased
+## [Unreleased]
 
-### Changed 
+## [14.0.0] - 2024-10-22
 
-- Updated the .env.example and README for Buttons (CU-86duebt59)
+### Added 
 
-## [13.12.0] - 2024-09-12
-
-### Added
-
-- Added city, projects to clients_extension (CU-86du6jp33)
-- Added migration script to change the default value in the `incident_categories` column to `{"Overdose Event","Safer Use","Conflict Resolution","Test"}` (CU-86du7hv9b)
-- Added migration script to insert `organization`, `funder`, and `postal_code` columns into the `clients_extention` table (CU-86du6jp33).
-- New REST API routes (still require test cases before further use) (CU-86dugzyzh).
 - Added `ClientExtension.js` with class `ClientExtension` to be used in adding and editing clients (CU-86du23zth).
 - Added device dashboard page with `locationsDashboard.mst` mustache file (CU-86du23zth).
 - Added new CSS for the device dashboard page in `locationsCSSPartial.mst` (CU-86du23zth).
@@ -64,8 +56,19 @@ the code was deployed.
 - Added function `updateGateway` in `db,js` for new pages (CU-86du23zth).
 
 ### Changed
+
+- Updated the .env.example and README for Buttons (CU-86duebt59)
 - Changed `clientPage.mst` to show all current client buttons instead of all vitals (CU-86du23zth).
 - Changed `renderButtonDetailsPage` function in `dashboard.js` to reflect new page changes for the client page (CU-86du23zth).
+
+## [13.12.0] - 2024-09-12
+
+### Added
+
+- Added city, projects to clients_extension (CU-86du6jp33)
+- Added migration script to change the default value in the `incident_categories` column to `{"Overdose Event","Safer Use","Conflict Resolution","Test"}` (CU-86du7hv9b)
+- Added migration script to insert `organization`, `funder`, and `postal_code` columns into the `clients_extention` table (CU-86du6jp33).
+- New REST API routes (still require test cases before further use) (CU-86dugzyzh).
 
 ## [13.11.0] - 2024-08-20
 
@@ -818,7 +821,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.12.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.0.0...HEAD
+[14.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.12.0...v14.0.0
 [13.12.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.11.0...v13.12.0
 [13.11.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.10.0...v13.11.0
 [13.10.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.9.0...v13.10.0git
