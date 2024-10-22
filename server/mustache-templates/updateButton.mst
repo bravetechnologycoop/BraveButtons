@@ -54,9 +54,9 @@
                 </div>
 
                 <div class="form-group row justify-content-start row-no-gutters">
-                    <label for="radarCoreID" class="col-sm-3 col-form-label">Radar Particle Core ID:</label>
+                    <label for="serialNumber" class="col-sm-3 col-form-label">Serial Number:</label>
                     <div class="col-sm-5">
-                        <input type="text" class="form-control" name="serialNumber" placeholder="Radar Particle Core ID" value="{{serialNumber}}" required>
+                        <input type="text" class="form-control" name="serialNumber" placeholder="Serial Number" value="{{serialNumber}}" required>
                     </div>
                 </div>
 

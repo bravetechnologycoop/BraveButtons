@@ -53,7 +53,7 @@ describe('dashboard.js Integration Tests: submitUpdateButton', () => {
 
       this.goodRequest = {
         displayName: 'New Name',
-        serialNumber: 'new_radar_core',
+        serialNumber: 'new_serial_number',
         phoneNumber: '+11112223456',
         isDisplayed: 'true',
         isSendingAlerts: 'true',
@@ -90,7 +90,7 @@ describe('dashboard.js Integration Tests: submitUpdateButton', () => {
 
       this.goodRequest = {
         displayName: ' New Name ',
-        serialNumber: '   new_radar_core ',
+        serialNumber: '   new_serial_number ',
         phoneNumber: '    +11112223456    ',
         isDisplayed: '    true     ',
         isSendingAlerts: '    true     ',
@@ -127,7 +127,7 @@ describe('dashboard.js Integration Tests: submitUpdateButton', () => {
 
       this.goodRequest = {
         displayName: 'New Name',
-        serialNumber: 'new_radar_core',
+        serialNumber: 'new_serial_number',
         phoneNumber: '+11112223456',
         isDisplayed: 'false',
         isSendingAlerts: 'false',
@@ -165,7 +165,7 @@ describe('dashboard.js Integration Tests: submitUpdateButton', () => {
       this.clientId = '8244c552-6753-4713-bbb6-07ad1c7fb8f8'
       this.goodRequest = {
         displayName: 'New Name',
-        serialNumber: 'new_radar_core',
+        serialNumber: 'new_serial_number',
         phoneNumber: '+11112223456',
         isDisplayed: 'true',
         isSendingAlerts: 'true',
