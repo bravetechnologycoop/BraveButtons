@@ -6,6 +6,7 @@ const { CHATBOT_STATE, Client, DEVICE_TYPE, Device, helpers, Session } = require
 const Gateway = require('../Gateway')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
+const ClientExtension = require('../ClientExtension')
 
 const pool = new Pool({
   host: helpers.getEnvVar('PG_HOST'),
@@ -57,6 +58,22 @@ function createClientFromRow(r) {
     r.language,
     r.created_at,
     r.updated_at,
+  )
+}
+
+function createClientExtensionFromRow(r) {
+  return new ClientExtension(
+    r.client_id,
+    r.country,
+    r.country_subdivision,
+    r.building_type,
+    r.created_at,
+    r.updated_at,
+    r.organization,
+    r.funder,
+    r.postal_code,
+    r.city,
+    r.project,
   )
 }
 
@@ -262,6 +279,34 @@ async function getGateways(pgClient) {
   return []
 }
 
+// Retrieves the gateway corresponding to a given gatewway ID
+async function getGatewayWithGatewayId(gatewayId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getGatewayWithGatewayId',
+      `
+      SELECT *
+      FROM gateways
+      WHERE id = $1
+      `,
+      [gatewayId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the getGatewayWithGatewayId query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getUnrespondedSessionWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -319,6 +364,33 @@ async function getMostRecentSessionWithPhoneNumbers(devicePhoneNumber, responder
   }
 
   return null
+}
+
+async function getHistoryOfSessions(deviceId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getHistoryOfSessions',
+      `
+      SELECT *
+      FROM sessions
+      WHERE device_id = $1
+      ORDER BY created_at DESC
+      LIMIT 200
+      `,
+      [deviceId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined) {
+      return null
+    }
+
+    const allButtons = await getButtons(pgClient)
+    return results.rows.map(r => createSessionFromRow(r, allButtons))
+  } catch (err) {
+    helpers.logError(`Error running the getHistoryOfSessions query: ${err.toString()}`)
+  }
 }
 
 async function getAllSessionsWithDeviceId(deviceId, pgClient) {
@@ -689,6 +761,61 @@ async function getDeviceWithSerialNumber(serialNumber, pgClient) {
   return null
 }
 
+async function getButtonWithDeviceId(deviceId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithDeviceId',
+      `
+      SELECT *
+      FROM devices
+      WHERE id = $1
+      `,
+      [deviceId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the getButtonWithDeviceId query: ${err.toString()}`)
+  }
+
+  return null
+}
+
+async function getButtonsFromClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonsFromClientId',
+      `
+      SELECT *
+      FROM devices
+      WHERE client_id = $1
+      AND device_type = $2
+      ORDER BY display_name
+      `,
+      [clientId, DEVICE_TYPE.DEVICE_BUTTON],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined) {
+      helpers.logError(`Error: No button with client ID ${clientId} key exists`)
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return results.rows.map(r => createDeviceFromRow(r, allClients))
+  } catch (err) {
+    helpers.logError(`Error running the getButtonsFromClientId query: ${err.toString()}`)
+  }
+}
+
 async function createButton(
   clientId,
   displayName,
@@ -856,6 +983,30 @@ async function getClientWithId(id, pgClient) {
   }
 
   return null
+}
+
+async function getClientExtensionWithClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getCLientExtensionWithClientId',
+      `
+      SELECT *
+      FROM clients_extension
+      WHERE client_id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return createClientExtensionFromRow({}) // return empty ClientExtension object
+    }
+
+    return createClientExtensionFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the getClientExtensionWithClientId query: ${err.toString()}`)
+  }
 }
 
 async function getClientWithSessionId(sessionId, pgClient) {
@@ -1213,6 +1364,234 @@ async function getCurrentTimeForHealthCheck() {
   }
 }
 
+async function getMostRecentSessionWithDevice(device, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getMostRecentSessionWithDevice',
+      `
+      SELECT *
+      FROM sessions
+      WHERE device_id = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+      `,
+      [device.id],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    return createSessionFromRow(results.rows[0], [device])
+  } catch (err) {
+    helpers.logError(`Error running the getMostRecentSessionWithDevice query: ${err.toString()}`)
+  }
+}
+
+async function updateClient(
+  displayName,
+  fromPhoneNumber,
+  responderPhoneNumbers,
+  reminderTimeout,
+  fallbackPhoneNumbers,
+  fallbackTimeout,
+  heartbeatPhoneNumbers,
+  incidentCategories,
+  isDisplayed,
+  isSendingAlerts,
+  isSendingVitals,
+  language,
+  clientId,
+  pgClient,
+) {
+  try {
+    const results = await helpers.runQuery(
+      'updateClient',
+      `
+      UPDATE clients
+      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12
+      WHERE id = $13
+      RETURNING *
+      `,
+      [
+        displayName,
+        fromPhoneNumber,
+        responderPhoneNumbers,
+        reminderTimeout,
+        fallbackPhoneNumbers,
+        fallbackTimeout,
+        heartbeatPhoneNumbers,
+        incidentCategories,
+        isDisplayed,
+        isSendingAlerts,
+        isSendingVitals,
+        language,
+        clientId,
+      ],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Client '${displayName}' successfully updated`)
+
+    return await createClientFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the updateClient query: ${err.toString()}`)
+  }
+}
+
+async function createClientExtension(clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createClientExtension',
+      `
+      INSERT INTO clients_extension (client_id, country, country_subdivision, building_type, organization, funder, postal_code, city, project)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+      `,
+      [clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`New client extension inserted into database for client ${clientId}`)
+
+    return createClientExtensionFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the createClientExtension query: ${err.toString()}`)
+  }
+}
+
+async function updateClientExtension(clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'updateClientExtension',
+      `
+      UPDATE clients_extension
+      SET country = $2, country_subdivision = $3, building_type = $4, organization = $5, funder = $6, postal_code = $7, city = $8, project = $9
+      WHERE client_id = $1
+      RETURNING *
+      `,
+      [clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project],
+      pool,
+      pgClient,
+    )
+
+    // NOTE: this shouldn't happen, as insertion into clients_extension is a trigger for insertion into clients, but it's good to be safe!
+    if (results === undefined || results.rows.length === 0) {
+      return await createClientExtension(clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project)
+    }
+
+    helpers.log(`Client extension for client ${clientId} successfully updated`)
+
+    return createClientExtensionFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the updateClientExtension query: ${err.toString()}`)
+  }
+}
+
+async function createGatewayFromBrowserForm(gatewayId, clientId, displayName, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createGatewayFromBrowserForm',
+      `
+      INSERT INTO gateways(id, client_id, display_name, is_displayed, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [gatewayId, clientId, displayName, true, false],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`New gateway inserted into database ${gatewayId}`)
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the createGatwayFromBrowserForm query: ${err.toString()}`)
+  }
+}
+
+async function updateButton(displayName, serialNumber, phoneNumber, isDisplayed, isSendingAlerts, isSendingVitals, clientId, deviceId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'updateButton',
+      `
+      UPDATE devices
+      SET
+        display_name = $1,
+        serial_number = $2,
+        phone_number = $3,
+        is_displayed = $4,
+        is_sending_alerts = $5,
+        is_sending_vitals = $6,
+        client_id = $7
+      WHERE id = $8
+      RETURNING *
+      `,
+      [displayName, serialNumber, phoneNumber, isDisplayed, isSendingAlerts, isSendingVitals, clientId, deviceId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Location '${deviceId}' successfully updated`)
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the updateButton query: ${err.toString()}`)
+  }
+}
+
+async function updateGateway(clientId, isSendingVitals, isDisplayed, gatewayId, displayName, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'updateGateway',
+      `
+      UPDATE gateways
+      SET
+        client_id = $1,
+        is_sending_vitals = $2,
+        is_displayed = $3,
+        display_name = $4
+      WHERE id = $5
+      RETURNING *
+      `,
+      [clientId, isSendingVitals, isDisplayed, displayName, gatewayId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Location '${gatewayId}' successfully updated`)
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the updateLocation query: ${err.toString()}`)
+  }
+}
+
 async function close() {
   try {
     await pool.end()
@@ -1298,6 +1677,33 @@ async function createDevice(
   return null
 }
 
+async function createGateway(clientId, id, displayName, isDisplayed, isSendingVitals, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createGateway',
+      `
+      INSERT INTO gateways (id, client_id, display_name, is_displayed, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [id, clientId, displayName, isDisplayed, isSendingVitals],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createGatewayFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the createGateway query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getDeviceWithIds(deviceId, clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1340,8 +1746,10 @@ module.exports = {
   createClient,
   createDevice,
   createSession,
+  createGateway,
   getActiveButtonsClients,
   getAllSessionsWithDeviceId,
+  getClientExtensionWithClientId,
   getButtons,
   getClientWithId,
   getClientWithSessionId,
@@ -1351,9 +1759,13 @@ module.exports = {
   getDataForExport,
   getDeviceWithIds,
   getDeviceWithSerialNumber,
+  getButtonWithDeviceId,
+  getButtonsFromClientId,
   getDisconnectedGatewaysWithClient,
   getGateways,
+  getGatewayWithGatewayId,
   getMostRecentSessionWithPhoneNumbers,
+  getHistoryOfSessions,
   getPool,
   getRecentButtonsSessionsWithClientId,
   getRecentButtonsVitals,
@@ -1370,4 +1782,11 @@ module.exports = {
   updateDevicesSentLowBatteryAlerts,
   updateDevicesSentVitalsAlerts,
   updateGatewaySentVitalsAlerts,
+  getMostRecentSessionWithDevice,
+  updateClient,
+  updateGateway,
+  updateButton,
+  createClientExtension,
+  updateClientExtension,
+  createGatewayFromBrowserForm,
 }
