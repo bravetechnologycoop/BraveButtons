@@ -26,6 +26,7 @@ const newClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newCl
 const newGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newGateway.mst`, 'utf-8')
 const updateGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateGateway.mst`, 'utf-8')
 const updateButtonTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateButton.mst`, 'utf-8')
+const newButtonTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newButton.mst`, 'utf-8')
 
 const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
 const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
@@ -212,6 +213,18 @@ async function submitUpdateButton(req, res) {
       helpers.log(errorMessage)
       res.status(400).send(errorMessage)
     }
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
+async function renderNewButtonPage(req, res) {
+  try {
+    const clients = await db.getClients()
+    const viewParams = { clients: clients.filter(client => client.isDisplayed) }
+
+    res.send(Mustache.render(newButtonTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
   } catch (err) {
     helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
     res.status(500).send()
@@ -814,6 +827,7 @@ module.exports = {
   renderButtonDetailsPage,
   renderLoginPage,
   renderVitalsPage,
+  renderNewButtonPage,
   renderUpdateButtonPage,
   sessionChecker,
   setupDashboardSessions,

@@ -15,6 +15,7 @@ function configureRoutes(app) {
   app.get('/login', dashboard.renderLoginPage)
   app.get('/logout', dashboard.submitLogout)
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
+  app.get('/buttons/new', dashboard.sessionChecker, dashboard.renderNewButtonPage)
   app.get('/buttons/:id', dashboard.sessionChecker, dashboard.renderButtonDetailsPage)
   app.get('/buttons/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateButtonPage)
   app.get('/clients/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateClientPage)
