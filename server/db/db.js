@@ -816,6 +816,11 @@ async function getButtonsFromClientId(clientId, pgClient) {
   }
 }
 
+//FIXME: fix the variables
+async function createButtonFromBrowserForm(locationid, displayName, serialNumber, phoneNumber, clientId, pgClient) {
+
+}
+
 async function createButton(
   clientId,
   displayName,

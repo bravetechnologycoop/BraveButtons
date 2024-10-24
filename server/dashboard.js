@@ -262,6 +262,19 @@ async function submitNewButton(req, res) {
       }
 
       // TODO: update this
+      const lines = csvFile.split('\n')
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        if (!line) continue;
+
+        const values = line.split(',')
+        const newButton = await db.createButtonFromBrowserForm( // TODO: make this into an actual function
+          // FIXME: insert variables here
+        )
+      }
+
+
       
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
