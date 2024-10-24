@@ -231,6 +231,49 @@ async function renderNewButtonPage(req, res) {
   }
 }
 
+// FIXME: function will need to be updated as we go along
+const validateNewButton = Validator.body(['clientId']).trim().notEmpty()
+
+async function submitNewButton(req, res) {
+  try {
+    if (!req.session.user || !req.cookies.user_sid) {
+      helpers.logError('Unauthorized')
+      res.status(401).send()
+      return
+    }
+
+    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+    if (validationErrors.isEmpty()) {
+      const data = req.body
+      const csvFile = req.file
+
+      if (!csvFile) {
+        const errorMessage = `CSV File does not exist`
+        helpers.log(errorMessage)
+        return res.status(400).send(errorMessage)
+      }
+
+      const client = await db.getClientWithId(data.clientId)
+      if (client === null) {
+        const errorMessage = `Client ID '${data.clientId}' does not exist`
+        helpers.log(errorMessage)
+        return res.status(400).send(errorMessage)
+      }
+
+      // TODO: update this
+      
+    } else {
+      const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
+      helpers.log(errorMessage)
+      res.status(400).send(errorMessage)
+    }
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
 async function renderNewGatewayPage(req, res) {
   try {
     const clients = await db.getClients()
