@@ -816,9 +816,40 @@ async function getButtonsFromClientId(clientId, pgClient) {
   }
 }
 
-//FIXME: fix the variables
 async function createButtonFromBrowserForm(locationid, displayName, serialNumber, phoneNumber, clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery('createButtonFromBrowserForm',
+      `
+      INSERT INTO devices(device_type, locationid, display_name, serial_number, phone_number, is_displayed, is_sending_alerts, is_sending_vitals, client_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+      `,
+      [
+        DEVICE_TYPE.DEVICE_BUTTON,
+        locationid,
+        displayName,
+        serialNumber,
+        phoneNumber,
+        true,
+        false,
+        false,
+        clientId,
+      ],
+      pool,
+      pgClient,
+    )
 
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`New button inserted into database: ${locationid}`)
+
+    const allClients = await getClients(pgClient)
+      return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the createButtonFromBrowserForm query: ${err.toString()}`)
+  }
 }
 
 async function createButton(
@@ -1747,6 +1778,7 @@ module.exports = {
   clearTables,
   close,
   commitTransaction,
+  createButtonFromBrowserForm,
   createButton,
   createClient,
   createDevice,

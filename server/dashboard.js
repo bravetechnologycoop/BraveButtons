@@ -231,7 +231,6 @@ async function renderNewButtonPage(req, res) {
   }
 }
 
-// FIXME: function will need to be updated as we go along
 const validateNewButton = Validator.body(['clientId']).trim().notEmpty()
 
 async function submitNewButton(req, res) {
@@ -246,7 +245,7 @@ async function submitNewButton(req, res) {
 
     if (validationErrors.isEmpty()) {
       const data = req.body
-      const csvFile = req.file
+      const csvFile = req.file // FIXME: this is not how it works i guess?
 
       if (!csvFile) {
         const errorMessage = `CSV File does not exist`
@@ -261,7 +260,6 @@ async function submitNewButton(req, res) {
         return res.status(400).send(errorMessage)
       }
 
-      // TODO: update this
       const lines = csvFile.split('\n')
 
       for (let i = 0; i < lines.length; i++) {
@@ -269,13 +267,19 @@ async function submitNewButton(req, res) {
         if (!line) continue;
 
         const values = line.split(',')
-        const newButton = await db.createButtonFromBrowserForm( // TODO: make this into an actual function
-          // FIXME: insert variables here
+
+        // TODO: insert validator so it would skip if something breaks?
+
+        await db.createButtonFromBrowserForm(
+          values[0], // locationid
+          values[1], // display name
+          values[2], // serial number
+          values[3], // phone number
+          data.clientId,
         )
       }
 
-
-      
+      res.redirect(`/clients/${data.clientId}`)
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.log(errorMessage)
@@ -893,10 +897,12 @@ module.exports = {
   submitUpdateClient,
   submitNewGateway,
   submitUpdateGateway,
+  submitNewButton,
   submitUpdateButton,
   validateNewClient,
   validateUpdateClient,
   validateNewGateway,
   validateUpdateGateway,
   validateUpdateButton,
+  validateNewButton,
 }
