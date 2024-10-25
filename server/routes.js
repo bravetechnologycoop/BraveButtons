@@ -22,7 +22,7 @@ function configureRoutes(app) {
   app.get('/gateways/new', dashboard.sessionChecker, dashboard.renderNewGatewayPage)
   app.get('/gateways/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateGatewayPage)
   app.get('/export-data', dashboard.sessionChecker, dashboard.downloadCsv)
-  
+
   app.post('/clients', dashboard.validateNewClient, dashboard.submitNewClient)
   app.post('/login', dashboard.submitLogin)
   app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)

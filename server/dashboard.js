@@ -262,21 +262,22 @@ async function submitNewButton(req, res) {
 
       const lines = csvFile.split('\n')
 
-      for (let i = 0; i < lines.length; i++) {
+      for (let i = 0; i < lines.length; i += 1) {
         const line = lines[i]
-        if (!line) continue;
 
-        const values = line.split(',')
+        if (line) {
+          const values = line.split(',')
 
-        // TODO: insert validator so it would skip if something breaks?
+          // TODO: insert validator so it would skip if something breaks?
 
-        await db.createButtonFromBrowserForm(
-          values[0], // locationid
-          values[1], // display name
-          values[2], // serial number
-          values[3], // phone number
-          data.clientId,
-        )
+          await db.createButtonFromBrowserForm(
+            values[0], // locationid
+            values[1], // display name
+            values[2], // serial number
+            values[3], // phone number
+            data.clientId,
+          )
+        }
       }
 
       res.redirect(`/clients/${data.clientId}`)
