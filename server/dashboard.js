@@ -245,7 +245,7 @@ async function submitNewButton(req, res) {
 
     if (validationErrors.isEmpty()) {
       const data = req.body
-      const csvFile = req.file // FIXME: this is not how it works i guess?
+      const csvFile = req.file 
 
       if (!csvFile) {
         const errorMessage = `CSV File does not exist`
@@ -260,7 +260,8 @@ async function submitNewButton(req, res) {
         return res.status(400).send(errorMessage)
       }
 
-      const lines = csvFile.split('\n')
+      const csvContent = fs.readFileSync(csvFile.path, 'utf8')
+      const lines = csvContent.split('\n')
 
       for (let i = 0; i < lines.length; i += 1) {
         const line = lines[i]
@@ -268,15 +269,17 @@ async function submitNewButton(req, res) {
         if (line) {
           const values = line.split(',')
 
-          // TODO: insert validator so it would skip if something breaks?
-
-          await db.createButtonFromBrowserForm(
-            values[0], // locationid
-            values[1], // display name
-            values[2], // serial number
-            values[3], // phone number
-            data.clientId,
-          )
+          if (values[0] !== null && values[1] !== null && values[2] !== null && values[3] !== null) {
+            await db.createButtonFromBrowserForm(
+              values[0], // locationid
+              values[1], // display name
+              values[2], // serial number
+              values[3], // phone number
+              data.clientId,
+            )
+          } else {
+            helpers.log(`Null value detected in line ${i} and has been skipped.`)
+          }
         }
       }
 

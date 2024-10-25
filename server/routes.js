@@ -4,6 +4,8 @@ const dashboard = require('./dashboard')
 const api = require('./api')
 const pa = require('./pa')
 const rak = require('./rak')
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 function configureRoutes(app) {
   // to-be-deprecated mustache routes
@@ -30,7 +32,7 @@ function configureRoutes(app) {
   app.post('/gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
   app.post('/gateways/:id', dashboard.validateUpdateGateway, dashboard.submitUpdateGateway)
   app.post('/buttons/:id', dashboard.validateUpdateButton, dashboard.submitUpdateButton)
-  app.post('/buttons', dashboard.validateNewButton, dashboard.submitNewButton)
+  app.post('/buttons', upload.single('buttonCsv'), dashboard.validateNewButton, dashboard.submitNewButton)
 
   // to-be-used API routes
   app.get('/api/clients', api.authorize, api.handleGetClients)

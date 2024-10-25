@@ -20,7 +20,7 @@
                 <h4 class="no-locations">Add Buttons</h4>
                 <h6>Please submit your csv file below.</h6>
                 <br>
-                <form class="needs-validation" action="/buttons" method="POST">
+                <form class="needs-validation" action="/buttons" method="POST" enctype="multipart/form-data">
 
                     <div class="form-group row justify-content-start row-no-gutters">
                         <label for="clientId" class="col-sm-3 col-form-label">Client:</label>
