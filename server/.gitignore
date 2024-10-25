@@ -11,3 +11,4 @@ sessionsTest.db
 .nyc_output
 coverage
 db/seeds.sql
+uploads
