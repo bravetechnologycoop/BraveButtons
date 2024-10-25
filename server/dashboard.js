@@ -245,7 +245,7 @@ async function submitNewButton(req, res) {
 
     if (validationErrors.isEmpty()) {
       const data = req.body
-      const csvFile = req.file 
+      const csvFile = req.file
 
       if (!csvFile) {
         const errorMessage = `CSV File does not exist`
