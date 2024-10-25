@@ -20,6 +20,10 @@
                 <h4 class="no-locations">Add Buttons</h4>
                 <h6>Please submit your csv file below.</h6>
                 <br>
+                <h6>csv file format:</h6>
+                <p>locationid1,displayName1,serialNumber1,phoneNumber1<br>locationid2,displayName2,serialNumber2,phoneNumber2<br>etc</p>
+                <p>remember to put a new line after every device</p>
+                <br>
                 <form class="needs-validation" action="/buttons" method="POST" enctype="multipart/form-data">
 
                     <div class="form-group row justify-content-start row-no-gutters">
