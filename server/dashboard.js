@@ -256,6 +256,7 @@ async function submitNewButton(req, res) {
     const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
 
     if (validationErrors.isEmpty()) {
+      const allButtons = await db.getButtons()
       const data = req.body
       const clientId = data.clientId
       const buttons = data.buttons
@@ -268,6 +269,16 @@ async function submitNewButton(req, res) {
       }
 
       for (const button of buttons) {
+        for (const existingButton of allButtons) {
+          helpers.log('IT GOES IN HERE!!!!!!!!!!!')
+          helpers.log(existingButton.locationid)
+          helpers.log(button.locationid)
+          if (existingButton.locationid === button.locationid) {
+            helpers.log('Location ID already exists')
+            return res.status(409).send('Location ID already exists')
+          }
+        }
+
         await db.createButtonFromBrowserForm(button.locationid, button.displayName, button.serialNumber, button.phoneNumber, clientId)
       }
 

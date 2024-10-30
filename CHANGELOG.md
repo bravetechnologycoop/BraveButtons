@@ -18,6 +18,7 @@ the code was deployed.
 - Added function `submitNewButton` in `dashboard.js` to handle functionality of submitting new buttons (CU-86dug9udj).
 - Added function `createButtonFromBrowserForm` in `db.js` to handle inserting new buttons to the database (CU-86dug9udj).
 - Added new route for POST function of new button (CU-86dug9udj).
+- Added function `getButtonWithDeviceId` in `db.js` for integration testing of add buttons (CU-86dug9udj).
 
 ### Changed
 - Changed header to include `New Button` button (CU-86dug9udj).

@@ -761,6 +761,34 @@ async function getDeviceWithSerialNumber(serialNumber, pgClient) {
   return null
 }
 
+// Retrieves the button corresponding to a given location ID
+async function getButtonWithLocationid(locationid, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithLocationid',
+      `
+      SELECT *
+      FROM devices
+      WHERE locationid = $1
+      `,
+      [locationid],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the getButtonWithLocationid query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getButtonWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1787,6 +1815,7 @@ module.exports = {
   getDataForExport,
   getDeviceWithIds,
   getDeviceWithSerialNumber,
+  getButtonWithLocationid,
   getButtonWithDeviceId,
   getButtonsFromClientId,
   getDisconnectedGatewaysWithClient,
