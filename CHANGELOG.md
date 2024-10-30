@@ -11,6 +11,15 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Added migration script to update device_type_enum to handle multistall and singlestall sensors separately (CU-86duvwbq2).
+
+### Changed
+
+- Updated brave-alert-lib to v15.0.4 for deviceType enum change (CU-86duvwbq2).
+- Updated device type form 'DEVICE_BUTTON' to 'BUTTON' in database (CU-86duvwbq2).
+
 ## [14.0.0] - 2024-10-22
 
 ### Added 
