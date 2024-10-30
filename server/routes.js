@@ -33,7 +33,7 @@ function configureRoutes(app) {
   app.post('/gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
   app.post('/gateways/:id', dashboard.validateUpdateGateway, dashboard.submitUpdateGateway)
   app.post('/buttons/:id', dashboard.validateUpdateButton, dashboard.submitUpdateButton)
-  app.post('/buttons', upload.single('buttonCsv'), dashboard.validateNewButton, dashboard.submitNewButton)
+  app.post('/buttons', dashboard.validateNewButton, dashboard.submitNewButton)
 
   // to-be-used API routes
   app.get('/api/clients', api.authorize, api.handleGetClients)

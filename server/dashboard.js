@@ -231,7 +231,37 @@ async function renderNewButtonPage(req, res) {
   }
 }
 
-const validateNewButton = Validator.body(['clientId']).trim().notEmpty()
+const validateNewButton = [
+
+  Validator.body('clientId')
+    .trim()
+    .notEmpty()
+    .withMessage('Client ID must not be empty'),
+
+    Validator.body('buttons')
+    .isArray({ min: 1 })
+    .withMessage('Buttons must be an array and contain at least one entry'),
+
+    Validator.body('buttons.*.locationid')
+    .trim()
+    .notEmpty()
+    .withMessage('Location ID must not be empty'),
+
+    Validator.body('buttons.*.displayName')
+    .trim()
+    .notEmpty()
+    .withMessage('Display Name must not be empty'),
+
+    Validator.body('buttons.*.serialNumber')
+    .trim()
+    .notEmpty()
+    .withMessage('Serial Number must not be empty'),
+
+    Validator.body('buttons.*.phoneNumber')
+    .trim()
+    .notEmpty()
+    .withMessage('Phone Number must not be empty'),
+]
 
 async function submitNewButton(req, res) {
   try {
@@ -245,45 +275,28 @@ async function submitNewButton(req, res) {
 
     if (validationErrors.isEmpty()) {
       const data = req.body
-      const csvFile = req.file
+      const clientId = data.clientId
+      const buttons = data.buttons
 
-      if (!csvFile) {
-        const errorMessage = `CSV File does not exist`
-        helpers.log(errorMessage)
-        return res.status(400).send(errorMessage)
-      }
-
-      const client = await db.getClientWithId(data.clientId)
+      const client = await db.getClientWithId(clientId)
       if (client === null) {
-        const errorMessage = `Client ID '${data.clientId}' does not exist`
+        const errorMessage = `Client ID '${clientId}' does not exist`
         helpers.log(errorMessage)
         return res.status(400).send(errorMessage)
       }
 
-      const csvContent = fs.readFileSync(csvFile.path, 'utf8')
-      const lines = csvContent.split('\n')
-
-      for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i]
-
-        if (line) {
-          const values = line.split(',')
-
-          if (values[0] !== null && values[1] !== null && values[2] !== null && values[3] !== null) {
-            await db.createButtonFromBrowserForm(
-              values[0], // locationid
-              values[1], // display name
-              values[2], // serial number
-              values[3], // phone number
-              data.clientId,
-            )
-          } else {
-            helpers.log(`Null value detected in line ${i} and has been skipped.`)
-          }
-        }
+      for (let button of buttons) {
+        await db.createButtonFromBrowserForm(
+          button.locationid,
+          button.displayName,
+          button.serialNumber,
+          button.phoneNumber,
+          clientId
+        )
       }
 
-      res.redirect(`/clients/${data.clientId}`)
+      res.status(200).send()
+      // redirect done on client side due to AJAX
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.log(errorMessage)
