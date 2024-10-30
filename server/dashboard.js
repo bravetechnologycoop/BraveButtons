@@ -232,35 +232,17 @@ async function renderNewButtonPage(req, res) {
 }
 
 const validateNewButton = [
+  Validator.body('clientId').trim().notEmpty().withMessage('Client ID must not be empty'),
 
-  Validator.body('clientId')
-    .trim()
-    .notEmpty()
-    .withMessage('Client ID must not be empty'),
+  Validator.body('buttons').isArray({ min: 1 }).withMessage('Buttons must be an array and contain at least one entry'),
 
-    Validator.body('buttons')
-    .isArray({ min: 1 })
-    .withMessage('Buttons must be an array and contain at least one entry'),
+  Validator.body('buttons.*.locationid').trim().notEmpty().withMessage('Location ID must not be empty'),
 
-    Validator.body('buttons.*.locationid')
-    .trim()
-    .notEmpty()
-    .withMessage('Location ID must not be empty'),
+  Validator.body('buttons.*.displayName').trim().notEmpty().withMessage('Display Name must not be empty'),
 
-    Validator.body('buttons.*.displayName')
-    .trim()
-    .notEmpty()
-    .withMessage('Display Name must not be empty'),
+  Validator.body('buttons.*.serialNumber').trim().notEmpty().withMessage('Serial Number must not be empty'),
 
-    Validator.body('buttons.*.serialNumber')
-    .trim()
-    .notEmpty()
-    .withMessage('Serial Number must not be empty'),
-
-    Validator.body('buttons.*.phoneNumber')
-    .trim()
-    .notEmpty()
-    .withMessage('Phone Number must not be empty'),
+  Validator.body('buttons.*.phoneNumber').trim().notEmpty().withMessage('Phone Number must not be empty'),
 ]
 
 async function submitNewButton(req, res) {
@@ -285,14 +267,8 @@ async function submitNewButton(req, res) {
         return res.status(400).send(errorMessage)
       }
 
-      for (let button of buttons) {
-        await db.createButtonFromBrowserForm(
-          button.locationid,
-          button.displayName,
-          button.serialNumber,
-          button.phoneNumber,
-          clientId
-        )
+      for (const button of buttons) {
+        await db.createButtonFromBrowserForm(button.locationid, button.displayName, button.serialNumber, button.phoneNumber, clientId)
       }
 
       res.status(200).send()

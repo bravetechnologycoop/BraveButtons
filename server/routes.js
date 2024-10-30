@@ -1,12 +1,9 @@
 // In-house dependencies
 const { googleHelpers } = require('brave-alert-lib')
-const multer = require('multer')
 const dashboard = require('./dashboard')
 const api = require('./api')
 const pa = require('./pa')
 const rak = require('./rak')
-
-const upload = multer({ dest: 'uploads/' })
 
 function configureRoutes(app) {
   // to-be-deprecated mustache routes

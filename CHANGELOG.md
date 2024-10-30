@@ -12,13 +12,11 @@ the code was deployed.
 ## [Unreleased]
 
 ### Added
-- Added `Uploads` to `gitignore` so it does not push csv files (CU-86dug9udj).
 - Added `newButton.mst` mustache file for adding new buttons (CU-86dug9udj).
 - Added function `renderNewButtonPage` in `dashboard.js` to render the new mustache file (CU-86dug9udj).
 - Added validator `validateNewButton` in `dashboard.js` to validate inputs from the form (CU-86dug9udj).
 - Added function `submitNewButton` in `dashboard.js` to handle functionality of submitting new buttons (CU-86dug9udj).
 - Added function `createButtonFromBrowserForm` in `db.js` to handle inserting new buttons to the database (CU-86dug9udj).
-- Added package `multer` for reading files from mustache (CU-86dug9udj).
 - Added new route for POST function of new button (CU-86dug9udj).
 
 ### Changed
