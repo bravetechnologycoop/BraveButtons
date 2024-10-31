@@ -276,7 +276,7 @@ describe('dasboard.js integration tests: submitNewButton', () => {
 
       this.locationid = 'existingLocationId'
       await factories.deviceDBFactory(db, {
-        deviceType: DEVICE_TYPE.DEVICE_BUTTON,
+        deviceType: DEVICE_TYPE.BUTTON,
         locationid: this.locationid,
         clientId: this.client.id,
       })

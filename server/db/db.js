@@ -853,7 +853,7 @@ async function createButtonFromBrowserForm(locationid, displayName, serialNumber
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON, locationid, displayName, serialNumber, phoneNumber, true, false, false, clientId],
+      [DEVICE_TYPE.BUTTON, locationid, displayName, serialNumber, phoneNumber, true, false, false, clientId],
       pool,
       pgClient,
     )
