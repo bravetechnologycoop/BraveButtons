@@ -215,7 +215,7 @@ async function getActiveButtonsClients(pgClient) {
         AND c.is_sending_vitals
         ORDER BY c.display_name;
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON],
+      [DEVICE_TYPE.BUTTON],
       pool,
       pgClient,
     )
@@ -239,7 +239,7 @@ async function getButtons(pgClient) {
       FROM devices
       WHERE device_type = $1
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON],
+      [DEVICE_TYPE.BUTTON],
       pool,
       pgClient,
     )
@@ -431,7 +431,7 @@ async function getRecentButtonsSessionsWithClientId(clientId, pgClient) {
       ORDER BY created_at DESC
       LIMIT 40
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON, clientId],
+      [DEVICE_TYPE.BUTTON, clientId],
       pool,
       pgClient,
     )
@@ -459,7 +459,7 @@ async function getRecentButtonsVitals(pgClient) {
       AND b.serial_number like 'ac%'
       ORDER BY bv.created_at
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON],
+      [DEVICE_TYPE.BUTTON],
       pool,
       pgClient,
     )
@@ -488,7 +488,7 @@ async function getRecentButtonsVitalsWithClientId(clientId, pgClient) {
       AND b.serial_number like 'ac%'
       ORDER BY bv.created_at
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON, clientId],
+      [DEVICE_TYPE.BUTTON, clientId],
       pool,
       pgClient,
     )
@@ -827,7 +827,7 @@ async function getButtonsFromClientId(clientId, pgClient) {
       AND device_type = $2
       ORDER BY display_name
       `,
-      [clientId, DEVICE_TYPE.DEVICE_BUTTON],
+      [clientId, DEVICE_TYPE.BUTTON],
       pool,
       pgClient,
     )
@@ -892,7 +892,7 @@ async function createButton(
       RETURNING *
       `,
       [
-        DEVICE_TYPE.DEVICE_BUTTON,
+        DEVICE_TYPE.BUTTON,
         clientId,
         displayName,
         phoneNumber,
@@ -1308,7 +1308,7 @@ async function getDataForExport(pgClient) {
         LEFT JOIN buttons_vitals_cache bv ON b.id = bv.device_id
         WHERE b.device_type = $1
       `,
-      [DEVICE_TYPE.DEVICE_BUTTON],
+      [DEVICE_TYPE.BUTTON],
       pool,
       pgClient,
     )

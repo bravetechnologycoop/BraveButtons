@@ -12,6 +12,7 @@ the code was deployed.
 ## [Unreleased]
 
 ### Added
+- Added migration script to update device_type_enum to handle multistall and singlestall sensors separately (CU-86duvwbq2).
 - Added `newButton.mst` mustache file for adding new buttons (CU-86dug9udj).
 - Added function `renderNewButtonPage` in `dashboard.js` to render the new mustache file (CU-86dug9udj).
 - Added validator `validateNewButton` in `dashboard.js` to validate inputs from the form (CU-86dug9udj).
@@ -24,6 +25,8 @@ the code was deployed.
 ### Changed
 - Changed header to include `New Button` button (CU-86dug9udj).
 - Moved all the post functions up to put it above API routes in `routes.js` (CU-86dug9udj).
+- Updated brave-alert-lib to v15.0.4 for deviceType enum change (CU-86duvwbq2).
+- Updated device type form 'DEVICE_BUTTON' to 'BUTTON' in database (CU-86duvwbq2).
 
 ## [14.0.0] - 2024-10-22
 
