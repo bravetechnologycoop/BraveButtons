@@ -19,6 +19,7 @@ the code was deployed.
 
 - Updated brave-alert-lib to v15.0.4 for deviceType enum change (CU-86duvwbq2).
 - Updated device type form 'DEVICE_BUTTON' to 'BUTTON' in database (CU-86duvwbq2).
+- Changed english messages `buttonLowBatteryInitial`, `buttonLowBatteryReminder`, `buttonStatusChangeDisconnected`, `gatewayDisconnectionInitial`, `gatewayDisconnectionReminder` to reduce twilio message segments (CU-86duzccj5).
 
 ## [14.0.0] - 2024-10-22
 
