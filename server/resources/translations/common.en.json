@@ -10,7 +10,7 @@
   "buttonLowBatteryNoLonger": "The battery for the {{ buttonDisplayName }} Button is no longer low. Thank you.",
   "buttonStatusChangeDisconnected": "The following buttons have disconnected: {{ disconnectedButtons }}.",
   "buttonStatusChangeReconnected": "The following buttons have reconnected: {{ reconnectedButtons }}.",
-  "buttonStatusChangeDisconnectedAndReconnected": "The following buttons at have disconnected: {{ disconnectedButtons }}. The following buttons have reconnected: {{ reconnectedButtons }}.",
+  "buttonStatusChangeDisconnectedAndReconnected": "The following buttons have disconnected: {{ disconnectedButtons }}. The following buttons have reconnected: {{ reconnectedButtons }}.",
   "errorNoSession": "Error: No active session found",
   "gatewayDisconnectionInitial": "Connection to {{ gatewayDisplayName }} lost. Please unplug and replug to reset. If no reconnection message follows, email clientsupport@brave.coop.",
   "gatewayDisconnectionReminder": "{{ gatewayDisplayName }} is still disconnected. Please unplug and replug to reset. If no reconnection message follows, email clientsupport@brave.coop.",
