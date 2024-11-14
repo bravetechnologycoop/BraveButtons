@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [14.1.0] - 2024-11-14
+
 ### Added
 
 - Added migration script to update device_type_enum to handle multistall and singlestall sensors separately (CU-86duvwbq2).
@@ -832,7 +834,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.0.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...HEAD
+[14.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.0.0...v14.1.0
 [14.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.12.0...v14.0.0
 [13.12.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.11.0...v13.12.0
 [13.11.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.10.0...v13.11.0
