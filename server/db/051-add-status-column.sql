@@ -11,10 +11,10 @@ BEGIN
 
     -- Only execute this script if its migration ID is next after the last successful migration ID
     IF migrationId - lastSuccessfulMigrationId = 1 THEN
-        ALTER TABLE clients_extension ADD COLUMN status text; -- TODO: add a default value
+        ALTER TABLE clients ADD COLUMN status text; -- TODO: add a default value
 
         -- Add value for previous data
-        UPDATE clients_extension SET status = 'SHIPPED' WHERE status IS NULL;
+        UPDATE clients SET status = 'LIVE' WHERE status IS NULL;
 
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
         INSERT INTO migrations (id)

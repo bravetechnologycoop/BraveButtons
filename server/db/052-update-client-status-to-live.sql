@@ -19,24 +19,20 @@ BEGIN
             -- Check if client is 'SHIPPED'
             IF EXISTS (
                 SELECT 1
-                FROM clients_extension
+                FROM clients
                 WHERE client_id = NEW.client_id AND status = 'SHIPPED'
             ) THEN
                 -- Check if there is a heartbeat
                 IF EXISTS (
                     SELECT 1
-                    FROM buttons_vitals bv
-                    JOIN devices d ON bv.device_id = d.device_id
-                    WHERE d.client_id = NEW.client_id
+                    FROM gateways_vitals gv
+                    JOIN gateways g ON gv.gateway_id = g.gateway_id
+                    WHERE g.client_id = NEW.client_id
                 ) THEN
-                    -- Update status in clients_extension
-                    UPDATE clients_extension
-                    SET status = 'LIVE'
-                    WHERE client_id = NEW.client_id;
-
-                    -- Update the alerts and vitals in clients
+                    -- Update status, alerts and vitals in clients
                     UPDATE clients
-                    SET is_sending_alerts = TRUE,
+                    SET status = 'LIVE',
+                        is_sending_alerts = TRUE,
                         is_sending_vitals = TRUE
                     WHERE client_id = NEW.client_id;
                 END IF;
@@ -49,12 +45,12 @@ BEGIN
         -- Insert the trigger
         CREATE TRIGGER client_status_live_trigger
         AFTER INSERT
-        ON buttons_vitals
+        ON gateways_vitals
         FOR EACH ROW
         EXECUTE FUNCTION client_status_live_trigger_fn();
 
         -- Enable the trigger
-        ALTER TABLE buttons_vitals ENABLE TRIGGER client_status_live_trigger;
+        ALTER TABLE gateways_vitals ENABLE TRIGGER client_status_live_trigger;
 
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
         INSERT INTO migrations (id)
