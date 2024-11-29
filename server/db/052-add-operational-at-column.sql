@@ -3,7 +3,7 @@ DO $migration$
     DECLARE lastSuccessfulMigrationId INT;
 BEGIN
     -- The migration ID of this file
-    migrationId := 51;
+    migrationId := 52;
 
     -- Get the migration ID of the last file to be successfully run
     SELECT MAX(id) INTO lastSuccessfulMigrationId
@@ -11,13 +11,10 @@ BEGIN
 
     -- Only execute this script if its migration ID is next after the last successful migration ID
     IF migrationId - lastSuccessfulMigrationId = 1 THEN
-        -- Create ENUM for the new status column
-        CREATE TYPE status_enum AS ENUM ('TESTING', 'SHIPPED', 'LIVE');
-
-        ALTER TABLE clients ADD COLUMN status status_enum NOT NULL DEFAULT 'LIVE';
+        ALTER TABLE clients ADD COLUMN operational_at timestamptz DEFAULT NULL;
 
         -- Update the migration ID of the last file to be successfully run to the migration ID of this file
         INSERT INTO migrations (id)
         VALUES (migrationId);
     END IF;
-END $migration$;
+END $migration$

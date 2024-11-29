@@ -21,9 +21,7 @@ BEGIN
                 SELECT 1
                 FROM clients
                 WHERE client_id = NEW.client_id AND status = 'SHIPPED'
-            ) THEN
-                -- Check if there is a heartbeat
-                IF EXISTS (
+            ) AND EXISTS ( -- Check if there is a Heartbeat
                     SELECT 1
                     FROM gateways_vitals gv
                     JOIN gateways g ON gv.gateway_id = g.gateway_id
@@ -33,7 +31,8 @@ BEGIN
                     UPDATE clients
                     SET status = 'LIVE',
                         is_sending_alerts = TRUE,
-                        is_sending_vitals = TRUE
+                        is_sending_vitals = TRUE,
+                        operational_at = NOW(),
                     WHERE client_id = NEW.client_id;
                 END IF;
             END IF;
