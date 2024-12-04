@@ -32,7 +32,7 @@ BEGIN
                     SET status = 'LIVE',
                         is_sending_alerts = TRUE,
                         is_sending_vitals = TRUE,
-                        operational_at = NOW(),
+                        commissioned_at = NOW(),
                     WHERE client_id = NEW.client_id;
                 END IF;
             END IF;
