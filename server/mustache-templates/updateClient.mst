@@ -169,7 +169,7 @@
                 <div class="form-group row justify-content-start row-no-gutters">
                     <label for="clientStatus" class="col-sm-3 col-form-label">Status:</label>
                     <div class="col-sm-5">
-                        <select class="form-control" name="status" name="status">
+                        <select class="form-control" id="status" name="status">
                             <script>
                             var statusValue = '{{status}}';
                             document.getElementById('status').innerHTML = `

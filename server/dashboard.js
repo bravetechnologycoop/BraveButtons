@@ -428,7 +428,6 @@ async function submitNewClient(req, res) {
         false,
         false,
         data.language,
-        STATUS
       )
 
       // create a client extension row for the newly created client
