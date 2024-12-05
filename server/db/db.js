@@ -1415,7 +1415,7 @@ async function updateClient(
       'updateClient',
       `
       UPDATE clients
-      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12, status = $13,
+      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12, status = $13
       WHERE id = $14
       RETURNING *
       `,
