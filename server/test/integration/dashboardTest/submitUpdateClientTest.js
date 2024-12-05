@@ -6,7 +6,7 @@ const sinonChai = require('sinon-chai')
 const { beforeEach, afterEach, describe, it } = require('mocha')
 
 // In-house dependencies
-const { factories, helpers, STATUS } = require('brave-alert-lib')
+const { factories, helpers } = require('brave-alert-lib')
 const db = require('../../../db/db')
 const { server } = require('../../../server')
 
