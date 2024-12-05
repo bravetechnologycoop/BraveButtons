@@ -18,7 +18,8 @@
     "mustache": "^3.2.1",
     "path-to-regexp": "^1.9.0",
     "pg": "^8.2.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib/tree/dg-buttonAutomaticActivation"
   },
   "devDependencies": {
     "chai": "^4.3.10",
@@ -38,8 +39,7 @@
     "rewire": "^6.0.0",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.5.0",
-    "twilio": "^4.7.1",
-    "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib/tree/dg-buttonAutomaticActivation"
+    "twilio": "^4.7.1"
   },
   "scripts": {
     "lint": "eslint .",
