@@ -11,6 +11,17 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Added migration script 51 which adds the `status` column to clients (CU-86dv691m8).
+- Added migration script 52 which adds the `commissioned_at` column to clients (CU-86dv691m8).
+- Added migration script 53 which adds the trigger function to change client status (CU-86dv691m8).
+
+### Changed
+- Changed adding client functions to reflect new columns (CU-86dv691m8).
+- Changed edit clients page to reflect new columns (CU-86dv691m8).
+- Changed test cases to reflect new columns (CU-86dv691m8).
+
 ## [14.1.0] - 2024-11-14
 
 ### Added
