@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Added
+
+- Added migration script 53 to automatically change button status from testing to live (CU-86dv691m8).
+
 ## [14.1.0] - 2024-11-14
 
 ### Added
