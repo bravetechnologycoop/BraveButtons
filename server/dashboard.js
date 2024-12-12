@@ -90,8 +90,14 @@ async function submitLogout(req, res) {
 async function renderDashboardPage(req, res) {
   try {
     const displayedClients = (await db.getClients()).filter(client => client.isDisplayed)
+    const organizations = []
 
-    const viewParams = { clients: displayedClients }
+    for (let i = 0; i < displayedClients.length; i++) {
+      displayedClients[i].organization = (db.getClientExtensionWithClientId(displayedClients[i].clientId)).organization
+    }
+
+    const viewParams = { 
+      clients: displayedClients,}
 
     res.send(Mustache.render(landingPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
