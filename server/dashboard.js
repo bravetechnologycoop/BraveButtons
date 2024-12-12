@@ -89,15 +89,25 @@ async function submitLogout(req, res) {
 
 async function renderDashboardPage(req, res) {
   try {
-    const displayedClients = (await db.getClients()).filter(client => client.isDisplayed)
-    const organizations = []
+    const clients = (await db.getClients()).filter(client => client.isDisplayed)
 
-    for (let i = 0; i < displayedClients.length; i++) {
-      displayedClients[i].organization = (db.getClientExtensionWithClientId(displayedClients[i].clientId)).organization
-    }
+    const displayedClients = await Promise.all(
+      clients.map(async client => {
+        const clientExtension = await db.getClientExtensionWithClientId(client.id)
+        return {
+          ...client,
+          organization: clientExtension.organization || 'Unknown',
+        }
+      }),
+    )
 
-    const viewParams = { 
-      clients: displayedClients,}
+    displayedClients.sort((a, b) => {
+      const orgA = a.organization.toLowerCase()
+      const orgB = b.organization.toLowerCase()
+      return orgA.localeCompare(orgB)
+    })
+
+    const viewParams = { clients: displayedClients }
 
     res.send(Mustache.render(landingPageTemplate, viewParams, { nav: navPartial, css: landingCSSPartial }))
   } catch (err) {
