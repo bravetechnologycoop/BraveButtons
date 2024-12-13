@@ -11,6 +11,10 @@ the code was deployed.
 
 ## [Unreleased]
 
+### Changed
+
+- Updated dashboard homepage to include and sort by Organization (CU-86dva4dxd)
+
 ## [14.1.0] - 2024-11-14
 
 ### Added

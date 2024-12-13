@@ -89,7 +89,23 @@ async function submitLogout(req, res) {
 
 async function renderDashboardPage(req, res) {
   try {
-    const displayedClients = (await db.getClients()).filter(client => client.isDisplayed)
+    const clients = (await db.getClients()).filter(client => client.isDisplayed)
+
+    const displayedClients = await Promise.all(
+      clients.map(async client => {
+        const clientExtension = await db.getClientExtensionWithClientId(client.id)
+        return {
+          ...client,
+          organization: clientExtension.organization || 'Unknown',
+        }
+      }),
+    )
+
+    displayedClients.sort((a, b) => {
+      const orgA = a.organization.toLowerCase()
+      const orgB = b.organization.toLowerCase()
+      return orgA.localeCompare(orgB)
+    })
 
     const viewParams = { clients: displayedClients }
 
