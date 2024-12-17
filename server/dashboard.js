@@ -467,6 +467,7 @@ const validateUpdateClient = [
     'isSendingVitals',
     'language',
     'status',
+    'firstDeviceLiveAt',
   ])
     .trim()
     .notEmpty(),
@@ -521,6 +522,7 @@ async function submitUpdateClient(req, res) {
         data.isSendingVitals,
         data.language,
         data.status,
+        data.firstDeviceLiveAt,
         req.params.id,
       )
 
