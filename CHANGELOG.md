@@ -20,6 +20,7 @@ the code was deployed.
 - Updated brave-alert-lib to v15.0.6 due to client model change (CU-86dv9uych).
 - Updated edit client dashboard page to add new status and first_device_live_at fields (CU-86dv9uych).
 - Updated submitUpdateClientTest.js test cases with new client fields (CU-86dv9uych).
+- Updated dashboard homepage to include and sort by Organization (CU-86dva4dxd).
 
 ## [14.1.0] - 2024-11-14
 
