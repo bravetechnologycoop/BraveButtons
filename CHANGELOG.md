@@ -13,6 +13,7 @@ the code was deployed.
 
 ### Added
 
+- Updated dashboard homepage to include and sort by Organization (CU-86dva4dxd).
 - Added migration script 52 that adds database trigger function `client_status_live_trigger_fn` (CU-86dv691m8).
 - Added `client_status_live_trigger_fn` trigger that automatically if changes button status from SHIPPED to LIVE if it recieves a gateway heartbeat (CU-86dv691m8).
 
