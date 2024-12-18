@@ -3,7 +3,7 @@ DO $migration$
     DECLARE lastSuccessfulMigrationId INT;
 BEGIN
     -- The migration ID of this file
-    migrationId := 53;
+    migrationId := 52;
 
     -- Get the migration ID of the last file to be successfully run
     SELECT MAX(id) INTO lastSuccessfulMigrationId
