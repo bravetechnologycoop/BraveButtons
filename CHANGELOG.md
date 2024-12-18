@@ -13,13 +13,13 @@ the code was deployed.
 
 ### Added
 
-- Added migration script 51 which adds the `status` column to clients (CU-86dv9uych).
-- Added migration script 52 which adds the `commissioned_at` column to clients (CU-86dv9uych).
+- Added migration script 51 which adds the `status` and `first_device_live_at` column to clients (CU-86dv9uych).
 
 ### Changed
-- Changed adding client functions to reflect new columns (CU-86dv9uych).
-- Changed edit clients page to reflect new columns (CU-86dv9uych).
-- Changed test cases to reflect new columns (CU-86dv9uych).
+
+- Updated brave-alert-lib to v15.0.6 due to client model change (CU-86dv9uych).
+- Updated edit client dashboard page to add new status and first_device_live_at fields (CU-86dv9uych).
+- Updated submitUpdateClientTest.js test cases with new client fields (CU-86dv9uych).
 
 ## [14.1.0] - 2024-11-14
 
