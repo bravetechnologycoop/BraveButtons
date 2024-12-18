@@ -467,12 +467,11 @@ const validateUpdateClient = [
     'isSendingVitals',
     'language',
     'status',
-    'firstDeviceLiveAt',
   ])
     .trim()
     .notEmpty(),
   Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
-  Validator.body(['country', 'countrySubdivision', 'buildingType', 'organization', 'funder', 'postalCode', 'city', 'project'])
+  Validator.body(['firstDeviceLiveAt', 'country', 'countrySubdivision', 'buildingType', 'organization', 'funder', 'postalCode', 'city', 'project'])
     .trim()
     .optional({ nullable: true }),
 ]
