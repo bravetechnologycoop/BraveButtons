@@ -183,6 +183,7 @@
                     <label for="firstDeviceLiveAt" class="col-sm-3 col-form-label">First Device Live At:</label>
                     <div class="col-sm-5">
                         <input type="date" class="form-control" name="firstDeviceLiveAt" value="{{firstDeviceLiveAt}}">
+                        <small id="firstDeviceLiveAt" class="form-text text-muted">Leave blank to keep the current database date. Note: This field shows today's date by default, not the database date.</small>
                     </div>
                 </div>
                 <br>
