@@ -13,9 +13,12 @@ the code was deployed.
 
 ### Added
 
+- Added migration script 52 that adds database trigger function `client_status_live_trigger_fn` (CU-86dvfrc35).
+- Added `client_status_live_trigger_fn` trigger that automatically if changes button status from SHIPPED to LIVE if it recieves a gateway heartbeat (CU-86dvfrc35).
+
+### Changed
+
 - Updated dashboard homepage to include and sort by Organization (CU-86dva4dxd).
-- Added migration script 52 that adds database trigger function `client_status_live_trigger_fn` (CU-86dv691m8).
-- Added `client_status_live_trigger_fn` trigger that automatically if changes button status from SHIPPED to LIVE if it recieves a gateway heartbeat (CU-86dv691m8).
 
 ## [14.1.0] - 2024-11-14
 
