@@ -2,7 +2,7 @@
 const { Pool, types } = require('pg')
 
 // In-house dependencies
-const { CHATBOT_STATE, Client, DEVICE_TYPE, Device, helpers, Session } = require('brave-alert-lib')
+const { CHATBOT_STATE, Client, DEVICE_TYPE, Device, helpers, Session, STATUS } = require('brave-alert-lib')
 const Gateway = require('../Gateway')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
@@ -58,6 +58,8 @@ function createClientFromRow(r) {
     r.language,
     r.created_at,
     r.updated_at,
+    r.status,
+    r.first_device_live_at,
   )
 }
 
@@ -900,8 +902,8 @@ async function createClient(
     const results = await helpers.runQuery(
       'createClient',
       `
-      INSERT INTO clients (display_name, responder_phone_numbers, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_displayed, is_sending_alerts, is_sending_vitals, language)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      INSERT INTO clients (display_name, responder_phone_numbers, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_displayed, is_sending_alerts, is_sending_vitals, language, status, first_device_live_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
       `,
       [
@@ -917,6 +919,8 @@ async function createClient(
         isSendingAlerts,
         isSendingVitals,
         language,
+        STATUS.TESTING,
+        null,
       ],
       pool,
       pgClient,
@@ -1403,6 +1407,8 @@ async function updateClient(
   isSendingAlerts,
   isSendingVitals,
   language,
+  status,
+  firstDeviceLiveAt,
   clientId,
   pgClient,
 ) {
@@ -1411,8 +1417,8 @@ async function updateClient(
       'updateClient',
       `
       UPDATE clients
-      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12
-      WHERE id = $13
+      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12, status = $13, first_device_live_at = $14
+      WHERE id = $15
       RETURNING *
       `,
       [
@@ -1428,6 +1434,8 @@ async function updateClient(
         isSendingAlerts,
         isSendingVitals,
         language,
+        status,
+        firstDeviceLiveAt,
         clientId,
       ],
       pool,
