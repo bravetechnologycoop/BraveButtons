@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [14.2.0] - 2025-01-16
+
 ### Added
 
 - Added migration script 51 which adds the `status` and `first_device_live_at` column to clients (CU-86dv9uych).
@@ -846,7 +848,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.0...HEAD
+[14.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...v14.2.0
 [14.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.0.0...v14.1.0
 [14.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.12.0...v14.0.0
 [13.12.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.11.0...v13.12.0
