@@ -523,6 +523,17 @@ async function submitUpdateClient(req, res) {
           ? data.heartbeatPhoneNumbers.split(',').map(phone => phone.trim())
           : []
 
+      let firstDeviceLiveAt = data.firstDeviceLiveAt
+      if (!firstDeviceLiveAt || firstDeviceLiveAt.trim() === '') {
+        try {
+          firstDeviceLiveAt = await db.getCurrentFirstDeviceLiveAt(req.params.id)
+        } catch (error) {
+          const errorMessage = `Error retrieving current firstDeviceLiveAt for client ID: ${req.params.id} - ${error.toString()}`
+          helpers.logError(errorMessage)
+          return res.status(500).send(errorMessage)
+        }
+      }
+
       await db.updateClient(
         data.displayName,
         data.fromPhoneNumber,
@@ -537,7 +548,7 @@ async function submitUpdateClient(req, res) {
         data.isSendingVitals,
         data.language,
         data.status,
-        data.firstDeviceLiveAt,
+        firstDeviceLiveAt,
         req.params.id,
       )
 
