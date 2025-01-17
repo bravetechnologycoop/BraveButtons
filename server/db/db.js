@@ -763,6 +763,34 @@ async function getDeviceWithSerialNumber(serialNumber, pgClient) {
   return null
 }
 
+// Retrieves the button corresponding to a given location ID
+async function getButtonWithLocationid(locationid, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithLocationid',
+      `
+      SELECT *
+      FROM devices
+      WHERE locationid = $1
+      `,
+      [locationid],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the getButtonWithLocationid query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getButtonWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -815,6 +843,33 @@ async function getButtonsFromClientId(clientId, pgClient) {
     return results.rows.map(r => createDeviceFromRow(r, allClients))
   } catch (err) {
     helpers.logError(`Error running the getButtonsFromClientId query: ${err.toString()}`)
+  }
+}
+
+async function createButtonFromBrowserForm(locationid, displayName, serialNumber, phoneNumber, clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createButtonFromBrowserForm',
+      `
+      INSERT INTO devices(device_type, locationid, display_name, serial_number, phone_number, is_displayed, is_sending_alerts, is_sending_vitals, client_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+      `,
+      [DEVICE_TYPE.BUTTON, locationid, displayName, serialNumber, phoneNumber, true, false, false, clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`New button inserted into database: ${locationid}`)
+
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the createButtonFromBrowserForm query: ${err.toString()}`)
   }
 }
 
@@ -1775,6 +1830,7 @@ module.exports = {
   clearTables,
   close,
   commitTransaction,
+  createButtonFromBrowserForm,
   createButton,
   createClient,
   createDevice,
@@ -1792,6 +1848,7 @@ module.exports = {
   getDataForExport,
   getDeviceWithIds,
   getDeviceWithSerialNumber,
+  getButtonWithLocationid,
   getButtonWithDeviceId,
   getButtonsFromClientId,
   getDisconnectedGatewaysWithClient,

@@ -30,9 +30,19 @@ the code was deployed.
 ### Added
 
 - Added migration script to update device_type_enum to handle multistall and singlestall sensors separately (CU-86duvwbq2).
+- Added `newButton.mst` mustache file for adding new buttons (CU-86dug9udj).
+- Added function `renderNewButtonPage` in `dashboard.js` to render the new mustache file (CU-86dug9udj).
+- Added validator `validateNewButton` in `dashboard.js` to validate inputs from the form (CU-86dug9udj).
+- Added function `submitNewButton` in `dashboard.js` to handle functionality of submitting new buttons (CU-86dug9udj).
+- Added function `createButtonFromBrowserForm` in `db.js` to handle inserting new buttons to the database (CU-86dug9udj).
+- Added new route for POST function of new button (CU-86dug9udj).
+- Added function `getButtonWithDeviceId` in `db.js` for integration testing of add buttons (CU-86dug9udj).
+- Added `submitNewButtonTest.js` file wiht integartion tests for adding new buttons (CU-86dug9udj).
 
 ### Changed
 
+- Changed header to include `New Button` button (CU-86dug9udj).
+- Moved all the post functions up to put it above API routes in `routes.js` (CU-86dug9udj).
 - Updated brave-alert-lib to v15.0.4 for deviceType enum change (CU-86duvwbq2).
 - Updated device type form 'DEVICE_BUTTON' to 'BUTTON' in database (CU-86duvwbq2).
 - Changed english messages `buttonLowBatteryInitial`, `buttonLowBatteryReminder`, `buttonStatusChangeDisconnected`, `gatewayDisconnectionInitial`, `gatewayDisconnectionReminder` to reduce twilio message segments (CU-86duzccj5).
