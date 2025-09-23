@@ -26,6 +26,11 @@
         </li>
         <li class="nav-item">
             <button class="btn btn-navbar">
+                <a href="/buttons/new" class="text-decoration-none">New Button</a>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="btn btn-navbar">
                 <a href="/gateways/new" class="text-decoration-none">New Gateway</a>
             </button>
         </li>
