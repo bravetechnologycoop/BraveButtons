@@ -20,12 +20,12 @@ jobs:
       PG_USER_TEST: brave
       PG_DATABASE_TEST: bravebuttons
       PG_PASSWORD_TEST: travispassword
-      PG_PORT_TEST: 5433
+      PG_PORT_TEST: 5432
       PG_HOST_TEST: localhost
       PG_USER: brave
       PG_DATABASE: bravebuttons
       PG_PASSWORD: travispassword
-      PG_PORT: 5433
+      PG_PORT: 5432
       PG_HOST: localhost
       # Test phone number (from https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From)
       RESPONDER_PHONE_TEST: +15005550006
