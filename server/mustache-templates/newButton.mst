@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <title>Brave Button Dashboard: New Button</title>
+
+        <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+            <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+            
+            {{> css}}
+    </head>
+
+    <body>
+        {{> nav}}
+        <div class="content-area">
+            <div class="content-wrapper">
+                <h4 class="no-locations">Add Buttons</h4>
+                <h6>Please submit your csv file below.</h6>
+                <br>
+                <h6>csv file format:</h6>
+                <p>locationid1,displayName1,serialNumber1,phoneNumber1<br>locationid2,displayName2,serialNumber2,phoneNumber2<br>etc</p>
+                <p>remember to put a new line after every device</p>
+                <br>
+
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="clientId" class="col-sm-3 col-form-label">Client:</label>
+                    <div class="col-sm-5">
+                        <select class="form-control" name="clientId" id="clientId" required>
+                            {{#clients}}
+                                <option value="{{id}}">{{displayName}}</option>
+                            {{/clients}}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group row justify-content-start row-no-gutters">
+                    <label for="buttonCsv" class="col-sm-3 col-form-label">Button File:</label>
+                    <input type="file" id="buttonCsv" name="buttonCsv" accept=".csv" />
+                </div>
+                <br>
+                <button id="submitButton" class="btn btn-primary btn-large" onclick="submitButtonForm()">Submit</button>
+
+            </div>
+        </div>
+
+        <script>
+            // turn CSV to json
+            function csvToJson(csv) {
+                const lines =  csv.split('\n')
+                const result = []
+                const headers = ['locationid', 'displayName', 'serialNumber', 'phoneNumber']
+            
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim()
+                    if (line === '') continue
+
+                    const currentLine = line.split(',')
+
+                    if (currentLine.length === headers.length) {
+                        const obj = {}
+                        headers.forEach((header, index) => {
+                            obj[header] = currentLine[index].trim()
+                        })
+                        result.push(obj)
+                    }
+                }
+                return result
+            }
+
+            // upload csv and submit
+            async function submitButtonForm() {
+                const fileInput = document.getElementById('buttonCsv')
+                if (fileInput.files.length === 0) {
+                    alert('Please select a CSV file.')
+                    return
+                }
+
+                const file = fileInput.files[0]
+                const reader = new FileReader()
+
+                reader.onload = async function (e) {
+                    const csvContent = e.target.result
+                    const jsonContent = csvToJson(csvContent)
+
+                    const clientId = document.getElementById('clientId').value
+
+                    try {
+                        const response = await fetch('/buttons', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                clientId: clientId,
+                                buttons: jsonContent
+                            })
+                        })
+
+                        if (response.ok) {
+                            window.location.href = `/clients/${clientId}`
+                        } else {
+                            const errorText = await response.text()
+                            alert('Error uploading buttons: ' + errorText)
+                        }
+                    } catch (err) {
+                        console.error('Error:', err)
+                        alert('An error occured while uploading.')
+                    }
+                }
+
+                reader.readAsText(file)
+            }
+        </script>
+
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    </body>
+</html>

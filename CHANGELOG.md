@@ -20,14 +20,38 @@ the code was deployed.
 
 - Updated dashboard homepage to include and sort by Organization (CU-86dva4dxd).
 
+## [14.2.0] - 2025-01-16
+
+### Added
+
+- Added migration script 51 which adds the `status` and `first_device_live_at` column to clients (CU-86dv9uych).
+
+### Changed
+
+- Updated brave-alert-lib to v15.0.6 due to client model change (CU-86dv9uych).
+- Updated edit client dashboard page to add new status and first_device_live_at fields (CU-86dv9uych).
+- Updated submitUpdateClientTest.js test cases with new client fields (CU-86dv9uych).
+- Updated dashboard homepage to include and sort by Organization (CU-86dva4dxd).
+- Fixed error caused due to updating client's first_device_live_at in dashboard (CU-86dvqgum0).
+
 ## [14.1.0] - 2024-11-14
 
 ### Added
 
 - Added migration script to update device_type_enum to handle multistall and singlestall sensors separately (CU-86duvwbq2).
+- Added `newButton.mst` mustache file for adding new buttons (CU-86dug9udj).
+- Added function `renderNewButtonPage` in `dashboard.js` to render the new mustache file (CU-86dug9udj).
+- Added validator `validateNewButton` in `dashboard.js` to validate inputs from the form (CU-86dug9udj).
+- Added function `submitNewButton` in `dashboard.js` to handle functionality of submitting new buttons (CU-86dug9udj).
+- Added function `createButtonFromBrowserForm` in `db.js` to handle inserting new buttons to the database (CU-86dug9udj).
+- Added new route for POST function of new button (CU-86dug9udj).
+- Added function `getButtonWithDeviceId` in `db.js` for integration testing of add buttons (CU-86dug9udj).
+- Added `submitNewButtonTest.js` file wiht integartion tests for adding new buttons (CU-86dug9udj).
 
 ### Changed
 
+- Changed header to include `New Button` button (CU-86dug9udj).
+- Moved all the post functions up to put it above API routes in `routes.js` (CU-86dug9udj).
 - Updated brave-alert-lib to v15.0.4 for deviceType enum change (CU-86duvwbq2).
 - Updated device type form 'DEVICE_BUTTON' to 'BUTTON' in database (CU-86duvwbq2).
 - Changed english messages `buttonLowBatteryInitial`, `buttonLowBatteryReminder`, `buttonStatusChangeDisconnected`, `gatewayDisconnectionInitial`, `gatewayDisconnectionReminder` to reduce twilio message segments (CU-86duzccj5).
@@ -843,7 +867,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.0...HEAD
+[14.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...v14.2.0
 [14.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.0.0...v14.1.0
 [14.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.12.0...v14.0.0
 [13.12.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.11.0...v13.12.0

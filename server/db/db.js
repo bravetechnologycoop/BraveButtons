@@ -2,7 +2,7 @@
 const { Pool, types } = require('pg')
 
 // In-house dependencies
-const { CHATBOT_STATE, Client, DEVICE_TYPE, Device, helpers, Session } = require('brave-alert-lib')
+const { CHATBOT_STATE, Client, DEVICE_TYPE, Device, helpers, Session, STATUS } = require('brave-alert-lib')
 const Gateway = require('../Gateway')
 const ButtonsVital = require('../ButtonsVital')
 const GatewaysVital = require('../GatewaysVital')
@@ -58,6 +58,8 @@ function createClientFromRow(r) {
     r.language,
     r.created_at,
     r.updated_at,
+    r.status,
+    r.first_device_live_at,
   )
 }
 
@@ -761,6 +763,34 @@ async function getDeviceWithSerialNumber(serialNumber, pgClient) {
   return null
 }
 
+// Retrieves the button corresponding to a given location ID
+async function getButtonWithLocationid(locationid, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonWithLocationid',
+      `
+      SELECT *
+      FROM devices
+      WHERE locationid = $1
+      `,
+      [locationid],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the getButtonWithLocationid query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getButtonWithDeviceId(deviceId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -813,6 +843,33 @@ async function getButtonsFromClientId(clientId, pgClient) {
     return results.rows.map(r => createDeviceFromRow(r, allClients))
   } catch (err) {
     helpers.logError(`Error running the getButtonsFromClientId query: ${err.toString()}`)
+  }
+}
+
+async function createButtonFromBrowserForm(locationid, displayName, serialNumber, phoneNumber, clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'createButtonFromBrowserForm',
+      `
+      INSERT INTO devices(device_type, locationid, display_name, serial_number, phone_number, is_displayed, is_sending_alerts, is_sending_vitals, client_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+      `,
+      [DEVICE_TYPE.BUTTON, locationid, displayName, serialNumber, phoneNumber, true, false, false, clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`New button inserted into database: ${locationid}`)
+
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the createButtonFromBrowserForm query: ${err.toString()}`)
   }
 }
 
@@ -900,8 +957,8 @@ async function createClient(
     const results = await helpers.runQuery(
       'createClient',
       `
-      INSERT INTO clients (display_name, responder_phone_numbers, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_displayed, is_sending_alerts, is_sending_vitals, language)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      INSERT INTO clients (display_name, responder_phone_numbers, reminder_timeout, fallback_phone_numbers, from_phone_number, fallback_timeout, heartbeat_phone_numbers, incident_categories, is_displayed, is_sending_alerts, is_sending_vitals, language, status, first_device_live_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
       `,
       [
@@ -917,6 +974,8 @@ async function createClient(
         isSendingAlerts,
         isSendingVitals,
         language,
+        STATUS.TESTING,
+        null,
       ],
       pool,
       pgClient,
@@ -1403,6 +1462,8 @@ async function updateClient(
   isSendingAlerts,
   isSendingVitals,
   language,
+  status,
+  firstDeviceLiveAt,
   clientId,
   pgClient,
 ) {
@@ -1411,8 +1472,8 @@ async function updateClient(
       'updateClient',
       `
       UPDATE clients
-      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12
-      WHERE id = $13
+      SET display_name = $1, from_phone_number = $2, responder_phone_numbers = $3, reminder_timeout = $4, fallback_phone_numbers = $5, fallback_timeout = $6, heartbeat_phone_numbers = $7, incident_categories = $8, is_displayed = $9, is_sending_alerts = $10, is_sending_vitals = $11, language = $12, status = $13, first_device_live_at = $14
+      WHERE id = $15
       RETURNING *
       `,
       [
@@ -1428,6 +1489,8 @@ async function updateClient(
         isSendingAlerts,
         isSendingVitals,
         language,
+        status,
+        firstDeviceLiveAt,
         clientId,
       ],
       pool,
@@ -1729,6 +1792,31 @@ async function getDeviceWithIds(deviceId, clientId, pgClient) {
   return null
 }
 
+async function getCurrentFirstDeviceLiveAt(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getCurrentFirstDeviceLiveAt',
+      `
+      SELECT first_device_live_at
+      FROM clients
+      WHERE id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    return results.rows[0].first_device_live_at
+  } catch (err) {
+    helpers.logError(`Error running the getCurrentFirstDeviceLiveAt query: ${err.toString()}`)
+    return null
+  }
+}
+
 module.exports = {
   beginTransaction,
   clearButtonsVitals,
@@ -1742,6 +1830,7 @@ module.exports = {
   clearTables,
   close,
   commitTransaction,
+  createButtonFromBrowserForm,
   createButton,
   createClient,
   createDevice,
@@ -1759,6 +1848,7 @@ module.exports = {
   getDataForExport,
   getDeviceWithIds,
   getDeviceWithSerialNumber,
+  getButtonWithLocationid,
   getButtonWithDeviceId,
   getButtonsFromClientId,
   getDisconnectedGatewaysWithClient,
@@ -1789,4 +1879,5 @@ module.exports = {
   createClientExtension,
   updateClientExtension,
   createGatewayFromBrowserForm,
+  getCurrentFirstDeviceLiveAt,
 }

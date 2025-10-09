@@ -26,6 +26,7 @@ const newClientTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newCl
 const newGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newGateway.mst`, 'utf-8')
 const updateGatewayTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateGateway.mst`, 'utf-8')
 const updateButtonTemplate = fs.readFileSync(`${__dirname}/mustache-templates/updateButton.mst`, 'utf-8')
+const newButtonTemplate = fs.readFileSync(`${__dirname}/mustache-templates/newButton.mst`, 'utf-8')
 
 const rssiBadThreshold = helpers.getEnvVar('RSSI_BAD_THRESHOLD')
 const rssiGoodThreshold = helpers.getEnvVar('RSSI_GOOD_THRESHOLD')
@@ -223,6 +224,79 @@ async function submitUpdateButton(req, res) {
       )
 
       res.redirect(`/buttons/${data.deviceId}`)
+    } else {
+      const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
+      helpers.log(errorMessage)
+      res.status(400).send(errorMessage)
+    }
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
+async function renderNewButtonPage(req, res) {
+  try {
+    const clients = await db.getClients()
+    const viewParams = { clients: clients.filter(client => client.isDisplayed) }
+
+    res.send(Mustache.render(newButtonTemplate, viewParams, { nav: navPartial, css: buttonFormCSSPartial }))
+  } catch (err) {
+    helpers.logError(`Error calling ${req.path}: ${err.toString()}`)
+    res.status(500).send()
+  }
+}
+
+const validateNewButton = [
+  Validator.body('clientId').trim().notEmpty().withMessage('Client ID must not be empty'),
+
+  Validator.body('buttons').isArray({ min: 1 }).withMessage('Buttons must be an array and contain at least one entry'),
+
+  Validator.body('buttons.*.locationid').trim().notEmpty().withMessage('Location ID must not be empty'),
+
+  Validator.body('buttons.*.displayName').trim().notEmpty().withMessage('Display Name must not be empty'),
+
+  Validator.body('buttons.*.serialNumber').trim().notEmpty().withMessage('Serial Number must not be empty'),
+
+  Validator.body('buttons.*.phoneNumber').trim().notEmpty().withMessage('Phone Number must not be empty'),
+]
+
+async function submitNewButton(req, res) {
+  try {
+    if (!req.session.user || !req.cookies.user_sid) {
+      helpers.logError('Unauthorized')
+      res.status(401).send()
+      return
+    }
+
+    const validationErrors = Validator.validationResult(req).formatWith(helpers.formatExpressValidationErrors)
+
+    if (validationErrors.isEmpty()) {
+      const allButtons = await db.getButtons()
+      const data = req.body
+      const clientId = data.clientId
+      const buttons = data.buttons
+
+      const client = await db.getClientWithId(clientId)
+      if (client === null) {
+        const errorMessage = `Client ID '${clientId}' does not exist`
+        helpers.log(errorMessage)
+        return res.status(400).send(errorMessage)
+      }
+
+      for (const button of buttons) {
+        for (const existingButton of allButtons) {
+          if (existingButton.locationid === button.locationid) {
+            helpers.log('Location ID already exists')
+            return res.status(409).send('Location ID already exists')
+          }
+        }
+
+        await db.createButtonFromBrowserForm(button.locationid, button.displayName, button.serialNumber, button.phoneNumber, clientId)
+      }
+
+      res.status(200).send()
+      // redirect done on client side due to AJAX
     } else {
       const errorMessage = `Bad request to ${req.path}: ${validationErrors.array()}`
       helpers.log(errorMessage)
@@ -482,11 +556,12 @@ const validateUpdateClient = [
     'isSendingAlerts',
     'isSendingVitals',
     'language',
+    'status',
   ])
     .trim()
     .notEmpty(),
   Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
-  Validator.body(['country', 'countrySubdivision', 'buildingType', 'organization', 'funder', 'postalCode', 'city', 'project'])
+  Validator.body(['firstDeviceLiveAt', 'country', 'countrySubdivision', 'buildingType', 'organization', 'funder', 'postalCode', 'city', 'project'])
     .trim()
     .optional({ nullable: true }),
 ]
@@ -522,6 +597,17 @@ async function submitUpdateClient(req, res) {
           ? data.heartbeatPhoneNumbers.split(',').map(phone => phone.trim())
           : []
 
+      let firstDeviceLiveAt = data.firstDeviceLiveAt
+      if (!firstDeviceLiveAt || firstDeviceLiveAt.trim() === '') {
+        try {
+          firstDeviceLiveAt = await db.getCurrentFirstDeviceLiveAt(req.params.id)
+        } catch (error) {
+          const errorMessage = `Error retrieving current firstDeviceLiveAt for client ID: ${req.params.id} - ${error.toString()}`
+          helpers.logError(errorMessage)
+          return res.status(500).send(errorMessage)
+        }
+      }
+
       await db.updateClient(
         data.displayName,
         data.fromPhoneNumber,
@@ -535,6 +621,8 @@ async function submitUpdateClient(req, res) {
         data.isSendingAlerts,
         data.isSendingVitals,
         data.language,
+        data.status,
+        firstDeviceLiveAt,
         req.params.id,
       )
 
@@ -830,6 +918,7 @@ module.exports = {
   renderButtonDetailsPage,
   renderLoginPage,
   renderVitalsPage,
+  renderNewButtonPage,
   renderUpdateButtonPage,
   sessionChecker,
   setupDashboardSessions,
@@ -839,10 +928,12 @@ module.exports = {
   submitUpdateClient,
   submitNewGateway,
   submitUpdateGateway,
+  submitNewButton,
   submitUpdateButton,
   validateNewClient,
   validateUpdateClient,
   validateNewGateway,
   validateUpdateGateway,
   validateUpdateButton,
+  validateNewButton,
 }

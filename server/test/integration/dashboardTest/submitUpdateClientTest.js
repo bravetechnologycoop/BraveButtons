@@ -56,6 +56,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
       this.isSendingAlerts = true
       this.isSendingVitals = true
       this.language = 'en'
+      this.status = 'LIVE'
+      this.firstDeviceLiveAt = '2024-12-31'
       this.goodRequest = {
         displayName: this.newDisplayname,
         fromPhoneNumber: this.newFromPhoneNumber,
@@ -69,6 +71,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(this.goodRequest)
@@ -94,6 +98,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: updatedClient.isSendingAlerts,
         isSendingVitals: updatedClient.isSendingVitals,
         language: updatedClient.language,
+        status: updatedClient.status,
+        firstDeviceLiveAt: updatedClient.firstDeviceLiveAt.toISOString().split('T')[0], // Convert to string
       }).to.eql({
         displayName: this.newDisplayname,
         fromPhoneNumber: this.newFromPhoneNumber,
@@ -107,6 +113,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       })
     })
   })
@@ -130,6 +138,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
       this.isSendingAlerts = '    true    '
       this.isSendingVitals = '    true    '
       this.language = '    en    '
+      this.status = '    LIVE    '
+      this.firstDeviceLiveAt = '   2024-12-31   '
       this.goodRequest = {
         displayName: this.newDisplayname,
         fromPhoneNumber: this.newFromPhoneNumber,
@@ -143,6 +153,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(this.goodRequest)
@@ -168,6 +180,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: updatedClient.isSendingAlerts,
         isSendingVitals: updatedClient.isSendingVitals,
         language: updatedClient.language,
+        status: updatedClient.status,
+        firstDeviceLiveAt: updatedClient.firstDeviceLiveAt.toISOString().split('T')[0], // Convert to string
       }).to.eql({
         displayName: this.newDisplayname.trim(),
         fromPhoneNumber: this.newFromPhoneNumber.trim(),
@@ -181,6 +195,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts.trim() === 'true',
         isSendingVitals: this.isSendingVitals.trim() === 'true',
         language: this.language.trim(),
+        status: this.status.trim(),
+        firstDeviceLiveAt: this.firstDeviceLiveAt.trim(),
       })
     })
   })
@@ -240,6 +256,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.existingClient.isSendingAlerts,
         isSendingVitals: this.existingClient.isSendingVitals,
         language: this.existingClient.language,
+        status: this.existingClient.status,
+        firstDeviceLiveAt: this.existingClient.firstDeviceLiveAt,
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(this.goodRequest)
@@ -265,6 +283,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: updatedClient.isSendingAlerts,
         isSendingVitals: updatedClient.isSendingVitals,
         language: updatedClient.language,
+        status: updatedClient.status,
+        firstDeviceLiveAt: updatedClient.firstDeviceLiveAt ? updatedClient.firstDeviceLiveAt.toISOString().split('T')[0] : null,
       }).to.eql({
         displayName: this.existingClient.displayName,
         fromPhoneNumber: this.existingClient.fromPhoneNumber,
@@ -278,6 +298,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.existingClient.isSendingAlerts,
         isSendingVitals: this.existingClient.isSendingVitals,
         language: this.existingClient.language,
+        status: this.existingClient.status,
+        firstDeviceLiveAt: this.existingClient.firstDeviceLiveAt,
       })
     })
   })
@@ -300,6 +322,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
       this.isSendingAlerts = true
       this.isSendingVitals = true
       this.language = 'en'
+      this.status = 'LIVE'
+      this.firstDeviceLiveAt = '2024-12-31'
       this.goodRequest = {
         displayName: this.newDisplayname,
         fromPhoneNumber: this.newFromPhoneNumber,
@@ -312,6 +336,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(this.goodRequest)
@@ -337,6 +363,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: updatedClient.isSendingAlerts,
         isSendingVitals: updatedClient.isSendingVitals,
         language: updatedClient.language,
+        status: updatedClient.status,
+        firstDeviceLiveAt: updatedClient.firstDeviceLiveAt.toISOString().split('T')[0], // Convert to string
       }).to.eql({
         displayName: this.newDisplayname,
         fromPhoneNumber: this.newFromPhoneNumber,
@@ -350,6 +378,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       })
     })
   })
@@ -372,6 +402,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
       this.isSendingAlerts = true
       this.isSendingVitals = true
       this.language = 'en'
+      this.status = 'LIVE'
+      this.firstDeviceLiveAt = '2024-12-31'
       this.goodRequest = {
         displayName: this.newDisplayname,
         fromPhoneNumber: this.newFromPhoneNumber,
@@ -384,6 +416,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(this.goodRequest)
@@ -424,6 +458,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: '',
         isSendingVitals: '',
         language: '',
+        status: '',
+        firstDeviceLiveAt: '',
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(badRequest)
@@ -441,7 +477,7 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
 
     it('should log the error', () => {
       expect(helpers.log).to.have.been.calledWith(
-        `Bad request to /clients/${this.existingClient.id}: displayName (Invalid value),responderPhoneNumbers (Invalid value),fallbackPhoneNumbers (Invalid value),fromPhoneNumber (Invalid value),incidentCategories (Invalid value),isDisplayed (Invalid value),isSendingAlerts (Invalid value),isSendingVitals (Invalid value),language (Invalid value),reminderTimeout (Invalid value),fallbackTimeout (Invalid value)`,
+        `Bad request to /clients/${this.existingClient.id}: displayName (Invalid value),responderPhoneNumbers (Invalid value),fallbackPhoneNumbers (Invalid value),fromPhoneNumber (Invalid value),incidentCategories (Invalid value),isDisplayed (Invalid value),isSendingAlerts (Invalid value),isSendingVitals (Invalid value),language (Invalid value),status (Invalid value),reminderTimeout (Invalid value),fallbackTimeout (Invalid value)`,
       )
     })
   })
@@ -468,7 +504,7 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
 
     it('should log the error', () => {
       expect(helpers.log).to.have.been.calledWith(
-        `Bad request to /clients/${this.existingClient.id}: displayName (Invalid value),responderPhoneNumbers (Invalid value),fallbackPhoneNumbers (Invalid value),fromPhoneNumber (Invalid value),incidentCategories (Invalid value),isDisplayed (Invalid value),isSendingAlerts (Invalid value),isSendingVitals (Invalid value),language (Invalid value),reminderTimeout (Invalid value),fallbackTimeout (Invalid value)`,
+        `Bad request to /clients/${this.existingClient.id}: displayName (Invalid value),responderPhoneNumbers (Invalid value),fallbackPhoneNumbers (Invalid value),fromPhoneNumber (Invalid value),incidentCategories (Invalid value),isDisplayed (Invalid value),isSendingAlerts (Invalid value),isSendingVitals (Invalid value),language (Invalid value),status (Invalid value),reminderTimeout (Invalid value),fallbackTimeout (Invalid value)`,
       )
     })
   })
@@ -494,6 +530,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
       this.isSendingAlerts = true
       this.isSendingVitals = true
       this.language = 'en'
+      this.status = 'LIVE'
+      this.firstDeviceLiveAt = '2024-12-31'
       const duplicateDisplayNameRequest = {
         displayName: this.otherClientName,
         fromPhoneNumber: '+17549553216',
@@ -507,6 +545,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(duplicateDisplayNameRequest)
@@ -542,6 +582,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
       this.isSendingAlerts = true
       this.isSendingVitals = true
       this.language = 'en'
+      this.status = 'LIVE'
+      this.firstDeviceLiveAt = '2024-12-31'
       this.goodRequest = {
         displayName: this.newDisplayname,
         fromPhoneNumber: this.newFromPhoneNumber,
@@ -555,6 +597,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(this.goodRequest)
@@ -596,6 +640,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
       this.isSendingAlerts = true
       this.isSendingVitals = true
       this.language = 'en'
+      this.status = 'LIVE'
+      this.firstDeviceLiveAt = '2024-12-31'
       this.goodRequest = {
         displayName: this.newDisplayname,
         fromPhoneNumber: this.newFromPhoneNumber,
@@ -609,6 +655,8 @@ describe('dashboard.js Integration Tests: submitUpdateClient', () => {
         isSendingAlerts: this.isSendingAlerts,
         isSendingVitals: this.isSendingVitals,
         language: this.language,
+        status: this.status,
+        firstDeviceLiveAt: this.firstDeviceLiveAt,
       }
 
       this.response = await this.agent.post(`/clients/${this.existingClient.id}`).send(this.goodRequest)

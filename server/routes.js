@@ -15,14 +15,22 @@ function configureRoutes(app) {
   app.get('/login', dashboard.renderLoginPage)
   app.get('/logout', dashboard.submitLogout)
   app.get('/vitals', dashboard.sessionChecker, dashboard.renderVitalsPage)
+  app.get('/buttons/new', dashboard.sessionChecker, dashboard.renderNewButtonPage)
   app.get('/buttons/:id', dashboard.sessionChecker, dashboard.renderButtonDetailsPage)
   app.get('/buttons/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateButtonPage)
   app.get('/clients/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateClientPage)
   app.get('/gateways/new', dashboard.sessionChecker, dashboard.renderNewGatewayPage)
   app.get('/gateways/:id/edit', dashboard.sessionChecker, dashboard.renderUpdateGatewayPage)
+  app.get('/export-data', dashboard.sessionChecker, dashboard.downloadCsv)
 
   app.post('/clients', dashboard.validateNewClient, dashboard.submitNewClient)
   app.post('/login', dashboard.submitLogin)
+  app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
+  app.post('/clients/:id', dashboard.validateUpdateClient, dashboard.submitUpdateClient)
+  app.post('/gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
+  app.post('/gateways/:id', dashboard.validateUpdateGateway, dashboard.submitUpdateGateway)
+  app.post('/buttons/:id', dashboard.validateUpdateButton, dashboard.submitUpdateButton)
+  app.post('/buttons', dashboard.validateNewButton, dashboard.submitNewButton)
 
   // to-be-used API routes
   app.get('/api/clients', api.authorize, api.handleGetClients)
@@ -52,12 +60,6 @@ function configureRoutes(app) {
   app.post('/pa/health', pa.validateCheckDatabaseConnection, googleHelpers.paAuthorize, pa.handleCheckDatabaseConnection)
 
   // other routes
-  app.get('/export-data', dashboard.sessionChecker, dashboard.downloadCsv)
-  app.post('/rak_button_press', rak.validateButtonPress, rak.handleButtonPress)
-  app.post('/clients/:id', dashboard.validateUpdateClient, dashboard.submitUpdateClient)
-  app.post('/gateways', dashboard.validateNewGateway, dashboard.submitNewGateway)
-  app.post('/gateways/:id', dashboard.validateUpdateGateway, dashboard.submitUpdateGateway)
-  app.post('/buttons/:id', dashboard.validateUpdateButton, dashboard.submitUpdateButton)
 }
 
 module.exports = {
