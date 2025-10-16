@@ -46,8 +46,10 @@ else
     setcap cap_net_bind_service=+ep /usr/local/bin/node   # allows non-root to use port 443
     npm ci
 
-    # Get the certbot certificate and choose option "1" to keep the existing certificate (as opposed option "2" to renew and replace it)
-    printf "1" | certbot certonly --standalone -d $domain
+    # Get the certbot certificate with proper renewal capability
+    # Use --keep-until-expiring to avoid recreating valid certs, but allow renewals when needed
+    certbot certonly --standalone -d $domain --non-interactive --agree-tos --keep-until-expiring \
+        --email admin@$domain || true
 
     # Allow brave user access to certificate even if these commands have already been run before
     # https://stackoverflow.com/questions/48078083/lets-encrypt-ssl-couldnt-start-by-error-eacces-permission-denied-open-et#answer-54903098
@@ -64,11 +66,17 @@ else
     chmod 777 /var/log/brave
     touch /var/log/brave/pm2-crontab.log
     chmod 666 /var/log/brave/pm2-crontab.log
+    touch /var/log/brave/certbot-renew.log
+    chmod 666 /var/log/brave/certbot-renew.log
 
     # restart server weekly to ensure it uses the latest certificates (certbot renews them automatically)
     echo "
     @weekly /usr/sbin/runuser -u brave -- /usr/local/bin/pm2 restart BraveServer >> /var/log/brave/pm2-crontab.log 2>&1
     " | crontab -
+
+    # Add automated certificate renewal (runs twice daily)
+    # Uses pre/post hooks to stop/start pm2 during renewal to avoid port conflicts
+    (crontab -l 2>/dev/null; echo "0 */12 * * * /usr/bin/certbot renew --pre-hook '/usr/sbin/runuser -u brave -- /usr/local/bin/pm2 stop ecosystem.config.js --env production' --post-hook '/usr/sbin/runuser -u brave -- /usr/local/bin/pm2 start ecosystem.config.js --env production' --quiet >> /var/log/brave/certbot-renew.log 2>&1") | crontab -
 
     runuser -u brave -- pm2 install pm2-logrotate
     runuser -u brave -- pm2 set pm2-logrotate:max_size 10M
