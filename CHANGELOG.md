@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [14.2.1] - 2025-10-21
+
 ### Added
 
 - Added migration script 52 that adds database trigger function `client_status_live_trigger_fn` (CU-86dvfrc35).
@@ -868,7 +870,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.0...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.1...HEAD
+[14.2.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...v14.2.1
 [14.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...v14.2.0
 [14.1.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.0.0...v14.1.0
 [14.0.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v13.12.0...v14.0.0
