@@ -43,8 +43,7 @@ BEGIN
                     UPDATE clients
                     SET status = 'LIVE',
                         is_sending_alerts = TRUE,
-                        is_sending_vitals = TRUE,
-                        commissioned_at = NOW()
+                        is_sending_vitals = TRUE
                     WHERE id = (
                         SELECT client_id
                         FROM gateways
