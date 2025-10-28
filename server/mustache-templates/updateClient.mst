@@ -69,7 +69,8 @@
                             var languageValue = '{{language}}'; 
                             document.getElementById('language').innerHTML = `
                                 <option value="es_us" ${languageValue === 'es_us' ? 'selected' : ''}>Spanish</option>
-                                <option value="en" ${languageValue === 'en' ? 'selected' : ''}>English</option>`;
+                                <option value="en" ${languageValue === 'en' ? 'selected' : ''}>English</option>
+                                <option value="en_fr_bilingual" ${languageValue === 'en_fr_bilingual' ? 'selected' : ''}>English / French (bilingual)</option>`;
                             </script>
                         </select>
                     </div>
