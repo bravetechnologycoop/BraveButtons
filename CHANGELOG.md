@@ -11,6 +11,8 @@ the code was deployed.
 
 ## [Unreleased]
 
+-Added french/english bilingual to new client and update client pages (CU-86dxmpjz8).
+
 ## [14.2.1] - 2025-10-21
 
 ### Added
