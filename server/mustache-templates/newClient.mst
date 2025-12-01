@@ -61,6 +61,7 @@
                         <select class="form-control" name="language" id="languageSelector" required>
                             <option value='en'>English</option>
                             <option value='es_us'>Spanish</option>
+                            <option value='en_fr_bilingual'>English / French (bilingual)</option>
                         </select>
                     </div>
                 </div>
