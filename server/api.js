@@ -120,8 +120,17 @@ const validateCreateClientGateway = [
 ]
 
 async function handleCreateClientGateway(req, res) {
+  // verify that the client exists
+  const client = await db.getClientWithId(req.params.clientId)
+
+  if (!client) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
+
+    return
+  }
+
   const gateway = await db.createGateway(
-    req.body.gatewayId,
+    req.params.gatewayId,
     req.params.clientId,
     req.body.displayName,
     null,
@@ -130,9 +139,9 @@ async function handleCreateClientGateway(req, res) {
   )
 
   // Should the database query fail, db.createGateway should internally handle thrown errors and return either null or undefined.
-  // The status code 404 is used here as the failure was probably caused by the client not existing.
+  // The status code 400 is used here as the failure was probably caused by invalid data or a duplicate gateway ID.
   if (!gateway) {
-    res.status(404).send({ status: 'error', message: 'Not Found' })
+    res.status(400).send({ status: 'error', message: 'Bad Request' })
 
     return
   }
@@ -180,19 +189,18 @@ async function handleGetClientButton(req, res) {
 const validateGetClientButtons = Validator.param(['clientId']).notEmpty()
 
 async function handleGetClientButtons(req, res) {
-  const buttons = await db.getButtonsWithClientId(req.params.clientId)
-
-  // if the query failed and returned null, the clientId is probably wrong
-  if (!buttons) {
+  // First check if the client exists
+  const client = await db.getClientWithId(req.params.clientId)
+  
+  if (!client) {
     res.status(404).send({ status: 'error', message: 'Not Found' })
-
     return
   }
 
-  // something like this: buttons = buttons.map(button => { button.sdfs ... })
-  // (remove single field)
+  const buttons = await db.getButtonsFromClientId(req.params.clientId)
 
-  res.status(200).send({ status: 'success', data: buttons })
+  // Return the buttons (empty array if none exist for this client)
+  res.status(200).send({ status: 'success', data: buttons || [] })
 }
 
 const validateGetClientSessions = Validator.param(['clientId']).notEmpty()
@@ -205,7 +213,7 @@ async function handleGetClientSessions(req, res) {
 const validateGetClientGateway = Validator.param(['clientId', 'gatewayId']).notEmpty()
 
 async function handleGetClientGateway(req, res) {
-  const gateway = await db.getGatewayWithId(req.params.gatewayId)
+  const gateway = await db.getGatewayWithGatewayId(req.params.gatewayId)
 
   // check that this gateway exists and is owned by the specified client
   // NOTE: if clientId is invalid, then the query will fail and return null
@@ -221,30 +229,33 @@ async function handleGetClientGateway(req, res) {
 const validateGetClientGateways = Validator.param(['clientId']).notEmpty()
 
 async function handleGetClientGateways(req, res) {
-  const gateways = await db.getGatewaysWithClientId(req.params.clientId)
-
-  // if the query failed and returned null, the clientId is probably wrong
-  if (!gateways) {
+  // First check if the client exists
+  const client = await db.getClientWithId(req.params.clientId)
+  
+  if (!client) {
     res.status(404).send({ status: 'error', message: 'Not Found' })
-
     return
   }
 
-  res.status(200).send({ status: 'success', data: gateways })
+  const gateways = await db.getGatewaysFromClientId(req.params.clientId)
+
+  // Return the gateways (empty array if none exist for this client)
+  res.status(200).send({ status: 'success', data: gateways || [] })
 }
 
 const validateGetClientVitals = Validator.param(['clientId']).notEmpty()
 
 async function handleGetClientVitals(req, res) {
-  const buttonVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
-  const gatewayVitals = await db.getRecentGatewaysVitalsWithClientId(req.params.clientId)
-
-  // if either of the query failed and returned null, the clientId is probably wrong
-  if (!buttonVitals || !gatewayVitals) {
+  // First check if the client exists
+  const client = await db.getClientWithId(req.params.clientId)
+  
+  if (!client) {
     res.status(404).send({ status: 'error', message: 'Not Found' })
-
     return
   }
+
+  const buttonVitals = await db.getRecentButtonsVitalsWithClientId(req.params.clientId)
+  const gatewayVitals = await db.getRecentGatewaysVitalsWithClientId(req.params.clientId)
 
   res.status(200).send({ status: 'success', data: { buttonVitals, gatewayVitals } })
 }
@@ -256,6 +267,8 @@ const validateUpdateClient = [
   Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'incidentCategories']).isArray({ min: 1 }),
   Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
   Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
+  Validator.body(['status']).optional().trim().isString(),
+  Validator.body(['firstDeviceLiveAt']).optional(),
 ]
 
 async function handleUpdateClient(req, res) {
@@ -282,6 +295,8 @@ async function handleUpdateClient(req, res) {
     req.body.isSendingAlerts,
     req.body.isSendingVitals,
     req.body.language,
+    req.body.status || client.status,
+    req.body.firstDeviceLiveAt || client.firstDeviceLiveAt,
     req.params.clientId,
   )
 
@@ -304,7 +319,7 @@ const validateUpdateClientButton = [
 ]
 
 async function handleUpdateClientButton(req, res) {
-  const button = await db.getButtonWithId(req.params.buttonId)
+  const button = await db.getButtonWithDeviceId(req.params.buttonId)
 
   // check that this button exists and is owned by the specified client
   // NOTE: if clientId is invalid, then the query will fail and return null
@@ -316,13 +331,13 @@ async function handleUpdateClientButton(req, res) {
 
   // attempt to update the button
   const updatedButton = await db.updateButton(
-    req.body.clientId,
     req.body.displayName,
-    req.body.phoneNumber,
     req.body.buttonSerialNumber,
+    req.body.phoneNumber,
     req.body.isDisplayed,
     req.body.isSendingAlerts,
     req.body.isSendingVitals,
+    req.body.clientId,
     req.params.buttonId,
   )
 
@@ -345,7 +360,7 @@ const validateUpdateClientGateway = [
 ]
 
 async function handleUpdateClientGateway(req, res) {
-  const gateway = await db.getGatewayWithId(req.params.gatewayId)
+  const gateway = await db.getGatewayWithGatewayId(req.params.gatewayId)
 
   // check that this gateway exists and is owned by the specified client
   // NOTE: if clientId is invalid, then the query will fail and return null
@@ -358,10 +373,10 @@ async function handleUpdateClientGateway(req, res) {
   // attempt to update the gateway
   const updatedGateway = await db.updateGateway(
     req.body.clientId,
-    req.body.displayName,
-    req.body.isDisplayed,
     req.body.isSendingVitals,
+    req.body.isDisplayed,
     req.params.gatewayId,
+    req.body.displayName,
   )
 
   // something bad happened and the gateway wasn't updated; blame it on the request

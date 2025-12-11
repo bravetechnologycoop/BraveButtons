@@ -281,6 +281,33 @@ async function getGateways(pgClient) {
   return []
 }
 
+async function getGatewaysFromClientId(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getGatewaysFromClientId',
+      `
+      SELECT *
+      FROM gateways
+      WHERE client_id = $1
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return []
+    }
+
+    const allClients = await getClients(pgClient)
+    return results.rows.map(r => createGatewayFromRow(r, allClients))
+  } catch (err) {
+    helpers.logError(`Error running the getGatewaysFromClientId query: ${err.toString()}`)
+  }
+
+  return []
+}
+
 // Retrieves the gateway corresponding to a given gatewway ID
 async function getGatewayWithGatewayId(gatewayId, pgClient) {
   try {
@@ -834,9 +861,8 @@ async function getButtonsFromClientId(clientId, pgClient) {
       pgClient,
     )
 
-    if (results === undefined) {
-      helpers.logError(`Error: No button with client ID ${clientId} key exists`)
-      return null
+    if (results === undefined || results.rows.length === 0) {
+      return []
     }
 
     const allClients = await getClients(pgClient)
@@ -844,6 +870,8 @@ async function getButtonsFromClientId(clientId, pgClient) {
   } catch (err) {
     helpers.logError(`Error running the getButtonsFromClientId query: ${err.toString()}`)
   }
+
+  return []
 }
 
 async function createButtonFromBrowserForm(locationid, displayName, serialNumber, phoneNumber, clientId, pgClient) {
@@ -1740,16 +1768,16 @@ async function createDevice(
   return null
 }
 
-async function createGateway(clientId, id, displayName, isDisplayed, isSendingVitals, pgClient) {
+async function createGateway(id, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals, pgClient) {
   try {
     const results = await helpers.runQuery(
       'createGateway',
       `
-      INSERT INTO gateways (id, client_id, display_name, is_displayed, is_sending_vitals)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO gateways (id, client_id, display_name, sent_vitals_alert_at, is_displayed, is_sending_vitals)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
       `,
-      [id, clientId, displayName, isDisplayed, isSendingVitals],
+      [id, clientId, displayName, sentVitalsAlertAt, isDisplayed, isSendingVitals],
       pool,
       pgClient,
     )
@@ -1782,8 +1810,9 @@ async function getDeviceWithIds(deviceId, clientId, pgClient) {
     )
 
     if (results.rows.length > 0) {
-      const client = await getClientWithId(clientId, pgClient)
-      return createDeviceFromRow(results.rows[0], [client])
+      const device = results.rows[0]
+      const client = await getClientWithId(device.client_id, pgClient)
+      return createDeviceFromRow(device, [client])
     }
   } catch (err) {
     helpers.logError(`Error running the getDeviceWithSerialNumber query: ${err.toString()}`)
@@ -1853,6 +1882,7 @@ module.exports = {
   getButtonsFromClientId,
   getDisconnectedGatewaysWithClient,
   getGateways,
+  getGatewaysFromClientId,
   getGatewayWithGatewayId,
   getMostRecentSessionWithPhoneNumbers,
   getHistoryOfSessions,

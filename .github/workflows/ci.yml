@@ -36,7 +36,7 @@ jobs:
       # TWILIO_TOKEN_TEST (from https://www.twilio.com/console/voice/project/test-credentials)
       TWILIO_TOKEN_TEST: ${{ secrets.TWILIO_TOKEN_TEST }}
       PGVER: 12
-      PGPORT: 5433
+      PGPORT: 5432
       SESSION_RESET_TIMEOUT_TEST: 7200000
       RADIO_BRIDGE_API_KEY_PRIMARY_TEST: primaryKey
       RADIO_BRIDGE_API_KEY_SECONDARY_TEST: secondaryKey

@@ -43,7 +43,7 @@ function configureRoutes(app) {
   app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, api.authorize, api.handleUpdateClientButton)
   app.get('/api/clients/:clientId/sessions', api.validateGetClientSessions, api.authorize, api.handleGetClientSessions)
   app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, api.authorize, api.handleGetClientGateways)
-  app.post('/api/clients/:clientId/gateways', api.validateCreateClientGateway, api.authorize, api.handleCreateClientGateway)
+  app.post('/api/clients/:clientId/gateways/:gatewayId', api.validateCreateClientGateway, api.authorize, api.handleCreateClientGateway)
   app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, api.authorize, api.handleGetClientGateway)
   app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, api.authorize, api.handleUpdateClientGateway)
   app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, api.authorize, api.handleGetClientVitals)
