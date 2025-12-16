@@ -874,6 +874,35 @@ async function getButtonsFromClientId(clientId, pgClient) {
   return []
 }
 
+async function getButtonsForApi(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getButtonsForApi',
+      `
+      SELECT *
+      FROM devices
+      WHERE client_id = $1
+      AND device_type = $2
+      ORDER BY display_name
+      `,
+      [clientId, DEVICE_TYPE.BUTTON],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return []
+    }
+
+    const client = await getClientWithId(clientId, pgClient)
+    return results.rows.map(r => createDeviceFromRow(r, [client]))
+  } catch (err) {
+    helpers.logError(`Error running the getButtonsForApi query: ${err.toString()}`)
+  }
+
+  return []
+}
+
 async function createButtonFromBrowserForm(locationid, displayName, serialNumber, phoneNumber, clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1880,6 +1909,7 @@ module.exports = {
   getButtonWithLocationid,
   getButtonWithDeviceId,
   getButtonsFromClientId,
+  getButtonsForApi,
   getDisconnectedGatewaysWithClient,
   getGateways,
   getGatewaysFromClientId,
