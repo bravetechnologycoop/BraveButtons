@@ -874,6 +874,30 @@ async function getButtonsFromClientId(clientId, pgClient) {
   return []
 }
 
+async function getClientWithId(id, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getClientWithId',
+      `
+      SELECT *
+      FROM clients
+      WHERE id = $1
+      `,
+      [id],
+      pool,
+      pgClient,
+    )
+
+    if (results.rows.length > 0) {
+      return createClientFromRow(results.rows[0])
+    }
+  } catch (err) {
+    helpers.logError(`Error running the getClientWithId query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getButtonsForApi(clientId, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1075,30 +1099,6 @@ async function clearClients(pgClient) {
   } catch (err) {
     helpers.logError(`Error running the clearClients query: ${err.toString()}`)
   }
-}
-
-async function getClientWithId(id, pgClient) {
-  try {
-    const results = await helpers.runQuery(
-      'getClientWithId',
-      `
-      SELECT *
-      FROM clients
-      WHERE id = $1
-      `,
-      [id],
-      pool,
-      pgClient,
-    )
-
-    if (results.rows.length > 0) {
-      return createClientFromRow(results.rows[0])
-    }
-  } catch (err) {
-    helpers.logError(`Error running the getClientWithId query: ${err.toString()}`)
-  }
-
-  return null
 }
 
 async function getClientExtensionWithClientId(clientId, pgClient) {
