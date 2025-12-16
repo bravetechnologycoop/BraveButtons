@@ -353,11 +353,7 @@ describe('api.js integration tests', () => {
         isSendingVitals: false,
       }
 
-      const res = await chai
-        .request(server)
-        .post(`/api/clients/${this.client.id}/buttons`)
-        .set('authorization', braveApiKey)
-        .send(buttonData)
+      const res = await chai.request(server).post(`/api/clients/${this.client.id}/buttons`).set('authorization', braveApiKey).send(buttonData)
 
       expect(res).to.have.status(201)
       expect(res.body.status).to.equal('success')
@@ -381,7 +377,11 @@ describe('api.js integration tests', () => {
   describe('for PUT /api/clients/:clientId/buttons/:buttonId', () => {
     beforeEach(async () => {
       this.client = await factories.clientDBFactory(db)
-      this.button = await factories.buttonDBFactory(db, { clientId: this.client.id, displayName: 'Original Button', serialNumber: 'SN_BTN_UPDATE_001' })
+      this.button = await factories.buttonDBFactory(db, {
+        clientId: this.client.id,
+        displayName: 'Original Button',
+        serialNumber: 'SN_BTN_UPDATE_001',
+      })
     })
 
     it('should update a button with valid data (200)', async () => {
@@ -452,8 +452,16 @@ describe('api.js integration tests', () => {
   describe('for GET /api/clients/:clientId/gateways', () => {
     beforeEach(async () => {
       this.client = await factories.clientDBFactory(db)
-      this.gateway1 = await factories.gatewayDBFactory(db, { clientId: this.client.id, displayName: 'Gateway 1', id: '11111111-1111-1111-1111-111111111111' })
-      this.gateway2 = await factories.gatewayDBFactory(db, { clientId: this.client.id, displayName: 'Gateway 2', id: '22222222-2222-2222-2222-222222222222' })
+      this.gateway1 = await factories.gatewayDBFactory(db, {
+        clientId: this.client.id,
+        displayName: 'Gateway 1',
+        id: '11111111-1111-1111-1111-111111111111',
+      })
+      this.gateway2 = await factories.gatewayDBFactory(db, {
+        clientId: this.client.id,
+        displayName: 'Gateway 2',
+        id: '22222222-2222-2222-2222-222222222222',
+      })
     })
 
     it('should return all gateways for a client (200)', async () => {
@@ -542,7 +550,11 @@ describe('api.js integration tests', () => {
   describe('for PUT /api/clients/:clientId/gateways/:gatewayId', () => {
     beforeEach(async () => {
       this.client = await factories.clientDBFactory(db)
-      this.gateway = await factories.gatewayDBFactory(db, { clientId: this.client.id, displayName: 'Original Gateway', id: '44444444-4444-4444-4444-444444444444' })
+      this.gateway = await factories.gatewayDBFactory(db, {
+        clientId: this.client.id,
+        displayName: 'Original Gateway',
+        id: '44444444-4444-4444-4444-444444444444',
+      })
     })
 
     it('should update a gateway with valid data (200)', async () => {

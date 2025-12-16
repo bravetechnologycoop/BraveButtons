@@ -191,7 +191,7 @@ const validateGetClientButtons = Validator.param(['clientId']).notEmpty()
 async function handleGetClientButtons(req, res) {
   // First check if the client exists
   const client = await db.getClientWithId(req.params.clientId)
-  
+
   if (!client) {
     res.status(404).send({ status: 'error', message: 'Not Found' })
     return
@@ -231,7 +231,7 @@ const validateGetClientGateways = Validator.param(['clientId']).notEmpty()
 async function handleGetClientGateways(req, res) {
   // First check if the client exists
   const client = await db.getClientWithId(req.params.clientId)
-  
+
   if (!client) {
     res.status(404).send({ status: 'error', message: 'Not Found' })
     return
@@ -248,7 +248,7 @@ const validateGetClientVitals = Validator.param(['clientId']).notEmpty()
 async function handleGetClientVitals(req, res) {
   // First check if the client exists
   const client = await db.getClientWithId(req.params.clientId)
-  
+
   if (!client) {
     res.status(404).send({ status: 'error', message: 'Not Found' })
     return
