@@ -1,8 +1,6 @@
 /* Conventions for this API:
- *  - GET method for read actions
- *  - POST method for create actions (think POSTing a new item to a directory)
- *  - PUT method for update actions (think PUTting an item over an existing item)
- *  - DELETE method for delete actions
+ *  - READ-ONLY API: Only GET and POST methods are supported
+ *  - GET for single/paginated reads, POST for bulk reads (no create/update/delete operations)
  *
  *  - Must authorize using the Authorization header in all requests
  *    - The value of the Authorization header must be the primary/secondary Brave API key
@@ -12,6 +10,14 @@
  *    - data:     the desired JSON object, if there is one
  *    - message:  a human-readable explanation of the error, if there was one and this is appropriate. Be careful
  *                to not include anything that will give an attacker extra information
+ *
+ *  - Pagination support:
+ *    - Query parameters: page (default: 1, min: 1) and limit (default: 50, min: 1, max: 100)
+ *    - Response includes pagination metadata: { page, limit, total, totalPages }
+ *
+ *  - Bulk endpoints:
+ *    - POST to same path as GET with an array of IDs to retrieve multiple resources efficiently
+ *    - Example: POST /api/clients with body { ids: ["id1", "id2", "id3"] }
  */
 
 // Third-party dependencies
@@ -52,102 +58,28 @@ async function authorize(req, res, next) {
   }
 }
 
-const validateCreateClient = [
-  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
-  Validator.body(['heartbeatPhoneNumbers']).isArray({ min: 0 }),
-  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'incidentCategories']).isArray({ min: 1 }),
-  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
-]
+// Pagination helper function
+function getPaginationParams(req) {
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1)
+  const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50))
+  const offset = (page - 1) * limit
 
-async function handleCreateClient(req, res) {
-  const client = await db.createClient(
-    req.body.displayName,
-    req.body.responderPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
-    req.body.reminderTimeout,
-    req.body.fallbackPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
-    req.body.fromPhoneNumber,
-    req.body.fallbackTimeout,
-    req.body.heartbeatPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
-    req.body.incidentCategories,
-    req.body.isDisplayed,
-    req.body.isSendingAlerts,
-    req.body.isSendingVitals,
-    req.body.language,
-  )
-
-  if (!client) {
-    // will result in a status 500
-    throw new Error('Failed to create client')
-  }
-
-  res.set('Location', `${req.path}/${client.id}`) // location of newly created client
-  res.status(201).send({ status: 'success', data: client })
+  return { page, limit, offset }
 }
 
-const validateCreateClientButton = [
-  Validator.param(['clientId']).notEmpty(),
-  Validator.body(['displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
-]
+function createPaginatedResponse(data, total, page, limit) {
+  const totalPages = Math.ceil(total / limit)
 
-async function handleCreateClientButton(req, res) {
-  const button = await db.createButton(
-    req.params.clientId,
-    req.body.displayName,
-    req.body.phoneNumber,
-    req.body.buttonSerialNumber,
-    req.body.isDisplayed,
-    req.body.isSendingAlerts,
-    req.body.isSendingVitals,
-    null,
-    null,
-  )
-
-  // Couldn't create button; Internal server error.
-  if (!button) {
-    throw new Error(`Couldn't create button for client ${req.params.clientId}.`)
+  return {
+    status: 'success',
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+    },
   }
-
-  res.set('Location', `${req.path}/${button.id}`) // location of newly created button
-  res.status(201).send({ status: 'success', data: button })
-}
-
-const validateCreateClientGateway = [
-  Validator.param(['gatewayId', 'clientId']).notEmpty(),
-  Validator.body(['displayName']).trim().isString().notEmpty(),
-  Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
-]
-
-async function handleCreateClientGateway(req, res) {
-  // verify that the client exists
-  const client = await db.getClientWithId(req.params.clientId)
-
-  if (!client) {
-    res.status(404).send({ status: 'error', message: 'Not Found' })
-
-    return
-  }
-
-  const gateway = await db.createGateway(
-    req.params.gatewayId,
-    req.params.clientId,
-    req.body.displayName,
-    null,
-    req.body.isDisplayed,
-    req.body.isSendingVitals,
-  )
-
-  // Should the database query fail, db.createGateway should internally handle thrown errors and return either null or undefined.
-  // The status code 400 is used here as the failure was probably caused by invalid data or a duplicate gateway ID.
-  if (!gateway) {
-    res.status(400).send({ status: 'error', message: 'Bad Request' })
-
-    return
-  }
-
-  res.set('Location', `${req.path}/${gateway.id}`) // location of newly created gateway
-  res.status(201).send({ status: 'success', data: gateway })
 }
 
 const validateGetClient = Validator.param(['clientId']).notEmpty()
@@ -165,8 +97,30 @@ async function handleGetClient(req, res) {
   res.status(200).send({ status: 'success', data: client })
 }
 
+const validateGetClients = []
+
 async function handleGetClients(req, res) {
-  const clients = await db.getClients()
+  const { page, limit, offset } = getPaginationParams(req)
+
+  const allClients = await db.getClients()
+  const total = allClients.length
+  const paginatedClients = allClients.slice(offset, offset + limit)
+
+  res.status(200).send(createPaginatedResponse(paginatedClients, total, page, limit))
+}
+
+const validateBulkGetClients = Validator.body(['ids']).isArray({ min: 1, max: 100 })
+
+async function handleBulkGetClients(req, res) {
+  const clientIds = req.body.ids
+  const clients = []
+
+  for (const clientId of clientIds) {
+    const client = await db.getClientWithId(clientId)
+    if (client) {
+      clients.push(client)
+    }
+  }
 
   res.status(200).send({ status: 'success', data: clients })
 }
@@ -186,7 +140,7 @@ async function handleGetClientButton(req, res) {
   res.status(200).send({ status: 'success', data: button })
 }
 
-const validateGetClientButtons = Validator.param(['clientId']).notEmpty()
+const validateGetClientButtons = [Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientButtons(req, res) {
   // First check if the client exists
@@ -197,17 +151,51 @@ async function handleGetClientButtons(req, res) {
     return
   }
 
-  const buttons = await db.getButtonsForApi(req.params.clientId)
+  const { page, limit, offset } = getPaginationParams(req)
 
-  // Return the buttons (empty array if none exist for this client)
-  res.status(200).send({ status: 'success', data: buttons || [] })
+  const allButtons = await db.getButtonsForApi(req.params.clientId)
+  const total = allButtons ? allButtons.length : 0
+  const paginatedButtons = allButtons ? allButtons.slice(offset, offset + limit) : []
+
+  res.status(200).send(createPaginatedResponse(paginatedButtons, total, page, limit))
 }
 
-const validateGetClientSessions = Validator.param(['clientId']).notEmpty()
+const validateBulkGetClientButtons = [Validator.param(['clientId']).notEmpty(), Validator.body(['ids']).isArray({ min: 1, max: 100 })]
+
+async function handleBulkGetClientButtons(req, res) {
+  const client = await db.getClientWithId(req.params.clientId)
+
+  if (!client) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
+    return
+  }
+
+  const buttonIds = req.body.ids
+  const buttons = []
+
+  for (const buttonId of buttonIds) {
+    const button = await db.getDeviceWithIds(buttonId, req.params.clientId)
+    if (button && button.client.id === req.params.clientId) {
+      buttons.push(button)
+    }
+  }
+
+  res.status(200).send({ status: 'success', data: buttons })
+}
+
+const validateGetClientSessions = [Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientSessions(req, res) {
-  // TODO
-  res.status(200).send({ status: 'success', data: [] })
+  const client = await db.getClientWithId(req.params.clientId)
+
+  if (!client) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
+    return
+  }
+
+  // TODO: implement sessions retrieval with pagination
+  const { page, limit } = getPaginationParams(req)
+  res.status(200).send(createPaginatedResponse([], 0, page, limit))
 }
 
 const validateGetClientGateway = Validator.param(['clientId', 'gatewayId']).notEmpty()
@@ -226,7 +214,7 @@ async function handleGetClientGateway(req, res) {
   res.status(200).send({ status: 'success', data: gateway })
 }
 
-const validateGetClientGateways = Validator.param(['clientId']).notEmpty()
+const validateGetClientGateways = [Validator.param(['clientId']).notEmpty()]
 
 async function handleGetClientGateways(req, res) {
   // First check if the client exists
@@ -237,10 +225,36 @@ async function handleGetClientGateways(req, res) {
     return
   }
 
-  const gateways = await db.getGatewaysFromClientId(req.params.clientId)
+  const { page, limit, offset } = getPaginationParams(req)
 
-  // Return the gateways (empty array if none exist for this client)
-  res.status(200).send({ status: 'success', data: gateways || [] })
+  const allGateways = await db.getGatewaysFromClientId(req.params.clientId)
+  const total = allGateways ? allGateways.length : 0
+  const paginatedGateways = allGateways ? allGateways.slice(offset, offset + limit) : []
+
+  res.status(200).send(createPaginatedResponse(paginatedGateways, total, page, limit))
+}
+
+const validateBulkGetClientGateways = [Validator.param(['clientId']).notEmpty(), Validator.body(['ids']).isArray({ min: 1, max: 100 })]
+
+async function handleBulkGetClientGateways(req, res) {
+  const client = await db.getClientWithId(req.params.clientId)
+
+  if (!client) {
+    res.status(404).send({ status: 'error', message: 'Not Found' })
+    return
+  }
+
+  const gatewayIds = req.body.ids
+  const gateways = []
+
+  for (const gatewayId of gatewayIds) {
+    const gateway = await db.getGatewayWithGatewayId(gatewayId)
+    if (gateway && gateway.client.id === req.params.clientId) {
+      gateways.push(gateway)
+    }
+  }
+
+  res.status(200).send({ status: 'success', data: gateways })
 }
 
 const validateGetClientVitals = Validator.param(['clientId']).notEmpty()
@@ -260,140 +274,11 @@ async function handleGetClientVitals(req, res) {
   res.status(200).send({ status: 'success', data: { buttonVitals, gatewayVitals } })
 }
 
-const validateUpdateClient = [
-  Validator.param(['clientId']).notEmpty(),
-  Validator.body(['displayName', 'fromPhoneNumber', 'language']).trim().isString().notEmpty(),
-  Validator.body(['heartbeatPhoneNumbers']).isArray({ min: 0 }),
-  Validator.body(['responderPhoneNumbers', 'fallbackPhoneNumbers', 'incidentCategories']).isArray({ min: 1 }),
-  Validator.body(['reminderTimeout', 'fallbackTimeout']).trim().isInt({ min: 0 }),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
-  Validator.body(['status']).optional().trim().isString(),
-  Validator.body(['firstDeviceLiveAt']).optional(),
-]
-
-async function handleUpdateClient(req, res) {
-  const client = await db.getClientWithId(req.params.clientId)
-
-  // check that the client exists
-  if (!client) {
-    res.status(404).send({ status: 'error', message: 'Not Found' })
-
-    return
-  }
-
-  // attempt to update the client
-  const updatedClient = await db.updateClient(
-    req.body.displayName,
-    req.body.fromPhoneNumber,
-    req.body.responderPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
-    req.body.reminderTimeout,
-    req.body.fallbackPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
-    req.body.fallbackTimeout,
-    req.body.heartbeatPhoneNumbers.map(phoneNumber => phoneNumber.trim()),
-    req.body.incidentCategories,
-    req.body.isDisplayed,
-    req.body.isSendingAlerts,
-    req.body.isSendingVitals,
-    req.body.language,
-    req.body.status || client.status,
-    req.body.firstDeviceLiveAt || client.firstDeviceLiveAt,
-    req.params.clientId,
-  )
-
-  // something bad happened and the client wasn't updated; blame it on the request
-  if (!updatedClient) {
-    res.status(400).send({ status: 'error', message: 'Bad Request' })
-
-    return
-  }
-
-  res.status(200).send({ status: 'success', data: updatedClient })
-}
-
-// NOTE: clientId is submitted in the param and body of the request.
-// This is to let a button be moved from one client to another; think of the param clientId as 'from' and the body clientId as 'to'.
-const validateUpdateClientButton = [
-  Validator.param(['clientId', 'buttonId']).notEmpty(),
-  Validator.body(['clientId', 'displayName', 'phoneNumber', 'buttonSerialNumber']).trim().isString().notEmpty(),
-  Validator.body(['isDisplayed', 'isSendingAlerts', 'isSendingVitals']).trim().isBoolean(),
-]
-
-async function handleUpdateClientButton(req, res) {
-  const button = await db.getButtonWithDeviceId(req.params.buttonId)
-
-  // check that this button exists and is owned by the specified client
-  // NOTE: if clientId is invalid, then the query will fail and return null
-  if (!button || button.client.id !== req.params.clientId) {
-    res.status(404).send({ status: 'error', message: 'Not Found' })
-
-    return
-  }
-
-  // attempt to update the button
-  const updatedButton = await db.updateButton(
-    req.body.displayName,
-    req.body.buttonSerialNumber,
-    req.body.phoneNumber,
-    req.body.isDisplayed,
-    req.body.isSendingAlerts,
-    req.body.isSendingVitals,
-    req.body.clientId,
-    req.params.buttonId,
-  )
-
-  // something bad happened and the button wasn't updated; blame it on the request
-  if (!updatedButton) {
-    res.status(400).send({ status: 'error', message: 'Bad Request' })
-
-    return
-  }
-
-  res.status(200).send({ status: 'success', data: updatedButton })
-}
-
-// NOTE: clientId is submitted in the param and body of the request.
-// This is to let a gateway be moved from one client to another; think of the param clientId as 'from' and the body clientId as 'to'.
-const validateUpdateClientGateway = [
-  Validator.param(['clientId', 'gatewayId']).notEmpty(),
-  Validator.body(['clientId', 'displayName']).trim().isString().notEmpty(),
-  Validator.body(['isDisplayed', 'isSendingVitals']).trim().isBoolean(),
-]
-
-async function handleUpdateClientGateway(req, res) {
-  const gateway = await db.getGatewayWithGatewayId(req.params.gatewayId)
-
-  // check that this gateway exists and is owned by the specified client
-  // NOTE: if clientId is invalid, then the query will fail and return null
-  if (!gateway || gateway.client.id !== req.params.clientId) {
-    res.status(404).send({ status: 'error', message: 'Not Found' })
-
-    return
-  }
-
-  // attempt to update the gateway
-  const updatedGateway = await db.updateGateway(
-    req.body.clientId,
-    req.body.isSendingVitals,
-    req.body.isDisplayed,
-    req.params.gatewayId,
-    req.body.displayName,
-  )
-
-  // something bad happened and the gateway wasn't updated; blame it on the request
-  if (!updatedGateway) {
-    res.status(400).send({ status: 'error', message: 'Bad Request' })
-
-    return
-  }
-
-  res.status(200).send({ status: 'success', data: updatedGateway })
-}
-
 module.exports = {
   authorize,
-  handleCreateClient,
-  handleCreateClientButton,
-  handleCreateClientGateway,
+  handleBulkGetClientButtons,
+  handleBulkGetClientGateways,
+  handleBulkGetClients,
   handleGetClient,
   handleGetClientButton,
   handleGetClientButtons,
@@ -402,12 +287,9 @@ module.exports = {
   handleGetClientSessions,
   handleGetClientVitals,
   handleGetClients,
-  handleUpdateClient,
-  handleUpdateClientButton,
-  handleUpdateClientGateway,
-  validateCreateClient,
-  validateCreateClientButton,
-  validateCreateClientGateway,
+  validateBulkGetClientButtons,
+  validateBulkGetClientGateways,
+  validateBulkGetClients,
   validateGetClient,
   validateGetClientButton,
   validateGetClientButtons,
@@ -415,7 +297,5 @@ module.exports = {
   validateGetClientGateways,
   validateGetClientSessions,
   validateGetClientVitals,
-  validateUpdateClient,
-  validateUpdateClientButton,
-  validateUpdateClientGateway,
+  validateGetClients,
 }

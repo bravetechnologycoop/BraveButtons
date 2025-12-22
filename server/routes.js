@@ -32,20 +32,17 @@ function configureRoutes(app) {
   app.post('/buttons/:id', dashboard.validateUpdateButton, dashboard.submitUpdateButton)
   app.post('/buttons', dashboard.validateNewButton, dashboard.submitNewButton)
 
-  // to-be-used API routes
-  app.get('/api/clients', api.authorize, api.handleGetClients)
-  app.post('/api/clients', api.validateCreateClient, api.authorize, api.handleCreateClient)
+  // Read-only API routes with pagination and bulk endpoints
+  app.get('/api/clients', api.validateGetClients, api.authorize, api.handleGetClients)
+  app.post('/api/clients', api.validateBulkGetClients, api.authorize, api.handleBulkGetClients)
   app.get('/api/clients/:clientId', api.validateGetClient, api.authorize, api.handleGetClient)
-  app.put('/api/clients/:clientId', api.validateUpdateClient, api.authorize, api.handleUpdateClient)
   app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, api.authorize, api.handleGetClientButtons)
-  app.post('/api/clients/:clientId/buttons', api.validateCreateClientButton, api.authorize, api.handleCreateClientButton)
+  app.post('/api/clients/:clientId/buttons', api.validateBulkGetClientButtons, api.authorize, api.handleBulkGetClientButtons)
   app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, api.authorize, api.handleGetClientButton)
-  app.put('/api/clients/:clientId/buttons/:buttonId', api.validateUpdateClientButton, api.authorize, api.handleUpdateClientButton)
   app.get('/api/clients/:clientId/sessions', api.validateGetClientSessions, api.authorize, api.handleGetClientSessions)
   app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, api.authorize, api.handleGetClientGateways)
-  app.post('/api/clients/:clientId/gateways/:gatewayId', api.validateCreateClientGateway, api.authorize, api.handleCreateClientGateway)
+  app.post('/api/clients/:clientId/gateways', api.validateBulkGetClientGateways, api.authorize, api.handleBulkGetClientGateways)
   app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, api.authorize, api.handleGetClientGateway)
-  app.put('/api/clients/:clientId/gateways/:gatewayId', api.validateUpdateClientGateway, api.authorize, api.handleUpdateClientGateway)
   app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, api.authorize, api.handleGetClientVitals)
 
   // non-client specific vitals: are these useful?
