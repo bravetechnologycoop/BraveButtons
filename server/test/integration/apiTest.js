@@ -168,15 +168,15 @@ describe('api.js integration tests', () => {
     })
   })
 
-  describe('for GET /api/clients/:clientId/buttons', () => {
+  describe('for GET /api/clients/:clientId/devices', () => {
     beforeEach(async () => {
       this.client = await factories.clientDBFactory(db)
       this.button1 = await factories.buttonDBFactory(db, { clientId: this.client.id, displayName: 'Button 1', serialNumber: 'SN_BTN_LIST_001' })
       this.button2 = await factories.buttonDBFactory(db, { clientId: this.client.id, displayName: 'Button 2', serialNumber: 'SN_BTN_LIST_002' })
     })
 
-    it('should return all buttons for a client with pagination (200)', async () => {
-      const res = await getRequest(`/api/clients/${this.client.id}/buttons`)
+    it('should return all devices for a client with pagination (200)', async () => {
+      const res = await getRequest(`/api/clients/${this.client.id}/devices`)
 
       expect(res).to.have.status(200)
       expect(res.body.status).to.equal('success')
@@ -187,13 +187,13 @@ describe('api.js integration tests', () => {
       expect(res.body.pagination.total).to.equal(2)
     })
 
-    it('should paginate buttons correctly', async () => {
-      // Create more buttons
+    it('should paginate devices correctly', async () => {
+      // Create more devices
       for (let i = 3; i <= 15; i += 1) {
         await factories.buttonDBFactory(db, { clientId: this.client.id, displayName: `Button ${i}`, serialNumber: `SN_${i}` })
       }
 
-      const res = await getRequest(`/api/clients/${this.client.id}/buttons?page=1&limit=5`)
+      const res = await getRequest(`/api/clients/${this.client.id}/devices?page=1&limit=5`)
       expect(res).to.have.status(200)
       expect(res.body.data.length).to.equal(5)
       expect(res.body.pagination.total).to.equal(15)
@@ -201,14 +201,14 @@ describe('api.js integration tests', () => {
     })
 
     it('should return 404 for non-existent client', async () => {
-      const res = await getRequest('/api/clients/00000000-0000-0000-0000-000000000000/buttons')
+      const res = await getRequest('/api/clients/00000000-0000-0000-0000-000000000000/devices')
 
       expect(res).to.have.status(404)
       expect(res.body.status).to.equal('error')
     })
   })
 
-  describe('for POST /api/clients/:clientId/buttons', () => {
+  describe('for POST /api/clients/:clientId/devices', () => {
     beforeEach(async () => {
       this.client = await factories.clientDBFactory(db)
       this.button1 = await factories.buttonDBFactory(db, { clientId: this.client.id, serialNumber: 'SN_BULK_001' })
@@ -216,10 +216,10 @@ describe('api.js integration tests', () => {
       this.button3 = await factories.buttonDBFactory(db, { clientId: this.client.id, serialNumber: 'SN_BULK_003' })
     })
 
-    it('should return multiple buttons by IDs', async () => {
+    it('should return multiple devices by IDs', async () => {
       const res = await chai
         .request(server)
-        .post(`/api/clients/${this.client.id}/buttons`)
+        .post(`/api/clients/${this.client.id}/devices`)
         .set('authorization', braveApiKey)
         .send({ ids: [this.button1.id, this.button3.id] })
 
@@ -232,7 +232,7 @@ describe('api.js integration tests', () => {
     it('should return 404 for non-existent client', async () => {
       const res = await chai
         .request(server)
-        .post('/api/clients/00000000-0000-0000-0000-000000000000/buttons')
+        .post('/api/clients/00000000-0000-0000-0000-000000000000/devices')
         .set('authorization', braveApiKey)
         .send({ ids: [this.button1.id] })
 
@@ -241,38 +241,38 @@ describe('api.js integration tests', () => {
     })
 
     it('should return 400 for empty IDs array', async () => {
-      const res = await chai.request(server).post(`/api/clients/${this.client.id}/buttons`).set('authorization', braveApiKey).send({ ids: [] })
+      const res = await chai.request(server).post(`/api/clients/${this.client.id}/devices`).set('authorization', braveApiKey).send({ ids: [] })
 
       expect(res).to.have.status(400)
       expect(res.body.status).to.equal('error')
     })
   })
 
-  describe('for GET /api/clients/:clientId/buttons/:buttonId', () => {
+  describe('for GET /api/clients/:clientId/devices/:deviceId', () => {
     beforeEach(async () => {
       this.client = await factories.clientDBFactory(db)
       this.button = await factories.buttonDBFactory(db, { clientId: this.client.id, serialNumber: 'SN_BTN_GET_001' })
     })
 
-    it('should return the specified button (200)', async () => {
-      const res = await getRequest(`/api/clients/${this.client.id}/buttons/${this.button.id}`)
+    it('should return the specified device (200)', async () => {
+      const res = await getRequest(`/api/clients/${this.client.id}/devices/${this.button.id}`)
 
       expect(res).to.have.status(200)
       expect(res.body.status).to.equal('success')
       expect(res.body.data.id).to.equal(this.button.id)
     })
 
-    it('should return 404 for non-existent button', async () => {
-      const res = await getRequest(`/api/clients/${this.client.id}/buttons/00000000-0000-0000-0000-000000000000`)
+    it('should return 404 for non-existent device', async () => {
+      const res = await getRequest(`/api/clients/${this.client.id}/devices/00000000-0000-0000-0000-000000000000`)
 
       expect(res).to.have.status(404)
       expect(res.body.status).to.equal('error')
     })
 
-    it('should return 404 for button belonging to different client', async () => {
+    it('should return 404 for device belonging to different client', async () => {
       const otherClient = await factories.clientDBFactory(db)
 
-      const res = await getRequest(`/api/clients/${otherClient.id}/buttons/${this.button.id}`)
+      const res = await getRequest(`/api/clients/${otherClient.id}/devices/${this.button.id}`)
 
       expect(res).to.have.status(404)
       expect(res.body.status).to.equal('error')
@@ -409,7 +409,7 @@ describe('api.js integration tests', () => {
 
       expect(res).to.have.status(200)
       expect(res.body.status).to.equal('success')
-      expect(res.body.data).to.have.property('buttonVitals')
+      expect(res.body.data).to.have.property('deviceVitals')
       expect(res.body.data).to.have.property('gatewayVitals')
     })
 
@@ -418,6 +418,246 @@ describe('api.js integration tests', () => {
 
       expect(res).to.have.status(404)
       expect(res.body.status).to.equal('error')
+    })
+  })
+
+  describe('for POST /api/clients/:clientId/devices/:deviceId/settings', () => {
+    beforeEach(async () => {
+      this.client = await factories.clientDBFactory(db)
+      this.otherClient = await factories.clientDBFactory(db, { displayName: 'Other Client' })
+      this.device = await factories.buttonDBFactory(db, {
+        clientId: this.client.id,
+        serialNumber: 'SN_SETTINGS_001',
+        isSendingAlerts: true,
+        isSendingVitals: false,
+      })
+      this.otherDevice = await factories.buttonDBFactory(db, {
+        clientId: this.otherClient.id,
+        serialNumber: 'SN_SETTINGS_002',
+        isSendingAlerts: true,
+        isSendingVitals: true,
+      })
+    })
+
+    it('should update device sending settings successfully (200)', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: false,
+          is_sending_vitals: true,
+        })
+
+      expect(res).to.have.status(200)
+      expect(res.body.status).to.equal('success')
+      expect(res.body.data).to.have.property('isSendingAlerts', false)
+      expect(res.body.data).to.have.property('isSendingVitals', true)
+      expect(res.body.data.id).to.equal(this.device.id)
+    })
+
+    it('should update both settings to false (200)', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: false,
+          is_sending_vitals: false,
+        })
+
+      expect(res).to.have.status(200)
+      expect(res.body.data.isSendingAlerts).to.equal(false)
+      expect(res.body.data.isSendingVitals).to.equal(false)
+    })
+
+    it('should update both settings to true (200)', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: true,
+        })
+
+      expect(res).to.have.status(200)
+      expect(res.body.data.isSendingAlerts).to.equal(true)
+      expect(res.body.data.isSendingVitals).to.equal(true)
+    })
+
+    it('should return 404 for non-existent client', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/00000000-0000-0000-0000-000000000000/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: false,
+        })
+
+      expect(res).to.have.status(404)
+      expect(res.body.status).to.equal('error')
+      expect(res.body.message).to.equal('Not Found')
+    })
+
+    it('should return 404 for non-existent device', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/00000000-0000-0000-0000-000000000000/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: false,
+        })
+
+      expect(res).to.have.status(404)
+      expect(res.body.status).to.equal('error')
+      expect(res.body.message).to.equal('Not Found')
+    })
+
+    it('should return 404 when trying to update a device that belongs to a different client', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.otherDevice.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: false,
+          is_sending_vitals: false,
+        })
+
+      expect(res).to.have.status(404)
+      expect(res.body.status).to.equal('error')
+      expect(res.body.message).to.equal('Not Found')
+
+      // Verify the other client's device was not modified
+      const otherDeviceCheck = await db.getButtonWithDeviceId(this.otherDevice.id)
+      expect(otherDeviceCheck.isSendingAlerts).to.equal(true)
+      expect(otherDeviceCheck.isSendingVitals).to.equal(true)
+    })
+
+    it('should return 400 for invalid is_sending_alerts type', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: 123,
+          is_sending_vitals: true,
+        })
+
+      expect(res).to.have.status(400)
+      expect(res.body.status).to.equal('error')
+      expect(helpers.logError).to.be.called
+    })
+
+    it('should return 400 for invalid is_sending_vitals type', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: null,
+        })
+
+      expect(res).to.have.status(400)
+      expect(res.body.status).to.equal('error')
+      expect(helpers.logError).to.be.called
+    })
+
+    it('should return 400 for missing is_sending_alerts', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_vitals: true,
+        })
+
+      expect(res).to.have.status(400)
+      expect(res.body.status).to.equal('error')
+    })
+
+    it('should return 400 for missing is_sending_vitals', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+        })
+
+      expect(res).to.have.status(400)
+      expect(res.body.status).to.equal('error')
+    })
+
+    it('should reject unauthorized requests', async () => {
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', 'invalid-key')
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: false,
+        })
+
+      expect(res).to.have.status(401)
+      expect(res.body.status).to.equal('error')
+    })
+
+    it('should prevent SQL injection in deviceId parameter', async () => {
+      const maliciousId = "'; DROP TABLE devices; --"
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${maliciousId}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: false,
+        })
+
+      // Should return 404 since the malicious string won't match any valid UUID
+      expect(res).to.have.status(404)
+      expect(res.body.status).to.equal('error')
+
+      // Verify the devices table still exists by making a valid request
+      const validRes = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: false,
+        })
+      expect(validRes).to.have.status(200)
+    })
+
+    it('should prevent SQL injection in clientId parameter', async () => {
+      const maliciousId = "'; DROP TABLE clients; --"
+      const res = await chai
+        .request(server)
+        .post(`/api/clients/${maliciousId}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: false,
+        })
+
+      // Should return 404 since the malicious string won't match any valid UUID
+      expect(res).to.have.status(404)
+      expect(res.body.status).to.equal('error')
+
+      // Verify the clients table still exists by making a valid request
+      const validRes = await chai
+        .request(server)
+        .post(`/api/clients/${this.client.id}/devices/${this.device.id}/settings`)
+        .set('authorization', braveApiKey)
+        .send({
+          is_sending_alerts: true,
+          is_sending_vitals: false,
+        })
+      expect(validRes).to.have.status(200)
     })
   })
 })

@@ -476,6 +476,160 @@ async function getRecentButtonsSessionsWithClientId(clientId, pgClient) {
   return []
 }
 
+async function getSessionsWithClientIdAndDateRange(clientId, startDate, endDate, limit, offset, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getSessionsWithClientIdAndDateRange',
+      `
+      SELECT s.*
+      FROM sessions AS s
+      LEFT JOIN devices AS b on s.device_id = b.id
+      WHERE b.device_type = $1
+      AND b.client_id = $2
+      AND s.created_at >= $3
+      AND s.created_at <= $4
+      ORDER BY s.created_at DESC
+      LIMIT $5 OFFSET $6
+      `,
+      [DEVICE_TYPE.BUTTON, clientId, startDate, endDate, limit, offset],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      const allButtons = await getButtons(pgClient)
+      return results.rows.map(r => createSessionFromRow(r, allButtons))
+    }
+  } catch (err) {
+    helpers.logError(`Error running the getSessionsWithClientIdAndDateRange query: ${err.toString()}`)
+  }
+
+  return []
+}
+
+async function getSessionsCountWithClientIdAndDateRange(clientId, startDate, endDate, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getSessionsCountWithClientIdAndDateRange',
+      `
+      SELECT COUNT(*) as count
+      FROM sessions AS s
+      LEFT JOIN devices AS b on s.device_id = b.id
+      WHERE b.device_type = $1
+      AND b.client_id = $2
+      AND s.created_at >= $3
+      AND s.created_at <= $4
+      `,
+      [DEVICE_TYPE.BUTTON, clientId, startDate, endDate],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return parseInt(results.rows[0].count, 10)
+    }
+  } catch (err) {
+    helpers.logError(`Error running the getSessionsCountWithClientIdAndDateRange query: ${err.toString()}`)
+  }
+
+  return 0
+}
+
+async function getSessionsWithDateRange(startDate, endDate, limit, offset, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getSessionsWithDateRange',
+      `
+      SELECT s.*
+      FROM sessions AS s
+      LEFT JOIN devices AS b on s.device_id = b.id
+      WHERE b.device_type = $1
+      AND s.created_at >= $2
+      AND s.created_at <= $3
+      ORDER BY s.created_at DESC
+      LIMIT $4 OFFSET $5
+      `,
+      [DEVICE_TYPE.BUTTON, startDate, endDate, limit, offset],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      const allButtons = await getButtons(pgClient)
+      return results.rows.map(r => createSessionFromRow(r, allButtons))
+    }
+  } catch (err) {
+    helpers.logError(`Error running the getSessionsWithDateRange query: ${err.toString()}`)
+  }
+
+  return []
+}
+
+async function getSessionsCountWithDateRange(startDate, endDate, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getSessionsCountWithDateRange',
+      `
+      SELECT COUNT(*) as count
+      FROM sessions AS s
+      LEFT JOIN devices AS b on s.device_id = b.id
+      WHERE b.device_type = $1
+      AND s.created_at >= $2
+      AND s.created_at <= $3
+      `,
+      [DEVICE_TYPE.BUTTON, startDate, endDate],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      return parseInt(results.rows[0].count, 10)
+    }
+  } catch (err) {
+    helpers.logError(`Error running the getSessionsCountWithDateRange query: ${err.toString()}`)
+  }
+
+  return 0
+}
+
+async function getSessionStatsWithClientIdAndDateRange(clientId, startDate, endDate, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getSessionStatsWithClientIdAndDateRange',
+      `
+      SELECT 
+        COUNT(*) as total_sessions,
+        COUNT(CASE WHEN s.responded_at IS NOT NULL THEN 1 END) as responded_sessions,
+        COUNT(CASE WHEN s.responded_at IS NULL THEN 1 END) as unresponded_sessions,
+        AVG(EXTRACT(EPOCH FROM (s.responded_at - s.created_at))) as avg_response_time_seconds
+      FROM sessions AS s
+      LEFT JOIN devices AS b on s.device_id = b.id
+      WHERE b.device_type = $1
+      AND b.client_id = $2
+      AND s.created_at >= $3
+      AND s.created_at <= $4
+      `,
+      [DEVICE_TYPE.BUTTON, clientId, startDate, endDate],
+      pool,
+      pgClient,
+    )
+
+    if (results !== undefined && results.rows.length > 0) {
+      const row = results.rows[0]
+      return {
+        totalSessions: parseInt(row.total_sessions, 10),
+        respondedSessions: parseInt(row.responded_sessions, 10),
+        unrespondedSessions: parseInt(row.unresponded_sessions, 10),
+        avgResponseTimeSeconds: row.avg_response_time_seconds ? parseFloat(row.avg_response_time_seconds) : null,
+      }
+    }
+  } catch (err) {
+    helpers.logError(`Error running the getSessionStatsWithClientIdAndDateRange query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function getRecentButtonsVitals(pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1681,6 +1835,37 @@ async function updateButton(displayName, serialNumber, phoneNumber, isDisplayed,
   }
 }
 
+async function updateDeviceSendingSettings(deviceId, isSendingAlerts, isSendingVitals, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'updateDeviceSendingSettings',
+      `
+      UPDATE devices
+      SET
+        is_sending_alerts = $1,
+        is_sending_vitals = $2
+      WHERE id = $3
+      RETURNING *
+      `,
+      [isSendingAlerts, isSendingVitals, deviceId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Device '${deviceId}' sending settings successfully updated`)
+    const allClients = await getClients(pgClient)
+    return createDeviceFromRow(results.rows[0], allClients)
+  } catch (err) {
+    helpers.logError(`Error running the updateDeviceSendingSettings query: ${err.toString()}`)
+  }
+
+  return null
+}
+
 async function updateGateway(clientId, isSendingVitals, isDisplayed, gatewayId, displayName, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1924,6 +2109,11 @@ module.exports = {
   getRecentGatewaysVitals,
   getRecentGatewaysVitalsWithClientId,
   getSessionWithSessionId,
+  getSessionsWithClientIdAndDateRange,
+  getSessionsCountWithClientIdAndDateRange,
+  getSessionsWithDateRange,
+  getSessionsCountWithDateRange,
+  getSessionStatsWithClientIdAndDateRange,
   getUnrespondedSessionWithDeviceId,
   logButtonsVital,
   logGatewaysVital,
@@ -1936,6 +2126,7 @@ module.exports = {
   updateClient,
   updateGateway,
   updateButton,
+  updateDeviceSendingSettings,
   createClientExtension,
   updateClientExtension,
   createGatewayFromBrowserForm,

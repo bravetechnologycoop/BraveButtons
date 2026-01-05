@@ -32,18 +32,47 @@ function configureRoutes(app) {
   app.post('/buttons/:id', dashboard.validateUpdateButton, dashboard.submitUpdateButton)
   app.post('/buttons', dashboard.validateNewButton, dashboard.submitNewButton)
 
-  // Read-only API routes with pagination and bulk endpoints
-  app.get('/api/clients', api.validateGetClients, api.authorize, api.handleGetClients)
-  app.post('/api/clients', api.validateBulkGetClients, api.authorize, api.handleBulkGetClients)
+  // Brave Buttons API endpoints (read-only, matching Brave Sensor API structure)
+
+  // Client endpoints
+  app.get('/api/clients', api.validatePagination, api.authorize, api.handleGetClients)
+  app.post('/api/clients', api.validateBulkIds, api.authorize, api.handleBulkGetClients)
   app.get('/api/clients/:clientId', api.validateGetClient, api.authorize, api.handleGetClient)
-  app.get('/api/clients/:clientId/buttons', api.validateGetClientButtons, api.authorize, api.handleGetClientButtons)
-  app.post('/api/clients/:clientId/buttons', api.validateBulkGetClientButtons, api.authorize, api.handleBulkGetClientButtons)
-  app.get('/api/clients/:clientId/buttons/:buttonId', api.validateGetClientButton, api.authorize, api.handleGetClientButton)
-  app.get('/api/clients/:clientId/sessions', api.validateGetClientSessions, api.authorize, api.handleGetClientSessions)
+
+  // Device endpoints (global)
+  app.get('/api/devices', api.validatePagination, api.authorize, api.handleGetDevices)
+  app.post('/api/devices', api.validateBulkIds, api.authorize, api.handleBulkGetDevices)
+  app.get('/api/devices/:deviceId', api.validateGetDevice, api.authorize, api.handleGetDevice)
+
+  // Device endpoints (client-scoped)
+  app.get('/api/clients/:clientId/devices', api.validateGetClientDevices, api.authorize, api.handleGetClientDevices)
+  app.post('/api/clients/:clientId/devices', api.validateBulkGetClientDevices, api.authorize, api.handleBulkGetClientDevices)
+  app.get('/api/clients/:clientId/devices/:deviceId', api.validateGetClientDevice, api.authorize, api.handleGetClientDevice)
+
+  // Gateway endpoints (global)
+  app.get('/api/gateways', api.validatePagination, api.authorize, api.handleGetGateways)
+  app.post('/api/gateways', api.validateBulkIds, api.authorize, api.handleBulkGetGateways)
+  app.get('/api/gateways/:gatewayId', api.validateGetGateway, api.authorize, api.handleGetGateway)
+
+  // Gateway endpoints (client-scoped)
   app.get('/api/clients/:clientId/gateways', api.validateGetClientGateways, api.authorize, api.handleGetClientGateways)
   app.post('/api/clients/:clientId/gateways', api.validateBulkGetClientGateways, api.authorize, api.handleBulkGetClientGateways)
   app.get('/api/clients/:clientId/gateways/:gatewayId', api.validateGetClientGateway, api.authorize, api.handleGetClientGateway)
+
+  // Session endpoints (global)
+  app.get('/api/sessions', api.validatePagination, api.validateGetSessions, api.authorize, api.handleGetSessions)
+
+  // Session endpoints (client-scoped)
+  app.get('/api/clients/:clientId/sessions', api.validatePagination, api.validateGetClientSessions, api.authorize, api.handleGetClientSessions)
+  app.get('/api/clients/:clientId/sessions/stats', api.validateGetClientSessionStats, api.authorize, api.handleGetClientSessionStats)
+
+  // Vitals endpoints
   app.get('/api/clients/:clientId/vitals', api.validateGetClientVitals, api.authorize, api.handleGetClientVitals)
+  app.get('/api/devices/:deviceId/vitals', api.validatePagination, api.validateGetDeviceVitals, api.authorize, api.handleGetDeviceVitals)
+  app.get('/api/gateways/:gatewayId/vitals', api.validatePagination, api.validateGetGatewayVitals, api.authorize, api.handleGetGatewayVitals)
+
+  // Update endpoints
+  app.post('/api/clients/:clientId/devices/:deviceId/settings', api.validateUpdateClientDeviceSendingSettings, api.authorize, api.handleUpdateClientDeviceSendingSettings)
 
   // non-client specific vitals: are these useful?
   // Johnny: haven't really used them. Good to have a glance and see which devices are down?
