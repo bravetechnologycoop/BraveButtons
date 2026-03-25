@@ -4,8 +4,8 @@
   "description": "server for Brave Buttons chatbot and heartbeat monitoring",
   "main": "server.js",
   "dependencies": {
-    "@aws-sdk/client-iot": "^3.624.0",
-    "@aws-sdk/client-iot-wireless": "^3.624.0",
+    "@aws-sdk/client-iot": "^3.1016.0",
+    "@aws-sdk/client-iot-wireless": "^3.1016.0",
     "body-parser": "^1.20.3",
     "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib/#v15.0.6",
     "cookie-parser": "^1.4.5",
