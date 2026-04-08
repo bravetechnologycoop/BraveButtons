@@ -11,9 +11,12 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [14.2.2] - 2026-01-07
+- Updated incident categories (CU-86dv09fy7).
+
 ## [14.2.1] - 2025-12-01
 
--Added french/english bilingual to new client and update client pages (CU-86dxmpjz8).
+- Added french/english bilingual to new client and update client pages (CU-86dxmpjz8).
 
 ## [14.2.1] - 2025-10-21
 

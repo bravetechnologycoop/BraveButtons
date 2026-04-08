@@ -68,8 +68,8 @@
                 <div class="form-group row justify-content-start row-no-gutters">
                     <label for="incidentCategories" class="col-sm-3 col-form-label">Incident Categories:</label>
                     <div class="col-sm-5">
-                        <input type="text" class="form-control" name="incidentCategories" value="No One Inside,Person responded,Overdose,None of the above" id="incidentCategoriesInput" required>
-                        <small id="incidentCategoriesHelp" class="form-text text-muted">Each incident category is separated by commas with no quotes, please (eg. No One Inside,Person responded,Overdose,None of the above)</small>
+                        <input type="text" class="form-control" name="incidentCategories" value="Overdose Event,Safer Use,Conflict Resolution,Test" id="incidentCategoriesInput" required>
+                        <small id="incidentCategoriesHelp" class="form-text text-muted">Each incident category is separated by commas with no quotes, please (eg. Overdose Event,Safer Use,Conflict Resolution,Test)</small>
                     </div>
                 </div>
                 <div class="form-group row justify-content-start row-no-gutters">

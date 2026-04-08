@@ -130,17 +130,18 @@ async function beginTransaction() {
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
     await pgClient.query(
-      'LOCK TABLE sessions, devices, clients, migrations, gateways, gateways_vitals, gateways_vitals_cache, buttons_vitals, buttons_vitals_cache',
+      'LOCK TABLE sessions, devices, clients, migrations, gateways',
     )
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
     if (pgClient) {
       try {
-        await this.rollbackTransaction(pgClient)
+        await rollbackTransaction(pgClient)
       } catch (err) {
         helpers.logError(`beginTransaction: Error rolling back the errored transaction: ${err}`)
       }
     }
+    return null
   }
 
   return pgClient
