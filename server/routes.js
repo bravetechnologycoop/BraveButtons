@@ -4,6 +4,7 @@ const dashboard = require('./dashboard')
 const api = require('./api')
 const pa = require('./pa')
 const rak = require('./rak')
+const system = require('./system')
 
 function configureRoutes(app) {
   // to-be-deprecated mustache routes
@@ -58,6 +59,9 @@ function configureRoutes(app) {
   app.post('/pa/buttons-twilio-number', pa.validateButtonsTwilioNumber, googleHelpers.paAuthorize, pa.handleButtonsTwilioNumber)
   app.post('/pa/message-clients', pa.validateMessageClients, googleHelpers.paAuthorize, pa.handleMessageClients)
   app.post('/pa/health', pa.validateCheckDatabaseConnection, googleHelpers.paAuthorize, pa.handleCheckDatabaseConnection)
+
+  // Health check for the Brave Central pipeline monitor (auth: X-Health-Token header)
+  app.get('/system/health', system.handleSystemHealth)
 
   // other routes
 }
