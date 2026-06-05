@@ -129,13 +129,12 @@ async function beginTransaction() {
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await pgClient.query(
-      'LOCK TABLE sessions, devices, clients, migrations, gateways',
-    )
+    await pgClient.query('LOCK TABLE sessions, devices, clients, migrations, gateways')
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
     if (pgClient) {
       try {
+        // eslint-disable-next-line no-use-before-define -- rollbackTransaction is hoisted; defined below alongside the other transaction helpers
         await rollbackTransaction(pgClient)
       } catch (err) {
         helpers.logError(`beginTransaction: Error rolling back the errored transaction: ${err}`)

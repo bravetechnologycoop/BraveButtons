@@ -42,6 +42,11 @@
     "sinon-chai": "^3.5.0",
     "twilio": "^4.7.1"
   },
+  "overrides": {
+    "axios": "^1.17.0",
+    "serialize-javascript": "^7.0.5",
+    "fast-xml-builder": "^1.1.7"
+  },
   "scripts": {
     "lint": "eslint .",
     "test": "NODE_ENV=test mocha --timeout 10000 \"test/**/*.js\"",

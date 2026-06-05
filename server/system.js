@@ -17,6 +17,7 @@ function constantTimeEqual(a, b) {
   if (a.length !== b.length) return false
   let mismatch = 0
   for (let i = 0; i < a.length; i += 1) {
+    // eslint-disable-next-line no-bitwise -- intentional bitwise accumulation for constant-time comparison
     mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i)
   }
   return mismatch === 0
