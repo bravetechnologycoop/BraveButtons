@@ -129,13 +129,12 @@ async function beginTransaction() {
     // this fixes a race condition when two button press messages are received in quick succession
     // this means that only one transaction executes at a time, which is not good for performance
     // we should revisit this when / if db performance becomes a concern
-    await pgClient.query(
-      'LOCK TABLE sessions, devices, clients, migrations, gateways',
-    )
+    await pgClient.query('LOCK TABLE sessions, devices, clients, migrations, gateways')
   } catch (e) {
     helpers.logError(`Error running the beginTransaction query: ${e}`)
     if (pgClient) {
       try {
+        // eslint-disable-next-line no-use-before-define -- rollbackTransaction is hoisted; defined below alongside the other transaction helpers
         await rollbackTransaction(pgClient)
       } catch (err) {
         helpers.logError(`beginTransaction: Error rolling back the errored transaction: ${err}`)
@@ -1392,6 +1391,23 @@ async function getCurrentTime(pgClient) {
   }
 }
 
+// Returns a snapshot of pg pool counts for /system/health.
+// Pool.options.max defaults to 10 if unset.
+function getPoolStats() {
+  const max = (pool.options && pool.options.max) || 10
+  const total = pool.totalCount
+  const idle = pool.idleCount
+  const waiting = pool.waitingCount
+  const inUse = total - idle
+  return {
+    max,
+    total,
+    idle,
+    waiting,
+    saturation_pct: max > 0 ? Math.round((inUse / max) * 100) : 0,
+  }
+}
+
 // Checks the database connection, if not able to connect will throw an error
 async function getCurrentTimeForHealthCheck() {
   if (helpers.isDbLogging()) {
@@ -1846,6 +1862,7 @@ module.exports = {
   getClients,
   getCurrentTime,
   getCurrentTimeForHealthCheck,
+  getPoolStats,
   getDataForExport,
   getDeviceWithIds,
   getDeviceWithSerialNumber,
