@@ -11,6 +11,9 @@ the code was deployed.
 
 ## [Unreleased]
 
+## [14.2.3] - 2026-06-09
+- Add system health endpoint
+
 ## [14.2.2] - 2026-01-07
 - Updated incident categories (CU-86dv09fy7).
 
@@ -877,7 +880,8 @@ the code was deployed.
 
 - Initial pi.
 
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.2...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.3...HEAD
+[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.2...v14.2.3
 [14.2.2]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.1...v14.2.2
 [14.2.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...v14.2.1
 [14.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...v14.2.0
