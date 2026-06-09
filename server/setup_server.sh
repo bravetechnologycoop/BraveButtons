@@ -41,7 +41,6 @@ else
     apt update
     apt install -y nodejs npm certbot postgresql postgresql-contrib
     npm install -g pm2 n
-    n 18.16.1         # keep this in sync with .nvmrc for Travis
     PATH=$PATH        # needed to set the new path for this version of node
     setcap cap_net_bind_service=+ep /usr/local/bin/node   # allows non-root to use port 443
     npm ci
