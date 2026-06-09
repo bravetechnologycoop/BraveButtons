@@ -12,6 +12,7 @@ the code was deployed.
 ## [Unreleased]
 
 ## [14.2.3] - 2026-06-09
+
 - Add system health endpoint
 - Remove travis from deploy script
 
@@ -882,7 +883,7 @@ the code was deployed.
 - Initial pi.
 
 [unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.3...HEAD
-[unreleased]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.2...v14.2.3
+[14.2.3]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.2...v14.2.3
 [14.2.2]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.2.1...v14.2.2
 [14.2.1]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...v14.2.1
 [14.2.0]: https://github.com/bravetechnologycoop/BraveButtons/compare/v14.1.0...v14.2.0
