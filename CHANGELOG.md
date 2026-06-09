@@ -13,6 +13,7 @@ the code was deployed.
 
 ## [14.2.3] - 2026-06-09
 - Add system health endpoint
+- Remove travis from deploy script
 
 ## [14.2.2] - 2026-01-07
 - Updated incident categories (CU-86dv09fy7).
