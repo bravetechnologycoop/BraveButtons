@@ -6,11 +6,11 @@
   "dependencies": {
     "@aws-sdk/client-iot": "^3.1027.0",
     "@aws-sdk/client-iot-wireless": "^3.1027.0",
-    "body-parser": "^1.20.3",
+    "body-parser": "^1.20.5",
     "brave-alert-lib": "https://github.com/bravetechnologycoop/brave-alert-lib/#v15.0.6",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
-    "express": "^4.21.2",
+    "express": "^4.22.2",
     "express-session": "^1.18.2",
     "express-validator": "^6.10.0",
     "i18next": "^21.8.11",
