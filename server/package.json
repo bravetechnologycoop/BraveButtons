@@ -43,7 +43,7 @@
     "twilio": "^4.7.1"
   },
   "overrides": {
-    "axios": "^1.17.0",
+    "axios": "^1.18.1",
     "serialize-javascript": "^7.0.5",
     "fast-xml-builder": "^1.1.7"
   },
