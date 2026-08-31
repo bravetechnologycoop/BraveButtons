@@ -34,6 +34,9 @@ function configureRoutes(app) {
   app.post('/buttons', dashboard.validateNewButton, dashboard.submitNewButton)
 
   // to-be-used API routes
+  app.get('/api/portal/clients/:clientId/alert-recipients', api.portalAuthorize, api.portalRateLimit, api.handleGetPortalAlertRecipients)
+  app.put('/api/portal/clients/:clientId/alert-recipients', api.portalAuthorize, api.portalRateLimit, api.handleUpdatePortalAlertRecipients)
+
   app.get('/api/clients', api.authorize, api.handleGetClients)
   app.post('/api/clients', api.validateCreateClient, api.authorize, api.handleCreateClient)
   app.get('/api/clients/:clientId', api.validateGetClient, api.authorize, api.handleGetClient)

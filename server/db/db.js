@@ -1526,6 +1526,83 @@ async function updateClient(
   }
 }
 
+function createPortalAlertRecipientsFromRow(r) {
+  return {
+    client_id: r.id,
+    display_name: r.display_name,
+    responder_phone_numbers: r.responder_phone_numbers,
+    fallback_phone_numbers: r.fallback_phone_numbers,
+    heartbeat_phone_numbers: r.heartbeat_phone_numbers,
+  }
+}
+
+async function getPortalAlertRecipients(clientId, pgClient) {
+  try {
+    const results = await helpers.runQuery(
+      'getPortalAlertRecipients',
+      `
+      SELECT id, display_name, responder_phone_numbers, fallback_phone_numbers, heartbeat_phone_numbers
+      FROM clients
+      WHERE id = $1
+      AND is_displayed = true
+      AND is_sending_alerts = true
+      `,
+      [clientId],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    return createPortalAlertRecipientsFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the getPortalAlertRecipients query: ${err.toString()}`)
+  }
+}
+
+async function updatePortalAlertRecipients(clientId, fields, pgClient) {
+  try {
+    const current = await getPortalAlertRecipients(clientId, pgClient)
+
+    if (!current) {
+      return null
+    }
+
+    const results = await helpers.runQuery(
+      'updatePortalAlertRecipients',
+      `
+      UPDATE clients
+      SET responder_phone_numbers = $2,
+          fallback_phone_numbers = $3,
+          heartbeat_phone_numbers = $4
+      WHERE id = $1
+      AND is_displayed = true
+      AND is_sending_alerts = true
+      RETURNING id, display_name, responder_phone_numbers, fallback_phone_numbers, heartbeat_phone_numbers
+      `,
+      [
+        clientId,
+        fields.responder_phone_numbers !== undefined ? fields.responder_phone_numbers : current.responder_phone_numbers,
+        fields.fallback_phone_numbers !== undefined ? fields.fallback_phone_numbers : current.fallback_phone_numbers,
+        fields.heartbeat_phone_numbers !== undefined ? fields.heartbeat_phone_numbers : current.heartbeat_phone_numbers,
+      ],
+      pool,
+      pgClient,
+    )
+
+    if (results === undefined || results.rows.length === 0) {
+      return null
+    }
+
+    helpers.log(`Portal alert recipients for client ${clientId} successfully updated`)
+    return createPortalAlertRecipientsFromRow(results.rows[0])
+  } catch (err) {
+    helpers.logError(`Error running the updatePortalAlertRecipients query: ${err.toString()}`)
+  }
+}
+
 async function createClientExtension(clientId, country, countrySubdivision, buildingType, organization, funder, postalCode, city, project, pgClient) {
   try {
     const results = await helpers.runQuery(
@@ -1863,6 +1940,7 @@ module.exports = {
   getCurrentTime,
   getCurrentTimeForHealthCheck,
   getPoolStats,
+  getPortalAlertRecipients,
   getDataForExport,
   getDeviceWithIds,
   getDeviceWithSerialNumber,
@@ -1896,6 +1974,7 @@ module.exports = {
   updateButton,
   createClientExtension,
   updateClientExtension,
+  updatePortalAlertRecipients,
   createGatewayFromBrowserForm,
   getCurrentFirstDeviceLiveAt,
 }
